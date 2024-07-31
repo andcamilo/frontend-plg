@@ -1,5 +1,6 @@
 import React from 'react';
 import { slide as Menu } from 'react-burger-menu';
+import CloseIcon from '@mui/icons-material/Close'; // Import the Close icon from Material-UI
 import '../globals.css';
 
 interface MenuProps {
@@ -20,14 +21,18 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
       styles={{
         bmOverlay: {
           background: "rgba(0, 0, 0, 0.3)",
-          zIndex: 10,
         },
-        bmMenuWrap: {
-          zIndex: 20,
-          width: '220px' 
+        bmMenu: {
+          padding: '2.5em 1.5em 0',
         }
       }}
     >
+      <div className="flex justify-between items-center mb-4">
+        <div />
+        <button onClick={closeMenu} className="text-white">
+          <CloseIcon />
+        </button>
+      </div>
       <a id="home" href="/" onClick={closeMenu}>Home</a>
       <a id="about" href="/about" onClick={closeMenu}>About</a>
       <a id="contact" href="/contact" onClick={closeMenu}>Contact</a>

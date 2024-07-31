@@ -33,8 +33,7 @@ const SideMenu: React.FC = () => {
         showSettings={showSettings}
       />
       <button
-        className={`fixed top-4 left-1 z-50 border-none bg-transparent cursor-pointer transform transition-transform duration-300 ${menuOpen ? 'translate-x-60' : 'translate-x-0'}`}
-        style={{ zIndex: 1000 }}
+        className={`fixed top-4 left-4 border-none bg-transparent cursor-pointer transform `}
         onClick={() => handleStateChange({ isOpen: !menuOpen })}
       >
         <MenuIcon className="text-pink-500" />
