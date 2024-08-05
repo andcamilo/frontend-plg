@@ -2,19 +2,16 @@
 import React, { useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
 import '../globals.css';
-import MenuComponent from './menu'; // Ensure the correct path
+import MenuComponent from './menu'; 
 
 const SideMenu: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  console.log("🚀 ~ menuOpen:", menuOpen);
 
   const handleStateChange = (state: { isOpen: boolean }) => {
-    console.log("🚀 ~ handleStateChange ~ state.isOpen:", state.isOpen);
     setMenuOpen(state.isOpen);
   };
 
   const closeMenu = () => {
-    console.log("🚀 ~ closeMenu ~ called");
     setMenuOpen(false);
   };
 
@@ -25,7 +22,7 @@ const SideMenu: React.FC = () => {
   };
 
   return (
-    <div className="relative">
+    <div>
       <MenuComponent 
         menuOpen={menuOpen}
         handleStateChange={handleStateChange}
@@ -33,10 +30,10 @@ const SideMenu: React.FC = () => {
         showSettings={showSettings}
       />
       <button
-        className={`fixed top-4 left-4 border-none bg-transparent cursor-pointer transform `}
+        className={`fixed top-4 left-14 border-none bg-transparent cursor-pointer transform z-50`}
         onClick={() => handleStateChange({ isOpen: !menuOpen })}
       >
-        <MenuIcon className="text-pink-500" />
+        <MenuIcon className="text-profile" />
       </button>
     </div>
   );

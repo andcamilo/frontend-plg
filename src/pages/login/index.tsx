@@ -3,7 +3,7 @@ import SideMenu from '@/app/components/sideMenu';
 import LegixStadistics from '@/app/components/legixStadistics';
 import Footer from '@/app/components/footer';
 
-const Home: React.FC = () => {
+const Login: React.FC = () => {
   return (
     <div className="flex bg-[#151521] min-h-screen">
       <SideMenu />
@@ -18,4 +18,4 @@ const Home: React.FC = () => {
   );
 }
 
-export default Home;
+export default Login;
