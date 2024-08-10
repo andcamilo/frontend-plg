@@ -1,6 +1,7 @@
 import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
-import { Chart, ArcElement, Tooltip, Legend, ChartTooltipItem } from 'chart.js';
+import { Chart, ArcElement, Tooltip, Legend } from 'chart.js';
+
 
 Chart.register(ArcElement, Tooltip, Legend);
 
@@ -36,7 +37,7 @@ const FormalitiesChart: React.FC = () => {
       },
       tooltip: {
         callbacks: {
-          label: function (context: ChartTooltipItem<'doughnut'>) {
+          label: function (context) {
             const label = context.label || '';
             const value = context.raw || 0;
             return `${label}: ${value}%`;
