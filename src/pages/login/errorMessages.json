@@ -1,0 +1,9 @@
+{
+    "auth/invalid-email": "The email address is not valid.",
+    "auth/user-disabled": "The user account has been disabled by an administrator.",
+    "auth/user-not-found": "There is no user corresponding to the given email.",
+    "auth/wrong-password": "The password is invalid or the user does not have a password.",
+    "auth/invalid-credential": "The credential is invalid or expired.",
+    "auth/invalid-api-key": "The API key is invalid."
+}
+  

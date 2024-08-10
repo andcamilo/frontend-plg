@@ -3,7 +3,7 @@ import { slide as Menu } from 'react-burger-menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Image from 'next/image'; 
 import { usePathname } from 'next/navigation'
-import Logo from '../../../public/images/legix-logo.png';
+import Logo from '@public/images/legix-logo.png';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StickyNote2Icon from '@mui/icons-material/StickyNote2';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -47,6 +47,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center justify-between w-full">
           <Image src={Logo} alt="Logo" width={110} height={32} className="mr-2" /> 
+          <p>Ingresar</p>
           <button onClick={closeMenu} className="text-white">
             <CloseIcon />
           </button>

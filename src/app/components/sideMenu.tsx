@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
-import '../globals.css';
+import '@app/globals.css';
 import MenuComponent from './menu'; 
 
 const SideMenu: React.FC = () => {
