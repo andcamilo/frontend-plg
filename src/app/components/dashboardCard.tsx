@@ -1,7 +1,12 @@
 import React from 'react';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
-const DashboardCard = ({ title, value }) => {
+interface DashboardCardProps {
+  title: string;
+  value: number | string;
+}
+
+const DashboardCard: React.FC<DashboardCardProps> = ({ title, value }) => {
   return (
     <div className="bg-[#1F1F2E] p-4 mb-4 rounded-lg shadow-lg w-full max-w-sm flex flex-col">
       <div className="flex items-center">
