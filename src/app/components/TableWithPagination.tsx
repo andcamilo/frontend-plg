@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 
-interface Request {
-  type: string;
-  email: string;
-  date: string;
-  status: string;
-}
-
 interface TableWithPaginationProps {
-  data: Request[];
+  data: { [key: string]: any }[];
   rowsPerPage: number;
   title: string;
 }
@@ -24,30 +17,30 @@ const TableWithPagination: React.FC<TableWithPaginationProps> = ({ data, rowsPer
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
+  // Dynamically generate column headers from the keys of the first object in the data array
+  const columns = data.length > 0 ? Object.keys(data[0]) : [];
+
   return (
     <div className="bg-[#1F1F2E] p-4 rounded-lg shadow-lg w-full max-w-4xl mb-4">
       <h2 className="text-lg font-bold text-white mb-4">{title}</h2>
       <table className="w-full text-left text-gray-400">
         <thead>
           <tr>
-            <th className="py-2">Tipo</th>
-            <th className="py-2">Fecha</th>
-            <th className="py-2">Estatus</th>
+            {columns.map((column, index) => (
+              <th key={index} className="py-2 capitalize">
+                {column}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {currentRows.map((request, index) => (
-            <tr key={index} className="border-t border-gray-700">
-              <td className="py-2">
-                <div className="font-semibold">{request.type}</div>
-                <div className="text-sm text-pink-500">{request.email}</div>
-              </td>
-              <td className="py-2">{request.date}</td>
-              <td className="py-2">
-                <span className={`px-2 py-1 rounded-full text-sm font-semibold ${request.status === 'Pagada' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                  {request.status}
-                </span>
-              </td>
+          {currentRows.map((row, rowIndex) => (
+            <tr key={rowIndex} className="border-t border-gray-700">
+              {columns.map((column, colIndex) => (
+                <td key={colIndex} className="py-2">
+                  {row[column]}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>

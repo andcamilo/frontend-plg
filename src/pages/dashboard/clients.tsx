@@ -1,12 +1,12 @@
 // src/pages/dashboard/home.tsx
 import React from 'react';
 import DashboardLayout from '@components/DashboardLayout';
-import LegixStadistics from '@components/legixStadistics';
+import ClientsStatistics from '@/src/app/components/clientsStadistics';
 
 const Home: React.FC = () => {
   return (
-    <DashboardLayout title="Estadísticas de LEGIX">
-      <LegixStadistics />
+    <DashboardLayout title="Clientes">
+      <ClientsStatistics />
     </DashboardLayout>
   );
 }

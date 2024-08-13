@@ -48,7 +48,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center justify-between w-full">
           <Image src={Logo} alt="Logo" width={110} height={32} className="mr-2" /> 
-          <p>Ingresar</p>
+      
           <button onClick={closeMenu} className="text-white">
             <CloseIcon />
           </button>
@@ -73,9 +73,9 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Balances
         </Link>
       </div>
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/clientes')}`}>
+      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/clients')}`}>
         <PeopleIcon className="mr-2" />
-        <Link href="/dashboard/clientes" className='font-semibold' onClick={closeMenu}>
+        <Link href="/dashboard/clients" className='font-semibold' onClick={closeMenu}>
           Clientes
         </Link>
       </div>
