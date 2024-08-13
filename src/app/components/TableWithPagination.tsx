@@ -7,13 +7,20 @@ interface Request {
   status: string;
 }
 
-interface TableWithPaginationProps {
-  data: Request[];
-  rowsPerPage: number;
-  title: string;
+interface SolicitudeRequest extends Request {
+  id: string;
+  lawyer: string;
+  action: string;
 }
 
-const TableWithPagination: React.FC<TableWithPaginationProps> = ({ data, rowsPerPage, title }) => {
+interface TableWithPaginationProps {
+  data: Request[] | SolicitudeRequest[];
+  rowsPerPage: number;
+  title: string;
+  isSolicitudes?: boolean;
+}
+
+const TableWithPagination: React.FC<TableWithPaginationProps> = ({ data, rowsPerPage, title, isSolicitudes = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -30,24 +37,59 @@ const TableWithPagination: React.FC<TableWithPaginationProps> = ({ data, rowsPer
       <table className="w-full text-left text-gray-400">
         <thead>
           <tr>
-            <th className="py-2">Tipo</th>
-            <th className="py-2">Fecha</th>
-            <th className="py-2">Estatus</th>
+            {isSolicitudes ? (
+              <>
+                <th className="py-2">Tipo</th>
+                <th className="py-2">Fecha</th>
+                <th className="py-2">Estatus</th>
+                <th className="py-2">Expediente</th>
+                <th className="py-2">Abogado</th>
+                <th className="py-2">Acciones</th>
+              </>
+            ) : (
+              <>
+                <th className="py-2">Tipo</th>
+                <th className="py-2">Fecha</th>
+                <th className="py-2">Estatus</th>
+              </>
+            )}
           </tr>
         </thead>
         <tbody>
           {currentRows.map((request, index) => (
             <tr key={index} className="border-t border-gray-700">
-              <td className="py-2">
-                <div className="font-semibold">{request.type}</div>
-                <div className="text-sm text-pink-500">{request.email}</div>
-              </td>
-              <td className="py-2">{request.date}</td>
-              <td className="py-2">
-                <span className={`px-2 py-1 rounded-full text-sm font-semibold ${request.status === 'Pagada' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                  {request.status}
-                </span>
-              </td>
+              {isSolicitudes ? (
+                <>
+                  
+                  <td className="py-2">
+                    <div className="font-semibold">{request.type}</div>
+                    <div className="text-sm text-pink-500">{request.email}</div>
+                  </td>
+                  <td className="py-2">{request.date}</td>
+                  <td className="py-2">
+                    <span className={`px-2 py-1 rounded-full text-sm font-semibold ${request.status === 'Pagada' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                      {request.status}
+                    </span>
+                  </td>
+                  <td className="py-2">{(request as SolicitudeRequest).id}</td>
+                  <td className="py-2">{(request as SolicitudeRequest).lawyer}</td> 
+                  <td className="py-2">{(request as SolicitudeRequest).action}</td>
+                  
+                </>
+              ) : (
+                <>
+                  <td className="py-2">
+                    <div className="font-semibold">{request.type}</div>
+                    <div className="text-sm text-pink-500">{request.email}</div>
+                  </td>
+                  <td className="py-2">{request.date}</td>
+                  <td className="py-2">
+                    <span className={`px-2 py-1 rounded-full text-sm font-semibold ${request.status === 'Pagada' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                      {request.status}
+                    </span>
+                  </td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>

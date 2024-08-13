@@ -1,6 +1,6 @@
 import React from 'react';
 import SideMenu from '@/app/components/sideMenu';
-import LegixStadistics from '@/app/components/legixStadistics';
+import LegixStatistics from '@/app/components/legixStadistics';
 import Footer from '@/app/components/footer';
 
 const Home: React.FC = () => {
@@ -11,7 +11,7 @@ const Home: React.FC = () => {
         <h1 className="text-4xl font-bold text-white pl-8">
           Estadísticas de LEGIX
         </h1>
-        <LegixStadistics />
+        <LegixStatistics showContent={true} />
         <Footer />
       </div>
     </div>
