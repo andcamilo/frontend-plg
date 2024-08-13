@@ -1,6 +1,6 @@
 // src/pages/dashboard/home.tsx
 import React from 'react';
-import DashboardLayout from '@components/DashboardLayout';
+import DashboardLayout from '@components/dashboardLayout';
 import LegixStadistics from '@components/legixStadistics';
 
 const Home: React.FC = () => {
