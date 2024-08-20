@@ -13,6 +13,8 @@ import PaidIcon from '@mui/icons-material/Paid';
 import PeopleIcon from '@mui/icons-material/People';
 import SupportIcon from '@mui/icons-material/Support';
 import LanguageIcon from '@mui/icons-material/Language';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import { useRouter } from 'next/router';
 import '../globals.css';
 
 interface MenuProps {
@@ -25,9 +27,15 @@ interface MenuProps {
 const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, closeMenu, showSettings }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
+  };
+
+  const handleRedirect = () => {
+    router.push('https://legixdev.mgpanel.org/pag/faqs');
+    closeMenu();
   };
 
   const isActive = (path: string) => pathname === path ? 'bg-profile text-white rounded-xl' : '';
@@ -79,6 +87,12 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Clientes
         </Link>
       </div>
+      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/users')}`}>
+        <AccountBoxIcon className="mr-2" />
+        <Link href="/dashboard/users" className='font-semibold' onClick={closeMenu}>
+          Usuarios
+        </Link>
+      </div>
       <p className='font-bold'>Trámites internos</p>
       <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdown}>
         <StickyNote2Icon className="mr-2" />
@@ -97,11 +111,11 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
       )}
       <p className='font-bold'>Otros enlaces</p>
       <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/faqs')}`}>
+      <div onClick={handleRedirect} className="cursor-pointer">
         <SupportIcon className="mr-2" />
-        <Link href="/dashboard/faqs" onClick={closeMenu}>
-          FAQs
-        </Link>
+        FAQs
       </div>
+    </div>
       <div className={`flex items-center mb-1 p-2 rounded ${isActive('')}`}>
         <LanguageIcon className="mr-2" />
         <Link href="" onClick={closeMenu}>

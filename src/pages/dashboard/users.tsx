@@ -3,12 +3,12 @@ import React from 'react';
 import DashboardLayout from '@components/dashboardLayout';
 import ClientsStatistics from '@components/clientsStadistics';
 
-const Clients: React.FC = () => {
+const Users: React.FC = () => {
   return (
-    <DashboardLayout title="Clientes">
+    <DashboardLayout title="Usuarios">
       <ClientsStatistics />
     </DashboardLayout>
   );
 }
 
-export default Clients;
+export default Users;

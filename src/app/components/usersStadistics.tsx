@@ -9,7 +9,7 @@ const data = [
     { cliente: 'andrea p', email: 'yenok17520@oprevolt.com', date: '15-02-2024', status: 'Activo', actions: '...' }
   ];
 
-const ClientsStatistics: React.FC = () => {
+const UsersStatistics: React.FC = () => {
   return (
     <div className="flex flex-col p-8 w-full min-h-screen">
         <div className="flex items-center w-full">
@@ -17,6 +17,7 @@ const ClientsStatistics: React.FC = () => {
                 <div className="bg-[#1F1F2E] text-[#b8b8b8] py-4 px-10 rounded-lg w-full">
                     <select className="py-3 px-5 pe-9 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm">
                         <option>Clientes</option>
+    
                     </select>
                 </div>
                 <div className="bg-[#1F1F2E] text-[#b8b8b8] px-10 py-4 rounded-lg w-full ml-4 flex flex-col justify-center items-center">
@@ -35,4 +36,4 @@ const ClientsStatistics: React.FC = () => {
   );
 };
 
-export default ClientsStatistics;
+export default UsersStatistics;
