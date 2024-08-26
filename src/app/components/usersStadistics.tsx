@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import get from 'lodash/get';
 import TableWithPagination from './TableWithPagination';
-import NewUserComponent from './NewUserComponent';
+import NewUserComponent from './newUserComponent';
 
 const UsersStatistics: React.FC = () => {
   const [data, setData] = useState([]);
@@ -71,7 +71,7 @@ const UsersStatistics: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {isNewUserFormVisible && (
         <div className="mt-5 w-full max-w-4xl">
           <NewUserComponent />
