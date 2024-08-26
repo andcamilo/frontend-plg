@@ -20,7 +20,7 @@ const getUsers = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const data = response.data;
     const status = get(data, 'status', 'unknown');
-    const message = gt(data, 'message', 'No message provided');
+    const message = get(data, 'message', 'No message provided');
     const totalUsers = get(data, 'totalUsers', 0);
     const currentPageUsers = get(data, 'currentPageUsers', 0);
     const statusCounts = get(data, 'statusCounts', {});

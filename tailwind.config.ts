@@ -15,6 +15,7 @@ const config: Config = {
       },
       colors: {
         profile: "#841961",
+        component: "#1F1F2E"
       }
     },
   },

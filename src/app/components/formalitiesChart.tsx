@@ -47,7 +47,7 @@ const FormalitiesChart: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#1F1F2E] p-4 rounded-lg shadow-lg w-full max-w-sm flex flex-col items-center">
+    <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-sm flex flex-col items-center">
       <h2 className="text-lg font-bold text-white mb-4">Trámites realizados</h2>
       <div className="w-full h-64">
         <Doughnut data={data} options={options} />

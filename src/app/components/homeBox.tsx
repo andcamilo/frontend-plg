@@ -18,7 +18,7 @@ const HomeBox: React.FC<HomeBoxProps> = ({ title, number, color }) => {
   };
 
   return (
-    <div className="bg-[#1F1F2E] text-center p-1 rounded-lg shadow-lg flex flex-col justify-center items-center w-full h-52">
+    <div className="bg-component text-center p-1 rounded-lg shadow-lg flex flex-col justify-center items-center w-full h-52">
       <div className={`${color} p-2 rounded-md mb-4`}>
         {renderIcon()}
       </div>

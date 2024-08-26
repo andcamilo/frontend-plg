@@ -24,7 +24,7 @@ const TableWithPagination: React.FC<TableWithPaginationProps> = ({
   const columns = data.length > 0 ? Object.keys(data[0]) : [];
 
   return (
-    <div className="bg-[#1F1F2E] p-4 rounded-lg shadow-lg w-full max-w-4xl mb-4">
+    <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-4xl mb-4">
       <h2 className="text-lg font-bold text-white mb-4">{title}</h2>
       <div className="overflow-x-auto">
         {data.length > 0 ? (

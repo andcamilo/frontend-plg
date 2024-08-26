@@ -1,37 +1,97 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import get from 'lodash/get';
 import TableWithPagination from './TableWithPagination';
-
-const data = [
-    { cliente: 'Jose perez', email: 'vijole7360@cubene.com', date: '07-02-2024', status: 'Activo', actions: '...' },
-    { cliente: 'Alexander Silva', email: 'wilmer@mgpanel.org', date: '24-11-2023', status: 'Activo', actions: '...' },
-    { cliente: 'maria', email: 'sivin48250@artgulin.com', date: '04-03-2024', status: 'Activo', actions: '...' },
-    { cliente: 'andres', email: 'lanofa7377@fresec.com', date: '29-05-2024', status: 'Activo', actions: '...' },
-    { cliente: 'andrea p', email: 'yenok17520@oprevolt.com', date: '15-02-2024', status: 'Activo', actions: '...' }
-  ];
+import NewUserComponent from './NewUserComponent';
 
 const UsersStatistics: React.FC = () => {
+  const [data, setData] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [isNewUserFormVisible, setIsNewUserFormVisible] = useState(false); // State to control visibility
+  const rowsPerPage = 5;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('/api/user', {
+          params: {
+            limit: rowsPerPage,
+            page: currentPage,
+          },
+        });
+
+        const usuarios = get(response, 'data.usuarios', []);
+        const totalUsers = get(response, 'data.totalUsers', 0);
+        const pagination = get(response, 'data.pagination', {});
+
+        const formattedData = usuarios.map((user: any) => ({
+          usuario: get(user, 'nombre', 'N/A'),
+          email: get(user, 'email', 'N/A'),
+          rol: get(user, 'rol', 'N/A'),
+          status: get(user, 'status', 0) === 1 ? 'Activo' : 'Inactivo',
+          actions: '...',
+        }));
+
+        setData(formattedData);
+        setTotalUsers(totalUsers);
+        setTotalPages(Math.ceil(totalUsers / rowsPerPage));
+        setHasPrevPage(get(pagination, 'hasPrevPage', false));
+        setHasNextPage(get(pagination, 'hasNextPage', false));
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchData();
+  }, [currentPage]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const toggleNewUserForm = () => {
+    setIsNewUserFormVisible(!isNewUserFormVisible);
+  };
+
   return (
     <div className="flex flex-col p-8 w-full min-h-screen">
-        <div className="flex items-center w-full">
-            <div className="flex items-center w-full max-w-4xl">
-                <div className="bg-[#1F1F2E] text-[#b8b8b8] py-4 px-10 rounded-lg w-full">
-                    <select className="py-3 px-5 pe-9 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm">
-                        <option>Clientes</option>
-    
-                    </select>
-                </div>
-                <div className="bg-[#1F1F2E] text-[#b8b8b8] px-10 py-4 rounded-lg w-full ml-4 flex flex-col justify-center items-center">
-                    <h2 className="text-sm">Clientes</h2>
-                    <h3 className="text-2xl font-bold text-white">22</h3>
-                </div>
+      <div className="flex items-center w-full">
+        <div className="flex items-center w-full max-w-4xl">
+          <div className="bg-component text-[#b8b8b8] py-4 px-10 rounded-lg w-full">
+            <button
+              className="bg-[#AE1B73] text-white px-4 py-2 rounded-lg"
+              onClick={toggleNewUserForm}
+            >
+              Nuevo Usuario
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {isNewUserFormVisible && (
+        <div className="mt-5 w-full max-w-4xl">
+          <NewUserComponent />
+        </div>
+      )}
 
-            </div>
+      <div className="flex items-center w-full mt-5">
+        <div className="w-full max-w-4xl">
+          <TableWithPagination
+            data={data}
+            rowsPerPage={rowsPerPage}
+            title="Usuarios"
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            onPageChange={handlePageChange}
+          />
         </div>
-        <div className="flex items-center w-full mt-5">
-            <div className="w-full max-w-4xl">
-                <TableWithPagination data={data} rowsPerPage={3} title="Clientes" />
-            </div>
-        </div>
+      </div>
     </div>
   );
 };
