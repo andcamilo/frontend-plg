@@ -16,9 +16,28 @@ const config: Config = {
       colors: {
         profile: "#841961",
         component: "#1F1F2E"
-      }
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.scrollbar-thin': {
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#070707',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#555',
+            borderRadius: '9999px',
+            border: '2px solid #070707',
+          },
+        },
+      });
+    },
+  ],
 };
+
 export default config;
