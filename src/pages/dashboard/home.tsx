@@ -6,7 +6,9 @@ import LegixStadistics from '@components/legixStadistics';
 const Home: React.FC = () => {
   return (
     <DashboardLayout title="Estadísticas de LEGIX">
-      <LegixStadistics />
+      <div>
+        Hola
+      </div>
     </DashboardLayout>
   );
 }
