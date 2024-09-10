@@ -3,6 +3,7 @@ import axios from 'axios';
 import get from 'lodash/get';
 import TableWithPagination from './TableWithPagination';
 import NewUserComponent from './newUserComponent';
+import TableWithRequests from '@components/TableWithRequests';
 
 const UsersStatistics: React.FC = () => {
   const [data, setData] = useState([]);
@@ -78,9 +79,9 @@ const UsersStatistics: React.FC = () => {
         </div>
       )}
 
-      <div className="flex items-center w-full mt-5">
-        <div className="w-full max-w-4xl">
-          <TableWithPagination
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full mt-4">
+        <div className="lg:col-span-3">
+          <TableWithRequests
             data={data}
             rowsPerPage={rowsPerPage}
             title="Usuarios"

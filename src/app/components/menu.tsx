@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { slide as Menu } from 'react-burger-menu';
 import CloseIcon from '@mui/icons-material/Close';
-import Image from 'next/image'; 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'
 import Logo from '@public/images/legix-logo.png';
@@ -41,7 +41,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
   const isActive = (path: string) => pathname === path ? 'bg-profile text-white rounded-xl' : '';
 
   return (
-    <Menu 
+    <Menu
       isOpen={menuOpen}
       onStateChange={(state) => handleStateChange(state)}
       customBurgerIcon={false}
@@ -55,8 +55,8 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
     >
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center justify-between w-full">
-          <Image src={Logo} alt="Logo" width={110} height={32} className="mr-2" /> 
-      
+          <Image src={Logo} alt="Logo" width={110} height={32} className="mr-2" />
+
           <button onClick={closeMenu} className="text-white">
             <CloseIcon />
           </button>
@@ -69,9 +69,9 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Dashboard
         </Link>
       </div>
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/solicitudes')}`}>
+      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/requests')}`}>
         <FeedIcon className="mr-2" />
-        <Link href="/dashboard/solicitudes" className='font-semibold' onClick={closeMenu}>
+        <Link href="/dashboard/requests" className='font-semibold' onClick={closeMenu}>
           Solicitudes
         </Link>
       </div>
@@ -104,18 +104,22 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           <Link href="/dashboard/desembolso" className={`block mb-2 ${isActive('/dashboard/desembolso')}`} onClick={closeMenu}>
             Desembolso
           </Link>
-          <Link href="/dashboard/reportes" className={`block mb-2 ${isActive('/dashboard/reportes')}`} onClick={closeMenu}>
+          <Link href="/dashboard/reports" className={`block mb-2 ${isActive('/dashboard/reports')}`} onClick={closeMenu}>
             Reportes
           </Link>
         </div>
       )}
       <p className='font-bold'>Otros enlaces</p>
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/faqs')}`}>
-      <div onClick={handleRedirect} className="cursor-pointer">
-        <SupportIcon className="mr-2" />
-        FAQs
+      <div className={`flex items-center mb-1 p-2 rounded`}>
+        <Link href="/dashboard/faqs" className={`block mb-2 ${isActive('/dashboard/faqs')}`} onClick={closeMenu}>
+          <SupportIcon className="mr-2" />
+          FAQs
+        </Link>
+        {/* <div onClick={handleRedirect} className="cursor-pointer">
+          <SupportIcon className="mr-2" />
+          FAQs
+        </div> */}
       </div>
-    </div>
       <div className={`flex items-center mb-1 p-2 rounded ${isActive('')}`}>
         <LanguageIcon className="mr-2" />
         <Link href="" onClick={closeMenu}>
