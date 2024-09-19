@@ -6,6 +6,7 @@ interface ProcessCarouselProps {
   items: { title: string; imageUrl: string; description: string }[];
 }
 
+
 const ProcessCarousel: React.FC<ProcessCarouselProps> = ({ items }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
