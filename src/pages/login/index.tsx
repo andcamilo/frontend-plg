@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '@app/globals.css';
 import Image from 'next/image';
-import Logo from '@public/images/legix-logo.png'; 
+import Logo from '@public/images/legix.png'; 
 import { auth, signInWithEmailAndPassword } from '@configuration/firebase';
 import errorMessages from './errorMessages.json';
 import { FirebaseErrorMessages } from '@utils/types';

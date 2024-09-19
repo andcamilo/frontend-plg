@@ -3,7 +3,7 @@ import React from 'react';
 import DashboardLayout from '@components/dashboardLayout';
 import ClientsStatistics from '@components/clientsStadistics';
 
-const Home: React.FC = () => {
+const Clients: React.FC = () => {
   return (
     <DashboardLayout title="Clientes">
       <ClientsStatistics />
@@ -11,4 +11,4 @@ const Home: React.FC = () => {
   );
 }
 
-export default Home;
+export default Clients;
