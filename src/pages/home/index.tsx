@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import HomeLayout from '@components/homeLayout';
-import ProcessCarousel from '@components/ProcessCarousel'; 
+// import ProcessCarousel from '@components/ProcessCarousel'; 
 import FaqComponent from '@/src/app/components/faqComponent';
 
 const Home: React.FC = () => {
@@ -65,9 +65,9 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="relative w-full overflow-hidden my-8" ref={carouselRef}>
+      {/* <div className="relative w-full overflow-hidden my-8" ref={carouselRef}>
         <ProcessCarousel items={carouselItems} />
-      </div>
+      </div> */}
       <div className="relative w-full h-screen mt-8 overflow-hidden">
         <FaqComponent />
       </div>
