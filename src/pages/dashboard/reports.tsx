@@ -5,7 +5,7 @@ import InvoicesStadistics from '@/src/app/components/invoicesStadistics';
 
 const Invoices: React.FC = () => {
   return (
-    <DashboardLayout title="Facturas">
+    <DashboardLayout title="Reportes">
       <InvoicesStadistics/>
     </DashboardLayout>
   );
