@@ -83,3 +83,6 @@ body {
   font-size: 0.8em;
 }
 
+small {
+  color: rgb(192, 192, 192);
+}

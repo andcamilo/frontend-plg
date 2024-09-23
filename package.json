@@ -33,7 +33,7 @@
     "react-spinners": "^0.14.1",
     "recharts": "^2.12.7",
     "stream-browserify": "^3.0.0",
-    "sweetalert2": "^11.13.2"
+    "sweetalert2": "^11.14.0"
   },
   "devDependencies": {
     "@types/node": "^20.16.5",
