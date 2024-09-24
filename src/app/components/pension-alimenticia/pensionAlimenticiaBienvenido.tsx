@@ -3,8 +3,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import Swal from 'sweetalert2'; 
 import AppStateContext from '@context/context'; 
 import { checkAuthToken } from '@utils/checkAuthToken';
-import { emailCheck } from '@api/email-check'; 
-import { createRequest } from '@api/create-request'; // Import the refactored createRequest
+import axios from 'axios'; // Replacing emailCheck import with axios
 import ClipLoader from 'react-spinners/ClipLoader'; 
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
@@ -66,8 +65,15 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const emailResult = await emailCheck(formData.email, isLoggedIn);
-      const { cuenta, isLogged } = emailResult;
+      const emailResult = await axios.get('/api/validate-email', {
+        params: {
+          email: formData.email,
+          isLogged: isLoggedIn.toString(),
+        },
+      });
+      
+
+      const { cuenta, isLogged } = emailResult.data;
 
       if (isLogged && cuenta) {
         await sendCreateRequest(cuenta); 
@@ -89,11 +95,10 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       });
       console.error('API Error:', error);
     } finally {
-      setIsLoading(false); // Stop loading after the API call is finished
+      setIsLoading(false); 
     }
   };
 
-  // Function to send create request with refactored createRequest
   const sendCreateRequest = async (cuenta: string) => {
     try {
       const requestData = {
@@ -102,7 +107,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         telefonoSolicita2: formData.telefonoAlternativo,
         emailSolicita: formData.email,
         actualizarPorCorreo: formData.notificaciones === 'yes',
-        cuenta: cuenta || '',  // Ensure a value is passed for cuenta
+        cuenta: cuenta || '',  
         precio: 150,
         subtotal: 150,
         total: 150,
@@ -110,12 +115,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         tipo: "pension"
       };
 
-      console.log("🚀 ~ sendCreateRequest ~ requestData:", requestData);
-
-      const response = await createRequest(requestData);
-      console.log("🚀 ~ sendCreateRequest ~ response:", response);
-
-      const { solicitudId, status } = response;
+      const response = await axios.post('/api/create-request', requestData);
+      const { solicitudId, status } = response.data;
 
       if (status === 'success' && solicitudId) {
         Swal.fire({

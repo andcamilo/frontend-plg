@@ -8,7 +8,7 @@ export const createUser = async (userData: {
   telefonoSolicita: string;
 }) => {
   try {
-    const response = await axios.post(`${backendBaseUrl}/dev/create-users`, userData);
+    const response = await axios.post(`https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com`, userData);
     return response.data;
   } catch (error) {
     console.error('Error creating user:', error);
