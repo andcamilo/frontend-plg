@@ -39,7 +39,6 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
     setIsLoading(true); // Set loading state
 
     try {
-      // Convert file to base64 if present
       const additionalFileBase64 = additionalFile ? await convertFileToBase64(additionalFile) : null;
 
       // Prepare the payload for the API call
@@ -60,7 +59,8 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
         // Update context after successful submission
         setStore((prevState) => ({
           ...prevState,
-          resumen: true, // Set resumen to true in the context
+          resumen: true, 
+          currentPosition: 9
         }));
 
         // Show success message

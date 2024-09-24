@@ -71,7 +71,8 @@ const PensionAlimenticiaDemandante: React.FC = () => {
       if (response.status === 200 && response.data.status === 'success') {
         setStore((prevState) => ({
           ...prevState,
-          demandado: true, // Update context after successful submission
+          demandado: true, 
+          currentPosition: 4
         }));
 
         Swal.fire({
