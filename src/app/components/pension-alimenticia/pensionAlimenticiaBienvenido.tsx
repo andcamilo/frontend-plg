@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import AppStateContext from '@context/context'; 
 import { checkAuthToken } from '@utils/checkAuthToken';
 import { emailCheck } from '@api/email-check'; 
-import axios from 'axios';
+import { createRequest } from '@api/create-request'; // Import the refactored createRequest
 import ClipLoader from 'react-spinners/ClipLoader'; 
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
@@ -28,7 +28,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false); 
-  const [isEmailNew, setIsEmailNew] = useState(true); 
 
   useEffect(() => {
     const userEmail = checkAuthToken();
@@ -67,23 +66,19 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Check if the email exists and retrieve isLoggedIn state
       const emailResult = await emailCheck(formData.email, isLoggedIn);
       const { cuenta, isLogged } = emailResult;
 
       if (isLogged && cuenta) {
-        // Scenario 1: isLoggedIn: true and cuenta exists
-        await createRequest(cuenta); // Call API to create request
+        await sendCreateRequest(cuenta); 
       } else if (!isLogged && cuenta) {
-        // Scenario 2: isLoggedIn: false and cuenta exists
         Swal.fire({
           icon: 'error',
           title: 'Error',
           text: 'Este correo ya está en uso. Por favor, inicia sesión para continuar.',
         });
       } else if (!cuenta) {
-        // Scenario 3: cuenta does not exist
-        await createRequest(''); // Call API to create request with empty cuenta
+        await sendCreateRequest('');  // Send empty or default cuenta
       }
 
     } catch (error) {
@@ -98,8 +93,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   };
 
-  // Function to create a request
-  const createRequest = async (cuenta: string) => {
+  // Function to send create request with refactored createRequest
+  const sendCreateRequest = async (cuenta: string) => {
     try {
       const requestData = {
         nombreSolicita: formData.nombreCompleto,
@@ -107,7 +102,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         telefonoSolicita2: formData.telefonoAlternativo,
         emailSolicita: formData.email,
         actualizarPorCorreo: formData.notificaciones === 'yes',
-        cuenta: cuenta || '', 
+        cuenta: cuenta || '',  // Ensure a value is passed for cuenta
         precio: 150,
         subtotal: 150,
         total: 150,
@@ -115,11 +110,12 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         tipo: "pension"
       };
 
-      console.log("🚀 ~ createRequest ~ requestData:", requestData)
+      console.log("🚀 ~ sendCreateRequest ~ requestData:", requestData);
 
-      const response = await axios.post('/api/create-request', requestData);
+      const response = await createRequest(requestData);
+      console.log("🚀 ~ sendCreateRequest ~ response:", response);
 
-      const { solicitudId, status } = response.data;
+      const { solicitudId, status } = response;
 
       if (status === 'success' && solicitudId) {
         Swal.fire({
@@ -132,6 +128,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           ...prevState,
           solicitudId, 
           solicitud: true,
+          currentPosition: 2
         }));
       }
 

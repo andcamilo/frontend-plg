@@ -12,6 +12,7 @@ export interface AppState {
   solicitudAdicional: boolean;
   resumen: boolean;
   solicitudId: string;
+  currentPosition: number;
 }
 
 export interface AppStateContextType {
@@ -30,7 +31,8 @@ const initialState: AppState = {
   firmaYEntrega: false,
   solicitudAdicional: false,
   resumen: false,
-  solicitudId: ""
+  solicitudId: "", 
+  currentPosition: 1
 };
 
 // Create context

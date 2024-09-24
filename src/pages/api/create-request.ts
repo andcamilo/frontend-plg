@@ -1,57 +1,25 @@
 import axios from 'axios';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { backendBaseUrl } from '@utils/env'; 
+import { backendBaseUrl } from '@utils/env';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Only POST requests are allowed' });
-  }
-
-  const {
-    actualizarPorCorreo,
-    emailSolicita,
-    cuenta,
-    accion,
-    item,
-    precio,
-    subtotal,
-    total,
-    nombreSolicita,
-    telefonoSolicita,
-    telefonoSolicita2,
-    tipo,
-  } = req.body;
-
-
+export const createRequest = async (requestData: {
+  nombreSolicita: string;
+  telefonoSolicita: string;
+  telefonoSolicita2: string;
+  emailSolicita: string;
+  actualizarPorCorreo: boolean;
+  cuenta: string;
+  precio: number;
+  subtotal: number;
+  total: number;
+  accion: string;
+  tipo: string;
+}) => {
   try {
-    const requestUrl = `${backendBaseUrl}/dev/create-request`;
-
-    const backendResponse = await axios.post(requestUrl, {
-      actualizarPorCorreo,
-      emailSolicita,
-      cuenta,
-      accion,
-      item,
-      precio,
-      subtotal,
-      total,
-      nombreSolicita,
-      telefonoSolicita,
-      telefonoSolicita2,
-      tipo,
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    return res.status(backendResponse.status).json(backendResponse.data);
-
+    const response = await axios.post(`${backendBaseUrl}/dev/create-request`, requestData);
+    return response.data;
+    console.log("🚀 ~ response:", response)
   } catch (error) {
     console.error('Error creating request:', error);
-    return res.status(500).json({
-      message: 'Failed to create request',
-      error: error.response ? error.response.data : error.message,
-    });
+    throw new Error(error.response?.data?.message || 'Failed to create request');
   }
-}
+};

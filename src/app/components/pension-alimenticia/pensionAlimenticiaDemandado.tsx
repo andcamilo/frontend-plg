@@ -75,6 +75,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
         setStore((prevState) => ({
           ...prevState,
           gastosPensionado: true,
+          currentPosition:5 
         }));
 
         Swal.fire({

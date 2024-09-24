@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import Swal from 'sweetalert2'; 
 import AppStateContext from '@context/context'; // Import the context
-import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
+import { updateRequest } from '@api/update-request'; // Import the refactored updateRequest function
 
 const PensionAlimenticiaSolicitud: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -45,24 +45,25 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
     setIsLoading(true); // Set loading to true when the request starts
 
     try {
+      // Create the payload structure to match the cURL example
       const updatePayload = {
-        updates: {
-          solicitud: {
-            tipoPension: formData.pensionType,
-            cantidadPension: formData.pensionAmount,
-            apoyoRecibe: formData.receiveSupport,
-            categoriaPension: formData.pensionCategory,
-          }
+        solicitud: {
+          tipoPension: formData.pensionType,
+          cantidadPension: formData.pensionAmount,
+          recibeApoyo: formData.receiveSupport, // Matches the structure from your cURL
+          categoriaPension: formData.pensionCategory,
         },
-        solicitud: store.solicitudId
       };
+      console.log("🚀 ~ handleSubmit ~ updatePayload:", updatePayload);
 
-      const response = await axios.patch(`/api/update-request`, updatePayload);
+      // Use the updateRequest function
+      const response = await updateRequest(store.solicitudId, updatePayload);
 
-      if (response.status === 200 && response.data.status === 'success') {
+      if (response.status === 'success') {
         setStore((prevState) => ({
           ...prevState,
-          demandante: true, 
+          demandante: true,
+          currentPosition: 3, // Move to the next step in the process
         }));
 
         Swal.fire({
@@ -73,7 +74,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
       } else {
         throw new Error('Error al actualizar la solicitud.');
       }
-
     } catch (error) {
       console.error('Error updating request:', error);
       Swal.fire({
@@ -117,7 +117,11 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 checked={formData.pensionType === option}
                 className="form-radio"
               />
-              <span className="ml-2">{option === 'Primera vez' ? 'Estoy solicitando Pensión Alimenticia por PRIMERA VEZ' : `Quiero solicitar ${option}`}</span>
+              <span className="ml-2">
+                {option === 'Primera vez' 
+                  ? 'Estoy solicitando Pensión Alimenticia por PRIMERA VEZ' 
+                  : `Quiero solicitar ${option}`}
+              </span>
             </label>
           ))}
         </div>

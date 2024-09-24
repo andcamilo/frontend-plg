@@ -37,6 +37,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
         setStore((prevState) => ({
           ...prevState,
           solicitudAdicional: true, 
+          currentPosition: 8
         }));
 
         Swal.fire({

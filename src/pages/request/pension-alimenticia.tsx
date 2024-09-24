@@ -12,7 +12,7 @@ import PensionAlimenticiaResumen from '@components/pension-alimenticia/pensionAl
 import AppStateContext from '@context/context'; // Import the context
 
 const PensionAlimenticia: React.FC = () => {
-  const [activeStep, setActiveStep] = useState<string>('Bienvenido');
+  const [activeStep, setActiveStep] = useState<number>(1);
 
   // Access the context values
   const context = useContext(AppStateContext);
@@ -23,30 +23,33 @@ const PensionAlimenticia: React.FC = () => {
 
   const { store } = context;
 
-  // Use an effect to observe changes in solicitud
+  // Use an effect to observe changes in store.currentPosition and update the activeStep
   useEffect(() => {
-    console.log('Solicitud state changed:', store.solicitud);
-  }, [store.solicitud]);
+    if (store.currentPosition) {
+      setActiveStep(store.currentPosition);
+    }
+  }, [store.currentPosition]);
 
+  // Function to render the active form based on the current position
   const renderActiveForm = () => {
     switch (activeStep) {
-      case 'Bienvenido':
+      case 1:
         return <PensionAlimenticiaBienvenido />;
-      case 'Solicitud':
+      case 2:
         return <PensionAlimenticiaSolicitud />;
-      case 'Demandante':
+      case 3:
         return <PensionAlimenticiaDemandante />;
-      case 'Demandado':
+      case 4:
         return <PensionAlimenticiaDemandado />;
-      case 'Gastos Pensionado':
+      case 5:
         return <PensionAlimenticiaGastosPensionado />;
-      case 'Archivos Adjuntos':
+      case 6:
         return <PensionAlimenticiaArchivosAdjuntos />;
-      case 'Firma y Entrega':
+      case 7:
         return <PensionAlimenticiaFirmaYEntrega />;
-      case 'Solicitud adicional':
+      case 8:
         return <PensionAlimenticiaSolicitudAdicional />;
-      case 'Resumen':
+      case 9:
         return <PensionAlimenticiaResumen />;
       default:
         return <PensionAlimenticiaBienvenido />;
@@ -57,7 +60,7 @@ const PensionAlimenticia: React.FC = () => {
     <HomeLayout>
       <div className="relative w-full h-screen flex overflow-hidden">
         <div className="w-1/2 h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
-          {renderActiveForm()} {/* Render the active form component */}
+          {renderActiveForm()}
         </div>
         <div className="w-1/2 h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
           <div className="text-white">
@@ -67,9 +70,9 @@ const PensionAlimenticia: React.FC = () => {
               {/* Bienvenido button */}
               <button
                 className={`p-4 rounded-lg ${
-                  activeStep === 'Bienvenido' ? 'bg-profile text-white' : 'bg-gray-800 text-gray-500'
+                  store.bienvenido ? (activeStep === 1 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => setActiveStep('Bienvenido')}
+                onClick={() => setActiveStep(1)}
               >
                 ¡Bienvenido!
               </button>
@@ -77,9 +80,9 @@ const PensionAlimenticia: React.FC = () => {
               {/* Solicitud button */}
               <button
                 className={`p-4 rounded-lg ${
-                  store.solicitud ? (activeStep === 'Solicitud' ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.solicitud ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.solicitud && setActiveStep('Solicitud')}
+                onClick={() => store.solicitud && setActiveStep(2)}
                 disabled={!store.solicitud}
               >
                 Solicitud
@@ -88,9 +91,9 @@ const PensionAlimenticia: React.FC = () => {
               {/* Demandante button */}
               <button
                 className={`p-4 rounded-lg ${
-                  store.demandante ? (activeStep === 'Demandante' ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.demandante ? (activeStep === 3 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.demandante && setActiveStep('Demandante')}
+                onClick={() => store.demandante && setActiveStep(3)}
                 disabled={!store.demandante}
               >
                 Demandante
@@ -99,9 +102,9 @@ const PensionAlimenticia: React.FC = () => {
               {/* Demandado button */}
               <button
                 className={`p-4 rounded-lg ${
-                  store.demandado ? (activeStep === 'Demandado' ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.demandado ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.demandado && setActiveStep('Demandado')}
+                onClick={() => store.demandado && setActiveStep(4)}
                 disabled={!store.demandado}
               >
                 Demandado
@@ -110,9 +113,9 @@ const PensionAlimenticia: React.FC = () => {
               {/* Gastos Pensionado button */}
               <button
                 className={`p-4 rounded-lg ${
-                  store.gastosPensionado ? (activeStep === 'Gastos Pensionado' ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.gastosPensionado ? (activeStep === 5 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.gastosPensionado && setActiveStep('Gastos Pensionado')}
+                onClick={() => store.gastosPensionado && setActiveStep(5)}
                 disabled={!store.gastosPensionado}
               >
                 Gastos Pensionado
@@ -121,9 +124,9 @@ const PensionAlimenticia: React.FC = () => {
               {/* Archivos Adjuntos button */}
               <button
                 className={`p-4 rounded-lg ${
-                  store.archivosAdjuntos ? (activeStep === 'Archivos Adjuntos' ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.archivosAdjuntos ? (activeStep === 6 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.archivosAdjuntos && setActiveStep('Archivos Adjuntos')}
+                onClick={() => store.archivosAdjuntos && setActiveStep(6)}
                 disabled={!store.archivosAdjuntos}
               >
                 Archivos Adjuntos
@@ -132,9 +135,9 @@ const PensionAlimenticia: React.FC = () => {
               {/* Firma y Entrega button */}
               <button
                 className={`p-4 rounded-lg ${
-                  store.firmaYEntrega ? (activeStep === 'Firma y Entrega' ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.firmaYEntrega ? (activeStep === 7 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.firmaYEntrega && setActiveStep('Firma y Entrega')}
+                onClick={() => store.firmaYEntrega && setActiveStep(7)}
                 disabled={!store.firmaYEntrega}
               >
                 Firma y Entrega
@@ -143,9 +146,9 @@ const PensionAlimenticia: React.FC = () => {
               {/* Solicitud adicional button */}
               <button
                 className={`p-4 rounded-lg ${
-                  store.solicitudAdicional ? (activeStep === 'Solicitud adicional' ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.solicitudAdicional ? (activeStep === 8 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.solicitudAdicional && setActiveStep('Solicitud adicional')}
+                onClick={() => store.solicitudAdicional && setActiveStep(8)}
                 disabled={!store.solicitudAdicional}
               >
                 Solicitud adicional
@@ -154,9 +157,9 @@ const PensionAlimenticia: React.FC = () => {
               {/* Resumen button */}
               <button
                 className={`p-4 rounded-lg ${
-                  store.resumen ? (activeStep === 'Resumen' ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.resumen ? (activeStep === 9 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.resumen && setActiveStep('Resumen')}
+                onClick={() => store.resumen && setActiveStep(9)}
                 disabled={!store.resumen}
               >
                 Resumen

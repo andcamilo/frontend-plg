@@ -82,7 +82,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
       if (response.status === 200 && response.data.status === 'success') {
         setStore((prevState) => ({
           ...prevState,
-          archivosAdjuntos: true, // Update context after successful submission
+          archivosAdjuntos: true,
+          currentPosition:6 
         }));
 
         Swal.fire({

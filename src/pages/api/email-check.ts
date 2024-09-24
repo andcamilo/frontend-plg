@@ -5,13 +5,16 @@ import { backendBaseUrl } from '@utils/env';
 const validateEmailUrl = `${backendBaseUrl}/dev/validate-email`;
 
 export const emailCheck = async (email: string, isLoggedIn: boolean) => {
+  console.log("🚀 ~ emailCheck ~ isLoggedIn:", isLoggedIn)
+  console.log("🚀 ~ emailCheck ~ email:", email)
   try {
     const response = await axios.get(validateEmailUrl, {
       params: {
         email: email,
-        isLoggedIn: isLoggedIn.toString(),
+        isLogged: isLoggedIn.toString(),
       },
     });
+    console.log("🚀 ~ emailCheck ~ response:", response)
     
     const isLogged = get(response, 'data.isLogged', 'error');
     const cuenta = get(response, 'data.cuenta', null);
