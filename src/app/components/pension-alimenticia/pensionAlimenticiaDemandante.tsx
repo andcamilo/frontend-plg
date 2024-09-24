@@ -38,7 +38,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
+  
     if (!validateEmails()) {
       Swal.fire({
         icon: 'error',
@@ -47,10 +47,15 @@ const PensionAlimenticiaDemandante: React.FC = () => {
       });
       return;
     }
+  
 
-    // Prepare the payload for the API call
-    const updatePayload = {
-      updates: {
+  
+    setIsLoading(true); // Set loading state to true before API call
+  
+    try {
+  
+      const updatePayload = {
+        solicitudId: store.solicitudId,
         demandante: {
           nombreCompleto: formData.nombreCompleto,
           telefono: formData.telefono,
@@ -58,38 +63,45 @@ const PensionAlimenticiaDemandante: React.FC = () => {
           email: formData.email,
           nacionalidad: formData.nacionalidad,
         },
-      },
-      solicitud: store.solicitudId, // This is coming from the context
-    };
+      };
 
-    setIsLoading(true); // Set loading state to true before API call
+      console.log("🚀 ~ handleSubmit ~ updatePayload:", updatePayload);
 
-    try {
-      // Make the PATCH request to your API
-      const response = await axios.patch(`/api/update-request`, updatePayload);
-
-      if (response.status === 200 && response.data.status === 'success') {
+      // Make request to Next.js API route (which internally calls AWS Lambda)
+      const response = await axios.patch('/api/update-request', updatePayload);
+  
+      if (response.status === 200) {
         setStore((prevState) => ({
           ...prevState,
-          demandado: true, 
+          demandado: true,
           currentPosition: 4
         }));
-
+  
         Swal.fire({
           icon: 'success',
           title: 'Formulario Enviado',
           text: 'Formulario enviado correctamente.',
         });
       } else {
+        console.error('Unexpected response from server:', response.data);
         throw new Error('Error al actualizar la solicitud.');
       }
     } catch (error) {
-      console.error('Error updating request:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Hubo un problema al actualizar la solicitud. Por favor, inténtelo de nuevo más tarde.',
-      });
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: `Hubo un problema al actualizar la solicitud: ${error.response.data.message || error.message}.`,
+        });
+      } else {
+        console.error('Error updating request:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un problema al actualizar la solicitud. Por favor, inténtelo de nuevo más tarde.',
+        });
+      }
     } finally {
       setIsLoading(false); // Set loading state to false after API call is finished
     }

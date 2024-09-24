@@ -1,8 +1,9 @@
+"use client"
 import React, { useState, useContext, useEffect } from 'react';
 import Swal from 'sweetalert2'; 
 import AppStateContext from '@context/context'; // Import the context
 import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
-import { updateRequest } from '@api/update-request'; // Import the refactored updateRequest function
+import axios from 'axios';
 
 const PensionAlimenticiaSolicitud: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -45,25 +46,26 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
     setIsLoading(true); // Set loading to true when the request starts
 
     try {
-      // Create the payload structure to match the cURL example
       const updatePayload = {
+        solicitudId: store.solicitudId,
         solicitud: {
           tipoPension: formData.pensionType,
           cantidadPension: formData.pensionAmount,
-          recibeApoyo: formData.receiveSupport, // Matches the structure from your cURL
+          apoyoRecibe: formData.receiveSupport,
           categoriaPension: formData.pensionCategory,
         },
       };
+
       console.log("🚀 ~ handleSubmit ~ updatePayload:", updatePayload);
 
-      // Use the updateRequest function
-      const response = await updateRequest(store.solicitudId, updatePayload);
+      // Make request to Next.js API route (which internally calls AWS Lambda)
+      const response = await axios.patch('/api/update-request', updatePayload);
 
-      if (response.status === 'success') {
+      if (response.status === 200 && response.data.status === 'success') {
         setStore((prevState) => ({
           ...prevState,
           demandante: true,
-          currentPosition: 3, // Move to the next step in the process
+          currentPosition: 3 
         }));
 
         Swal.fire({
@@ -74,6 +76,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
       } else {
         throw new Error('Error al actualizar la solicitud.');
       }
+
     } catch (error) {
       console.error('Error updating request:', error);
       Swal.fire({
@@ -117,11 +120,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 checked={formData.pensionType === option}
                 className="form-radio"
               />
-              <span className="ml-2">
-                {option === 'Primera vez' 
-                  ? 'Estoy solicitando Pensión Alimenticia por PRIMERA VEZ' 
-                  : `Quiero solicitar ${option}`}
-              </span>
+              <span className="ml-2">{option === 'Primera vez' ? 'Estoy solicitando Pensión Alimenticia por PRIMERA VEZ' : `Quiero solicitar ${option}`}</span>
             </label>
           ))}
         </div>
@@ -171,22 +170,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
           <option value="Padres o ascendientes de grado más próximo (abuelos)">Padres o ascendientes de grado más próximo (abuelos)</option>
           <option value="Hermanos">Hermanos</option>
         </select>
-      </div>
-
-      {/* Requirements Section */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold">Requisitos:</h2>
-        <p className="mt-4">Por favor prepare los siguientes documentos e información para gestionar la solicitud de pensión de alimentos de menores de edad.</p>
-        <ul className="list-disc list-inside mt-4">
-          <li>Copia de la cédula o documento de identidad de la persona solicitante</li>
-          <li>Certificado(s) de Nacimiento de la(s) persona(s) que va(n) a recibir o reciben la pensión alimenticia</li>
-        </ul>
-      </div>
-
-      {/* Cost Information */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold">Costo del trámite:</h2>
-        <p className="mt-4">US$675.00 incluyendo gastos. Método de pago: US$337.50 al momento de la solicitud y US$337.50 debe ser cancelado antes de la audiencia.</p>
       </div>
 
       <button

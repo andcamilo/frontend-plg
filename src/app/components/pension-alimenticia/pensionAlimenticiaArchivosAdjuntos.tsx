@@ -61,33 +61,29 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
     setIsLoading(true); // Set loading state to true before making the API request
 
     try {
-      // Convert files to base64
       const cedulaBase64 = cedulaFile ? await convertFileToBase64(cedulaFile) : null;
       const nacimientoBase64 = nacimientoFile ? await convertFileToBase64(nacimientoFile) : null;
       const sentenciaBase64 = sentenciaFile ? await convertFileToBase64(sentenciaFile) : null;
 
-      // Convert additional documents to base64
+
       const additionalDocsBase64 = await Promise.all(
         additionalDocs.map((file) => convertFileToBase64(file))
       );
 
-      // Prepare the update payload
+
       const updatePayload = {
-        updates: {
-          archivosAdjuntos: {
-            cedula: cedulaBase64,
-            certificadoNacimiento: nacimientoBase64,
-            sentencia: sentenciaBase64,
-            additionalDocs: additionalDocsBase64,
-          },
+        solicitudId: store.solicitudId,
+        archivosAdjuntos: {
+          cedula: cedulaBase64,
+          certificadoNacimiento: nacimientoBase64,
+          sentencia: sentenciaBase64,
+          additionalDocs: additionalDocsBase64,
         },
-        solicitud: store.solicitudId,
       };
 
-      // Send the data to the API
-      const response = await axios.patch(`/api/update-request`, updatePayload);
+      const response = await axios.patch('/api/update-request', updatePayload);
 
-      if (response.status === 200 && response.data.status === 'success') {
+      if (response.status === 200) {
         setStore((prevState) => ({
           ...prevState,
           firmaYEntrega: true,
