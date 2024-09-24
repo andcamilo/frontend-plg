@@ -58,8 +58,11 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const updatePayload = {
-      updates: {
+    setIsLoading(true); // Set loading state to true before making the API request
+
+    try {
+      const updatePayload = {
+        solicitudId: store.solicitudId,
         gastosPensionado: {
           mensualidadEscolar: formData.mensualidadEscolar,
           vestuario: formData.vestuario,
@@ -69,17 +72,15 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
           otros: formData.otros,
           supermercado: formData.supermercado,
           sumaTotal: formData.sumaTotal,
-        }
-      },
-      solicitud: store.solicitudId,
-    };
+        },
+      };
 
-    setIsLoading(true); // Set loading state to true before making the API request
+      console.log("🚀 ~ handleSubmit ~ updatePayload:", updatePayload);
 
-    try {
-      const response = await axios.patch(`/api/update-request`, updatePayload);
+      // Make request to Next.js API route (which internally calls AWS Lambda)
+      const response = await axios.patch('/api/update-request', updatePayload);
 
-      if (response.status === 200 && response.data.status === 'success') {
+      if (response.status === 200) {
         setStore((prevState) => ({
           ...prevState,
           archivosAdjuntos: true,

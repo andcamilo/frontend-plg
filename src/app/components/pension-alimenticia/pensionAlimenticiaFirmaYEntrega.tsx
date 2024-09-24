@@ -21,19 +21,21 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
 
     setIsLoading(true);
 
-    const updatePayload = {
-      updates: {
+    const firmaYEntregaData = {
+      deliveryOption: selectedOption,
+    }
+
+    try {
+      const updatePayload = {
+        solicitudId: store.solicitudId,
         firmaYEntrega: {
           deliveryOption: selectedOption,
         },
-      },
-      solicitud: store.solicitudId,
-    };
+      };
 
-    try {
-      const response = await axios.patch(`/api/update-request`, updatePayload);
+      const response = await axios.patch('/api/update-request', updatePayload);
 
-      if (response.status === 200 && response.data.status === 'success') {
+      if (response.status === 200) {
         setStore((prevState) => ({
           ...prevState,
           solicitudAdicional: true, 

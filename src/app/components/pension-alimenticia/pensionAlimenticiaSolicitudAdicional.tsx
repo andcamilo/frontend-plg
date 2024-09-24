@@ -42,20 +42,23 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
       const additionalFileBase64 = additionalFile ? await convertFileToBase64(additionalFile) : null;
 
       // Prepare the payload for the API call
+      const solicitudAdicionalData = {
+        descripcion: additionalRequest,
+        documentoAdicional: additionalFileBase64,
+      }
+
       const updatePayload = {
-        updates: {
-          solicitudAdicional: {
-            descripcion: additionalRequest,
-            documentoAdicional: additionalFileBase64,
-          },
+        solicitudId: store.solicitudId,
+        solicitudAdicional: {
+          descripcion: additionalRequest,
+          documentoAdicional: additionalFileBase64,
         },
-        solicitud: store.solicitudId, // Ensure this is the solicitud ID from the context
       };
 
-      // Make the PATCH request to your API
-      const response = await axios.patch(`/api/update-request`, updatePayload);
+      const response = await axios.patch('/api/update-request', updatePayload);
 
-      if (response.status === 200 && response.data.status === 'success') {
+
+      if (response.status === 200) {
         // Update context after successful submission
         setStore((prevState) => ({
           ...prevState,
