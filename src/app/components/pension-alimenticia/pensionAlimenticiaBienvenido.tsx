@@ -19,6 +19,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     nombreCompleto: '',
     telefono: '',
     telefonoAlternativo: '',
+    cedula: '',  // Added field for Cedula or ID
     email: '',
     confirmEmail: '',
     notificaciones: '',
@@ -105,6 +106,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         nombreSolicita: formData.nombreCompleto,
         telefonoSolicita: formData.telefono,
         telefonoSolicita2: formData.telefonoAlternativo,
+        cedula: formData.cedula,  // Send the cedula in the request
         emailSolicita: formData.email,
         actualizarPorCorreo: formData.notificaciones === 'yes',
         cuenta: cuenta || '',  
@@ -177,6 +179,15 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             onChange={handleChange}
             className="p-4 bg-gray-800 text-white rounded-lg"
             placeholder="Número de teléfono alternativo"
+          />
+          <input
+            type="text"
+            name="cedula"
+            value={formData.cedula}
+            onChange={handleChange}
+            className="p-4 bg-gray-800 text-white rounded-lg"
+            placeholder="Cédula o ID"
+            required  // Make it required if necessary
           />
           <input
             type="email"
