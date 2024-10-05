@@ -3,18 +3,23 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import AppStateContext from '@context/context';
 import ClipLoader from 'react-spinners/ClipLoader';
-import { Country, State, City } from 'country-state-city'; // Import country-state-city library
+import { Country, State, City } from 'country-state-city'; // Importing country-state-city
+
+interface SelectOption {
+  value: string;
+  label: string;
+}
 
 const PensionAlimenticiaDemandado: React.FC = () => {
   const [formData, setFormData] = useState({
     nombreCompleto: '',
-    estadoCivil: 'Soltero',
+    estadoCivil: { value: 'Soltero', label: 'Soltero' },
     cedula: '',
-    nacionalidad: 'Panamá', // Default value
+    nacionalidad: { value: 'Panamá', label: 'Panamá' }, // Default value
     direccion: '',
-    pais: 'Panamá', // Default value
-    provincia: '', // State
-    corregimiento: '', // City
+    pais: { value: 'Panamá', label: 'Panamá' }, // Default value
+    provincia: { value: '', label: '' }, // Province
+    corregimiento: { value: '', label: '' }, // City
     ingresosTrabajo: '',
     detalleDireccion: '',
     direccionTrabajo: '',
@@ -23,52 +28,52 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     trabajando: 'No',
   });
 
-  const [states, setStates] = useState<State[]>([]); // To store states based on selected country
-  const [cities, setCities] = useState<City[]>([]);  // To store cities based on selected state
-
+  const [paises, setPaises] = useState<SelectOption[]>([]);
+  const [provincias, setProvincias] = useState<SelectOption[]>([]);
+  const [corregimientos, setCorregimientos] = useState<SelectOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Access the context
   const context = useContext(AppStateContext);
-
   if (!context) {
     throw new Error('AppStateContext must be used within an AppStateProvider');
   }
-
   const { store, setStore } = context;
 
-  // Handle input change
+  // Fetch countries on mount
+  useEffect(() => {
+    const countries = Country.getAllCountries();
+    setPaises(countries.map(country => ({ value: country.isoCode, label: country.name })));
+  }, []);
+
+  // Fetch provinces when country changes
+  useEffect(() => {
+    if (formData.nacionalidad.value) {
+      const states = State.getStatesOfCountry(formData.nacionalidad.value);
+      setProvincias(states.map(state => ({ value: state.isoCode, label: state.name })));
+      setCorregimientos([]); // Clear cities when country changes
+    }
+  }, [formData.nacionalidad]);
+
+  // Fetch cities when province changes
+  useEffect(() => {
+    if (formData.provincia.value) {
+      const cities = City.getCitiesOfState(formData.nacionalidad.value, formData.provincia.value);
+      setCorregimientos(cities.map(city => ({ value: city.name, label: city.name })));
+    }
+  }, [formData.provincia]);
+
+  // Handle form changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: { value, label: value },
     }));
   };
+  
 
-  // Handle country change and load corresponding states
-  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedCountry = e.target.value;
-    setFormData((prevData) => ({ ...prevData, pais: selectedCountry, provincia: '', corregimiento: '' }));
-    const countryCode = Country.getAllCountries().find((country) => country.name === selectedCountry)?.isoCode;
-    if (countryCode) {
-      const fetchedStates = State.getStatesOfCountry(countryCode);
-      setStates(fetchedStates);
-    }
-  };
-
-  // Handle state change and load corresponding cities
-  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedState = e.target.value;
-    setFormData((prevData) => ({ ...prevData, provincia: selectedState, corregimiento: '' }));
-    const stateCode = states.find((state) => state.name === selectedState)?.isoCode;
-    const countryCode = Country.getAllCountries().find((country) => country.name === formData.pais)?.isoCode;
-    if (stateCode && countryCode) {
-      const fetchedCities = City.getCitiesOfState(countryCode, stateCode);
-      setCities(fetchedCities);
-    }
-  };
-
+  // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -78,13 +83,13 @@ const PensionAlimenticiaDemandado: React.FC = () => {
         solicitudId: store.solicitudId,
         demandado: {
           nombreCompleto: formData.nombreCompleto,
-          estadoCivil: formData.estadoCivil,
+          estadoCivil: formData.estadoCivil.value,
           cedula: formData.cedula,
-          nacionalidad: formData.nacionalidad,
+          nacionalidad: formData.nacionalidad.label,
           direccion: formData.direccion,
-          pais: formData.pais,
-          provincia: formData.provincia,
-          corregimiento: formData.corregimiento,
+          pais: formData.pais.label,
+          provincia: formData.provincia.label,
+          corregimiento: formData.corregimiento.label,
           ingresosTrabajo: formData.ingresosTrabajo,
           detalleDireccion: formData.detalleDireccion,
           direccionTrabajo: formData.direccionTrabajo,
@@ -122,26 +127,12 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    // Initially load the states for the default country
-    const defaultCountryCode = Country.getAllCountries().find((country) => country.name === formData.pais)?.isoCode;
-    if (defaultCountryCode) {
-      setStates(State.getStatesOfCountry(defaultCountryCode));
-    }
-  }, []);
-
   return (
     <div className="text-white bg-gray-900 p-8">
       {/* Header Section */}
       <h2 className="text-2xl font-bold mb-4">Información del Demandado</h2>
       <p className="text-sm mb-4">
         Representa a la persona a la cual se le está solicitando la demanda, en este caso la persona que debe aportar la otra parte correspondiente a la Pensión Alimenticia.
-      </p>
-      <p className="text-sm mb-4">
-        Debe completar la mayor cantidad de información del demandado.
-      </p>
-      <p className="text-sm mb-4">
-        Persona demandada a quien se le solicita la pensión. Por favor incluir la mayor cantidad de información que posea. En los casos de Revisión de Pensión por Disminución o Suspensión de Pensión solamente, serían los datos de la persona que está recibiendo pensión actualmente o el tutor o representante de un menor de edad o persona con discapacidad:
       </p>
 
       {/* Form Section */}
@@ -163,7 +154,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             <label className="block mb-2 text-sm">Estado civil:</label>
             <select
               name="estadoCivil"
-              value={formData.estadoCivil}
+              value={formData.estadoCivil.value}
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
@@ -189,13 +180,13 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             <label className="block mb-2 text-sm">Nacionalidad:</label>
             <select
               name="nacionalidad"
-              value={formData.nacionalidad}
+              value={formData.nacionalidad.value}
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
             >
-              {Country.getAllCountries().map((country) => (
-                <option key={country.isoCode} value={country.name}>
-                  {country.name}
+              {paises.map((pais) => (
+                <option key={pais.value} value={pais.value}>
+                  {pais.label}
                 </option>
               ))}
             </select>
@@ -203,54 +194,41 @@ const PensionAlimenticiaDemandado: React.FC = () => {
 
           {/* Country and State */}
           <div>
-            <label className="block mb-2 text-sm">País donde vive:</label>
-            <select
-              name="pais"
-              value={formData.pais}
-              onChange={handleCountryChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-            >
-              {Country.getAllCountries().map((country) => (
-                <option key={country.isoCode} value={country.name}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
             <label className="block mb-2 text-sm">Provincia:</label>
             <select
               name="provincia"
-              value={formData.provincia}
-              onChange={handleStateChange}
+              value={formData.provincia.value}
+              onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              disabled={!states.length}
+              required
             >
-              {states.map((state) => (
-                <option key={state.isoCode} value={state.name}>
-                  {state.name}
+              {provincias.map((provincia) => (
+                <option key={provincia.value} value={provincia.value}>
+                  {provincia.label}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* City and Income */}
+          {/* City */}
           <div>
             <label className="block mb-2 text-sm">Corregimiento:</label>
             <select
               name="corregimiento"
-              value={formData.corregimiento}
+              value={formData.corregimiento.value}
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              disabled={!cities.length}
+              required
             >
-              {cities.map((city) => (
-                <option key={city.name} value={city.name}>
-                  {city.name}
+              {corregimientos.map((corregimiento) => (
+                <option key={corregimiento.value} value={corregimiento.value}>
+                  {corregimiento.label}
                 </option>
               ))}
             </select>
           </div>
+
+          {/* Income, Address, and Work Address */}
           <div>
             <label className="block mb-2 text-sm">Ingresos que recibe por su trabajo:</label>
             <input
@@ -261,8 +239,6 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
             />
           </div>
-
-          {/* Address Details and Work Address */}
           <div>
             <label className="block mb-2 text-sm">Detalle de la dirección:</label>
             <textarea
