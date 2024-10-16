@@ -3,6 +3,7 @@ import Logo from '@public/images/legix.png';
 import React, { useState } from 'react';
 import { slide as BurgerMenu } from 'react-burger-menu';  // Import BurgerMenu correctly
 import { Menu, MenuItem, IconButton } from '@mui/material';
+import { useRouter } from 'next/router';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,6 +11,12 @@ import Link from 'next/link';
 const NavBar = () => {
   const [solicitudesAnchorEl, setSolicitudesAnchorEl] = useState<null | HTMLElement>(null);
   const [faqsAnchorEl, setFaqsAnchorEl] = useState<null | HTMLElement>(null);
+  const router = useRouter();
+
+
+  const handleRedirect = (url) => {
+    router.push(url);
+  };
 
   const handleSolicitudesMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setSolicitudesAnchorEl(event.currentTarget);
@@ -57,21 +64,17 @@ const NavBar = () => {
                 },
               }}
             >
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Consulta - Propuesta legal</MenuItem>
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Pensión Alimenticia</MenuItem>
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Salida de Menores al Extranjero</MenuItem>
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Sociedades / Empresas</MenuItem>
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Fundaciones de Interés Privado</MenuItem>
+              <MenuItem onClick={() => handleRedirect('/request/pension-alimenticia')}  sx={{ px: 3 }}>Pensión Alimenticia</MenuItem>
             </Menu>
           </div>
 
           <div>
             <IconButton
-              onClick={handleFaqsMenuClick}
+              onClick={() => handleRedirect('/dashboard/faqs')}
               className="text-xl text-white font-bold hover:text-profile"
               style={{ padding: 0 }}
             >
-              FAQs <ArrowDropDownIcon />
+              FAQs
             </IconButton>
             <Menu
               id="faqs-menu"
@@ -91,7 +94,13 @@ const NavBar = () => {
               <MenuItem onClick={handleClose} sx={{ px: 3 }}>Solicitudes</MenuItem>
             </Menu>
           </div>
-          <a href="#" className="text-xl font-bold hover:text-profile">Mi Cuenta</a>
+          <IconButton
+              onClick={() => handleRedirect('/login')}
+              className="text-xl text-white font-bold hover:text-profile"
+              style={{ padding: 0 }}
+            >
+              Mi Cuenta
+            </IconButton>
           <a href="#" className="text-xl font-bold hover:text-profile">Ayuda</a>
         </div>
 
