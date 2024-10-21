@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import AppStateContext from '@context/context'; // Import the context
 import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
 import axios from 'axios';
+import PensionCategoryMessage from './PensionCategoryMessage'
 
 interface FormData {
   pensionType: string;          // 'Primera vez' or other pension types
@@ -111,7 +112,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
     const { name, value } = e.target;
   
     setFormData((prevData) => {
-      // Ensure the numeric fields are properly converted to numbers
+      
       const numericValue = name === 'currentAmount' || name === 'increaseAmount' ? Number(value) : value;
   
       // Calculate the new totalAmount by summing currentAmount and increaseAmount
@@ -185,130 +186,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
   useEffect(() => {
     console.log("🚀 ~ demandante:", store.demandante);
   }, [store.demandante]);
-
-
-
-
-
-
-  const renderPensionCategoryMessage = () => {
-    switch (formData.pensionCategory) {
-      case 'Hijos menores de edad':
-        return (
-          <div className="mt-8">
-            <p className="mt-4">
-              <strong>
-                Los menores de edad se presentan a través de alguno de sus padres, tutor o quien mantenga la patria potestad.
-              </strong>
-            </p>
-            <p className="mt-4">
-              <strong>Requisitos:</strong> Por favor prepare los siguientes documentos e información para gestionar la solicitud de pensión de alimentos de menores de edad.
-            </p>
-            <ul className="list-disc list-inside mt-4">
-              <li>Copia de la cédula o documento de identidad de la persona solicitante</li>
-              <li>Certificado(s) de Nacimiento de la(s) persona(s) que va(n) a recibir o reciben la pensión alimenticia.</li>
-            </ul>
-          </div>
-        );
-      case 'Mayores de edad hasta 25 años con estudios en curso':
-        return (
-          <div className="mt-8">
-            <p className="mt-4">
-              <strong>Por favor prepare los siguientes documentos e información para gestionar la solicitud de pensión de alimentos de mayores de edad.</strong>
-            </p>
-            <ul className="list-disc list-inside mt-4">
-              <li>Copia de la cédula o documento de identidad de la persona solicitante;</li>
-              <li>Certificado(s) de Nacimiento de la(s) persona(s) que va(n) a recibir la pensión alimenticia;</li>
-              <li>
-                <strong>NO APLICAN:</strong> En caso de trabajar, debe demostrar que su ingreso no es suficiente para subsistir para poder solicitar la pensión. En caso de matrimonio o unión de hecho, pierde el derecho de pensión alimenticia.
-              </li>
-              <li>Copia de los créditos actualizados y recibos de matrícula del estudiante mayor de edad. Deben ser cursados con buenas calificaciones y tiempo completo.</li>
-            </ul>
-          </div>
-        );
-        
-      case 'Mujer embarazada (ayuda prenatal)':
-        return (
-          <div className="mt-8">
-            <p className="mt-4">
-              <strong>
-                Por favor prepare los siguientes documentos e información para gestionar la solicitud de pensión de alimentos de menores de edad, y además debe tomar en cuenta lo siguiente:
-              </strong>
-            </p>
-            <ul className="list-disc list-inside mt-4">
-              <li>Copia de la cédula o documento de identidad de la persona solicitante;</li>
-              <li>Deberá hacer una declaración jurada ante el juez, una vez se admita el proceso. Le estaríamos guiando en este punto,</li>
-              <li>La pensión cubre el período de embarazo hasta 3 meses de nacido. Después de los 3 meses se establece una pensión alimenticia no prenatal.</li>
-              <li>Aportar prueba de embarazo.</li>
-              <li>Se contemplará para fijar la pensión:</li>
-              <ul className="list-inside pl-5">
-                <li>a. Control médico, medicamentos y gastos parto.</li>
-                <li>b. Vestidos adecuados para la maternidad.</li>
-                <li>c. Gastos de mobiliario y ropa del recién nacido.</li>
-              </ul>
-              <li>En casos de haber incurrido en estos gastos, favor aportar los recibos o facturas de los mismos.</li>
-            </ul>
-          </div>
-        );
-      
-      case 'Personas con discapacidad':
-        return (
-          <div className="mt-8">
-            <p className="mt-4">
-              <strong>Por favor prepare los siguientes documentos e información para gestionar la solicitud de pensión de alimentos de menores de edad.</strong>
-            </p>
-            <ul className="list-disc list-inside mt-4">
-              <li>Copia de la cédula o documento de identidad de la persona solicitante;</li>
-              <li>Certificado(s) de Nacimiento de la(s) persona(s) que va(n) a recibir la pensión alimenticia;</li>
-              <li>Diagnóstico médico.</li>
-            </ul>
-          </div>
-        );
-      
-      case 'En condición de Cónyuge':
-        return (
-          <div className="mt-8">
-          </div>
-        );
-      case 'Padres o ascendientes de grado más próximo (abuelos)':
-        return (
-          <div className="mt-8">
-            <p className="mt-4">
-              <strong>Por favor prepare los siguientes documentos e información para gestionar la solicitud de pensión de alimentos de menores de edad.</strong>
-            </p>
-            <ul className="list-disc list-inside mt-4">
-              <li>Copia de la cédula o documento de identidad de la persona solicitante;</li>
-              <li>Certificado(s) de Nacimiento de la(s) persona(s) que va(n) a recibir la pensión alimenticia;</li>
-              <li>
-                En el caso de ascendientes, aplica cuando la persona obligada haya fallecido, sea de paradero desconocido, privado de libertad, o tenga discapacidad grave o enfermedad y no pueda cubrir la pensión.
-              </li>
-              <li>Sólo es hasta segundo grado de parentesco.</li>
-            </ul>
-          </div>
-        );
-        
-      case 'Hermanos':
-        return (
-          <div className="mt-8">
-            <p className="mt-4">
-              <strong>Por favor prepare los siguientes documentos e información para gestionar la solicitud de pensión de alimentos de menores de edad.</strong>
-            </p>
-            <ul className="list-disc list-inside mt-4">
-              <li>Copia de la cédula o documento de identidad de la persona solicitante;</li>
-              <li>
-                Sólo aplica para cubrir las necesidades básicas para quien deba recibirlos, siempre que sea menor de edad o mayor de edad con alguna discapacidad.
-              </li>
-            </ul>
-          </div>
-        );
-        
-      default:
-        return null;
-    }
-  };
-
-
-
 
 
 
@@ -387,8 +264,18 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
         </select>
       </div>
 
-      {/* Render message based on pensionCategory */}
-      {renderPensionCategoryMessage()}
+
+      <PensionCategoryMessage pensionCategory={formData.pensionCategory} />
+      <p className="mt-4">
+        Costo del trámite:
+      </p>
+      <p className="mt-4">
+        US$600.00 incluyendo gastos.
+      </p>
+      <p className="mt-4">
+        Método de pago: US$300.00 al momento de la solicitud y US$300.00 debe ser cancelado antes de la audiencia.
+      </p>
+
     </div>
         );
       case 'Aumento':
@@ -547,13 +434,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
                 />
 
-                {/* <label className="block font-bold mt-4">Escanear la última sentencia si la mantiene:</label>
-                <input
-                  type="file"
-                  name="sentenceFile"
-                  onChange={handleFileUpload}
-                  className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
-                /> */}
               </div>
             )}
 
@@ -567,7 +447,20 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 puede continuar con su solicitud pero recuerde que es importante que nos aporte dicha sentencia para continuar con el trámite correspondiente.
               </p>
             </div>
+
+            <p className="mt-4">
+              Costo del trámite:
+            </p>
+            <p className="mt-4">
+              US$600.00 incluyendo gastos.
+            </p>
+            <p className="mt-4">
+              Método de pago: US$300.00 al momento de la solicitud y US$300.00 debe ser cancelado antes de la audiencia.
+            </p>
+
           </div>
+
+          
         );
       
         
@@ -722,101 +615,20 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   Es necesario que tenga copia de la última sentencia emitida por el juzgado de lo contrario no podemos atender la solicitud sin esta información. Puede continuar con su solicitud pero recuerde que es importante que nos aporte dicha sentencia para continuar con el trámite correspondiente.
                 </p>
               </div>
+
+              <p className="mt-4">
+                Costo del trámite:
+              </p>
+              <p className="mt-4">
+                US$300.00 incluyendo gastos.
+              </p>
+              <p className="mt-4">
+                Método de pago: US$150.00 al momento de la solicitud y US$150.00 debe ser cancelado antes de la audiencia.
+              </p>
             </>
           );
         
-
-
-        return (
-          <>
-          <div className="mt-6">
-            <label className="block font-bold">¿Desea Disminuir o Suspender la pensión?</label>
-            <select
-              name="pensionSubType"
-              value={formData.pensionSubType}
-              onChange={handleChange}
-              className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
-            >
-              <option value="Disminuir">Disminuir</option>
-              <option value="Suspender">Suspender</option>
-            </select>
-          </div>
-
-
-          <div className="mt-6">
-            <label className="block font-bold">¿Cuánto le está aportando de pensión alimenticia actualmente?</label>
-            <input
-              type="number"
-              name="currentAmount"
-              value={formData.currentAmount}
-              onChange={handleChange}
-              className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
-              placeholder="Introduzca el monto"
-            />
-          </div>
-          {formData.pensionSubType === 'Disminuir' && (
-            <div className="mt-6">
-              <label className="block font-bold">¿Cuánto desea reducir de la pensión asignada?</label>
-              <input
-                type="number"
-                name="reduceAmount"
-                value={formData.reduceAmount}
-                onChange={handleChange}
-                className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
-                placeholder="Introduzca el monto"
-              />
-            </div>
-          )}
-
-          {/* Campos específicos para Suspender */}
-          {formData.pensionSubType === 'Suspender' && (
-            <div className="mt-6">
-              <label className="block font-bold">¿Por qué desea suspender la pensión alimenticia?</label>
-              <textarea
-                name="suspensionReason"
-                value={formData.suspensionReason}
-                onChange={handleChange}
-                className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
-                placeholder="Detalle el motivo"
-              />
-            </div>
-          )}
-
-          {/* Campos comunes */}
-          <div className="mt-6">
-            <label className="block font-bold">¿Sabe dónde está radicado su expediente actualmente de pensión alimenticia?</label>
-            <select
-              name="knowsCaseLocation"
-              value={formData.knowsCaseLocation}
-              onChange={handleChange}
-              className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
-            >
-              <option value="No">No</option>
-              <option value="Sí">Sí</option>
-            </select>
-          </div>
-
-          <div className="mt-6">
-            <label className="block font-bold">¿Desea que la firma se encargue de investigar dónde se encuentra adjudicado el expediente y la sentencia?</label>
-            <select
-              name="wantsInvestigation"
-              value={formData.wantsInvestigation}
-              onChange={handleChange}
-              className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
-            >
-              <option value="No">No</option>
-              <option value="Sí">Sí</option>
-            </select>
-          </div>
-
-          <div className="mt-6">
-            <p className="text-sm">
-              Es necesario que tenga copia de la última sentencia emitida por el juzgado de lo contrario no podemos atender la solicitud sin esta información. Puede continuar con su solicitud pero recuerde que es importante que nos aporte dicha sentencia para continuar con el trámite correspondiente.
-            </p>
-          </div>
-        </>
-        ); 
-        case 'Desacato':
+      case 'Desacato':
           return (
             <div className="mt-6">
               <h3 className="text-xl font-bold">Formulario de Desacato</h3>
@@ -931,6 +743,16 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   Es necesario que tenga copia de la última sentencia emitida por el juzgado de lo contrario no podemos atender la solicitud sin esta información. Puede continuar con su solicitud pero recuerde que es importante que nos aporte dicha sentencia para continuar con el trámite correspondiente.
                 </p>
               </div>
+
+                <p className="mt-4">
+                  Costo del trámite:
+                </p>
+                <p className="mt-4">
+                  US$300.00 incluyendo gastos.
+                </p>
+                <p className="mt-4">
+                  Método de pago: US$150.00 al momento de la solicitud y US$150.00 debe ser cancelado antes de la audiencia.
+                </p>
             </div>
           );
         
@@ -947,6 +769,9 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
       <p className="mt-4">
         En esta sección debes indicar si deseas realizar la solicitud de pensión alimenticia por primera vez, solicitar un aumento,
         rebaja o suspensión en caso que el pensionado sea mayor de edad.
+      </p>
+      <p className="mt-4">
+        Por favor confirmar si usted está solicitando una pensión alimenticia por primera vez, o desea solicitar un AUMENTO o DISMINUCIÓN de Pensión Alimenticia a través del Proceso de Revisión de Pensión Alimenticia. Si usted lo que desea es interponer un DESACATO por incumplimiento de pago de Pensión Alimenticia, por favor vaya al proceso de Desacato de Pensión:
       </p>
       <p className="mt-4">
         <strong>Nota:</strong> Tenga en cuenta que la Pensión Alimenticia corresponde al 50% de cada una de las partes. Si usted desea 

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import Swal from 'sweetalert2'; 
 import AppStateContext from '@context/context'; 
 import { checkAuthToken } from '@utils/checkAuthToken';
-import axios from 'axios'; // Replacing emailCheck import with axios
+import axios from 'axios'; 
 import ClipLoader from 'react-spinners/ClipLoader'; 
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
@@ -19,15 +19,18 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     nombreCompleto: '',
     telefono: '',
     telefonoAlternativo: '',
-    cedula: '',  // Added field for Cedula or ID
+    cedula: '',
     email: '',
     confirmEmail: '',
     notificaciones: '',
     terminosAceptados: false,
+    resumenCaso: '', 
+    summaryEmail: '',
   });
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false); 
+  const [showSummaryForm, setShowSummaryForm] = useState(false); 
 
   useEffect(() => {
     const userEmail = checkAuthToken();
@@ -41,17 +44,25 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: checked,
+      }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
-
+  
   const validateEmails = () => formData.email === formData.confirmEmail;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, isSummary: boolean = false, currentPostion: number) => {
     e.preventDefault();
 
     if (!validateEmails()) {
@@ -68,16 +79,15 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     try {
       const emailResult = await axios.get('/api/validate-email', {
         params: {
-          email: formData.email,
+          email: formData.email || formData.summaryEmail,
           isLogged: isLoggedIn.toString(),
         },
       });
       
-
       const { cuenta, isLogged } = emailResult.data;
 
       if (isLogged && cuenta) {
-        await sendCreateRequest(cuenta); 
+        await sendCreateRequest(cuenta, isSummary, currentPostion); 
       } else if (!isLogged && cuenta) {
         Swal.fire({
           icon: 'error',
@@ -85,7 +95,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           text: 'Este correo ya está en uso. Por favor, inicia sesión para continuar.',
         });
       } else if (!cuenta) {
-        await sendCreateRequest('');  // Send empty or default cuenta
+        await sendCreateRequest('', isSummary, currentPostion); 
       }
 
     } catch (error) {
@@ -100,21 +110,23 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   };
 
-  const sendCreateRequest = async (cuenta: string) => {
+  const sendCreateRequest = async (cuenta: string, isSummary: boolean, currentPostion: number) => {
     try {
       const requestData = {
-        nombreSolicita: formData.nombreCompleto,
-        telefonoSolicita: formData.telefono,
-        telefonoSolicita2: formData.telefonoAlternativo,
-        cedula: formData.cedula,  // Send the cedula in the request
-        emailSolicita: formData.email,
+        nombreSolicita: formData.nombreCompleto || '',
+        telefonoSolicita: formData.telefono || '',
+        telefonoSolicita2: formData.telefonoAlternativo || '',
+        cedula: formData.cedula || '',
+        emailSolicita: formData.email || formData.summaryEmail ,
         actualizarPorCorreo: formData.notificaciones === 'yes',
         cuenta: cuenta || '',  
         precio: 150,
         subtotal: 150,
         total: 150,
-        accion: "Creación de solicitud",
-        tipo: "pension"
+        resumenCaso: formData.resumenCaso || '',
+        summaryEmail: formData.summaryEmail || formData.email,
+        accion: isSummary ? "Envío de resumen de caso" : "Creación de solicitud",
+        tipo: isSummary ? "resumen" : "pension"
       };
 
       const response = await axios.post('/api/create-request', requestData);
@@ -123,16 +135,18 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       if (status === 'success' && solicitudId) {
         Swal.fire({
           icon: 'success',
-          title: 'Formulario Enviado',
-          text: 'Formulario enviado correctamente.',
+          title: isSummary ? 'Resumen Enviado' : 'Formulario Enviado',
+          text: isSummary ? 'Resumen enviado correctamente.' : 'Formulario enviado correctamente.',
         });
 
-        setStore((prevState) => ({
-          ...prevState,
-          solicitudId, 
-          solicitud: true,
-          currentPosition: 2
-        }));
+        if (!isSummary) {
+          setStore((prevState) => ({
+            ...prevState,
+            solicitudId, 
+            solicitud: true,
+            currentPosition: currentPostion
+          }));
+        }
       }
 
     } catch (error) {
@@ -152,8 +166,9 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         Estimado cliente, por favor asegúrese de leer la descripción a continuación antes de solicitar el trámite y para aclarar dudas.
       </p>
 
-      <form className="mt-4" onSubmit={handleSubmit}>
+      <form className="mt-4" onSubmit={(e) => handleSubmit(e, false, store.currentPosition || 0)}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Existing form fields */}
           <input
             type="text"
             name="nombreCompleto"
@@ -187,7 +202,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             onChange={handleChange}
             className="p-4 bg-gray-800 text-white rounded-lg"
             placeholder="Cédula o ID"
-            required  // Make it required if necessary
+            required
           />
           <input
             type="email"
@@ -209,7 +224,59 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           />
         </div>
 
-        <div className="mt-4">
+        {/* Toggle button for case summary */}
+        <div className="mt-8">
+          <button
+            className="bg-profile text-white w-full py-3 rounded-lg"
+            onClick={() => setShowSummaryForm((prev) => !prev)}
+          >
+            {showSummaryForm ? "Ocultar Resumen de tu caso ▲" : "Enviar Resumen de tu caso ▼"}
+          </button>
+        </div>
+
+        {/* Conditionally render the summary form */}
+        {showSummaryForm && (
+          <div className="mt-4">
+            <textarea
+              name="resumenCaso"  // Make sure this matches the key in formData
+              value={formData.resumenCaso}  // This should correctly bind the value from formData
+              onChange={handleChange}
+              placeholder="Resumen del caso"
+              rows={5}
+              className="p-4 w-full bg-gray-800 text-white rounded-lg"
+              required
+            />
+
+            <input
+              type="email"
+              name="summaryEmail"
+              value={formData.summaryEmail}
+              onChange={handleChange}
+              className="p-4 w-full bg-gray-800 text-white rounded-lg"
+              placeholder="Dirección de correo electrónico"
+              required
+            />
+      
+            <button
+              className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
+              type="button"
+              onClick={(e) => handleSubmit(e as any, true, 1)} 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <ClipLoader size={24} color="#ffffff" />
+                  <span className="ml-2">Cargando...</span>
+                </div>
+              ) : (
+                'Enviar y salir'
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Email notification section */}
+        <div className="mt-8">
           <p className="text-white">¿Deseas que te notifiquemos a tu correo?</p>
           <label className="inline-flex items-center mt-4">
             <input
@@ -249,7 +316,12 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           </label>
         </div>
 
-        <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+        {/* "Guardar y continuar" button with isLoading functionality */}
+        <button
+          className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
+          type="submit"
+          disabled={isLoading}
+        >
           {isLoading ? (
             <div className="flex items-center justify-center">
               <ClipLoader size={24} color="#ffffff" />

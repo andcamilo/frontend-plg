@@ -36,13 +36,13 @@ const PensionAlimenticia: React.FC = () => {
   // Function to render the active form based on the current position
   const renderActiveForm = () => {
     switch (activeStep) {
-      case 1:
+      case 4:
         return <PensionAlimenticiaBienvenido />;
       case 2:
         return <PensionAlimenticiaSolicitud />;
       case 3:
         return <PensionAlimenticiaDemandante />;
-      case 4:
+      case 1:
         return <PensionAlimenticiaDemandado />;
       case 5:
         return <PensionAlimenticiaGastosPensionado />;
@@ -90,10 +90,10 @@ const PensionAlimenticia: React.FC = () => {
 
               <button
                 className={`p-4 rounded-lg ${
-                  store.solicitud ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.solictud ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.solicitud && setActiveStep(2)}
-                disabled={!store.solicitud}
+                onClick={() => store.solictud && setActiveStep(2)}
+                disabled={!store.solictud}
               >
                 Solicitud
               </button>
@@ -110,7 +110,7 @@ const PensionAlimenticia: React.FC = () => {
 
               <button
                 className={`p-4 rounded-lg ${
-                  store.demandado ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.demandado ? (activeStep === 1 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
                 onClick={() => store.demandado && setActiveStep(4)}
                 disabled={!store.demandado}

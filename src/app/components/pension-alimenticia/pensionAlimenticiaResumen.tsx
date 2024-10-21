@@ -19,8 +19,6 @@ const PensionAlimenticiaResumen: React.FC = () => {
         const response = await axios.get('/api/get-request-id', {
           params: { solicitudId: store.solicitudId },
         });
-
-        // Print the API response to the console
         console.log('Solicitud Data:', response.data);
 
         // Set the response data to state
