@@ -3,8 +3,8 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import AppStateContext from '@context/context';
 import ClipLoader from 'react-spinners/ClipLoader';
-import { Country, State, City } from 'country-state-city'; // Importing country-state-city
-
+import { Country, State, City } from 'country-state-city';
+import DemandadoInfo from './DemandadoInfo'
 interface SelectOption {
   value: string;
   label: string;
@@ -129,12 +129,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
 
   return (
     <div className="text-white bg-gray-900 p-8">
-      {/* Header Section */}
-      <h2 className="text-2xl font-bold mb-4">Información del Demandado</h2>
-      <p className="text-sm mb-4">
-        Representa a la persona a la cual se le está solicitando la demanda, en este caso la persona que debe aportar la otra parte correspondiente a la Pensión Alimenticia.
-      </p>
-
+      <DemandadoInfo />
       {/* Form Section */}
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

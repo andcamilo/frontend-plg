@@ -5,6 +5,9 @@ import AppStateContext from '@context/context';
 import ClipLoader from 'react-spinners/ClipLoader'; 
 import Select from 'react-select'; 
 import { Country, State, City } from 'country-state-city'; 
+import InformacionDelDemandante from './InformacionDelDemandante'
+import InformacionGeneralAdicional from './InformacionGeneralAdicional'
+import ToggleTextComponent from './ToggleTextComponen'
 
 // Define the type for the select options
 interface SelectOption {
@@ -63,7 +66,9 @@ const PensionAlimenticiaDemandante: React.FC = () => {
 
   const viveEnOptions: SelectOption[] = [
     { value: 'casa_propia', label: 'Casa Propia' },
+    { value: 'casa_hipoteca', label: 'Casa con Hipoteca' },
     { value: 'alquiler', label: 'Alquiler' },
+    { value: 'con_familiares', label: 'Con Familiares' },
   ];
 
   const estudiaOptions: SelectOption[] = [
@@ -265,7 +270,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
 
   return (
     <div className="bg-gray-900 text-white p-8">
-      <h2 className="text-lg font-bold mb-2">Información del Demandante</h2>
+      <InformacionDelDemandante />
       <form className="space-y-6 mt-5" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -364,7 +369,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               required
             />
           </div>
-          <div>
+          <div >
             <label className="block mb-2 text-sm">Detalle de la dirección</label>
             <textarea
               name="detalleDireccion"
@@ -579,6 +584,9 @@ const PensionAlimenticiaDemandante: React.FC = () => {
             </div>
           </div>
         )}
+
+        <InformacionGeneralAdicional />
+        <ToggleTextComponent />
 
         <div className="mt-6">
           <button
