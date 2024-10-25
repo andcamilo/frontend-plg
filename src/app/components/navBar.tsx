@@ -35,7 +35,6 @@ const NavBar = () => {
               Inicio
             </Link>
 
-          <div>
             <IconButton
               onClick={handleSolicitudesMenuClick}
               className="text-xl text-white font-bold hover:text-profile"
@@ -63,7 +62,6 @@ const NavBar = () => {
               <MenuItem onClick={handleClose} sx={{ px: 3 }}>Sociedades / Empresas</MenuItem>
               <MenuItem onClick={handleClose} sx={{ px: 3 }}>Fundaciones de Interés Privado</MenuItem>
             </Menu>
-          </div>
 
           <Link href="/faqs" className='text-xl font-bold hover:text-profile'>
             FAQs
