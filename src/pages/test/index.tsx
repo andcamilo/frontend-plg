@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Tooltip } from 'react-tooltip';
 
 const Payment: React.FC = () => {
   const apiKey = 'EhrqwakURmYS'; // Hardcoded API Key
   const merchantAccountNumber = '112549'; // Hardcoded MID
   const terminalName = '112549001'; // Hardcoded TID
+  const accessCode = '123123'; // Access code provided by the bank
   const [token, setToken] = useState('');
-  const [isTooltipOpen, setTooltipOpen] = useState(false);
 
   useEffect(() => {
     // Load jQuery dynamically
@@ -29,7 +28,7 @@ const Payment: React.FC = () => {
         url: 'https://bacapicomponentv2-test.merchantprocess.net/UIComponent/CreditCard',
         data: {
           APIKey: apiKey,  // Using the hardcoded API Key
-          Culture: 'es',    // Language setting
+          Culture: 'es',   // Language setting
         },
         success: function (jsonResponse: any) {
           $('#creditcard-container').html(jsonResponse);
@@ -42,35 +41,35 @@ const Payment: React.FC = () => {
     }
   };
 
-  // Function to process the purchase after tokenization
-  const processPurchase = (accountToken: string) => {
-    console.log("🚀 ~ processPurchase ~ accountToken:", accountToken)
-    
+  // Function to process a sale for 1 USD after tokenization
+  const processSale = (accountToken: string) => {
     if (!accountToken) {
-      console.error('Token is required to process the purchase.');
+      console.error('Token is required to process the sale.');
       return;
     }
 
+    const clientTracking = 'TX-' + new Date().getTime(); // Unique transaction tracking ID
+
     $.ajax({
       type: 'POST',
-      url: 'https://gateway.merchantprocess.net/tokenv2/TokenWebService.asmx',  // Production Sale URL
+      url: 'http://tokenv2.test.merchantprocess.net/TokenWebService.asmx',  // Non-SSL Sandbox Sale URL
       data: {
         APIKey: apiKey,  // Hardcoded API Key
         accountToken: accountToken,  // Token received after tokenization
-        accessCode: 'yourAccessCode',  // Replace with the actual access code provided by your bank
+        accessCode: accessCode,  // Access code provided by your bank
         merchantAccountNumber: merchantAccountNumber,  // Hardcoded MID
         terminalName: terminalName,  // Hardcoded TID
-        clientTracking: 'yourTrackingID',  // Your internal tracking ID (replace with your own ID)
-        amount: '100.00',  // The amount to charge (update as needed)
+        clientTracking: clientTracking,  // Your unique tracking ID
+        amount: '1.00',  // Charging 1 USD as a test
         currencyCode: '840',  // Currency code (840 = USD)
         emailAddress: 'customer@example.com'  // Customer's email (optional)
       },
       success: function(response: any) {
-        console.log('Purchase successful:', response);
-        // Handle successful transaction (e.g., show confirmation to the user)
+        console.log('Sale successful:', response);
+        // Handle successful sale (e.g., show confirmation to the user)
       },
       error: function(err: any) {
-        console.error('Error processing the purchase:', err);
+        console.error('Error processing the sale:', err);
       }
     });
   };
@@ -80,8 +79,10 @@ const Payment: React.FC = () => {
       // Callback for successful tokenization
       (window as any).SaveCreditCard_SuccessCallback = function(response: any) {
         console.log('Tokenization successful:', response);
-        setToken(response.TokenDetails.AccountToken);
-        processPurchase(response.TokenDetails.AccountToken);  // Proceed to charge the card
+        setToken(response.TokenDetails.AccountToken);  // Store the token
+        console.log('Token:', response.TokenDetails.AccountToken);  // Print the token
+        
+        processSale(response.TokenDetails.AccountToken);  // Proceed to charge the card for $1
       };
 
       // Callback for tokenization failure
