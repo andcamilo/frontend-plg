@@ -56,11 +56,7 @@ const NavBar = () => {
                 },
               }}
             >
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Consulta - Propuesta legal</MenuItem>
               <MenuItem onClick={handleClose} sx={{ px: 3 }}>Pensión Alimenticia</MenuItem>
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Salida de Menores al Extranjero</MenuItem>
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Sociedades / Empresas</MenuItem>
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Fundaciones de Interés Privado</MenuItem>
             </Menu>
 
           <Link href="/faqs" className='text-xl font-bold hover:text-profile'>
