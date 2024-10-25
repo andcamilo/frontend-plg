@@ -37,7 +37,7 @@ const NavBar = () => {
 
             <IconButton
               onClick={handleSolicitudesMenuClick}
-              className="text-xl text-white font-bold hover:text-profile"
+              className="text-xl font-bold hover:text-profile"
               style={{ padding: 0 }}
             >
               Solicitudes <ArrowDropDownIcon />
