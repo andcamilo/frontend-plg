@@ -36,7 +36,7 @@ const NavBar = () => {
             </Link>
 
             <IconButton
-              onClick={handleSolicitudesMenuClick}
+              onMouseEnter={handleSolicitudesMenuClick}
               className="text-xl text-white font-bold hover:text-profile"
               style={{ padding: 0, color: 'white !important' }}
             >
@@ -56,8 +56,18 @@ const NavBar = () => {
                 },
               }}
             >
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Pensión Alimenticia</MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  window.location.href = '/request/pension-alimenticia';
+                }}
+                sx={{ px: 3, color: 'white !important' }}
+              >
+                Pensión Alimenticia
+              </MenuItem>
             </Menu>
+
+
 
           <Link href="/faqs" className='text-xl font-bold hover:text-profile'>
             FAQs
