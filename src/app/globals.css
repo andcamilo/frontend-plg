@@ -83,3 +83,47 @@ body {
   font-size: 0.8em;
 }
 
+/*Estilos alertas*/
+.custom-swal-popup {
+  background-color: #2c2c3e !important; /* Fondo oscuro */
+  color: #fff !important; /* Texto blanco */
+  border-radius: 8px; /* Bordes redondeados */
+  width: 400px !important; /* Ancho personalizado */
+  padding: 10px; /* Espaciado interno */
+}
+
+.custom-swal-title {
+  font-size: 16px !important; /* Tamaño del texto */
+  font-weight: 700 !important; /* Negrita */
+  margin: 0; /* Quitar márgenes */
+  color: #fff; /* Color blanco */
+}
+
+.custom-swal-title-main {
+  font-size: 30px !important; /* Tamaño del texto */
+  font-weight: 700 !important; /* Negrita */
+  margin: 0; /* Quitar márgenes */
+  color: #fff; /* Color blanco */
+}
+
+.custom-swal-icon {
+  color: #ffcc80 !important; /* Ajusta el color del ícono si es necesario */
+}
+
+.swal2-toast .swal2-title {
+  margin-left: 10px; /* Ajusta la separación entre el ícono y el texto */
+}
+
+.swal2-popup {
+  padding: 10px; /* Ajuste del padding general */
+}
+
+/* Estilo de la barra de progreso */
+.custom-swal-timer-bar {
+  background-color: #ffffff !important; /* Barra blanca */
+  height: 5px; /* Altura de la barra */
+  border-radius: 0 0 8px 8px; /* Bordes redondeados solo en la parte inferior */
+}
+
+/*Estilos alertas - fin*/
+

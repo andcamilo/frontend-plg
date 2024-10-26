@@ -15,7 +15,7 @@ interface RequestData {
   tipo: string;
 }
 
-const createRequestUrl = `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/create-request`;
+const createRequestUrl = `http://localhost:4000/chris/create-request`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
