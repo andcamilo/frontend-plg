@@ -37,11 +37,18 @@ const NavBar = () => {
 
             <IconButton
               onMouseEnter={handleSolicitudesMenuClick}
-              className="text-xl text-white font-bold hover:text-profile"
-              style={{ padding: 0, color: 'white !important' }}
+              className="text-xl font-bold hover:text-profile"
+              sx={{
+                color: 'white !important',
+                padding: 0,
+                '&:hover': {
+                  color: 'white !important',
+                },
+              }}
             >
               Solicitudes <ArrowDropDownIcon />
             </IconButton>
+
             <Menu
               id="solicitudes-menu"
               anchorEl={solicitudesAnchorEl}
