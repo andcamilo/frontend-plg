@@ -37,8 +37,8 @@ const NavBar = () => {
 
             <IconButton
               onClick={handleSolicitudesMenuClick}
-              className="text-xl font-bold hover:text-profile"
-              style={{ padding: 0 }}
+              className="text-xl text-white font-bold hover:text-profile"
+              style={{ padding: 0, color: 'white !important' }}
             >
               Solicitudes <ArrowDropDownIcon />
             </IconButton>
@@ -52,7 +52,7 @@ const NavBar = () => {
               PaperProps={{
                 style: {
                   backgroundColor: '#1F1F2E',
-                  color: 'white',
+                  color: 'white !important',
                 },
               }}
             >
