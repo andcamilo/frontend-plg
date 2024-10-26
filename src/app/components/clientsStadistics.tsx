@@ -11,6 +11,8 @@ const ClientsStatistics: React.FC = () => {
   const [hasNextPage, setHasNextPage] = useState(false);
   const rowsPerPage = 3;
 
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
