@@ -4,7 +4,7 @@ import get from 'lodash/get';
 import { getZohoAccessToken } from '@utils/zoho-utils';
 import { backendBaseUrl } from '@utils/env';
 
-const zohoInvoicesApiUrl = `${backendBaseUrl}/dev/get-invoices`;
+const zohoInvoicesApiUrl = `${backendBaseUrl}/chris/get-invoices`;
 
 const getInvoices = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
