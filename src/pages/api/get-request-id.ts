@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
   try {
     // Lambda function URL to fetch the request by ID
-    const lambdaUrl = `${backendBaseUrl}/dev/get-request-id/${solicitudId}`;
+    const lambdaUrl = `http://localhost:4000/chris/get-request-id/${solicitudId}`;
 
     // Make the request to your AWS Lambda function
     const response = await axios.get(lambdaUrl);

@@ -17,4 +17,6 @@ const DemandadoInfo: React.FC = () => {
   );
 };
 
+
+
 export default DemandadoInfo;
