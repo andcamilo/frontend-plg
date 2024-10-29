@@ -10,6 +10,7 @@ import InformacionGeneralAdicional from './InformacionGeneralAdicional'
 import ToggleTextComponent from './ToggleTextComponen'
 import {useFetchSolicitud} from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
+import countryCodes from '@utils/countryCode';
 
 // Define the type for the select options
 interface SelectOption {
@@ -17,15 +18,6 @@ interface SelectOption {
   label: string;
 }
 
-const countryCodes = {
-  CO: '+57',
-  US: '+1',
-  MX: '+52',
-  AR: '+54',
-  BR: '+55',
-  PA: '+507', 
-  // Add more as needed
-};
 
 const PensionAlimenticiaDemandante: React.FC = () => {
   const [formData, setFormData] = useState({
