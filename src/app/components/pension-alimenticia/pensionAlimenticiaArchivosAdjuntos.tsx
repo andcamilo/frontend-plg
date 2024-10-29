@@ -1,38 +1,107 @@
-import React, { useState, useContext, FormEvent } from 'react';
+import React, { useState, useContext, useEffect, FormEvent } from 'react';
 import Swal from 'sweetalert2';
-import AppStateContext from '@context/context'; // Import the context
+import AppStateContext from '@context/context';
 import axios from 'axios';
-import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
+import ClipLoader from 'react-spinners/ClipLoader';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { 
+  firebaseApiKey, 
+  firebaseAuthDomain, 
+  firebaseProjectId, 
+  firebaseStorageBucket, 
+  firebaseMessagingSenderId, 
+  firebaseAppId 
+} from '@utils/env';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import get from 'lodash/get';
 
-// Helper function to convert file to base64
-const convertFileToBase64 = (file: File) => {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
+// Firebase configuration and initialization
+const firebaseConfig = {
+  apiKey: firebaseApiKey,
+  authDomain: firebaseAuthDomain,
+  projectId: firebaseProjectId,
+  storageBucket: firebaseStorageBucket,
+  messagingSenderId: firebaseMessagingSenderId,
+  appId: firebaseAppId,
 };
 
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const storage = getStorage(app);
+
 const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
+  const [formData, setFormData] = useState({
+    archivosAdjuntos: {
+      cedula: null,
+      certificadoNacimiento: null,
+      sentencia: null,
+      additionalDocs: [],
+    },
+  });
+
   const [cedulaFile, setCedulaFile] = useState<File | null>(null);
   const [nacimientoFile, setNacimientoFile] = useState<File | null>(null);
   const [sentenciaFile, setSentenciaFile] = useState<File | null>(null);
-  const [additionalDocs, setAdditionalDocs] = useState<File[]>([]);
+  const [additionalDocs, setAdditionalDocs] = useState<(File | null)[]>([]);
   const [showAdditionalDocs, setShowAdditionalDocs] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Access the context
   const context = useContext(AppStateContext);
-
-  if (!context) {
-    throw new Error('AppStateContext must be used within an AppStateProvider');
-  }
-
+  if (!context) throw new Error('AppStateContext must be used within an AppStateProvider');
+  
   const { store, setStore } = context;
+  const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+
+  useEffect(() => {
+    if (store.solicitudId) fetchSolicitud(); 
+  }, [store.solicitudId]);
+
+  useEffect(() => {
+    if (store.request) {
+      const archivosAdjuntos = get(store.request, 'archivosAdjuntos', {});
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        archivosAdjuntos: {
+          ...prevFormData.archivosAdjuntos,
+          ...archivosAdjuntos,
+        },
+      }));
+    }
+  }, [store.request]);
+
+  // Helper function to upload file to Firebase and get URL
+  const uploadFileToFirebase = (file: File, path: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const storageRef = ref(storage, path);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done`);
+        },
+        (error) => {
+          reject(error);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(downloadURL);
+        }
+      );
+    });
+  };
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    setFile: React.Dispatch<React.SetStateAction<File | null>>
+  ) => {
+    const file = e.target.files?.[0] || null;
+    setFile(file);
+  };
 
   const handleAddDocument = () => {
-    setAdditionalDocs([...additionalDocs, new File([], "")]); // Add empty file entry
+    setAdditionalDocs([...additionalDocs, new File([], "")]);
   };
 
   const handleRemoveDocument = (index: number) => {
@@ -43,41 +112,25 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
     setShowAdditionalDocs(!showAdditionalDocs);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: React.Dispatch<React.SetStateAction<File | null>>) => {
-    const file = e.target.files?.[0] || null;
-    setFile(file);
-  };
-
-  const handleAdditionalDocChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const newDocs = [...additionalDocs];
-    if (e.target.files?.[0]) {
-      newDocs[index] = e.target.files[0];
-    }
-    setAdditionalDocs(newDocs);
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setIsLoading(true); // Set loading state to true before making the API request
+    setIsLoading(true);
 
     try {
-      const cedulaBase64 = cedulaFile ? await convertFileToBase64(cedulaFile) : null;
-      const nacimientoBase64 = nacimientoFile ? await convertFileToBase64(nacimientoFile) : null;
-      const sentenciaBase64 = sentenciaFile ? await convertFileToBase64(sentenciaFile) : null;
-
-
-      const additionalDocsBase64 = await Promise.all(
-        additionalDocs.map((file) => convertFileToBase64(file))
+      const cedulaURL = cedulaFile ? await uploadFileToFirebase(cedulaFile, 'uploads/cedula') : formData.archivosAdjuntos.cedula;
+      const nacimientoURL = nacimientoFile ? await uploadFileToFirebase(nacimientoFile, 'uploads/certificadoNacimiento') : formData.archivosAdjuntos.certificadoNacimiento;
+      const sentenciaURL = sentenciaFile ? await uploadFileToFirebase(sentenciaFile, 'uploads/sentencia') : formData.archivosAdjuntos.sentencia;
+      const additionalDocsURLs = await Promise.all(
+        additionalDocs.map((file, index) => uploadFileToFirebase(file!, `uploads/additionalDocs_${index}`))
       );
-
 
       const updatePayload = {
         solicitudId: store.solicitudId,
         archivosAdjuntos: {
-          cedula: cedulaBase64,
-          certificadoNacimiento: nacimientoBase64,
-          sentencia: sentenciaBase64,
-          additionalDocs: additionalDocsBase64,
+          cedula: cedulaURL,
+          certificadoNacimiento: nacimientoURL,
+          sentencia: sentenciaURL,
+          additionalDocs: additionalDocsURLs.length ? additionalDocsURLs : formData.archivosAdjuntos.additionalDocs,
         },
       };
 
@@ -87,7 +140,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
         setStore((prevState) => ({
           ...prevState,
           firmaYEntrega: true,
-          currentPosition: 7
+          currentPosition: 7,
         }));
 
         Swal.fire({
@@ -106,7 +159,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
         text: 'Hubo un problema al adjuntar los archivos. Por favor, inténtelo de nuevo más tarde.',
       });
     } finally {
-      setIsLoading(false); // Set loading state to false after the request is complete
+      setIsLoading(false);
     }
   };
 
@@ -117,11 +170,16 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
         En esta sección debes adjuntar la siguiente información necesaria para tramitar tu solicitud.
       </p>
 
-      {/* Form Section */}
       <form className="space-y-6" onSubmit={handleSubmit}>
-        {/* Archivo 1 */}
         <div>
           <label className="block mb-2 text-sm">Copia de cédula de quien solicita la Pensión Alimenticia.</label>
+          {formData.archivosAdjuntos.cedula && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.cedula} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setCedulaFile)}
@@ -129,9 +187,15 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           />
         </div>
 
-        {/* Archivo 2 */}
         <div>
           <label className="block mb-2 text-sm">Certificado de Nacimiento del pensionado.</label>
+          {formData.archivosAdjuntos.certificadoNacimiento && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.certificadoNacimiento} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setNacimientoFile)}
@@ -139,9 +203,15 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           />
         </div>
 
-        {/* Archivo 3 */}
         <div>
           <label className="block mb-2 text-sm">Copia de la Sentencia o Mediación en caso que la hubiere.</label>
+          {formData.archivosAdjuntos.sentencia && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.sentencia} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setSentenciaFile)}
@@ -149,61 +219,46 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           />
         </div>
 
-        {/* Toggle Optional Documents Section */}
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={toggleAdditionalDocs}
-            className="w-full md:w-auto bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
-          >
-            {showAdditionalDocs ? 'Ocultar Documentos Adicionales' : 'Agregar Documento Adicional ▾'}
-          </button>
-        </div>
-
-        {/* Optional Additional Documents Section */}
+        {/* Additional Documents Section */}
         {showAdditionalDocs && (
           <>
-            {additionalDocs.map((doc, index) => (
-              <div key={index} className="space-y-4 mt-4">
-                <div>
-                  <label className="block mb-2 text-sm">- Documento adicional:</label>
-                  <input
-                    type="file"
-                    onChange={(e) => handleAdditionalDocChange(e, index)}
-                    className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveDocument(index)}
-                    className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
-                  >
-                    Eliminar
-                  </button>
-                </div>
+          {additionalDocs.map((doc, index) => (
+            <div key={index} className="space-y-4 mt-4">
+              <div>
+                <label className="block mb-2 text-sm">- Documento adicional:</label>
+                <input
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setAdditionalDocs((prevDocs) => {
+                      const newDocs = [...prevDocs];
+                      newDocs[index] = file; // Update with File or null
+                      return newDocs;
+                    });
+                  }}
+                  className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+                />
               </div>
-            ))}
-
-            {/* Add More Document Button */}
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={handleAddDocument}
-                className="w-full md:w-auto bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
-              >
-                Otro Documento adicional
-              </button>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleRemoveDocument(index)}
+                  className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
+          ))}
+
           </>
         )}
 
-        {/* Submit Button */}
         <div className="mt-6">
           <button
             type="submit"
             className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
-            disabled={isLoading} // Disable button while loading
+            disabled={isLoading}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">

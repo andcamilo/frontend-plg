@@ -10,6 +10,7 @@ const ToggleTextComponent: React.FC = () => {
   return (
     <div className="mt-6">
       <button
+        type="button" 
         className="bg-purple-600 text-white py-2 px-4 rounded-md mb-4"
         onClick={handleToggle}
       >

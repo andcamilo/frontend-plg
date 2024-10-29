@@ -14,6 +14,7 @@ import AppStateContext from '@context/context';
 
 const PensionAlimenticia: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
+  console.log("🚀 ~ activeStep:", activeStep)
   const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false); // Loading state for the payment button
 
@@ -87,7 +88,6 @@ const PensionAlimenticia: React.FC = () => {
               >
                 ¡Bienvenido!
               </button>
-
               <button
                 className={`p-4 rounded-lg ${
                   store.solictud ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'

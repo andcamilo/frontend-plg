@@ -1,8 +1,10 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import AppStateContext from '@context/context';
 import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader';
+import {useFetchSolicitud} from '@utils/fetchCurrentRequest'
+import get from 'lodash/get';
 
 const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>('office');
@@ -15,6 +17,24 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   }
 
   const { store, setStore } = context;
+  const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+
+  useEffect(() => {
+    if (store.solicitudId) {
+      fetchSolicitud(); 
+    }
+  }, [store.solicitudId]);
+
+  useEffect(() => {
+    if (store.request) {
+      console.log("🚀 ~ Updated store.request:", store.request);
+      const firmaYEntrega = get(store.request, 'firmaYEntrega', {});
+
+      if (firmaYEntrega && Object.keys(firmaYEntrega).length > 0) {
+        setSelectedOption(firmaYEntrega.deliveryOption)
+      }
+    }
+  }, [store.request]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

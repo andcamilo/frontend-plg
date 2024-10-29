@@ -1,6 +1,5 @@
 import React, { createContext, useState, ReactNode } from 'react';
 
-// Define the shape of your form data
 export interface FormData {
   pensionType: string;          // 'Primera vez' or other pension types
   pensionAmount: number;        // Amount requested for pension
@@ -8,7 +7,6 @@ export interface FormData {
   pensionCategory: string;      // Category of the pension
   currentSupportAmount: number; // Support amount currently received
   
-  // Aumento
   currentAmount: number;        // Current pension amount
   increaseAmount: number;       // Amount requested for increase
   totalAmount: number;          // Total amount after increase
@@ -53,7 +51,9 @@ export interface AppState {
   resumen: boolean;
   solicitudId: string;
   currentPosition: number;
-  solictud: FormData;           // Add formData to hold FormData structure
+  solictud: FormData;
+  request: any;
+  
 }
 
 // Initial state for the context
@@ -68,6 +68,7 @@ const initialState: AppState = {
   resumen: false,
   solicitudId: "",
   currentPosition: 1,
+  request: "",
   solictud: {
     pensionType: '',
     pensionAmount: 0,

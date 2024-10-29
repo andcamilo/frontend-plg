@@ -1,10 +1,20 @@
 "use client";
 import React, { useState, useEffect, useContext } from 'react';
-import Swal from 'sweetalert2'; 
-import AppStateContext from '@context/context'; 
+import Swal from 'sweetalert2';
+import AppStateContext from '@context/context';
 import { checkAuthToken } from '@utils/checkAuthToken';
-import axios from 'axios'; 
-import ClipLoader from 'react-spinners/ClipLoader'; 
+import axios from 'axios';
+import ClipLoader from 'react-spinners/ClipLoader';
+
+const countryCodes = {
+  CO: '+57',
+  US: '+1',
+  MX: '+52',
+  AR: '+54',
+  BR: '+55',
+  PA: '+507', 
+  // Add more as needed
+};
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -19,18 +29,20 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     nombreCompleto: '',
     telefono: '',
     telefonoAlternativo: '',
+    telefonoCodigo: 'PA',
+    telefonoAlternativoCodigo: 'PA',
     cedula: '',
     email: '',
     confirmEmail: '',
     notificaciones: '',
     terminosAceptados: false,
-    resumenCaso: '', 
+    resumenCaso: '',
     summaryEmail: '',
   });
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); 
-  const [showSummaryForm, setShowSummaryForm] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSummaryForm, setShowSummaryForm] = useState(false);
 
   useEffect(() => {
     const userEmail = checkAuthToken();
@@ -40,11 +52,11 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         email: userEmail,
         confirmEmail: userEmail,
       }));
-      setIsLoggedIn(true); 
+      setIsLoggedIn(true);
     }
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
@@ -59,7 +71,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       }));
     }
   };
-  
+
   const validateEmails = () => formData.email === formData.confirmEmail;
 
   const handleSubmit = async (e: React.FormEvent, isSummary: boolean = false, currentPostion: number) => {
@@ -83,11 +95,11 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           isLogged: isLoggedIn.toString(),
         },
       });
-      
+
       const { cuenta, isLogged } = emailResult.data;
 
       if (isLogged && cuenta) {
-        await sendCreateRequest(cuenta, isSummary, currentPostion); 
+        await sendCreateRequest(cuenta, isSummary, currentPostion);
       } else if (!isLogged && cuenta) {
         Swal.fire({
           icon: 'error',
@@ -95,7 +107,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           text: 'Este correo ya está en uso. Por favor, inicia sesión para continuar.',
         });
       } else if (!cuenta) {
-        await sendCreateRequest('', isSummary, currentPostion); 
+        await sendCreateRequest('', isSummary, currentPostion);
       }
 
     } catch (error) {
@@ -106,7 +118,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       });
       console.error('API Error:', error);
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
@@ -114,12 +126,12 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     try {
       const requestData = {
         nombreSolicita: formData.nombreCompleto || '',
-        telefonoSolicita: formData.telefono || '',
-        telefonoSolicita2: formData.telefonoAlternativo || '',
+        telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
+        telefonoSolicita2: `${countryCodes[formData.telefonoAlternativoCodigo]}${formData.telefonoAlternativo}` || '',
         cedula: formData.cedula || '',
-        emailSolicita: formData.email || formData.summaryEmail ,
+        emailSolicita: formData.email || formData.summaryEmail,
         actualizarPorCorreo: formData.notificaciones === 'yes',
-        cuenta: cuenta || '',  
+        cuenta: cuenta || '',
         precio: 150,
         subtotal: 150,
         total: 150,
@@ -142,9 +154,9 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         if (!isSummary) {
           setStore((prevState) => ({
             ...prevState,
-            solicitudId, 
+            solicitudId,
             solicitud: true,
-            currentPosition: currentPostion
+            currentPosition: 2
           }));
         }
       }
@@ -168,7 +180,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
       <form className="mt-4" onSubmit={(e) => handleSubmit(e, false, store.currentPosition || 0)}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Existing form fields */}
           <input
             type="text"
             name="nombreCompleto"
@@ -178,23 +189,53 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             placeholder="Nombre completo"
             required
           />
-          <input
-            type="text"
-            name="telefono"
-            value={formData.telefono}
-            onChange={handleChange}
-            className="p-4 bg-gray-800 text-white rounded-lg"
-            placeholder="Número de teléfono"
-            required
-          />
-          <input
-            type="text"
-            name="telefonoAlternativo"
-            value={formData.telefonoAlternativo}
-            onChange={handleChange}
-            className="p-4 bg-gray-800 text-white rounded-lg"
-            placeholder="Número de teléfono alternativo"
-          />
+          
+          {/* Phone field with country code */}
+          <div className="flex gap-2">
+            <select
+              name="telefonoCodigo"
+              value={formData.telefonoCodigo}
+              onChange={handleChange}
+              className="p-4 bg-gray-800 text-white rounded-lg"
+            >
+              {Object.entries(countryCodes).map(([code, dialCode]) => (
+                <option key={code} value={code}>{code}: {dialCode}</option>
+              ))}
+            </select>
+            <input
+              type="text"
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+              className="p-4 bg-gray-800 text-white rounded-lg w-full"
+              placeholder="Número de teléfono"
+              required
+            />
+          </div>
+
+          {/* Alternate phone field with country code */}
+          <div className="flex gap-2">
+            <select
+              name="telefonoAlternativoCodigo"
+              value={formData.telefonoAlternativoCodigo}
+              onChange={handleChange}
+              className="p-4 bg-gray-800 text-white rounded-lg"
+            >
+              {Object.entries(countryCodes).map(([code, dialCode]) => (
+                <option key={code} value={code}>{code}: {dialCode}</option>
+              ))}
+            </select>
+            <input
+              type="text"
+              name="telefonoAlternativo"
+              value={formData.telefonoAlternativo}
+              onChange={handleChange}
+              className="p-4 bg-gray-800 text-white rounded-lg w-full"
+              placeholder="Número de teléfono alternativo"
+            />
+          </div>
+          
+          {/* Other input fields */}
           <input
             type="text"
             name="cedula"
@@ -238,15 +279,14 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         {showSummaryForm && (
           <div className="mt-4">
             <textarea
-              name="resumenCaso"  // Make sure this matches the key in formData
-              value={formData.resumenCaso}  // This should correctly bind the value from formData
+              name="resumenCaso"
+              value={formData.resumenCaso}
               onChange={handleChange}
               placeholder="Resumen del caso"
               rows={5}
               className="p-4 w-full bg-gray-800 text-white rounded-lg"
               required
             />
-
             <input
               type="email"
               name="summaryEmail"
@@ -256,11 +296,10 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               placeholder="Dirección de correo electrónico"
               required
             />
-      
             <button
               className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
               type="button"
-              onClick={(e) => handleSubmit(e as any, true, 1)} 
+              onClick={(e) => handleSubmit(e as any, true, 1)}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -302,6 +341,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           </label>
         </div>
 
+        {/* Terms and conditions checkbox */}
         <div className="mt-4">
           <label className="inline-flex items-center">
             <input
@@ -316,7 +356,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           </label>
         </div>
 
-        {/* "Guardar y continuar" button with isLoading functionality */}
+        {/* Submit button */}
         <button
           className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
           type="submit"

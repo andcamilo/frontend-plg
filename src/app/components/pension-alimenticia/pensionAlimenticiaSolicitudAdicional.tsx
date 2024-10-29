@@ -1,8 +1,10 @@
-import React, { useState, useContext, FormEvent } from 'react';
+import React, { useState, useContext, FormEvent, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import AppStateContext from '@context/context'; // Import the context
 import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
+import {useFetchSolicitud} from '@utils/fetchCurrentRequest'
+import get from 'lodash/get';
 
 const convertFileToBase64 = (file: File) => {
   return new Promise<string>((resolve, reject) => {
@@ -26,6 +28,16 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
   }
 
   const { store, setStore } = context;
+  const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+
+  useEffect(() => {
+    if (store.solicitudId) {
+      fetchSolicitud(); 
+    }
+  }, [store.solicitudId]);
+
+
+
 
   // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
