@@ -6,7 +6,7 @@ import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
 
-const sociedadEmpresaSolicitante: React.FC = () => {
+const SociedadEmpresaSolicitante: React.FC = () => {
     const context = useContext(AppStateContext);
 
     if (!context) {
@@ -416,4 +416,4 @@ const sociedadEmpresaSolicitante: React.FC = () => {
     );
 };
 
-export default sociedadEmpresaSolicitante;
+export default SociedadEmpresaSolicitante;
