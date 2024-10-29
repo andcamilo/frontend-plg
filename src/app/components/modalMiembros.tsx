@@ -4,12 +4,10 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 interface ModalMiembrosProps {
-    isOpen: boolean;
     onClose: () => void;
 }
 
-const ModalMiembros: React.FC<ModalMiembrosProps> = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
+const ModalMiembros: React.FC<ModalMiembrosProps> = ({  onClose }) => {
 
     const context = useContext(FundacionContext); 
     if (!context) {
@@ -45,10 +43,8 @@ const ModalMiembros: React.FC<ModalMiembrosProps> = ({ isOpen, onClose }) => {
     };
 
     useEffect(() => {
-        if (isOpen) {
             fetchPersonas();
-        }
-    }, [isOpen, solicitudId]);
+    }, [ solicitudId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target;

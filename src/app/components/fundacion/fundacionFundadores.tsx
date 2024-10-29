@@ -205,8 +205,10 @@ const FundacionFundadores: React.FC = () => {
                     )}
                 </button>
             </div>
+            {isModalOpen &&
+            <ModalFundadores onClose={closeModal} />
+            }
 
-            <ModalFundadores isOpen={isModalOpen} onClose={closeModal} />
         </div>
     );
 };
