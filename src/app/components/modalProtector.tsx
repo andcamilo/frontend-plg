@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import FundacionContext from '@context/fundacionContext';
 import axios from 'axios';
-import Swal from 'sweetalert2'; // Importamos SweetAlert
+import Swal from 'sweetalert2';
 
 interface ModalProtectorProps {
     isOpen: boolean;
@@ -9,8 +9,7 @@ interface ModalProtectorProps {
 }
 
 const ModalProtector: React.FC<ModalProtectorProps> = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
-
+    // Access the context values
     const context = useContext(FundacionContext);
     if (!context) {
         throw new Error('FundacionContext must be used within a FundacionStateProvider');
@@ -26,23 +25,21 @@ const ModalProtector: React.FC<ModalProtectorProps> = ({ isOpen, onClose }) => {
         seleccionar: '', // Persona seleccionada
     });
 
-    // Función para obtener personas desde la base de datos
+    // Function to fetch personas from the database
     const fetchPersonas = async () => {
         try {
             const response = await axios.get('/api/client', {
-                params: {
-                    solicitudId, // Pasamos el ID de la solicitud como filtro
-                },
+                params: { solicitudId },
             });
 
             const { personas } = response.data;
 
-            // Filtrar las personas que NO tienen el campo `protector`
+            // Filter personas without the `protector` field
             const personasSinProtector = personas.filter((persona: any) =>
                 persona.solicitudId === solicitudId && !persona.protector
             );
 
-            // Obtener todas las personas que ya tienen el campo protector
+            // Get all personas that already have the `protector` field
             const protectoresAsignados = personas.filter((persona: any) =>
                 persona.solicitudId === solicitudId && persona.protector
             );
@@ -76,7 +73,6 @@ const ModalProtector: React.FC<ModalProtectorProps> = ({ isOpen, onClose }) => {
             return;
         }
 
-        // Verificar si ya existen un "Protector Principal" y un "Protector Secundario"
         const existeProtectorPrincipal = protectoresExistentes.some((persona: any) =>
             persona.protector?.cargo === 'Protector Principal'
         );
@@ -85,7 +81,6 @@ const ModalProtector: React.FC<ModalProtectorProps> = ({ isOpen, onClose }) => {
         );
 
         if (existeProtectorPrincipal && existeProtectorSecundario) {
-            // Mostrar la alerta indicando que ya se han asignado los protectores
             Swal.fire({
                 position: "top-end",
                 icon: "warning",
@@ -103,39 +98,38 @@ const ModalProtector: React.FC<ModalProtectorProps> = ({ isOpen, onClose }) => {
                     timerProgressBar: 'custom-swal-timer-bar'
                 }
             });
-            return; // No continuamos con la asignación
+            return;
         }
 
-        setIsLoading(true); // Activar el estado de carga
+        setIsLoading(true);
 
         try {
-            // Determinar el cargo con base en si ya hay un "Protector Principal"
             const cargoAsignado = existeProtectorPrincipal ? 'Protector Secundario' : 'Protector Principal';
 
-            // Construimos el payload para enviar a la API
             const updatePayload = {
-                solicitudId: store.solicitudId,
+                solicitudId,
                 protectores: {
                     personId: formData.seleccionar || null,
-                    cargo: cargoAsignado, // Asignar el cargo en función de la validación
+                    cargo: cargoAsignado,
                 },
             };
 
-            // Enviar solicitud a la API para actualizar la persona seleccionada como protector
             const response = await axios.patch('/api/update-person', updatePayload);
 
             if (response.status === 200) {
-                console.log("Protector actualizado");
-                onClose(); // Cerrar el modal solo si la actualización es exitosa
+                onClose();
             } else {
                 throw new Error('Error al actualizar el protector.');
             }
         } catch (error) {
             console.error('Error al actualizar el protector:', error);
         } finally {
-            setIsLoading(false); // Desactivar el estado de carga
+            setIsLoading(false);
         }
     };
+
+    // Conditional rendering based on isOpen, but after all hooks are set up
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
