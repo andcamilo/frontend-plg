@@ -198,8 +198,10 @@ const FundacionMiembros: React.FC = () => {
                     )}
                 </button>
             </div>
-
-            <ModalMiembros isOpen={isModalOpen} onClose={closeModal} />
+            {isModalOpen
+             && <ModalMiembros onClose={closeModal} />
+            }
+       
         </div>
     );
 };
