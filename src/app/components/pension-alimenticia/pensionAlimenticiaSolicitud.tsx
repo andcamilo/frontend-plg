@@ -5,6 +5,8 @@ import AppStateContext from '@context/context'; // Import the context
 import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
 import axios from 'axios';
 import PensionCategoryMessage from './PensionCategoryMessage'
+import {useFetchSolicitud} from '@utils/fetchCurrentRequest'
+import get from 'lodash/get';
 
 interface FormData {
   pensionType: string;          // 'Primera vez' or other pension types
@@ -55,6 +57,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
   }
 
   const { store, setStore } = context;
+  const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
 
   const [formData, setFormData] = useState<FormData>({
     // For 'Primera vez'
@@ -96,14 +99,28 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
   });
   
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setFormData({
-      ...formData,
-      sentenceFile: file
-    });
-  };
-  
+
+  useEffect(() => {
+    if (store.solicitudId) {
+      fetchSolicitud(); 
+    }
+  }, [store.solicitudId]);
+
+  useEffect(() => {
+    if (store.request) {
+      console.log("🚀 ~ Updated store.request:", store.request);
+      const solicitud = get(store.request, 'solicitud', {});
+
+      if (solicitud && Object.keys(solicitud).length > 0) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          ...solicitud, // Spread the solicitud data to overwrite corresponding fields in formData
+        }));
+      }
+    }
+  }, [store.request]);
+
+
   
 
   const [isLoading, setIsLoading] = useState(false); // Add loading state

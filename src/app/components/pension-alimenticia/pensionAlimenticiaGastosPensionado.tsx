@@ -1,8 +1,10 @@
-import React, { useState, useContext, FormEvent } from 'react';
+import React, { useState, useContext, FormEvent, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import AppStateContext from '@context/context';
 import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import get from 'lodash/get';
 
 const PensionAlimenticiaGastosPensionado: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -25,6 +27,28 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
   }
 
   const { store, setStore } = context;
+  const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+
+
+  useEffect(() => {
+    if (store.solicitudId) {
+      fetchSolicitud(); 
+    }
+  }, [store.solicitudId]);
+
+  useEffect(() => {
+    if (store.request) {
+      console.log("🚀 ~ Updated store.request:", store.request);
+      const gastosPensionado = get(store.request, 'gastosPensionado', {});
+
+      if (gastosPensionado && Object.keys(gastosPensionado).length > 0) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          ...gastosPensionado,
+        }));
+      }
+    }
+  }, [store.request]);
 
   // Function to calculate the total sum of all fields
   const calculateTotal = (updatedFormData: any) => {

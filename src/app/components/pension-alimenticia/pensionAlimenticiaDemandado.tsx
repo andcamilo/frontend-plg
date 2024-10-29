@@ -5,6 +5,9 @@ import AppStateContext from '@context/context';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { Country, State, City } from 'country-state-city';
 import DemandadoInfo from './DemandadoInfo'
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import get from 'lodash/get';
+
 interface SelectOption {
   value: string;
   label: string;
@@ -15,9 +18,9 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     nombreCompleto: '',
     estadoCivil: { value: 'Soltero', label: 'Soltero' },
     cedula: '',
-    nacionalidad: { value: 'Panamá', label: 'Panamá' }, // Default value
+    nacionalidad: { value: 'PA', label: 'Panamá' }, // Default value
     direccion: '',
-    pais: { value: 'Panamá', label: 'Panamá' }, // Default value
+    pais: { value: 'PA', label: 'Panamá' }, // Default value
     provincia: { value: '', label: '' }, // Province
     corregimiento: { value: '', label: '' }, // City
     ingresosTrabajo: '',
@@ -39,6 +42,27 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     throw new Error('AppStateContext must be used within an AppStateProvider');
   }
   const { store, setStore } = context;
+  const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+
+  useEffect(() => {
+    if (store.solicitudId) {
+      fetchSolicitud(); 
+    }
+  }, [store.solicitudId]);
+
+  useEffect(() => {
+    if (store.request) {
+      console.log("🚀 ~ Updated store.request:", store.request);
+      const demandado = get(store.request, 'demandado', {});
+
+      if (demandado && Object.keys(demandado).length > 0) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          ...demandado,
+        }));
+      }
+    }
+  }, [store.request]);
 
   // Fetch countries on mount
   useEffect(() => {
@@ -63,15 +87,22 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     }
   }, [formData.provincia]);
 
-  // Handle form changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  // Handle form changes for input and textarea fields
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: { value, label: value },
+      [name]: value, // Only update the value for input fields
     }));
   };
-  
+
+  // Handle form changes for select fields
+  const handleSelectChange = (name: string, selectedOption: SelectOption) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: selectedOption,
+    }));
+  };
 
   // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
@@ -83,13 +114,13 @@ const PensionAlimenticiaDemandado: React.FC = () => {
         solicitudId: store.solicitudId,
         demandado: {
           nombreCompleto: formData.nombreCompleto,
-          estadoCivil: formData.estadoCivil.value,
+          estadoCivil: formData.estadoCivil,
           cedula: formData.cedula,
-          nacionalidad: formData.nacionalidad.label,
+          nacionalidad: formData.nacionalidad,
           direccion: formData.direccion,
-          pais: formData.pais.label,
-          provincia: formData.provincia.label,
-          corregimiento: formData.corregimiento.label,
+          pais: formData.pais,
+          provincia: formData.provincia,
+          corregimiento: formData.corregimiento,
           ingresosTrabajo: formData.ingresosTrabajo,
           detalleDireccion: formData.detalleDireccion,
           direccionTrabajo: formData.direccionTrabajo,
@@ -150,7 +181,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             <select
               name="estadoCivil"
               value={formData.estadoCivil.value}
-              onChange={handleChange}
+              onChange={(e) => handleSelectChange('estadoCivil', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
             >
@@ -176,7 +207,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             <select
               name="nacionalidad"
               value={formData.nacionalidad.value}
-              onChange={handleChange}
+              onChange={(e) => handleSelectChange('nacionalidad', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
             >
               {paises.map((pais) => (
@@ -193,7 +224,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             <select
               name="provincia"
               value={formData.provincia.value}
-              onChange={handleChange}
+              onChange={(e) => handleSelectChange('provincia', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
             >
@@ -211,7 +242,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             <select
               name="corregimiento"
               value={formData.corregimiento.value}
-              onChange={handleChange}
+              onChange={(e) => handleSelectChange('corregimiento', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
             >

@@ -8,6 +8,8 @@ import { Country, State, City } from 'country-state-city';
 import InformacionDelDemandante from './InformacionDelDemandante'
 import InformacionGeneralAdicional from './InformacionGeneralAdicional'
 import ToggleTextComponent from './ToggleTextComponen'
+import {useFetchSolicitud} from '@utils/fetchCurrentRequest'
+import get from 'lodash/get';
 
 // Define the type for the select options
 interface SelectOption {
@@ -15,10 +17,21 @@ interface SelectOption {
   label: string;
 }
 
+const countryCodes = {
+  CO: '+57',
+  US: '+1',
+  MX: '+52',
+  AR: '+54',
+  BR: '+55',
+  PA: '+507', 
+  // Add more as needed
+};
+
 const PensionAlimenticiaDemandante: React.FC = () => {
   const [formData, setFormData] = useState({
     nombreCompleto: '',
-    telefono: '',
+    telefonoSolicita: '',
+    telefonoCodigo: 'PA', 
     cedula: '',
     email: '',
     confirmEmail: '',
@@ -123,6 +136,28 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   }
 
   const { store, setStore } = context;
+  const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+
+  useEffect(() => {
+    if (store.solicitudId) {
+      fetchSolicitud(); 
+    }
+  }, [store.solicitudId]);
+
+  useEffect(() => {
+    if (store.request) {
+      console.log("🚀 ~ Updated store.request:", store.request);
+      const demandante = get(store.request, 'demandante', {});
+
+      if (demandante && Object.keys(demandante).length > 0) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          ...demandante,
+        }));
+      }
+    }
+  }, [store.request]);
+
 
   // Load countries on component mount
   useEffect(() => {
@@ -144,7 +179,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     }
   }, [formData.provincia]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -178,32 +213,34 @@ const PensionAlimenticiaDemandante: React.FC = () => {
         solicitudId: store.solicitudId,
         demandante: {
           nombreCompleto: formData.nombreCompleto,
-          telefono: formData.telefono,
+          telefonoSolicita: formData.telefonoSolicita || '',
+          telefonoCodigo: formData.telefonoCodigo || '',
           cedula: formData.cedula,
           email: formData.email,
+          nacionalidad: formData.nacionalidad,
+          confirmEmail: formData.confirmEmail,
           direccion: formData.direccion,
           detalleDireccion: formData.detalleDireccion,
-          estadoCivil: formData.estadoCivil.value,
-          relacionDemandado: formData.relacionDemandado.value,
-          nacionalidad: formData.nacionalidad.value,
-          provincia: formData.provincia.value,
-          corregimiento: formData.corregimiento.value,
-          mantieneIngresos: formData.mantieneIngresos.value,
+          estadoCivil: formData.estadoCivil,
+          relacionDemandado: formData.relacionDemandado,
+          provincia: formData.provincia,
+          corregimiento: formData.corregimiento,
+          mantieneIngresos: formData.mantieneIngresos,
           lugarTrabajo: formData.mantieneIngresos.value === 'si' ? formData.lugarTrabajo : '', 
           ingresosMensuales: formData.mantieneIngresos.value === 'si' ? formData.ingresosMensuales : '', 
-          viveEn: formData.mantieneIngresos.value === 'si' ? formData.viveEn.value : '', 
-          estudia: formData.estudia.value,
+          viveEn: formData.mantieneIngresos.value === 'si' ? formData.viveEn : '', 
+          estudia: formData.estudia,
           lugarEstudio: formData.estudia.value === 'si' ? formData.lugarEstudio : '',
           anoCursando: formData.estudia.value === 'si' ? formData.anoCursando : '',
-          tipoEstudio: formData.estudia.value === 'si' ? formData.tipoEstudio.value : '',
-          tiempoCompleto: formData.estudia.value === 'si' ? formData.tiempoCompleto.value : '',
-          parentescoPension: formData.estudia.value === 'si' ? formData.parentescoPension.value : '',
-          representaMenor: formData.representaMenor.value,
-          tipoPersona: formData.representaMenor.value === 'si' ? formData.tipoPersona.value : '',
+          tipoEstudio: formData.estudia.value === 'si' ? formData.tipoEstudio : '',
+          tiempoCompleto: formData.estudia.value === 'si' ? formData.tiempoCompleto : '',
+          parentescoPension: formData.estudia.value === 'si' ? formData.parentescoPension : '',
+          representaMenor: formData.representaMenor,
+          tipoPersona: formData.representaMenor.value === 'si' ? formData.tipoPersona : '',
           nombreCompletoMenor: formData.representaMenor.value === 'si' ? formData.nombreCompletoMenor : '',
           fechaNacimientoMenor: formData.representaMenor.value === 'si' ? formData.fechaNacimientoMenor : '',
           edadMenor: formData.representaMenor.value === 'si' ? formData.edadMenor : '',
-          parentescoConDemandado: formData.representaMenor.value === 'si' ? formData.parentescoConDemandado.value : ''
+          parentescoConDemandado: formData.representaMenor.value === 'si' ? formData.parentescoConDemandado : ''
         },
       };
 
@@ -286,12 +323,23 @@ const PensionAlimenticiaDemandante: React.FC = () => {
           </div>
           <div>
             <label className="block mb-2 text-sm">Número de teléfono</label>
+            <select
+              name="telefonoCodigo"
+              value={formData.telefonoCodigo}
+              onChange={handleChange}
+              className=" p-2 border mr-3 border-gray-700 rounded bg-gray-800 text-white"
+            >
+              {Object.entries(countryCodes).map(([code, dialCode]) => (
+                <option key={code} value={code}>{code}: {dialCode}</option>
+              ))}
+            </select>
             <input
               type="text"
-              name="telefono"
-              value={formData.telefono}
+              name="telefonoSolicita"
+              value={formData.telefonoSolicita}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              className=" p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              placeholder="Número de teléfono"
               required
             />
           </div>
