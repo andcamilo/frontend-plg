@@ -5,16 +5,8 @@ import AppStateContext from '@context/context';
 import { checkAuthToken } from '@utils/checkAuthToken';
 import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader';
+import countryCodes from '@utils/countryCode';
 
-const countryCodes = {
-  CO: '+57',
-  US: '+1',
-  MX: '+52',
-  AR: '+54',
-  BR: '+55',
-  PA: '+507', 
-  // Add more as needed
-};
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
