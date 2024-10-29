@@ -6,7 +6,7 @@ import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
 
-const fundacionSolicitante: React.FC = () => {  
+const FundacionSolicitante: React.FC = () => {  
     const context = useContext(FundacionContext);  
 
     if (!context) {
@@ -57,7 +57,7 @@ const fundacionSolicitante: React.FC = () => {
         }));
         setErrors((prevErrors) => ({
             ...prevErrors,
-            [name]: false // Resetea el error si el usuario empieza a escribir de nuevo
+            [name]: false
         }));
     };
 
@@ -204,7 +204,7 @@ const fundacionSolicitante: React.FC = () => {
                     timer: 1500,
                 });
             } else if (!cuenta) {
-                await sendCreateRequest(""); // Send empty or default cuenta
+                await sendCreateRequest("");
             }
         } catch (error) {
             Swal.fire({
@@ -218,7 +218,6 @@ const fundacionSolicitante: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-
     };
 
     const sendCreateRequest = async (cuenta: string) => {
@@ -411,4 +410,4 @@ const fundacionSolicitante: React.FC = () => {
     );
 };
 
-export default fundacionSolicitante;  
+export default FundacionSolicitante;

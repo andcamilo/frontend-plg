@@ -155,7 +155,7 @@ const ActivosFundacion: React.FC = () => {
                 setStore((prevState) => ({
                     ...prevState,
                     solicitudAdicional: true,
-                    currentPosition: 15, // Avanzar al siguiente paso
+                    currentPosition: 15, 
                 }));
                 Swal.fire({
                     position: "top-end",
@@ -200,8 +200,9 @@ const ActivosFundacion: React.FC = () => {
                 </span>
             </h1>
             <p className="text-gray-300 mt-4">
-                En esta sección, debes listar los activos que tendrá la Fundación y dónde están ubicados. Si aún no los tienes definidos, simplemente escribe 'No Aplica' en el primer campo y podrás continuar.
+                En esta sección, debes listar los activos que tendrá la Fundación y dónde están ubicados. Si aún no los tienes definidos, simplemente escribe &apos;No Aplica&apos; en el primer campo y podrás continuar.
             </p>
+
 
             <form className="mt-4" onSubmit={handleSubmit}>
                 {formData.activos.map((activo, index) => (

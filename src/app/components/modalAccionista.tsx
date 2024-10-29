@@ -9,14 +9,13 @@ interface ModalAccionistasProps {
 }
 
 const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
 
     const context = useContext(AppStateContext);
     if (!context) {
         throw new Error('AppStateContext must be used within an AppStateProvider');
     }
 
-    const { store } = context;
+    const { store, setStore } = context;
     const solicitudId = store.solicitudId; // Obtenemos el `solicitudId` del contexto
 
     const [personas, setPersonas] = useState([]); // Estado para guardar las personas de la base de datos
