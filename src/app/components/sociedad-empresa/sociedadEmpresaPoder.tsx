@@ -59,22 +59,36 @@ const SociedadEmpresaPoder: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            // Llamada a la API de client
-            const clientResponse = await axios.get('/api/client', {
+            const response = await axios.get(`/api/get-people-id`, {
                 params: {
-                    limit: rowsPerPage,
-                    page: currentPage,
-                },
+                    solicitudId: solicitudId
+                }
             });
-
-            const { personas, pagination: clientPagination } = clientResponse.data;
-
-            // Filtramos los poderes de personas (API client)
-            const filteredData = personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && persona.poder
+    
+            const people = response.data;
+    
+            if (!people || people.length === 0) {
+                setData([]);
+                setTotalRecords(0);
+                setTotalPages(1);
+                setHasPrevPage(false);
+                setHasNextPage(false);
+                return;
+            }
+    
+            // Filtrar solo las personas que tienen el campo `poder`
+            const personasConPoder = people.filter((persona: any) => persona.poder);
+    
+            // Calcular paginación solo con los registros filtrados
+            const totalRecords = personasConPoder.length;
+            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+    
+            const paginatedData = personasConPoder.slice(
+                (currentPage - 1) * rowsPerPage,
+                currentPage * rowsPerPage
             );
-
-            const formattedClientData = filteredData.map((persona: any, index: number) => ({
+    
+            const formattedData = paginatedData.map((persona: any) => ({
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
                         <>
@@ -88,20 +102,18 @@ const SociedadEmpresaPoder: React.FC = () => {
                     )
                     : persona.nombreApellido || '---',
                 correo: persona.email || '---',
-                accion: '...', 
+                accion: '...',
             }));
-
-            const combinedData: PoderData[] = [...formattedClientData];
-
-            setData(combinedData);
-            setTotalRecords(combinedData.length);
-            setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
-            setHasPrevPage(clientPagination.hasPrevPage );
-            setHasNextPage(clientPagination.hasNextPage );
+    
+            setData(formattedData); // Asigna los registros filtrados y formateados
+            setTotalRecords(totalRecords); // Total de registros filtrados
+            setTotalPages(totalPages); // Páginas totales después del filtro
+            setHasPrevPage(currentPage > 1); // Verifica si hay página anterior
+            setHasNextPage(currentPage < totalPages); // Verifica si hay página siguiente
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching people:', error);
         }
-    };
+    };        
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -159,8 +171,10 @@ const SociedadEmpresaPoder: React.FC = () => {
                     )}
                 </button>
             </div>
-
-            <ModalPoder isOpen={isModalOpen} onClose={closeModal} />
+            
+            {isModalOpen
+                && <ModalPoder onClose={closeModal} />
+            }
         </div>
     );
 };

@@ -196,7 +196,7 @@ const SociedadEmpresaResumen: React.FC = () => {
                 <h2 className="text-2xl font-bold mt-2 mb-4">Poder de la Sociedad</h2>
                 {peopleData.length > 0 ? (
                     peopleData
-                        .filter(person => person.poder)  // Filtrar solo las personas que tienen el campo accionista
+                        .filter(person => person.poder)  
                         .map((person, index) => (
                             <div key={index}>
                                 {renderField(`Poder #${index + 1}`, renderPersonName(person))}
@@ -211,22 +211,22 @@ const SociedadEmpresaResumen: React.FC = () => {
                 {solicitudData.actividades ? (
                     <>
                         {/* Si la opción es "SiYaTengoLocal", mostrar los datos comerciales */}
-                        {solicitudData.actividades.actividadesDentroOFueraPanama === 'SiYaTengoLocal' && (
+                        {solicitudData.actividades.actividadesDentroPanama === 'SiYaTengoLocal' && (
                             <>
                                 <h5 className="text-xl font-bold mt-2 mb-4">Actividades dentro de Panamá</h5>
                                 <div className="ml-6">
-                                    {renderField('Nombre Comercial', solicitudData.actividades.actividadesDentroPanama.nombreComercial)}
-                                    {renderField('Dirección Comercial', solicitudData.actividades.actividadesDentroPanama.direccionComercial)}
-                                    {renderField('Cómo llegar', solicitudData.actividades.actividadesDentroPanama.comoLlegar)}
-                                    {renderField('Provincia', solicitudData.actividades.actividadesDentroPanama.provincia)}
-                                    {renderField('Corregimiento', solicitudData.actividades.actividadesDentroPanama.corregimiento)}
-                                    {renderField('Número de Local', solicitudData.actividades.actividadesDentroPanama.numeroLocal)}
-                                    {renderField('Nombre del Edificio', solicitudData.actividades.actividadesDentroPanama.nombreEdificio)}
-                                    {renderField('Inversión de la sucursal', solicitudData.actividades.actividadesDentroPanama.inversionSucursal)}
-                                    {renderField('Cantidad de Trabajadores', solicitudData.actividades.actividadesDentroPanama.cantidadTrabajadores)}
-                                    {renderField('Mantener Rótulo', solicitudData.actividades.actividadesDentroPanama.mantenerRotulo)}
-                                    {renderField('Teléfono', solicitudData.actividades.actividadesDentroPanama.telefono)}
-                                    {renderField('Correo Electrónico', solicitudData.actividades.actividadesDentroPanama.correoElectronico)}
+                                    {renderField('Nombre Comercial', solicitudData.actividades.actividadesDentroPanamaData.nombreComercial)}
+                                    {renderField('Dirección Comercial', solicitudData.actividades.actividadesDentroPanamaData.direccionComercial)}
+                                    {renderField('Cómo llegar', solicitudData.actividades.actividadesDentroPanamaData.comoLlegar)}
+                                    {renderField('Provincia', solicitudData.actividades.actividadesDentroPanamaData.provincia)}
+                                    {renderField('Corregimiento', solicitudData.actividades.actividadesDentroPanamaData.corregimiento)}
+                                    {renderField('Número de Local', solicitudData.actividades.actividadesDentroPanamaData.numeroLocal)}
+                                    {renderField('Nombre del Edificio', solicitudData.actividades.actividadesDentroPanamaData.nombreEdificio)}
+                                    {renderField('Inversión de la sucursal', solicitudData.actividades.actividadesDentroPanamaData.inversionSucursal)}
+                                    {renderField('Cantidad de Trabajadores', solicitudData.actividades.actividadesDentroPanamaData.cantidadTrabajadores)}
+                                    {renderField('Mantener Rótulo', solicitudData.actividades.actividadesDentroPanamaData.mantenerRotulo)}
+                                    {renderField('Teléfono', solicitudData.actividades.actividadesDentroPanamaData.telefono)}
+                                    {renderField('Correo Electrónico', solicitudData.actividades.actividadesDentroPanamaData.correoElectronico)}
                                     {renderField('Actividad #1', solicitudData.actividades.actividad1)}
                                     {renderField('Actividad #2', solicitudData.actividades.actividad2)}
                                     {renderField('Actividad #3', solicitudData.actividades.actividad3)}
@@ -246,7 +246,7 @@ const SociedadEmpresaResumen: React.FC = () => {
                         )}
 
                         {/* Si la opción es "SiRequieroSociedadPrimero", mostrar solo las actividades */}
-                        {solicitudData.actividades.actividadesDentroOFueraPanama === 'SiRequieroSociedadPrimero' && (
+                        {solicitudData.actividades.actividadesDentroPanama === 'SiRequieroSociedadPrimero' && (
                             <>
                                 <h4 className="text-xl font-bold mt-2 mb-4">Actividades Comerciales</h4>
                                 <div className="ml-6">
@@ -269,7 +269,7 @@ const SociedadEmpresaResumen: React.FC = () => {
                         )}
 
                         {/* Si la opción es "No" y es "offshore", mostrar las actividades offshore */}
-                        {solicitudData.actividades.actividadesDentroOFueraPanama === 'No' && solicitudData.actividades.actividadesOffshore && (
+                        {solicitudData.actividades.actividadesDentroPanama === 'No' && solicitudData.actividades.actividadesOffshore && (
                             <>
                                 <h3 className="text-xl font-bold mt-2 mb-4">Actividades Offshore</h3>
                                 <div className="ml-6">

@@ -18,6 +18,7 @@ export interface FundacionState {
     resumen: boolean;
     solicitudId: string;
     currentPosition: number;
+    request: any;
 }
 
 // Definir el tipo del contexto de Fundación

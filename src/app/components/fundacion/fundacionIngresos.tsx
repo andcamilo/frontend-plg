@@ -1,9 +1,11 @@
 "use client";
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import ClipLoader from 'react-spinners/ClipLoader';
 import AppStateContext from '@context/fundacionContext';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import get from 'lodash/get';
 
 const IngresosFundacion: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -28,13 +30,13 @@ const IngresosFundacion: React.FC = () => {
         const { value, checked } = e.target;
         setFormData((prevData) => {
             if (checked) {
-                // Si el checkbox está seleccionado, agregar el activo
+                // Si el checkbox está seleccionado, agregar el ingreso
                 return {
                     ...prevData,
                     ingresos: [...prevData.ingresos, value],
                 };
             } else {
-                // Si se deselecciona, remover el activo del array
+                // Si se deselecciona, remover el ingreso del array
                 return {
                     ...prevData,
                     ingresos: prevData.ingresos.filter((item) => item !== value),
@@ -51,15 +53,45 @@ const IngresosFundacion: React.FC = () => {
         }));
     };
 
+    const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+    useEffect(() => {
+        if (store.solicitudId) {
+            fetchSolicitud();
+        }
+    }, [store.solicitudId]);
+
+    useEffect(() => {
+        if (store.request) {
+            const ingresosData = get(store.request, 'ingresos', {}); // Acceder al campo "ingresos"
+            const selectedIngresos = get(ingresosData, 'ingresos', []); // Extraer el arreglo de ingresos seleccionados
+
+            // Si existen datos de ingresos en la solicitud, actualizar el formulario con estos valores
+            if (ingresosData && Object.keys(ingresosData).length > 0) {
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    ingresos: selectedIngresos, // Asignar los ingresos seleccionados
+                    otroIngreso: ingresosData.otroIngreso || '', // Si existe, cargar el campo "otroIngreso"
+                }));
+
+                // Si el campo "otroIngreso" tiene un valor, mostrar el campo "Otro"
+                if (ingresosData.otroIngreso) {
+                    setMostrarOtro(true);
+                }
+            }
+        }
+    }, [store.request]);
+
+    const [inputError, setInputError] = useState(false);
+
     // Validar que al menos un activo esté seleccionado
     const validateSelection = () => {
-        const isAnySelected = formData.ingresos.length > 0 || (mostrarOtro && formData.otroIngreso.trim() !== '');
+        const isAnySelected = formData.ingresos.length > 0;
 
         if (!isAnySelected) {
             Swal.fire({
                 position: "top-end",
                 icon: "warning",
-                title: "Debe seleccionar al menos un activo.",
+                title: "Debe seleccionar al menos un ingreso",
                 showConfirmButton: false,
                 timer: 2500,
                 timerProgressBar: true,
@@ -75,6 +107,41 @@ const IngresosFundacion: React.FC = () => {
             });
             return false;
         }
+
+        if (mostrarOtro && formData.otroIngreso.trim() === '') {
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Debe especificar el ingreso en la opción 'Otro'.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar',
+                },
+            });
+
+            // Marcar el campo como erróneo
+            setInputError(true);
+
+            // Focalizar automáticamente en el campo
+            setTimeout(() => {
+                const otroIngresoInput = document.querySelector('input[name="otroIngreso"]') as HTMLInputElement;
+                if (otroIngresoInput) {
+                    otroIngresoInput.focus();
+                }
+            }, 100);
+
+            return false;
+        }
+
+
         return true;
     };
 
@@ -139,22 +206,22 @@ const IngresosFundacion: React.FC = () => {
                     Indique la fuente de ingresos de la cual se manejará la fundación:
                 </p>
                 <div className="flex flex-col space-y-4 mb-4">
-                    {[ 
+                    {[
                         { label: 'Propiedad', value: 'propiedad' },
                         { label: 'Vehículo', value: 'vehiculo' },
                         { label: 'Inmuebles', value: 'inmuebles' },
                         { label: 'Cuentas Bancarias', value: 'cuentasBancarias' },
-                        { label: 'Inversiones', value: 'inversiones' }
-                    ].map((activo) => (
-                        <label key={activo.value} className="flex items-center text-white">
+                        { label: 'Inversiones', value: 'inversiones' },
+                    ].map((ingreso) => (
+                        <label key={ingreso.value} className="flex items-center text-white">
                             <input
                                 type="checkbox"
-                                value={activo.value}
-                                checked={formData.ingresos.includes(activo.value)}
-                                onChange={handleCheckboxChange}
+                                value={ingreso.value}
+                                checked={formData.ingresos.includes(ingreso.value)} // Comprobar si está seleccionado
+                                onChange={handleCheckboxChange} // Maneja los cambios en los checkboxes
                                 className="mr-3"
                             />
-                            {activo.label}
+                            {ingreso.label}
                         </label>
                     ))}
 
@@ -169,14 +236,18 @@ const IngresosFundacion: React.FC = () => {
                         />
                         Otro
                     </label>
+
                     {mostrarOtro && (
                         <input
                             type="text"
-                            name="otroActivo"
+                            name="otroIngreso"
                             value={formData.otroIngreso}
-                            onChange={handleInputChange}
-                            className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                            placeholder="Especifique el activo"
+                            onChange={(e) => {
+                                handleInputChange(e);
+                                setInputError(e.target.value.trim() === '');
+                            }}
+                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${inputError ? 'border border-red-500' : ''}`}
+                            placeholder="Especifique el ingreso"
                         />
                     )}
                 </div>

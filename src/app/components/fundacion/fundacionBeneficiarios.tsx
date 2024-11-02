@@ -81,20 +81,36 @@ const FundacionBeneficiarios: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            const clientResponse = await axios.get('/api/client', {
+            const response = await axios.get(`/api/get-people-id`, {
                 params: {
-                    limit: rowsPerPage,
-                    page: currentPage,
-                },
+                    solicitudId: solicitudId
+                }
             });
 
-            const { personas, pagination: clientPagination } = clientResponse.data;
+            const people = response.data;
 
-            const filteredData = personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && persona.beneficiariosFundacion 
+            if (!people || people.length === 0) {
+                setData([]);
+                setTotalRecords(0);
+                setTotalPages(1);
+                setHasPrevPage(false);
+                setHasNextPage(false);
+                return;
+            }
+
+            // Filtrar solo las personas que tienen el campo `beneficiariosFundacion`
+            const beneficiarios = people.filter((persona: any) => persona.beneficiariosFundacion);
+
+            // Calcular paginación solo con los registros filtrados
+            const totalRecords = beneficiarios.length;
+            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+
+            const paginatedData = beneficiarios.slice(
+                (currentPage - 1) * rowsPerPage,
+                currentPage * rowsPerPage
             );
 
-            const formattedClientData = filteredData.map((persona: any, index: number) => ({
+            const formattedData = paginatedData.map((persona: any) => ({
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
                         <>
@@ -108,18 +124,16 @@ const FundacionBeneficiarios: React.FC = () => {
                     )
                     : persona.nombreApellido || '---',
                 correo: persona.email || '---',
-                accion: '...', 
+                accion: '...',
             }));
 
-            const combinedData: BeneficiarioData[] = [...formattedClientData];
-
-            setData(combinedData);
-            setTotalRecords(combinedData.length);
-            setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
-            setHasPrevPage(clientPagination.hasPrevPage );
-            setHasNextPage(clientPagination.hasNextPage );
+            setData(formattedData); 
+            setTotalRecords(totalRecords); 
+            setTotalPages(totalPages); 
+            setHasPrevPage(currentPage > 1); 
+            setHasNextPage(currentPage < totalPages); 
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching people:', error);
         }
     };
 
@@ -180,7 +194,10 @@ const FundacionBeneficiarios: React.FC = () => {
                 </button>
             </div>
 
-            <ModalBeneficiario isOpen={isModalOpen} onClose={closeModal} />
+            {isModalOpen
+                && <ModalBeneficiario onClose={closeModal} />
+            }
+
         </div>
     );
 };

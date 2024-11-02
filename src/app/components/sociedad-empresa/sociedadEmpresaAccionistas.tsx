@@ -1,10 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 import AppStateContext from '@context/sociedadesContext';
 import ClipLoader from 'react-spinners/ClipLoader';
-import ModalAccionistas from '@components/modalAccionista'; 
+import ModalAccionistas from '@components/modalAccionista';
 import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
-import { getRequests } from '@api/request';
 import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 
@@ -83,23 +82,36 @@ const SociedadEmpresaAccionistas: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            const clientResponse = await axios.get('/api/client', {
+            const response = await axios.get(`/api/get-people-id`, {
                 params: {
-                    limit: rowsPerPage,
-                    page: currentPage,
-                },
+                    solicitudId: solicitudId
+                }
             });
-
-            const { personas, pagination: clientPagination } = clientResponse.data;
-
-            const { solicitudes, pagination: requestPagination } = await getRequests(rowsPerPage, currentPage);
-            console.log("Solicitudes desde API request:", solicitudes);
-
-            const filteredData = personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && persona.accionista
+    
+            const people = response.data;
+    
+            if (!people || people.length === 0) {
+                setData([]);
+                setTotalRecords(0);
+                setTotalPages(1);
+                setHasPrevPage(false);
+                setHasNextPage(false);
+                return;
+            }
+    
+            // Filtrar solo las personas que tienen el campo `accionista`
+            const accionistas = people.filter((persona: any) => persona.accionista);
+    
+            // Calcular paginación solo con los registros filtrados
+            const totalRecords = accionistas.length;
+            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+    
+            const paginatedData = accionistas.slice(
+                (currentPage - 1) * rowsPerPage,
+                currentPage * rowsPerPage
             );
-
-            const formattedClientData = filteredData.map((persona: any, index: number) => ({
+    
+            const formattedData = paginatedData.map((persona: any) => ({
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
                         <>
@@ -113,20 +125,18 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                     )
                     : persona.nombreApellido || '---',
                 '% de Acciones': persona.accionista.porcentajeAcciones || '---',
-                acciones: '...', 
+                acciones: '...',
             }));
-
-            const combinedData: AccionistaData[] = [...formattedClientData];
-
-            setData(combinedData);
-            setTotalRecords(combinedData.length);
-            setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
-            setHasPrevPage(clientPagination.hasPrevPage || requestPagination.hasPrevPage);
-            setHasNextPage(clientPagination.hasNextPage || requestPagination.hasNextPage);
+    
+            setData(formattedData);
+            setTotalRecords(totalRecords);
+            setTotalPages(totalPages);
+            setHasPrevPage(currentPage > 1);
+            setHasNextPage(currentPage < totalPages);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching people:', error);
         }
-    };
+    };    
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -181,9 +191,11 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                         'Continuar'
                     )}
                 </button>
-            </div>
-
-            <ModalAccionistas isOpen={isModalOpen} onClose={closeModal} />
+            </div>  
+            
+            {isModalOpen
+                && <ModalAccionistas onClose={closeModal} />
+            }  
         </div>
     );
 };

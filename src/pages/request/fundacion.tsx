@@ -15,7 +15,8 @@ import FundacionPoder from '@components/fundacion/fundacionPoder';
 import FundacionObjetivos from '@components/fundacion/fundacionObjetivos';
 import FundacionIngresos from '@components/fundacion/fundacionIngresos';
 import FundacionActivos from '@components/fundacion/fundacionActivos'; 
-import FundacionSolicitudAdicional from '@components/fundacion/solicitudAdicional';
+import FundacionSolicitudAdicional from '@components/fundacion/solicitudAdicional'; 
+import FundacionResumen from '@components/fundacion/fundacionResumen';
 
 const Fundacion: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -68,8 +69,8 @@ const Fundacion: React.FC = () => {
                 return <FundacionActivos />; 
             case 15:
                 return <FundacionSolicitudAdicional />; 
-            /* case 16:
-                return <FundacionResumen />; */
+            case 16:
+                return <FundacionResumen />; 
             default:
                 return <FundacionBienvenido />;
         }

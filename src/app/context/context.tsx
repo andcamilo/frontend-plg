@@ -53,7 +53,6 @@ export interface AppState {
   currentPosition: number;
   solictud: FormData;
   request: any;
-  
 }
 
 // Initial state for the context

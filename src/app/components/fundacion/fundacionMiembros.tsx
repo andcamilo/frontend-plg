@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
-import FundacionContext from '@context/fundacionContext'; 
+import FundacionContext from '@context/fundacionContext';
 import ClipLoader from 'react-spinners/ClipLoader';
-import ModalMiembros from '@components/modalMiembros'; // Cambiar el modal a miembros
+import ModalMiembros from '@components/modalMiembros'; 
 import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -11,18 +11,18 @@ import Swal from 'sweetalert2';
 // Define el tipo de datos que manejarás en el estado `data`
 interface MiembroData {
     tipo: string;
-    nombre: React.ReactNode; 
+    nombre: React.ReactNode;
     acciones: string;
 }
 
 const FundacionMiembros: React.FC = () => {
-    const context = useContext(FundacionContext); 
+    const context = useContext(FundacionContext);
 
     if (!context) {
         throw new Error('FundacionContext must be used within a FundacionStateProvider');
     }
 
-    const [data, setData] = useState<MiembroData[]>([]); 
+    const [data, setData] = useState<MiembroData[]>([]);
     const [totalRecords, setTotalRecords] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -42,7 +42,7 @@ const FundacionMiembros: React.FC = () => {
     };
 
     const [isLoading, setIsLoading] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleContinue = () => {
         if (data.length < 3) {
@@ -82,24 +82,37 @@ const FundacionMiembros: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            const clientResponse = await axios.get('/api/client', {
+            const response = await axios.get(`/api/get-people-id`, {
                 params: {
-                    limit: rowsPerPage,
-                    page: currentPage,
-                },
+                    solicitudId: solicitudId
+                }
             });
-
-            const { personas, pagination: clientPagination } = clientResponse.data;
-
-            const { solicitudes, pagination: requestPagination } = await getRequests(rowsPerPage, currentPage);
-            console.log("Solicitudes desde API request:", solicitudes);
-
-            const filteredData = personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && persona.miembro && persona.miembro.esActivo === true
+    
+            const people = response.data;
+    
+            if (!people || people.length === 0) {
+                setData([]);
+                setTotalRecords(0);
+                setTotalPages(1);
+                setHasPrevPage(false);
+                setHasNextPage(false);
+                return;
+            }
+    
+            // Filtrar solo las personas que tienen el campo `miembro`
+            const miembros = people.filter((persona: any) => persona.miembro);
+    
+            // Calcular paginación solo con los registros filtrados
+            const totalRecords = miembros.length;
+            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+    
+            const paginatedData = miembros.slice(
+                (currentPage - 1) * rowsPerPage,
+                currentPage * rowsPerPage
             );
-
-            const formattedClientData = filteredData.map((persona: any) => ({
-                tipo: persona.miembro?.servicio || '---', 
+    
+            const formattedData = paginatedData.map((persona: any) => ({
+                tipo: persona.miembro?.servicio || '---',
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
                         <>
@@ -114,35 +127,37 @@ const FundacionMiembros: React.FC = () => {
                     : persona.nombreApellido || '---',
                 acciones: '...',
             }));
-
-            const requestData = solicitudes.find((solicitud: any) => String(solicitud.id) === String(solicitudId));
-            console.log("Datos de solicitud desde API request:", requestData, "Solicitud ID:", solicitudId);
-
+    
+            const solicitudes = await axios.get('/api/get-request-id', {
+                params: {
+                    solicitudId
+                },
+            });
+    
+            const requestData = solicitudes.data;
             let formattedRequestData = [];
             if (requestData && requestData.miembros) {
                 formattedRequestData = requestData.miembros
-                    .filter((miembro: any) => {
-                        console.log("Miembro:", miembro); 
-                        return miembro.servicio.trim().toLowerCase() === "miembro nominal"; 
-                    })
+                    .filter((miembro: any) => miembro.servicio.trim().toLowerCase() === "miembro nominal")
                     .map((miembro: any) => ({
                         tipo: miembro.servicio,
-                        nombre: miembro.nombre || '---', 
+                        nombre: miembro.nombre || '---',
                         acciones: '...',
                     }));
             }
-
-            const combinedData: MiembroData[] = [...formattedClientData, ...formattedRequestData];
-
+    
+            const combinedData: MiembroData[] = [...formattedData, ...formattedRequestData];
+    
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
-            setHasPrevPage(clientPagination.hasPrevPage || requestPagination.hasPrevPage);
-            setHasNextPage(clientPagination.hasNextPage || requestPagination.hasNextPage);
+            setHasPrevPage(currentPage > 1);
+            setHasNextPage(currentPage < totalPages);
+    
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching people:', error);
         }
-    };
+    };    
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -199,9 +214,9 @@ const FundacionMiembros: React.FC = () => {
                 </button>
             </div>
             {isModalOpen
-             && <ModalMiembros onClose={closeModal} />
+                && <ModalMiembros onClose={closeModal} />
             }
-       
+
         </div>
     );
 };

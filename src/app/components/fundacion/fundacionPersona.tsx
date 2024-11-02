@@ -76,19 +76,34 @@ const SociedadEmpresaPersona: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get('/api/client', {
+            const response = await axios.get(`/api/get-people-id`, {
                 params: {
-                    limit: rowsPerPage,
-                    page: currentPage,
-                },
+                    solicitudId: solicitudId
+                }
             });
-
-            const { personas, totalRecords, pagination } = response.data;
-
-            // Filtramos las personas que coincidan con el `solicitudId`
-            const filteredData = personas.filter((persona: any) => persona.solicitudId === solicitudId);
-
-            const formattedData = filteredData.map((persona: any) => ({
+    
+            const people = response.data;
+    
+            if (!people || people.length === 0) {
+                setData([]);
+                setTotalRecords(0);
+                setTotalPages(1);
+                setHasPrevPage(false);
+                setHasNextPage(false);
+                return;
+            }
+    
+            // Calcular paginación
+            const totalRecords = people.length;
+            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+    
+            const paginatedData = people.slice(
+                (currentPage - 1) * rowsPerPage,
+                currentPage * rowsPerPage
+            );
+    
+            // Formatear los datos con la lógica para mostrar el nombre
+            const formattedData = paginatedData.map((persona: any) => ({
                 tipo: persona.tipoPersona,
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
@@ -97,7 +112,7 @@ const SociedadEmpresaPersona: React.FC = () => {
                             <br />
                             <span className="text-gray-400 text-sm">
                                 <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
-                                {persona.personaJuridica.nombreJuridico}
+                                {persona.personaJuridica?.nombreJuridico || 'N/A'}
                             </span>
                         </>
                     )
@@ -105,18 +120,17 @@ const SociedadEmpresaPersona: React.FC = () => {
                 Correo: persona.email,
                 acciones: '...',
             }));
-
-            setData(formattedData);
-            setTotalRecords(filteredData.length); // Solo cuenta los registros filtrados
-            setTotalPages(Math.ceil(filteredData.length / rowsPerPage));
-            setHasPrevPage(pagination.hasPrevPage);
-            setHasNextPage(pagination.hasNextPage);
+    
+            setData(formattedData); // Aquí se asignan los registros formateados
+            setTotalRecords(totalRecords); // Establece el número total de registros
+            setTotalPages(totalPages); // Calcula las páginas totales
+            setHasPrevPage(currentPage > 1); // Verifica si hay página anterior
+            setHasNextPage(currentPage < totalPages); // Verifica si hay página siguiente
         } catch (error) {
             console.error('Error fetching people:', error);
         }
     };
-
-
+    
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
             <h1 className="text-white text-4xl font-bold">Integrantes de la Fundación</h1>
@@ -171,8 +185,10 @@ const SociedadEmpresaPersona: React.FC = () => {
                     )}
                 </button>
             </div>
-
-            <ModalPersona isOpen={isModalOpen} onClose={closeModal} />
+            
+            {isModalOpen
+                && <ModalPersona onClose={closeModal} />
+            }
         </div>
     );
 };

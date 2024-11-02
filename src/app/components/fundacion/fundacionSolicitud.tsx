@@ -1,13 +1,16 @@
 "use client";
 import React, { useState, useEffect, useContext, useRef } from "react";
 import Swal from "sweetalert2";
-import FundacionContext from "@context/fundacionContext"; 
+import FundacionContext from "@context/fundacionContext";
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
+import countryCodes from '@utils/countryCode';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest'; 
+import get from 'lodash/get';
 
-const FundacionSolicitante: React.FC = () => {  
-    const context = useContext(FundacionContext);  
+const FundacionSolicitante: React.FC = () => {
+    const context = useContext(FundacionContext);
 
     if (!context) {
         throw new Error("FundacionContext must be used within a FundacionStateProvider");
@@ -18,6 +21,7 @@ const FundacionSolicitante: React.FC = () => {
     const [formData, setFormData] = useState({
         nombreCompleto: "",
         telefono: "",
+        telefonoCodigo: 'PA',
         cedulaPasaporte: "",
         email: "",
         confirmEmail: "",
@@ -49,16 +53,45 @@ const FundacionSolicitante: React.FC = () => {
         }
     }, []);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: type === "checkbox" ? checked : value,
-        }));
-        setErrors((prevErrors) => ({
-            ...prevErrors,
-            [name]: false
-        }));
+    const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+    useEffect(() => {
+        if (store.solicitudId) {
+            fetchSolicitud(); 
+        }
+    }, [store.solicitudId]);
+
+    useEffect(() => {
+        if (store.request) {
+            const nombreCompleto = get(store.request, 'nombreSolicita', '');
+            const telefono = get(store.request, 'telefonoSolicita', '');
+            const emailSolicitante = get(store.request, 'emailSolicita', ''); 
+            const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
+
+            // Actualizar el formData con los campos de la raíz y "fundacion"
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                nombreCompleto, 
+                telefono, 
+                /* emailSolicitante,  */
+                cedulaPasaporte,
+            }));
+        }
+    }, [store.request]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        if (type === 'checkbox') {
+            const checked = (e.target as HTMLInputElement).checked;
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: checked,
+            }));
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
     };
 
     const validateEmails = () => formData.email === formData.confirmEmail;
@@ -224,7 +257,7 @@ const FundacionSolicitante: React.FC = () => {
         try {
             const requestData = {
                 nombreSolicita: formData.nombreCompleto,
-                telefonoSolicita: formData.telefono,
+                telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
                 cedulaPasaporte: formData.cedulaPasaporte,
                 emailSolicita: formData.email,
                 actualizarPorCorreo: formData.notificaciones === "yes",
@@ -233,7 +266,7 @@ const FundacionSolicitante: React.FC = () => {
                 subtotal: 150,
                 total: 150,
                 accion: "Creación de solicitud",
-                tipo: "new-fundacion",  
+                tipo: "new-fundacion",
                 item: "Registro de fundación",
             };
 
@@ -263,7 +296,7 @@ const FundacionSolicitante: React.FC = () => {
                     setStore((prevState) => ({
                         ...prevState,
                         solicitudId,
-                        fundacion: true, 
+                        fundacion: true,
                         currentPosition: 3,
                     }));
                 });
@@ -305,7 +338,17 @@ const FundacionSolicitante: React.FC = () => {
                         />
                     </div>
 
-                    <div className="relative w-full">
+                    <div className="flex gap-2">
+                        <select
+                            name="telefonoCodigo"
+                            value={formData.telefonoCodigo}
+                            onChange={handleChange}
+                            className="p-4 bg-gray-800 text-white rounded-lg"
+                        >
+                            {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                <option key={code} value={code}>{code}: {dialCode}</option>
+                            ))}
+                        </select>
                         <input
                             ref={telefonoRef}
                             type="text"

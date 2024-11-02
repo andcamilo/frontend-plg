@@ -1,10 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import AppStateContext from '@context/fundacionContext';
 import ClipLoader from 'react-spinners/ClipLoader';
-import ModalProtector from '@components/modalProtector'; // Cambiar el modal por el de protector
+import ModalProtector from '@components/modalProtector';
 import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import get from 'lodash/get';
 
 interface ProtectorData {
     nombre: React.ReactNode;
@@ -25,24 +27,22 @@ const ProtectorFundacion: React.FC = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [hasPrevPage, setHasPrevPage] = useState(false);
     const [hasNextPage, setHasNextPage] = useState(false);
-    const [addProtector, setAddProtector] = useState<string>('no'); // Controla la opción de sí/no
+    const [addProtector, setAddProtector] = useState<string>('no');
     const rowsPerPage = 3;
 
     const { store, setStore } = context;
-    const solicitudId = store.solicitudId; 
+    const solicitudId = store.solicitudId;
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        if (addProtector === 'si') {
-            fetchData();
-        }
+        fetchData();
     }, [currentPage, solicitudId, addProtector]);
 
     const handlePageChange = (newPage: number) => {
         setCurrentPage(newPage);
     };
-
-    const [isLoading, setIsLoading] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleContinue = () => {
         setIsLoading(true);
@@ -54,60 +54,92 @@ const ProtectorFundacion: React.FC = () => {
     };
 
     const openModal = () => setIsModalOpen(true);
-    const closeModal = () => {
+    const closeModal = (refresh = false) => {
         setIsModalOpen(false);
-        fetchData();
+        if (refresh) fetchData(); // Refresh data after adding a protector
     };
 
     const fetchData = async () => {
         try {
-            const clientResponse = await axios.get('/api/client', {
+            const response = await axios.get(`/api/get-people-id`, {
                 params: {
-                    limit: rowsPerPage,
-                    page: currentPage,
+                    solicitudId: solicitudId,
                 },
             });
-
-            const { personas, pagination: clientPagination } = clientResponse.data;
-
-            // Filtramos los protectores de personas
-            const filteredData = personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && persona.protector
+    
+            // Filtrar solo las personas que tienen el campo `protector`
+            const people = response.data.filter((persona: any) => persona.protector);
+    
+            if (!people || people.length === 0) {
+                setData([]);
+                setTotalRecords(0);
+                setTotalPages(1);
+                setHasPrevPage(false);
+                setHasNextPage(false);
+                return;
+            }
+    
+            const totalRecords = people.length;
+            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+    
+            const paginatedData = people.slice(
+                (currentPage - 1) * rowsPerPage,
+                currentPage * rowsPerPage
             );
-
-            const formattedClientData = filteredData.map((persona: any, index: number) => ({
-                nombre: persona.tipoPersona === 'Persona Jurídica'
-                    ? (
-                        <>
-                            {persona.nombreApellido}
-                            <br />
-                            <span className="text-gray-400 text-sm">
-                                <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
-                                {persona.personaJuridica?.nombreJuridico || '---'}
-                            </span>
-                        </>
-                    )
-                    : persona.nombreApellido || '---',
+    
+            const formattedData = paginatedData.map((persona: any) => ({
+                nombre: persona.tipoPersona === 'Persona Jurídica' ? (
+                    <>
+                        {persona.nombreApellido}
+                        <br />
+                        <span className="text-gray-400 text-sm">
+                            <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
+                            {persona.personaJuridica?.nombreJuridico || '---'}
+                        </span>
+                    </>
+                ) : (
+                    persona.nombreApellido || '---'
+                ),
                 correo: persona.email || '---',
-                cargo: persona.protector.cargo || '---',
+                cargo: persona.protector.cargo || '---', // Ahora no es necesario verificar porque solo hay personas con `protector`
                 accion: '...',
             }));
-
-            const combinedData: ProtectorData[] = [...formattedClientData];
-
-            setData(combinedData);
-            setTotalRecords(combinedData.length);
-            setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
-            setHasPrevPage(clientPagination.hasPrevPage);
-            setHasNextPage(clientPagination.hasNextPage);
+    
+            setData(formattedData);
+            setTotalRecords(totalRecords);
+            setTotalPages(totalPages);
+            setHasPrevPage(currentPage > 1);
+            setHasNextPage(currentPage < totalPages);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching people:', error);
+        }
+    };    
+
+    const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setAddProtector(value);
+
+        // Llamar a fetchData inmediatamente si se selecciona "si"
+        if (value === 'si') {
+            fetchData();
         }
     };
 
-    const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setAddProtector(e.target.value);
-    };
+    const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+    useEffect(() => {
+        if (store.solicitudId) {
+            fetchSolicitud(); // Llama a la API para obtener la solicitud
+        }
+    }, [store.solicitudId]);
+
+    useEffect(() => {
+        if (store.request) {
+            const protector = get(store.request, 'protectores', '');
+
+            // Actualiza `addProtector` a "si" o "no" según la existencia de protectores
+            setAddProtector(protector ? 'si' : 'no');
+        }
+    }, [store.request]);
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -119,6 +151,7 @@ const ProtectorFundacion: React.FC = () => {
             <div className="mt-4">
                 <label className="text-white">¿Desea agregar la Figura de Protector de la Fundación?</label>
                 <select
+                    name='protector'
                     value={addProtector}
                     onChange={handleOptionChange}
                     className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white mt-2"
@@ -160,21 +193,6 @@ const ProtectorFundacion: React.FC = () => {
                                 'Nuevo Protector'
                             )}
                         </button>
-
-                        {/* <button
-                            className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
-                            type="button"
-                            onClick={openModal}
-                        >
-                            {isLoading ? (
-                                <div className="flex items-center justify-center">
-                                    <ClipLoader size={24} color="#ffffff" />
-                                    <span className="ml-2">Cargando...</span>
-                                </div>
-                            ) : (
-                                'Asignar Protector Sustituto'
-                            )}
-                        </button> */}
                     </div>
                 </>
             )}
@@ -194,7 +212,7 @@ const ProtectorFundacion: React.FC = () => {
                 )}
             </button>
 
-            <ModalProtector isOpen={isModalOpen} onClose={closeModal} />
+            {isModalOpen && <ModalProtector onClose={() => closeModal(true)} />}
         </div>
     );
 };

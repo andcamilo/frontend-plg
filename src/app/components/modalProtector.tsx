@@ -4,11 +4,10 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 interface ModalProtectorProps {
-    isOpen: boolean;
     onClose: () => void;
 }
 
-const ModalProtector: React.FC<ModalProtectorProps> = ({ isOpen, onClose }) => {
+const ModalProtector: React.FC<ModalProtectorProps> = ({ onClose }) => {
     // Access the context values
     const context = useContext(FundacionContext);
     if (!context) {
@@ -52,10 +51,8 @@ const ModalProtector: React.FC<ModalProtectorProps> = ({ isOpen, onClose }) => {
     };
 
     useEffect(() => {
-        if (isOpen) {
-            fetchPersonas();
-        }
-    }, [isOpen, solicitudId]);
+        fetchPersonas();
+    }, [solicitudId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -127,9 +124,6 @@ const ModalProtector: React.FC<ModalProtectorProps> = ({ isOpen, onClose }) => {
             setIsLoading(false);
         }
     };
-
-    // Conditional rendering based on isOpen, but after all hooks are set up
-    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">

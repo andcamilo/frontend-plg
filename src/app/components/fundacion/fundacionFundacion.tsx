@@ -1,9 +1,11 @@
 "use client";
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import ClipLoader from 'react-spinners/ClipLoader';
 import FundacionContext from '@context/fundacionContext'; // Cambiar al contexto de Fundación
 import axios from 'axios';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest'; 
+import get from 'lodash/get';
 
 const FundacionFundacion: React.FC = () => {
     const context = useContext(FundacionContext);
@@ -13,6 +15,7 @@ const FundacionFundacion: React.FC = () => {
     }
 
     const { store, setStore } = context;
+    
 
     const [formData, setFormData] = useState({
         nombreFundacion1: '',
@@ -32,6 +35,28 @@ const FundacionFundacion: React.FC = () => {
     const nombreFundacion2Ref = useRef<HTMLInputElement>(null);
     const nombreFundacion3Ref = useRef<HTMLInputElement>(null);
 
+    const { fetchSolicitud } = useFetchSolicitud(store.solicitudId); // Función para obtener la solicitud
+
+    // Actualiza los campos del formulario con la solicitud
+    useEffect(() => {
+        if (store.solicitudId) {
+            fetchSolicitud(); // Llama a la API para obtener la solicitud
+        }
+    }, [store.solicitudId]);
+
+    // Cuando se actualiza store.request, extrae los datos relevantes
+    useEffect(() => {
+        if (store.request) {
+            const fundacionData = get(store.request, 'fundacion', {}); // Acceder al campo "fundacion"
+            if (fundacionData && Object.keys(fundacionData).length > 0) {
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    ...fundacionData,
+                }));
+            }
+        }
+    }, [store.request]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -40,11 +65,11 @@ const FundacionFundacion: React.FC = () => {
         }));
         setErrors((prevErrors) => ({
             ...prevErrors,
-            [name]: false // Resetea el error si el usuario empieza a escribir de nuevo
+            [name]: false, // Resetea el error si el usuario empieza a escribir de nuevo
         }));
     };
 
-    // Define las validaciones para cada campo
+    // Validación de campos
     const fieldValidations = [
         { field: "nombreFundacion1", ref: nombreFundacion1Ref, errorMessage: "Por favor, ingrese el nombre de la Fundación (1)." },
         { field: "nombreFundacion2", ref: nombreFundacion2Ref, errorMessage: "Por favor, ingrese el nombre de la Fundación (2)." },
@@ -53,7 +78,6 @@ const FundacionFundacion: React.FC = () => {
 
     const validateFields = () => {
         for (const { field, ref, errorMessage } of fieldValidations) {
-            // Verifica si el campo está vacío
             if (!formData[field]) {
                 setErrors((prevErrors) => ({ ...prevErrors, [field]: true }));
 
@@ -75,7 +99,6 @@ const FundacionFundacion: React.FC = () => {
                     }
                 });
 
-                // Scroll al campo en error
                 if (ref.current) {
                     ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
                     ref.current.focus();
@@ -105,7 +128,6 @@ const FundacionFundacion: React.FC = () => {
                     }
                 });
 
-                // Scroll al campo en error
                 if (ref.current) {
                     ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
                     ref.current.focus();
@@ -114,7 +136,6 @@ const FundacionFundacion: React.FC = () => {
             }
         }
 
-        // Si pasa todas las validaciones, devolver verdadero
         return true;
     };
 
@@ -122,14 +143,12 @@ const FundacionFundacion: React.FC = () => {
         e.preventDefault();
         setIsLoading(true);
 
-        // Validar campos
         if (!validateFields()) {
             setIsLoading(false);
             return;
         }
 
         try {
-            // Crear el payload para enviar a la API
             const updatePayload = {
                 solicitudId: store.solicitudId,
                 fundacion: {
@@ -139,7 +158,6 @@ const FundacionFundacion: React.FC = () => {
                 },
             };
 
-            // Enviar los datos a la API para actualizar la solicitud
             const response = await axios.patch('/api/update-request-fundacion', updatePayload);
 
             if (response.status === 200) {
@@ -148,7 +166,7 @@ const FundacionFundacion: React.FC = () => {
                     personas: true,
                     currentPosition: 4,
                 }));
-                
+
                 Swal.fire({
                     position: "top-end",
                     icon: "success",
@@ -196,12 +214,6 @@ const FundacionFundacion: React.FC = () => {
             </p>
 
             <hr className="mt-4 text-gray-600" />
-
-            <p className="text-gray-400 mt-4 text-sm">
-                * Es posible que el nombre principal que elija esté tomado en el registro público, por lo que la asignación del nombre seguiría el orden que nos provea.
-                <br />
-                * Aquí dejamos espacio para tu creatividad, comparte tres opciones de nombre para la fundación. Tomaremos el orden que nos indicas como prioridad. Esto es porque el nombre que puedes proporcionar, puede que ya esté tomado para otras fundaciones. En caso de que los tres estén tomados, nos comunicaremos contigo para indicarte opciones alternas o que tú nos proporciones otras. Pueden terminar en Inc, Corp, o S.A. Si la terminación no se provee en el nombre por parte del cliente, incluiremos S.A.
-            </p>
 
             <form className="mt-4" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 gap-4">

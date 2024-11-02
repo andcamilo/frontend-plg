@@ -5,7 +5,6 @@ import ModalFundadores from '@components/modalFundadores'; // Cambiar el modal a
 import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
-import { getRequests } from '@api/request';
 import Swal from 'sweetalert2';
 
 // Define el tipo de datos que manejarás en el estado `data`
@@ -84,25 +83,36 @@ const FundacionFundadores: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            // Llamada a la API de client
-            const clientResponse = await axios.get('/api/client', {
+            const response = await axios.get(`/api/get-people-id`, {
                 params: {
-                    limit: rowsPerPage,
-                    page: currentPage,
-                },
+                    solicitudId: solicitudId
+                }
             });
-
-            const { personas, pagination: clientPagination } = clientResponse.data;
-
-            // Llamada a la API de request usando `getRequests`
-            const { solicitudes, pagination: requestPagination } = await getRequests(rowsPerPage, currentPage);
-            console.log("Solicitudes desde API request:", solicitudes); // Verifica la estructura de las solicitudes
-
-            const filteredData = personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && persona.fundador && persona.fundador.esActivo === true
+    
+            const people = response.data;
+    
+            if (!people || people.length === 0) {
+                setData([]);
+                setTotalRecords(0);
+                setTotalPages(1);
+                setHasPrevPage(false);
+                setHasNextPage(false);
+                return;
+            }
+    
+            // Filtrar solo las personas que tienen el campo fundador
+            const fundadores = people.filter((persona: any) => persona.fundador);
+    
+            // Calcular paginación solo con los registros filtrados
+            const totalRecords = fundadores.length;
+            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+    
+            const paginatedData = fundadores.slice(
+                (currentPage - 1) * rowsPerPage,
+                currentPage * rowsPerPage
             );
-
-            const formattedClientData = filteredData.map((persona: any) => ({
+    
+            const formattedData = paginatedData.map((persona: any) => ({
                 tipo: persona.fundador?.servicio || '---', // Cambiar a fundador
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
@@ -118,38 +128,38 @@ const FundacionFundadores: React.FC = () => {
                     : persona.nombreApellido || '---',
                 acciones: '...',
             }));
-
-            // Ahora buscamos en `solicitudes` el registro con el `solicitudId`
-            const requestData = solicitudes.find((solicitud: any) => String(solicitud.id) === String(solicitudId));
-            console.log("Datos de solicitud desde API request:", requestData, "Solicitud ID:", solicitudId);
-
-            // Si encontramos el registro con `solicitudId` y tiene un campo `fundadores`
+    
+            // Lógica para combinar los datos adicionales de fundadores nominales
+            const solicitudes = await axios.get('/api/get-request-id', {
+                params: { solicitudId }
+            });
+    
+            const requestData = solicitudes.data;
             let formattedRequestData = [];
             if (requestData && requestData.fundadores) {
                 formattedRequestData = requestData.fundadores
-                    .filter((fundador: any) => {
-                        console.log("Fundador:", fundador); // Verifica si el fundador es nominal
-                        return fundador.servicio.trim().toLowerCase() === "fundador nominal"; // Asegúrate de que el filtro funcione
-                    })
+                    .filter((fundador: any) => 
+                        fundador.servicio.trim().toLowerCase() === "fundador nominal"
+                    )
                     .map((fundador: any) => ({
                         tipo: fundador.servicio,
                         nombre: fundador.nombre || '---', // Mostrar el nombre del fundador
                         acciones: '...',
                     }));
             }
-
-            // Combinamos los datos de client con los Fundadores Nominales del request
-            const combinedData: FundadorData[] = [...formattedClientData, ...formattedRequestData];
-
+    
+            const combinedData: FundadorData[] = [...formattedData, ...formattedRequestData];
+    
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
-            setHasPrevPage(clientPagination.hasPrevPage || requestPagination.hasPrevPage);
-            setHasNextPage(clientPagination.hasNextPage || requestPagination.hasNextPage);
+            setHasPrevPage(currentPage > 1);
+            setHasNextPage(currentPage < totalPages);
+    
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching people:', error);
         }
-    };
+    };    
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -206,7 +216,7 @@ const FundacionFundadores: React.FC = () => {
                 </button>
             </div>
             {isModalOpen &&
-            <ModalFundadores onClose={closeModal} />
+                <ModalFundadores onClose={closeModal} />
             }
 
         </div>

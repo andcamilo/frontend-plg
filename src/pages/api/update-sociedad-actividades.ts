@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         // Verificar si se ha proporcionado los campos obligatorios para actividades
-        if (!actividades.actividadesDentroOFueraPanama) {
+        if (!actividades.actividadesDentroPanama) {
             return res.status(400).json({ message: 'El campo actividadesDentroPanama es requerido' });
         }
 
@@ -28,22 +28,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         };
 
         // Si la opción es "SiYaTengoLocal", incluir los campos de actividades dentro de Panamá
-        if (actividades.actividadesDentroOFueraPanama === 'SiYaTengoLocal') {
+        if (actividades.actividadesDentroPanama === 'SiYaTengoLocal') {
             updatePayload.actividades = {
-                actividadesDentroOFueraPanama: actividades.actividadesDentroOFueraPanama,
-                actividadesDentroPanama: {
-                    nombreComercial: actividades.actividadesDentroPanama.nombreComercial,
-                    direccionComercial: actividades.actividadesDentroPanama.direccionComercial,
-                    comoLlegar: actividades.actividadesDentroPanama.comoLlegar,
-                    provincia: actividades.actividadesDentroPanama.provincia,
-                    corregimiento: actividades.actividadesDentroPanama.corregimiento,
-                    numeroLocal: actividades.actividadesDentroPanama.numeroLocal,
-                    nombreEdificio: actividades.actividadesDentroPanama.nombreEdificio,
-                    inversionSucursal: actividades.actividadesDentroPanama.inversionSucursal,
-                    cantidadTrabajadores: actividades.actividadesDentroPanama.cantidadTrabajadores,
-                    mantenerRotulo: actividades.actividadesDentroPanama.mantenerRotulo,
-                    telefono: actividades.actividadesDentroPanama.telefono,
-                    correoElectronico: actividades.actividadesDentroPanama.correoElectronico,
+                actividadesDentroPanama: actividades.actividadesDentroPanama,
+                actividadesDentroPanamaData: {
+                    nombreComercial: actividades.actividadesDentroPanamaData.nombreComercial,
+                    direccionComercial: actividades.actividadesDentroPanamaData.direccionComercial,
+                    comoLlegar: actividades.actividadesDentroPanamaData.comoLlegar,
+                    provincia: actividades.actividadesDentroPanamaData.provincia,
+                    corregimiento: actividades.actividadesDentroPanamaData.corregimiento,
+                    numeroLocal: actividades.actividadesDentroPanamaData.numeroLocal,
+                    nombreEdificio: actividades.actividadesDentroPanamaData.nombreEdificio,
+                    inversionSucursal: actividades.actividadesDentroPanamaData.inversionSucursal,
+                    cantidadTrabajadores: actividades.actividadesDentroPanamaData.cantidadTrabajadores,
+                    mantenerRotulo: actividades.actividadesDentroPanamaData.mantenerRotulo,
+                    telefono: actividades.actividadesDentroPanamaData.telefono,
+                    correoElectronico: actividades.actividadesDentroPanamaData.correoElectronico,
                 },
                 actividad1: actividades.actividad1,
                 actividad2: actividades.actividad2,
@@ -55,9 +55,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // Si la opción es "SiRequieroSociedadPrimero"
-        if (actividades.actividadesDentroOFueraPanama === 'SiRequieroSociedadPrimero') {
+        if (actividades.actividadesDentroPanama === 'SiRequieroSociedadPrimero') {
             updatePayload.actividades = {
-                actividadesDentroOFueraPanama: actividades.actividadesDentroOFueraPanama,
+                actividadesDentroPanama: actividades.actividadesDentroPanama,
                 actividad1: actividades.actividad1,
                 actividad2: actividades.actividad2,
                 actividad3: actividades.actividad3,
@@ -78,11 +78,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // Si la opción es "No" y la actividad seleccionada es "offshore"
-        if (actividades.actividadesDentroOFueraPanama === 'No' && actividades.actividadesOffshore) {
+        if (actividades.actividadesDentroPanama === 'No' && actividades.actividadesOffshore) {
             updatePayload.actividades = {
-                actividadesDentroOFueraPanama: actividades.actividadesDentroOFueraPanama,
+                actividadesDentroPanama: actividades.actividadesDentroPanama,
+                tipoActividades: actividades.tipoActividades,
                 actividadesOffshore: {
-                    tipoActividades: actividades.actividadesOffshore.tipoActividades,
                     actividadOffshore1: actividades.actividadesOffshore.actividadOffshore1,
                     actividadOffshore2: actividades.actividadesOffshore.actividadOffshore2,
                     paisesActividadesOffshore: actividades.actividadesOffshore.paisesActividadesOffshore,
@@ -91,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // Nueva lógica para "Tenedora de activos"
-        if (actividades.actividadesDentroOFueraPanama === 'No' && actividades.actividadTenedora) {
+        if (actividades.actividadesDentroPanama === 'No' && actividades.actividadTenedora) {
             // Asegurarse de que actividadTenedora sea un array
             if (!Array.isArray(actividades.actividadTenedora)) {
                 return res.status(400).json({ message: 'El campo actividadTenedora debe ser un array' });
@@ -99,7 +99,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             updatePayload.actividades = {
                 ...updatePayload.actividades,  // Mantener lo que ya esté en el payload
-                actividadesDentroOFueraPanama: actividades.actividadesDentroOFueraPanama,
+                actividadesDentroPanama: actividades.actividadesDentroPanama,
+                tipoActividades: actividades.tipoActividades,
                 actividadTenedora: actividades.actividadTenedora  // Asignar directamente el array
             };
         }
