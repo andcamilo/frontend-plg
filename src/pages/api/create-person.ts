@@ -34,6 +34,9 @@ interface PersonData {
   comercialNombre: string;
   comercialTelefono: string;
   comercialEmail: string;
+
+  adjuntoDocumentoCedulaPasaporteURL: string;
+  adjuntoDocumentoCedulaPasaporte2URL: string;
 }
 
 const createPersontUrl = `http://localhost:4000/chris/create-person`;

@@ -17,6 +17,7 @@ export interface AppState {
   solicitudAdicional: boolean;
   solicitudId: string;
   currentPosition: number;
+  request: any,
 }
 
 export interface SociedadesContextType {
@@ -27,7 +28,7 @@ export interface SociedadesContextType {
 // Estado inicial para el nuevo menú
 const initialState: AppState = {
   bienvenido: true,
-  solicitante: false,
+  solicitante: true,
   empresa: false,
   personas: false,
   directores: false,
@@ -41,6 +42,7 @@ const initialState: AppState = {
   solicitudAdicional: false,
   solicitudId: "",
   currentPosition: 1,
+  request: "",
 };
 
 // Crear el nuevo contexto

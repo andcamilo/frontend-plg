@@ -1,9 +1,11 @@
 "use client";
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import ClipLoader from 'react-spinners/ClipLoader';
 import AppStateContext from '@context/sociedadesContext';
 import axios from 'axios';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest'; 
+import get from 'lodash/get';
 
 const CapitalDivisionAcciones: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -61,6 +63,25 @@ const CapitalDivisionAcciones: React.FC = () => {
             [name]: false, // Resetea el error si el usuario empieza a escribir de nuevo
         }));
     };
+
+    const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+    useEffect(() => {
+        if (store.solicitudId) {
+            fetchSolicitud(); 
+        }
+    }, [store.solicitudId]);
+
+    useEffect(() => {
+        if (store.request) {
+            const capitalData = get(store.request, 'capital', {}); 
+            if (capitalData && Object.keys(capitalData).length > 0) {
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    ...capitalData,
+                }));
+            }
+        }
+    }, [store.request]);
 
     // Define las validaciones para cada campo
     const fieldValidations = [

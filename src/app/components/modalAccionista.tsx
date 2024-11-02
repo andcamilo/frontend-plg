@@ -4,11 +4,10 @@ import axios from 'axios';
 import Swal from 'sweetalert2';  // Importar SweetAlert2 para las alertas
 
 interface ModalAccionistasProps {
-    isOpen: boolean;
     onClose: () => void;
 }
 
-const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ isOpen, onClose }) => {
+const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
 
     const context = useContext(AppStateContext);
     if (!context) {
@@ -44,7 +43,7 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ isOpen, onClose }) 
             setPersonas(personas.filter((persona: any) =>
                 persona.solicitudId === solicitudId && (!persona.accionista)
             ));
-            
+
 
             // Guardar los accionistas actuales con su porcentaje de acciones
             setAccionistasExistentes(accionistas);
@@ -55,10 +54,8 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ isOpen, onClose }) 
 
     useEffect(() => {
         // Llamada a la API cuando se abre el modal
-        if (isOpen) {
-            fetchPersonas();
-        }
-    }, [isOpen, solicitudId]);
+        fetchPersonas();
+    }, [solicitudId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;

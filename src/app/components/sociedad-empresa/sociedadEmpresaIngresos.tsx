@@ -1,9 +1,11 @@
 "use client";
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import ClipLoader from 'react-spinners/ClipLoader';
 import AppStateContext from '@context/sociedadesContext';
 import axios from 'axios';
-import Swal from 'sweetalert2'; 
+import Swal from 'sweetalert2';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import get from 'lodash/get';
 
 const FuentesDeIngresos: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -36,7 +38,7 @@ const FuentesDeIngresos: React.FC = () => {
             if (!checked) {
                 setFormData((prevData) => ({
                     ...prevData,
-                    otroFuente: '', 
+                    otroFuente: '',
                 }));
             }
         } else {
@@ -55,14 +57,43 @@ const FuentesDeIngresos: React.FC = () => {
         }));
     };
 
+    const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+    useEffect(() => {
+        if (store.solicitudId) {
+            fetchSolicitud();
+        }
+    }, [store.solicitudId]);
+
+    useEffect(() => {
+        if (store.request) {
+            const ingresosData = get(store.request, 'fuentesIngresos', {});
+    
+            // Actualizar el estado de formData con los valores obtenidos de la base de datos
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                ingresoNegocios: ingresosData.ingresoNegocios || false,
+                herencia: ingresosData.herencia || false,
+                ahorrosPersonales: ingresosData.ahorrosPersonales || false,
+                ventaActivos: ingresosData.ventaActivos || false,
+                ingresoInmueble: ingresosData.ingresoInmueble || false,
+                otroFuente: ingresosData.otro || '', // Asigna el valor de "otro" a otroFuente
+            }));
+    
+            // Mostrar el campo "Otro" si tiene algún valor en la base de datos
+            if (ingresosData.otro) {
+                setMostrarOtro(true);
+            }
+        }
+    }, [store.request]);    
+
     const validateSelection = () => {
         // Verifica si se ha seleccionado al menos una fuente de ingreso
-        const isAnySelected = 
-            formData.ingresoNegocios || 
-            formData.herencia || 
-            formData.ahorrosPersonales || 
-            formData.ventaActivos || 
-            formData.ingresoInmueble || 
+        const isAnySelected =
+            formData.ingresoNegocios ||
+            formData.herencia ||
+            formData.ahorrosPersonales ||
+            formData.ventaActivos ||
+            formData.ingresoInmueble ||
             (mostrarOtro && formData.otroFuente.trim() !== '');
 
         if (!isAnySelected) {

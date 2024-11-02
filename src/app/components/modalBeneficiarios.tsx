@@ -1,14 +1,13 @@
 import React, { useState, useContext, useEffect } from 'react';
-import AppStateContext from '@context/fundacionContext'; 
+import AppStateContext from '@context/fundacionContext';
 import axios from 'axios';
 
 interface ModalBeneficiarioProps {
-    isOpen: boolean;
+
     onClose: () => void;
 }
 
-const ModalBeneficiario: React.FC<ModalBeneficiarioProps> = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
+const ModalBeneficiario: React.FC<ModalBeneficiarioProps> = ({ onClose }) => {
 
     const context = useContext(AppStateContext);
     if (!context) {
@@ -19,9 +18,9 @@ const ModalBeneficiario: React.FC<ModalBeneficiarioProps> = ({ isOpen, onClose }
     const solicitudId = store.solicitudId; // Obtenemos el `solicitudId` del contexto
 
     const [personas, setPersonas] = useState([]);
-    const [isLoading, setIsLoading] = useState(false); 
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
-        seleccionar: '', 
+        seleccionar: '',
     });
 
     // Función para obtener personas desde la base de datos
@@ -32,7 +31,7 @@ const ModalBeneficiario: React.FC<ModalBeneficiarioProps> = ({ isOpen, onClose }
                     solicitudId, // Pasamos el ID de la solicitud como filtro
                 },
             });
-    
+
             // Filtrar las personas que NO son beneficiarios ya asignados
             const { personas } = response.data;
             setPersonas(personas.filter((persona: any) =>
@@ -41,14 +40,12 @@ const ModalBeneficiario: React.FC<ModalBeneficiarioProps> = ({ isOpen, onClose }
         } catch (error) {
             console.error('Error fetching personas:', error);
         }
-    };     
+    };
 
     useEffect(() => {
         // Llamada a la API cuando se abre el modal
-        if (isOpen) {
-            fetchPersonas();
-        }
-    }, [isOpen, solicitudId]);
+        fetchPersonas();
+    }, [solicitudId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;

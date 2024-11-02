@@ -4,12 +4,10 @@ import AppStateContextFundacion from '@context/fundacionContext';
 import axios from 'axios';
 
 interface ModalPoderProps {
-    isOpen: boolean;
     onClose: () => void;
 }
 
-const ModalPoder: React.FC<ModalPoderProps> = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
+const ModalPoder: React.FC<ModalPoderProps> = ({ onClose }) => {
 
     const sociedadContext = useContext(AppStateContext);
     const fundacionContext = useContext(AppStateContextFundacion);
@@ -37,7 +35,7 @@ const ModalPoder: React.FC<ModalPoderProps> = ({ isOpen, onClose }) => {
                     solicitudId, // Pasamos el ID de la solicitud como filtro
                 },
             });
-    
+
             // Filtrar las personas que NO tienen el campo `poder` como `true` o que no lo tienen definido
             const { personas } = response.data;
             setPersonas(personas.filter((persona: any) =>
@@ -46,14 +44,12 @@ const ModalPoder: React.FC<ModalPoderProps> = ({ isOpen, onClose }) => {
         } catch (error) {
             console.error('Error fetching personas:', error);
         }
-    };     
+    };
 
     useEffect(() => {
         // Llamada a la API cuando se abre el modal
-        if (isOpen) {
-            fetchPersonas();
-        }
-    }, [isOpen, solicitudId]);
+        fetchPersonas();
+    }, [solicitudId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;

@@ -1,9 +1,35 @@
 "use client";
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import ClipLoader from 'react-spinners/ClipLoader';
 import AppStateContext from '@context/sociedadesContext';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import countryCodes from '@utils/countryCode';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import get from 'lodash/get';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import {
+    firebaseApiKey,
+    firebaseAuthDomain,
+    firebaseProjectId,
+    firebaseStorageBucket,
+    firebaseMessagingSenderId,
+    firebaseAppId
+} from '@utils/env';
+
+// Configuración de Firebase
+const firebaseConfig = {
+    apiKey: firebaseApiKey,
+    authDomain: firebaseAuthDomain,
+    projectId: firebaseProjectId,
+    storageBucket: firebaseStorageBucket,
+    messagingSenderId: firebaseMessagingSenderId,
+    appId: firebaseAppId,
+};
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const storage = getStorage(app);
 
 const Actividades: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -27,6 +53,7 @@ const Actividades: React.FC = () => {
         cantidadTrabajadores: string;
         mantenerRotulo: string;
         telefono: string;
+        telefonoCodigo: string;
         correoElectronico: string;
         actividad1: string;
         actividad2: string;
@@ -35,6 +62,7 @@ const Actividades: React.FC = () => {
         nombreContador: string;
         idoneidadContador: string;
         telefonoContador: string;
+        telefonoContadorCodigo: string;
         correoContador: string;
         registrosContables: string;
         servicioDireccionComercial: boolean;
@@ -42,7 +70,8 @@ const Actividades: React.FC = () => {
         actividadOffshore1: string;
         actividadOffshore2: string;
         paisesActividadesOffshore: string;
-        actividadTenedora: string[];  // <- Define que es un array de strings
+        actividadTenedora: string[];
+        archivoContribuyenteURL: string;
     }
 
     const [formData, setFormData] = useState<FormData>({
@@ -58,6 +87,7 @@ const Actividades: React.FC = () => {
         cantidadTrabajadores: '',
         mantenerRotulo: 'Si',
         telefono: '',
+        telefonoCodigo: 'PA',
         correoElectronico: '',
         actividad1: '',
         actividad2: '',
@@ -66,6 +96,7 @@ const Actividades: React.FC = () => {
         nombreContador: '',
         idoneidadContador: '',
         telefonoContador: '',
+        telefonoContadorCodigo: 'PA',
         correoContador: '',
         registrosContables: 'Oficina Agente Residente',
         servicioDireccionComercial: false,
@@ -74,6 +105,7 @@ const Actividades: React.FC = () => {
         actividadOffshore2: '',
         paisesActividadesOffshore: '',
         actividadTenedora: [],  // <- Asegúrate de inicializar como un array vacío
+        archivoContribuyenteURL: '',
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -103,6 +135,9 @@ const Actividades: React.FC = () => {
         { field: 'actividadOffshore1', errorMessage: 'Por favor, ingrese la actividad offshore 1.' },
         { field: 'actividadOffshore2', errorMessage: 'Por favor, ingrese la actividad offshore 2.' },
         { field: 'paisesActividadesOffshore', errorMessage: 'Por favor, ingrese los países de las actividades offshore.' },
+        // Documento adjunto contribuyente
+        { field: "adjuntoDocumentoContribuyente", errorMessage: "Es necesario adjuntar el Registro Único de Contribuyente." },
+
     ];
 
     const [fieldErrors, setFieldErrors] = useState({
@@ -125,6 +160,7 @@ const Actividades: React.FC = () => {
         actividadOffshore1: false,
         actividadOffshore2: false,
         paisesActividadesOffshore: false,
+        adjuntoDocumentoContribuyente: false,
     });
 
     const formRefs = {
@@ -147,6 +183,7 @@ const Actividades: React.FC = () => {
         actividadOffshore1: useRef<HTMLInputElement>(null),
         actividadOffshore2: useRef<HTMLInputElement>(null),
         paisesActividadesOffshore: useRef<HTMLTextAreaElement>(null),
+        adjuntoDocumentoContribuyente: useRef<HTMLInputElement>(null),
     };
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,7 +206,58 @@ const Actividades: React.FC = () => {
         });
     };
 
+    const [archivoContribuyente, setArchivoContribuyente] = useState<File | null>(null);
 
+   /*  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null;
+        setArchivoContribuyente(file);
+    }; */
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                const path = `uploads/${store.solicitudId}/adjuntoDocumentoContribuyente`;
+                const downloadURL = await uploadFileToFirebase(file, path);
+    
+                setFormData((prevData) => ({
+                    ...prevData,
+                    archivoContribuyenteURL: downloadURL,
+                }));
+    
+                // Quitar el error del campo de archivo si ya se subió un archivo
+                setFieldErrors((prevErrors) => ({
+                    ...prevErrors,
+                    adjuntoDocumentoContribuyente: false,
+                }));
+            } catch (error) {
+                console.error("Error uploading file:", error);
+            }
+        }
+    };
+    
+
+    const uploadFileToFirebase = (file: File, path: string): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const storageRef = ref(storage, path);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log(`Upload is ${progress}% done`);
+                },
+                (error) => {
+                    reject(error);
+                },
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                }
+            );
+        });
+    };
 
     // Manejador para el cambio de opciones
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -186,6 +274,41 @@ const Actividades: React.FC = () => {
         }));
     };
 
+    const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+    useEffect(() => {
+        if (store.solicitudId) {
+            fetchSolicitud();
+        }
+    }, [store.solicitudId]);
+
+    useEffect(() => {
+        if (store.request) {
+            const actividadesData = get(store.request, 'actividades', {});
+            const actividadesDentroPanamaData = get(actividadesData, 'actividadesDentroPanamaData', {});
+            const contador = get(actividadesData, 'contador', {});
+            const actividadesOffshore = get(actividadesData, 'actividadesOffshore', {});
+            const actividadTenedora = get(actividadesData, 'actividadTenedora', []);
+
+            // Asignamos un valor por defecto "offshore" si "tipoActividades" no existe o es vacío
+            const tipoActividades = get(actividadesData, 'tipoActividades', 'offshore');
+
+            const archivoContribuyenteURL = get(actividadesData, 'adjuntoDocumentoContribuyente', '');
+
+            if (actividadesData && Object.keys(actividadesData).length > 0) {
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    tipoActividades,
+                    ...actividadesData,
+                    ...actividadesDentroPanamaData,
+                    ...contador,
+                    ...actividadesOffshore,
+                    actividadTenedora,
+                    archivoContribuyenteURL,
+                }));
+            }
+        }
+    }, [store.request]);
+
     const validateFields = () => {
         let fieldsToValidate: string[] = [];
 
@@ -193,11 +316,10 @@ const Actividades: React.FC = () => {
             fieldsToValidate = [
                 'nombreComercial', 'direccionComercial', 'comoLlegar', 'numeroLocal',
                 'nombreEdificio', 'inversionSucursal', 'cantidadTrabajadores',
-                'telefono', 'correoElectronico', 'actividad1', 'actividad2', 'actividad3'
+                'telefono', 'correoElectronico', 'actividad1', 'actividad2', 'actividad3',
             ];
         } else if (formData.actividadesDentroPanama === 'SiRequieroSociedadPrimero') {
             fieldsToValidate = ['actividad1', 'actividad2', 'actividad3'];
-
         } else if (formData.actividadesDentroPanama === 'No') {
             if (formData.tipoActividades === 'offshore') {
                 fieldsToValidate = ['actividadOffshore1', 'actividadOffshore2', 'paisesActividadesOffshore'];
@@ -206,17 +328,44 @@ const Actividades: React.FC = () => {
             }
         }
 
-        // Validar los campos del contador solo si las actividades están dentro de Panamá y mantieneContador es 'Si'
-        if (formData.actividadesDentroPanama !== 'No' && formData.mantieneContador === 'Si') {
-            fieldsToValidate.push('nombreContador', 'idoneidadContador', 'telefonoContador', 'correoContador');
+        // Validar el campo adjuntoDocumentoContribuyente
+        if (['SiYaTengoLocal', 'SiRequieroSociedadPrimero'].includes(formData.actividadesDentroPanama) &&
+            !formData.archivoContribuyenteURL) {
+            setFieldErrors((prevErrors) => ({
+                ...prevErrors,
+                adjuntoDocumentoContribuyente: true,
+            }));
+
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Es necesario adjuntar el Registro Único de Contribuyente.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar',
+                },
+            });
+
+            formRefs.adjuntoDocumentoContribuyente.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            formRefs.adjuntoDocumentoContribuyente.current?.focus();
+
+            return false;
         }
 
-        // Lógica para iterar sobre los campos que deben ser validados
+        // Validar los campos requeridos
         for (const { field, errorMessage } of fieldValidations.filter(({ field }) => fieldsToValidate.includes(field))) {
             if (!formData[field]) {
                 setFieldErrors((prevErrors) => ({
                     ...prevErrors,
-                    [field]: true, // Marca el campo con error
+                    [field]: true,
                 }));
 
                 Swal.fire({
@@ -237,12 +386,8 @@ const Actividades: React.FC = () => {
                     },
                 });
 
-                // Enfocar el campo con error
-                const ref = formRefs[field];
-                if (ref && ref.current) {
-                    ref.current.scrollIntoView({ behavior: 'smooth' });
-                    ref.current.focus();
-                }
+                formRefs[field]?.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                formRefs[field]?.current?.focus();
 
                 return false;
             }
@@ -261,61 +406,79 @@ const Actividades: React.FC = () => {
         }
 
         try {
+
+            let archivoURL = '';
+
+            if (archivoContribuyente) {
+                archivoURL = await uploadFileToFirebase(archivoContribuyente, `uploads/${store.solicitudId}/adjuntoDocumentoContribuyente`);
+            }
+
             const updatePayload: any = {
                 solicitudId: store.solicitudId,
                 actividades: {
-                    actividadesDentroOFueraPanama: formData.actividadesDentroPanama,
+                    actividadesDentroPanama: formData.actividadesDentroPanama,
                     ...(formData.actividadesDentroPanama !== 'No' && {
-                        actividadesDentroPanama: {
-                            nombreComercial: formData.nombreComercial,
-                            direccionComercial: formData.direccionComercial,
-                            comoLlegar: formData.comoLlegar,
-                            provincia: formData.provincia,
-                            corregimiento: formData.corregimiento,
-                            numeroLocal: formData.numeroLocal,
-                            nombreEdificio: formData.nombreEdificio,
-                            inversionSucursal: formData.inversionSucursal,
-                            cantidadTrabajadores: formData.cantidadTrabajadores,
-                            mantenerRotulo: formData.mantenerRotulo,
-                            telefono: formData.telefono,
-                            correoElectronico: formData.correoElectronico,
-                        },
+
+                        ...(formData.actividadesDentroPanama === 'SiYaTengoLocal' && {
+                            actividadesDentroPanamaData: {
+                                nombreComercial: formData.nombreComercial,
+                                direccionComercial: formData.direccionComercial,
+                                comoLlegar: formData.comoLlegar,
+                                provincia: formData.provincia,
+                                corregimiento: formData.corregimiento,
+                                numeroLocal: formData.numeroLocal,
+                                nombreEdificio: formData.nombreEdificio,
+                                inversionSucursal: formData.inversionSucursal,
+                                cantidadTrabajadores: formData.cantidadTrabajadores,
+                                mantenerRotulo: formData.mantenerRotulo,
+                                telefono: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
+                                correoElectronico: formData.correoElectronico,
+                            },
+                        }),
 
                         actividad1: formData.actividad1,
                         actividad2: formData.actividad2,
                         actividad3: formData.actividad3,
                         mantieneContador: formData.mantieneContador,
-                        contador: {
-                            nombreContador: formData.nombreContador,
-                            idoneidadContador: formData.idoneidadContador,
-                            telefonoContador: formData.telefonoContador,
-                            correoContador: formData.correoContador,
-                        },
+                        ...(formData.mantieneContador === 'Si' && {
+                            contador: {
+                                nombreContador: formData.nombreContador,
+                                idoneidadContador: formData.idoneidadContador,
+                                telefonoContador: `${countryCodes[formData.telefonoContadorCodigo]}${formData.telefonoContador}` || '',
+                                correoContador: formData.correoContador,
+                            },
+                        }),
                         registrosContables: formData.registrosContables,
                         servicioDireccionComercial: formData.servicioDireccionComercial,
+                        adjuntoDocumentoContribuyente: archivoURL || '',
                     }),
 
-                    // Incluir campos para offshore
-                    ...(formData.tipoActividades === 'offshore' && {
-                        actividadesOffshore: {
+                    ...(formData.actividadesDentroPanama === 'No' && {
+                        // Incluir campos para offshore
+                        ...(formData.tipoActividades === 'offshore' && {
+                            actividadesDentroPanama: formData.actividadesDentroPanama,
                             tipoActividades: formData.tipoActividades,
-                            actividadOffshore1: formData.actividadOffshore1,
-                            actividadOffshore2: formData.actividadOffshore2,
-                            paisesActividadesOffshore: formData.paisesActividadesOffshore,
-                        }
-                    }),
+                            actividadesOffshore: {
+                                actividadOffshore1: formData.actividadOffshore1,
+                                actividadOffshore2: formData.actividadOffshore2,
+                                paisesActividadesOffshore: formData.paisesActividadesOffshore,
+                            }
+                        }),
 
-                    // Incluir campos para tenedora de activos
-                    ...(formData.tipoActividades === 'tenedoraActivos' && {
-                        actividadTenedora: formData.actividadTenedora
-                    })
+                        // Incluir campos para tenedora de activos
+                        ...(formData.tipoActividades === 'tenedoraActivos' && {
+                            actividadesDentroPanama: formData.actividadesDentroPanama,
+                            tipoActividades: formData.tipoActividades,
+                            actividadTenedora: formData.actividadTenedora
+                        })
+                    }),
                 }
             };
 
             console.log('🚀 ~ Payload enviado:', updatePayload);
 
             // Enviar los datos a la API
-            const response = await axios.patch('/api/update-sociedad-actividades', updatePayload);
+            const response = await axios.patch('/api/update-request-sociedad', updatePayload);
 
             if (response.status === 200) {
                 console.log('🚀 ~ Respuesta exitosa:', response.data);
@@ -565,18 +728,30 @@ const Actividades: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
+                            <div className="flex flex-col col-span-1">
                                 <label className="text-white block mb-2">Teléfono</label>
-                                <input
-                                    ref={formRefs.telefono}
-                                    type="text"
-                                    name="telefono"
-                                    value={formData.telefono}
-                                    onChange={handleChange}
-                                    className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.telefono ? 'border-2 border-red-500' : ''}`}
-                                    placeholder="Ingrese el teléfono"
-                                /* required */
-                                />
+                                <div className="flex gap-2">
+                                    <select
+                                        name="telefonoCodigo"
+                                        value={formData.telefonoCodigo}
+                                        onChange={handleChange}
+                                        className="p-4 bg-gray-800 text-white rounded-lg"
+                                    >
+                                        {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                            <option key={code} value={code}>{code}: {dialCode}</option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        ref={formRefs.telefono}
+                                        type="text"
+                                        name="telefono"
+                                        value={formData.telefono}
+                                        onChange={handleChange}
+                                        className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.telefono ? 'border-2 border-red-500' : ''}`}
+                                        placeholder="Ingrese el teléfono"
+                                    /* required */
+                                    />
+                                </div>
                             </div>
 
                             <div>
@@ -699,18 +874,29 @@ const Actividades: React.FC = () => {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4 mt-4">
-                                    <div>
+                                    <div className="flex flex-col col-span-1">
                                         <label className="text-white block mb-2">Teléfono</label>
-                                        <input
-                                            ref={formRefs.telefonoContador}
-                                            type="text"
-                                            name="telefonoContador"
-                                            value={formData.telefonoContador}
-                                            onChange={handleChange}
-                                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.telefonoContador ? 'border-2 border-red-500' : ''}`}
-                                            placeholder="Ingrese el teléfono del contador"
-                                        /* required */
-                                        />
+                                        <div className="flex gap-2">
+                                            <select
+                                                name="telefonoContadorCodigo"
+                                                value={formData.telefonoContadorCodigo}
+                                                onChange={handleChange}
+                                                className="p-4 bg-gray-800 text-white rounded-lg"
+                                            >
+                                                {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                                    <option key={code} value={code}>{code}: {dialCode}</option>
+                                                ))}
+                                            </select>
+                                            <input
+                                                ref={formRefs.telefonoContador}
+                                                type="text"
+                                                name="telefonoContador"
+                                                value={formData.telefonoContador}
+                                                onChange={handleChange}
+                                                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.telefonoContador ? 'border-2 border-red-500' : ''}`}
+                                                placeholder="Ingrese el teléfono del contador"
+                                            />
+                                        </div>
                                     </div>
 
                                     <div>
@@ -748,10 +934,17 @@ const Actividades: React.FC = () => {
                             </p>
                             <input
                                 type="file"
-                                name="archivoRUC"
-                                onChange={handleChange}
-                                className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                                name="adjuntoDocumentoContribuyente"
+                                onChange={handleFileChange}
+                                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.adjuntoDocumentoContribuyente ? 'border-2 border-red-500' : ''}`}
                             />
+                            {formData.archivoContribuyenteURL && (
+                                <p className="text-sm text-blue-500">
+                                    <a href={formData.archivoContribuyenteURL} target="_blank" rel="noopener noreferrer">
+                                        Ver documento actual
+                                    </a>
+                                </p>
+                            )}
                         </div>
 
                         <div className="mt-4">

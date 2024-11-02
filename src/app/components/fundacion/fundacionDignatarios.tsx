@@ -96,26 +96,35 @@ const FundacionDignatarios: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            // Llamada a la API de client
-            const clientResponse = await axios.get('/api/client', {
-                params: {
-                    limit: rowsPerPage,
-                    page: currentPage,
-                },
+            const response = await axios.get(`/api/get-people-id`, {
+                params: { solicitudId: solicitudId }
             });
 
-            const { personas, pagination: clientPagination } = clientResponse.data;
+            const people = response.data;
 
-            // Llamada a la API de request usando `getRequests`
-            const { solicitudes, pagination: requestPagination } = await getRequests(rowsPerPage, currentPage);
-            console.log("Solicitudes desde API request:", solicitudes);
+            if (!people || people.length === 0) {
+                setData([]);
+                setTotalRecords(0);
+                setTotalPages(1);
+                setHasPrevPage(false);
+                setHasNextPage(false);
+                return;
+            }
 
-            // Filtramos los dignatarios de personas (API client)
-            const filteredData = personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && persona.dignatario && persona.dignatario.dignatario === true
+            // Filtrar solo las personas que tienen el campo `dignatario`
+            const dignatarios = people.filter((persona: any) => persona.dignatario);
+
+            // Calcular paginación solo con los registros filtrados
+            const totalRecords = dignatarios.length;
+            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+
+            const paginatedData = dignatarios.slice(
+                (currentPage - 1) * rowsPerPage,
+                currentPage * rowsPerPage
             );
 
-            const formattedClientData = filteredData.map((persona: any) => ({
+            const formattedData = paginatedData.map((persona: any) => ({
+                tipo: 'Dignatario',
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
                         <>
@@ -128,40 +137,39 @@ const FundacionDignatarios: React.FC = () => {
                         </>
                     )
                     : persona.nombreApellido || '---',
-                posicion: persona.dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
+                posicion: persona?.dignatario?.posiciones.map((posicion: any) => posicion.nombre).join(', '),
                 acciones: '...',
             }));
 
-            // Ahora buscamos en `solicitudes` el registro con el `solicitudId`
-            const requestData = solicitudes.find((solicitud: any) => String(solicitud.id) === String(solicitudId));
-            console.log("Datos de solicitud desde API request:", requestData, "Solicitud ID:", solicitudId);
+            const solicitudes = await axios.get('/api/get-request-id', {
+                params: { solicitudId }
+            });
 
+            const requestData = solicitudes.data;
             let formattedRequestData = [];
             if (requestData && requestData.dignatarios) {
-                console.log("Dignatarios encontrados en requestData:", requestData.dignatarios);
-
-                // Removemos la verificación de `esDignatario` y filtramos solo por servicio.
                 formattedRequestData = requestData.dignatarios
-                    .filter((dignatario: any) => {
-                        console.log("Dignatario:", dignatario); // Verifica si el dignatario es nominal
-                        return dignatario.servicio.trim().toLowerCase() === "dignatario nominal";
-                    })
+                    .filter((dignatario: any) =>
+                        dignatario.servicio.trim().toLowerCase() === "dignatario nominal"
+                    )
                     .map((dignatario: any) => ({
-                        nombre: dignatario.servicio,
+                        tipo: dignatario.servicio,
+                        nombre: dignatario.nombre || '---',
                         posicion: dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
                         acciones: '...',
                     }));
             }
 
-            const combinedData: DignatarioNominalData[] = [...formattedClientData, ...formattedRequestData];
+            const combinedData: DignatarioNominalData[] = [...formattedData, ...formattedRequestData];
 
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
-            setHasPrevPage(clientPagination.hasPrevPage || requestPagination.hasPrevPage);
-            setHasNextPage(clientPagination.hasNextPage || requestPagination.hasNextPage);
+            setHasPrevPage(currentPage > 1);
+            setHasNextPage(currentPage < totalPages);
+
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching people:', error);
         }
     };
 
@@ -220,7 +228,9 @@ const FundacionDignatarios: React.FC = () => {
                 </button>
             </div>
 
-            <ModalDignatarios isOpen={isModalOpen} onClose={closeModal} />
+            {isModalOpen
+                && <ModalDignatarios onClose={closeModal} />
+            }
         </div>
     );
 };

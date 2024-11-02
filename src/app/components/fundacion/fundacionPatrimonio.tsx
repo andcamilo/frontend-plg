@@ -1,9 +1,11 @@
 "use client";
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import ClipLoader from 'react-spinners/ClipLoader';
 import AppStateContext from '@context/fundacionContext'; // Cambiar el contexto a fundaciones
 import axios from 'axios';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import get from 'lodash/get';
 
 const PatrimonioInicialFundacion: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -38,6 +40,25 @@ const PatrimonioInicialFundacion: React.FC = () => {
             [name]: false, // Resetea el error si el usuario empieza a escribir de nuevo
         }));
     };
+
+    const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+    useEffect(() => {
+        if (store.solicitudId) {
+            fetchSolicitud(); // Llama a la API para obtener la solicitud
+        }
+    }, [store.solicitudId]);
+
+    useEffect(() => {
+        if (store.request) {
+            const patrimonioInicial = get(store.request, 'patrimonio', '');
+
+            // Actualizar el formData con los campos de la raíz y "fundacion"
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                patrimonioInicial,
+            }));
+        }
+    }, [store.request]);
 
     const validateFields = () => {
         const patrimonioValue = parseFloat(formData.patrimonioInicial);
@@ -102,8 +123,8 @@ const PatrimonioInicialFundacion: React.FC = () => {
             if (response.status === 200) {
                 setStore((prevState) => ({
                     ...prevState,
-                    poder: true, 
-                    currentPosition: 11, 
+                    poder: true,
+                    currentPosition: 11,
                 }));
 
                 Swal.fire({

@@ -4,12 +4,10 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 interface ModalDirectoresProps {
-    isOpen: boolean;
     onClose: () => void;
 }
 
-const ModalDirectores: React.FC<ModalDirectoresProps> = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
+const ModalDirectores: React.FC<ModalDirectoresProps> = ({ onClose }) => {
 
     const context = useContext(AppStateContext);
     if (!context) {
@@ -45,10 +43,8 @@ const ModalDirectores: React.FC<ModalDirectoresProps> = ({ isOpen, onClose }) =>
     };
 
     useEffect(() => {
-        if (isOpen) {
-            fetchPersonas();
-        }
-    }, [isOpen, solicitudId]);
+        fetchPersonas();
+    }, [solicitudId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target;

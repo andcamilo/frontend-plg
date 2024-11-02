@@ -5,6 +5,7 @@ interface RequestData {
   nombreSolicita: string;
   telefonoSolicita: string;
   telefonoSolicita2: string;
+  cedulaPasaporte: string;
   emailSolicita: string;
   actualizarPorCorreo: boolean;
   cuenta: string;

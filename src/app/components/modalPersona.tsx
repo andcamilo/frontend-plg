@@ -3,21 +3,44 @@ import AppStateContext from '@context/sociedadesContext';
 import AppStateContextFundacion from '@context/fundacionContext';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import countryCodes from '@utils/countryCode';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import {
+    firebaseApiKey,
+    firebaseAuthDomain,
+    firebaseProjectId,
+    firebaseStorageBucket,
+    firebaseMessagingSenderId,
+    firebaseAppId
+} from '@utils/env';
+
+// Configuración de Firebase
+const firebaseConfig = {
+    apiKey: firebaseApiKey,
+    authDomain: firebaseAuthDomain,
+    projectId: firebaseProjectId,
+    storageBucket: firebaseStorageBucket,
+    messagingSenderId: firebaseMessagingSenderId,
+    appId: firebaseAppId,
+};
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const storage = getStorage(app);
 
 interface ModalProps {
-    isOpen: boolean;
     onClose: () => void;
     children?: React.ReactNode; // Para que puedas pasar cualquier contenido al modal
 }
 
-const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
+const ModalPersona: React.FC<ModalProps> = ({ onClose }) => {
+
     const sociedadContext = useContext(AppStateContext);
     const fundacionContext = useContext(AppStateContextFundacion);
 
     // Verificar si estamos trabajando con sociedad o fundación
     const context = sociedadContext?.store.solicitudId ? sociedadContext : fundacionContext;
-    
+
     if (!context) {
         throw new Error('El contexto debe estar dentro de un proveedor de contexto (AppStateProvider o FundacionProvider)');
     }
@@ -36,6 +59,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         paisResidencia: 'Panamá',
         profesion: '',
         telefono: '',
+        telefonoCodigo: 'PA',
         email: '',
         esPoliticamenteExpuesta: 'No',
         personaExpuestaFecha: '',
@@ -49,12 +73,17 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         // Referencias bancarias
         bancoNombre: '',
         bancoTelefono: '',
+        bancoTelefonoCodigo: 'PA',
         bancoEmail: '',
 
         // Referencias comerciales
         comercialNombre: '',
         comercialTelefono: '',
+        comercialTelefonoCodigo: 'PA',
         comercialEmail: '',
+
+        adjuntoDocumentoCedulaPasaporteURL: '',
+        adjuntoDocumentoCedulaPasaporte2URL: '',
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -71,10 +100,75 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             paisResidencia: 'Panamá',
             profesion: '',
             telefono: '',
+            telefonoCodigo: 'PA',
             email: '',
             esPoliticamenteExpuesta: 'No',
+            adjuntoCedulaPasaporteBeneficiarioURL: '',
         },
     ]);
+
+    const uploadFileToFirebase = (file: File, path: string): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const storageRef = ref(storage, path);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on(
+                'state_changed',
+                null,
+                (error) => reject(error),
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                }
+            );
+        });
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name } = e.target;
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                const path = `uploads/${store.solicitudId}/${name}`;
+                const downloadURL = await uploadFileToFirebase(file, path);
+
+                if (name === 'adjuntoDocumentoCedulaPasaporte') {
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        adjuntoDocumentoCedulaPasaporteURL: downloadURL,
+                    }));
+
+                    // Quitar el error del campo de archivo si ya se subió un archivo
+                    setErrors((prevErrors) => ({ ...prevErrors, adjuntoDocumentoCedulaPasaporteURL: false }));
+                } else if (name === 'adjuntoDocumentoCedulaPasaporte2') {
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        adjuntoDocumentoCedulaPasaporte2URL: downloadURL,
+                    }));
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error);
+            }
+        }
+    };
+
+    const handleBeneficiarioFileChange = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                const path = `uploads/${store.solicitudId}/beneficiarios/${index}/adjuntoCedulaPasaporteBeneficiario`;
+                const downloadURL = await uploadFileToFirebase(file, path);
+
+                const updatedBeneficiarios = [...beneficiarios];
+                updatedBeneficiarios[index].adjuntoCedulaPasaporteBeneficiarioURL = downloadURL;
+                const newErrorsBeneficiarios = [...errorsBeneficiarios];
+                newErrorsBeneficiarios[index].adjuntoCedulaPasaporteBeneficiarioURL = false;
+                setBeneficiarios(updatedBeneficiarios);
+            } catch (error) {
+                console.error('Error uploading file for beneficiary:', error);
+            }
+        }
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -125,8 +219,10 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 paisResidencia: 'Panamá',
                 profesion: '',
                 telefono: '',
+                telefonoCodigo: 'PA',
                 email: '',
                 esPoliticamenteExpuesta: 'No',
+                adjuntoCedulaPasaporteBeneficiarioURL: '',
             }]);
 
             // Agregar una entrada vacía de errores para el nuevo beneficiario
@@ -138,6 +234,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 profesion: false,
                 telefono: false,
                 email: false,
+                adjuntoCedulaPasaporteBeneficiarioURL: false,
             }]);
         }
     };
@@ -169,6 +266,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         comercialNombre: false,
         comercialTelefono: false,
         comercialEmail: false,
+        adjuntoDocumentoCedulaPasaporteURL: false,
     });
 
     const nombreJuridicoRef = useRef<HTMLInputElement>(null);
@@ -185,6 +283,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     const comercialNombreRef = useRef<HTMLInputElement>(null);
     const comercialTelefonoRef = useRef<HTMLInputElement>(null);
     const comercialEmailRef = useRef<HTMLInputElement>(null);
+    const adjuntoDocumentoCedulaPasaporteURL = useRef<HTMLInputElement>(null);
 
     const fieldValidations = [
         { field: "nombreApellido", ref: nombreApellidoRef, errorMessage: "Por favor, ingrese el nombre y apellido." },
@@ -194,6 +293,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         { field: "profesion", ref: profesionRef, errorMessage: "Por favor, ingrese su profesión." },
         { field: "telefono", ref: telefonoRef, errorMessage: "Por favor, ingrese el número de teléfono." },
         { field: "email", ref: emailRef, errorMessage: "Por favor, ingrese el correo electrónico." },
+        { field: "adjuntoDocumentoCedulaPasaporteURL", ref: adjuntoDocumentoCedulaPasaporteURL, errorMessage: "Es necesario adjuntar la copia de la cédula o pasaporte." },
     ];
 
     const validateFields = () => {
@@ -329,7 +429,6 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         return isValid;
     };
 
-
     const [errorsBeneficiarios, setErrorsBeneficiarios] = useState(
         beneficiarios.map(() => ({
             nombreApellido: false,
@@ -339,6 +438,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             profesion: false,
             telefono: false,
             email: false,
+            adjuntoCedulaPasaporteBeneficiarioURL: false,
         }))
     );
 
@@ -554,6 +654,35 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 isValid = false;
                 return;
             }
+
+            if (!beneficiario.adjuntoCedulaPasaporteBeneficiarioURL) {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "warning",
+                    title: `Es necesario adjuntar la copia de la cédula o pasaporte del Beneficiario ${index + 1}.`,
+                    showConfirmButton: false,
+                    timer: 2500,
+                    timerProgressBar: true,
+                    toast: true,
+                    background: '#2c2c3e',
+                    color: '#fff',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        icon: 'custom-swal-icon',
+                        timerProgressBar: 'custom-swal-timer-bar',
+                    },
+                });
+
+                const inputField = document.querySelector(`#beneficiario-${index}-adjuntoCedulaPasaporteBeneficiarioURL`);
+                if (inputField instanceof HTMLElement) {
+                    inputField.scrollIntoView({ behavior: "smooth", block: "center" });
+                    inputField.focus();
+                }
+                newErrorsBeneficiarios[index].adjuntoCedulaPasaporteBeneficiarioURL = true;
+                isValid = false;
+                return;
+            }
         });
 
         setErrorsBeneficiarios(newErrorsBeneficiarios); // Actualiza el estado con los errores
@@ -573,6 +702,35 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             return;
         }
 
+        // Verificar si el archivo adjunto de cédula o pasaporte está vacío
+        if (!formData.adjuntoDocumentoCedulaPasaporteURL) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Es necesario adjuntar la copia de la cédula o pasaporte.',
+                showConfirmButton: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar',
+                },
+            });
+
+            // Marcar el campo de archivo en rojo
+            setErrors((prevErrors) => ({ ...prevErrors, adjuntoDocumentoCedulaPasaporteURL: true }));
+
+            // Llevar el scroll al campo de archivo y hacer focus
+            document.getElementsByName('adjuntoDocumentoCedulaPasaporte')[0]?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
+            document.getElementsByName('adjuntoDocumentoCedulaPasaporte')[0]?.focus();
+
+            return; // Detener la ejecución si falta el archivo adjunto
+        }
+
         try {
             // Crear el payload para enviar a la API
             const updatePayload = {
@@ -588,12 +746,14 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 direccion: formData.direccion,
                 paisResidencia: formData.paisResidencia,
                 profesion: formData.profesion,
-                telefono: formData.telefono,
+                telefono: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
                 email: formData.email,
                 esPoliticamenteExpuesta: formData.esPoliticamenteExpuesta,
                 personaExpuestaFecha: formData.personaExpuestaFecha,
                 personaExpuestaCargo: formData.personaExpuestaCargo,
                 beneficiarios,
+                adjuntoDocumentoCedulaPasaporteURL: formData.adjuntoDocumentoCedulaPasaporteURL,
+                adjuntoDocumentoCedulaPasaporte2URL: formData.adjuntoDocumentoCedulaPasaporte2URL,
 
                 personaJuridica: {
                     nombreJuridico: formData.nombreJuridico,
@@ -603,13 +763,13 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                 referenciasBancarias: {
                     bancoNombre: formData.bancoNombre,
-                    bancoTelefono: formData.bancoTelefono,
+                    bancoTelefono: `${countryCodes[formData.bancoTelefonoCodigo]}${formData.bancoTelefono}` || '',
                     bancoEmail: formData.bancoEmail,
                 },
 
                 referenciasComerciales: {
                     comercialNombre: formData.comercialNombre,
-                    comercialTelefono: formData.comercialTelefono,
+                    comercialTelefono: `${countryCodes[formData.comercialTelefonoCodigo]}${formData.comercialTelefono}` || '',
                     comercialEmail: formData.comercialEmail,
                 },
 
@@ -681,7 +841,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Seleccionar */}
                         <div className="col-span-2">
-                            <label className="text-white"><small>Seleccionar:</small></label>
+                            <label className="text-white">Seleccionar:</label>
                             <select
                                 name="tipoPersona"
                                 value={formData.tipoPersona}
@@ -698,7 +858,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                             <>
                                 {/* Nombre de la Persona Jurídica / Sociedad */}
                                 <div className="col-span-2">
-                                    <label className="text-white"><small>Nombre de la persona jurídica / sociedad</small></label>
+                                    <label className="text-white">Nombre de la persona jurídica / sociedad</label>
                                     <input
                                         ref={nombreJuridicoRef}
                                         type="text"
@@ -712,7 +872,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                 {/* País de la Persona Jurídica */}
                                 <div className="col-span-1">
-                                    <label className="text-white"><small>País de la persona jurídica</small></label>
+                                    <label className="text-white">País de la persona jurídica</label>
                                     <select
                                         name="paisJuridico"
                                         value={formData.paisJuridico || 'Panamá'}
@@ -729,7 +889,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                 {/* Número de Registro de la Persona Jurídica */}
                                 <div className="col-span-1">
-                                    <label className="text-white"><small>Número de registro</small></label>
+                                    <label className="text-white">Número de registro</label>
                                     <input
                                         type="text"
                                         name="registroJuridico"
@@ -763,7 +923,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                         {/* Sexo */}
                         <div className="col-span-1">
-                            <label className="text-white"><small>Sexo</small></label>
+                            <label className="text-white">Sexo</label>
                             <select
                                 name="sexo"
                                 value={formData.sexo}
@@ -777,7 +937,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                         {/* Nacionalidad */}
                         <div className="col-span-1">
-                            <label className="text-white"><small>Nacionalidad</small></label>
+                            <label className="text-white">Nacionalidad</label>
                             <select
                                 name="nacionalidad"
                                 value={formData.nacionalidad}
@@ -808,7 +968,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                         {/* País de Nacimiento */}
                         <div className="col-span-1">
-                            <label className="text-white"><small>País de Nacimiento</small></label>
+                            <label className="text-white">País de Nacimiento</label>
                             <select
                                 name="paisNacimiento"
                                 value={formData.paisNacimiento}
@@ -852,7 +1012,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                         {/* País de Residencia */}
                         <div className="col-span-1">
-                            <label className="text-white"><small>País de Residencia</small></label>
+                            <label className="text-white">País de Residencia</label>
                             <select
                                 name="paisResidencia"
                                 value={formData.paisResidencia}
@@ -869,7 +1029,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                         {/* Profesión */}
                         <div className="col-span-1">
-                            <label className="text-white"><small>Profesión</small></label>
+                            <label className="text-white">Profesión</label>
                             <input
                                 ref={profesionRef}
                                 type="text"
@@ -882,18 +1042,31 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                             />
                         </div>
                         {/* Teléfono */}
-                        <div className="col-span-1">
+                        <div className="flex flex-col col-span-1">
                             <label className="text-white">Teléfono</label>
-                            <input
-                                ref={telefonoRef}
-                                type="tel"
-                                name="telefono"
-                                value={formData.telefono}
-                                onChange={handleChange}
-                                className={`w-full p-2 border ${errors.telefono ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
-                                placeholder="Teléfono"
-                            />
+                            <div className="flex gap-2">
+                                <select
+                                    name="telefonoCodigo"
+                                    value={formData.telefonoCodigo}
+                                    onChange={handleChange}
+                                    className="p-2 bg-gray-800 text-white rounded-lg"
+                                >
+                                    {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                        <option key={code} value={code}>{code}: {dialCode}</option>
+                                    ))}
+                                </select>
+                                <input
+                                    ref={telefonoRef}
+                                    type="tel"
+                                    name="telefono"
+                                    value={formData.telefono}
+                                    onChange={handleChange}
+                                    className={`w-full p-2 border ${errors.telefono ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
+                                    placeholder="Teléfono"
+                                />
+                            </div>
                         </div>
+
                         {/* Email */}
                         <div className="col-span-1">
                             <label className="text-white">Email</label>
@@ -909,7 +1082,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                         </div>
                         {/* Persona políticamente expuesta */}
                         <div className="col-span-2">
-                            <label className="text-white"><small>Es una persona políticamente expuesta:</small></label>
+                            <label className="text-white">Es una persona políticamente expuesta:</label>
                             <select
                                 name="esPoliticamenteExpuesta"
                                 value={formData.esPoliticamenteExpuesta}
@@ -927,7 +1100,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                         {formData.esPoliticamenteExpuesta === 'Si' && (
                             <>
                                 <div className="col-span-1">
-                                    <label className="text-white"><small>Indicar qué cargo ocupa u ocupó</small></label>
+                                    <label className="text-white">Indicar qué cargo ocupa u ocupó</label>
                                     <input
                                         type="text"
                                         name="personaExpuestaCargo"
@@ -939,7 +1112,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                                 </div>
 
                                 <div className="col-span-1">
-                                    <label className="text-white"><small>En qué fecha</small></label>
+                                    <label className="text-white">En qué fecha</label>
                                     <input
                                         type="date"
                                         name="personaExpuestaFecha"
@@ -959,7 +1132,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                         <div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                             {/* Nombre del Banco */}
                             <div className="col-span-1">
-                                <label className="text-white"><small>Nombre del Banco</small></label>
+                                <label className="text-white">Nombre del Banco</label>
                                 <input
                                     type="text"
                                     name="bancoNombre"
@@ -971,21 +1144,33 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                                 />
                             </div>
                             {/* Teléfono */}
-                            <div className="col-span-1">
-                                <label className="text-white"><small>Teléfono</small></label>
-                                <input
-                                    type="tel"
-                                    name="bancoTelefono"
-                                    value={formData.bancoTelefono}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                                    placeholder="Teléfono"
-                                /* required */
-                                />
+                            <div className="flex flex-col col-span-1">
+                                <label className="text-white">Teléfono</label>
+                                <div className="flex gap-2">
+                                    <select
+                                        name="bancoTelefonoCodigo"
+                                        value={formData.bancoTelefonoCodigo}
+                                        onChange={handleChange}
+                                        className="p-2 bg-gray-800 text-white rounded-lg"
+                                    >
+                                        {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                            <option key={code} value={code}>{code}: {dialCode}</option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        type="tel"
+                                        name="bancoTelefono"
+                                        value={formData.bancoTelefono}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                                        placeholder="Teléfono"
+                                    /* required */
+                                    />
+                                </div>
                             </div>
                             {/* Email */}
                             <div className="col-span-1">
-                                <label className="text-white"><small>Email</small></label>
+                                <label className="text-white">Email</label>
                                 <input
                                     type="email"
                                     name="bancoEmail"
@@ -1006,7 +1191,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                         <div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                             {/* Nombre */}
                             <div className="col-span-1">
-                                <label className="text-white"><small>Nombre</small></label>
+                                <label className="text-white">Nombre</label>
                                 <input
                                     type="text"
                                     name="comercialNombre"
@@ -1018,21 +1203,33 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                                 />
                             </div>
                             {/* Teléfono */}
-                            <div className="col-span-1">
-                                <label className="text-white"><small>Teléfono</small></label>
-                                <input
-                                    type="tel"
-                                    name="comercialTelefono"
-                                    value={formData.comercialTelefono}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                                    placeholder="Teléfono"
-                                /* required */
-                                />
+                            <div className="flex flex-col col-span-1">
+                                <label className="text-white">Teléfono</label>
+                                <div className="flex gap-2">
+                                    <select
+                                        name="comercialTelefonoCodigo"
+                                        value={formData.comercialTelefonoCodigo}
+                                        onChange={handleChange}
+                                        className="p-2 bg-gray-800 text-white rounded-lg"
+                                    >
+                                        {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                            <option key={code} value={code}>{code}: {dialCode}</option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        type="tel"
+                                        name="comercialTelefono"
+                                        value={formData.comercialTelefono}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                                        placeholder="Teléfono"
+                                    /* required */
+                                    />
+                                </div>
                             </div>
                             {/* Email */}
                             <div className="col-span-1">
-                                <label className="text-white"><small>Email</small></label>
+                                <label className="text-white">Email</label>
                                 <input
                                     type="email"
                                     name="comercialEmail"
@@ -1047,21 +1244,37 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                         <p className="col-span-2">
                             * Aquí debes poner el nombre y contacto de cualquier referencia comercial, si no se mantiene una referencia comercial porque no ha ejecutado actividades comerciales, según la ocupación, puede dejarlo en blanco.
                         </p>
-
-                        <div className="col-span-2">
-                            <label className="text-white"><small>Adjuntar copia de pasaporte o cédula *</small></label>
+                        <div className="col-span-1 mt-2">
+                            <label className="text-white">Adjuntar copia de pasaporte o cédula</label>
                             <input
                                 type="file"
-                                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                                name="adjuntoDocumentoCedulaPasaporte"
+                                onChange={handleFileChange}
+                                className={`w-full p-2 border ${errors.adjuntoDocumentoCedulaPasaporteURL ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                             />
+                            {formData.adjuntoDocumentoCedulaPasaporteURL && (
+                                <p className="text-sm text-blue-500">
+                                    <a href={formData.adjuntoDocumentoCedulaPasaporteURL} target="_blank" rel="noopener noreferrer">
+                                        Ver documento actual
+                                    </a>
+                                </p>
+                            )}
                         </div>
-
-                        <div className="col-span-2">
-                            <label className="text-white"><small>Adjuntar copia de pasaporte o cédula *</small></label>
+                        <div className="col-span-1 mt-2">
+                            <label className="text-white">Adjuntar copia de pasaporte o cédula</label>
                             <input
                                 type="file"
+                                name="adjuntoDocumentoCedulaPasaporte2"
+                                onChange={handleFileChange}
                                 className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
                             />
+                            {formData.adjuntoDocumentoCedulaPasaporte2URL && (
+                                <p className="text-sm text-blue-500">
+                                    <a href={formData.adjuntoDocumentoCedulaPasaporte2URL} target="_blank" rel="noopener noreferrer">
+                                        Ver documento actual
+                                    </a>
+                                </p>
+                            )}
                         </div>
 
                         <p className="col-span-2">
@@ -1078,7 +1291,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* Nombre y apellido completo */}
                                     <div className="col-span-1">
-                                        <label className="text-white"><small>Nombre y apellido completo</small></label>
+                                        <label className="text-white">Nombre y apellido completo</label>
                                         <input
                                             id={`beneficiario-${index}-nombreApellido`}
                                             type="text"
@@ -1092,7 +1305,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* Sexo */}
                                     <div className="col-span-1">
-                                        <label className="text-white"><small>Sexo</small></label>
+                                        <label className="text-white">Sexo</label>
                                         <select
                                             id={`beneficiario-${index}-sexo`}
                                             name="sexo"
@@ -1107,7 +1320,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* Número de cédula o Pasaporte */}
                                     <div className="col-span-1">
-                                        <label className="text-white"><small>Cédula o Pasaporte</small></label>
+                                        <label className="text-white">Cédula o Pasaporte</label>
                                         <input
                                             id={`beneficiario-${index}-cedulaPasaporte`}
                                             type="text"
@@ -1121,7 +1334,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* Nacionalidad */}
                                     <div className="col-span-1">
-                                        <label className="text-white"><small>Nacionalidad</small></label>
+                                        <label className="text-white">Nacionalidad</label>
                                         <select
                                             id={`beneficiario-${index}-nacionalidad`}
                                             name="nacionalidad"
@@ -1139,7 +1352,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* País de Nacimiento */}
                                     <div className="col-span-1">
-                                        <label className="text-white"><small>País de Nacimiento</small></label>
+                                        <label className="text-white">País de Nacimiento</label>
                                         <select
                                             id={`beneficiario-${index}-paisNacimiento`}
                                             name="paisNacimiento"
@@ -1157,7 +1370,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* Fecha de Nacimiento */}
                                     <div className="col-span-1">
-                                        <label className="text-white"><small>Fecha de Nacimiento</small></label>
+                                        <label className="text-white">Fecha de Nacimiento</label>
                                         <input
                                             id={`beneficiario-${index}-fechaNacimiento`}
                                             type="date"
@@ -1170,7 +1383,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* Dirección */}
                                     <div className="col-span-2">
-                                        <label className="text-white"><small>Dirección / Address</small></label>
+                                        <label className="text-white">Dirección / Address</label>
                                         <input
                                             id={`beneficiario-${index}-direccion`}
                                             type="text"
@@ -1184,7 +1397,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* País de Residencia */}
                                     <div className="col-span-1">
-                                        <label className="text-white"><small>País de Residencia</small></label>
+                                        <label className="text-white">País de Residencia</label>
                                         <select
                                             id={`beneficiario-${index}-paisResidencia`}
                                             name="paisResidencia"
@@ -1202,7 +1415,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* Profesión */}
                                     <div className="col-span-1">
-                                        <label className="text-white"><small>Profesión</small></label>
+                                        <label className="text-white">Profesión</label>
                                         <input
                                             id={`beneficiario-${index}-profesion`}
                                             type="text"
@@ -1215,22 +1428,34 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                                     </div>
 
                                     {/* Teléfono */}
-                                    <div className="col-span-1">
-                                        <label className="text-white"><small>Teléfono</small></label>
-                                        <input
-                                            id={`beneficiario-${index}-telefono`}
-                                            type="tel"
-                                            name="telefono"
-                                            value={beneficiario.telefono}
-                                            onChange={(e) => handleBeneficiarioChange(index, e)}
-                                            className={`w-full p-2 border ${errorsBeneficiarios[index].telefono ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
-                                            placeholder="Teléfono"
-                                        />
+                                    <div className="flex flex-col col-span-1">
+                                        <label className="text-white">Teléfono</label>
+                                        <div className="flex gap-2">
+                                            <select
+                                                name="beneficiario-telefonoCodigo"
+                                                value={beneficiario.telefonoCodigo}
+                                                onChange={handleChange}
+                                                className="p-2 bg-gray-800 text-white rounded-lg"
+                                            >
+                                                {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                                    <option key={code} value={code}>{code}: {dialCode}</option>
+                                                ))}
+                                            </select>
+                                            <input
+                                                id={`beneficiario-${index}-telefono`}
+                                                type="tel"
+                                                name="telefono"
+                                                value={beneficiario.telefono}
+                                                onChange={(e) => handleBeneficiarioChange(index, e)}
+                                                className={`w-full p-2 border ${errorsBeneficiarios[index].telefono ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
+                                                placeholder="Teléfono"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Correo Electrónico */}
                                     <div className="col-span-1">
-                                        <label className="text-white"><small>Correo Electrónico</small></label>
+                                        <label className="text-white">Correo Electrónico</label>
                                         <input
                                             id={`beneficiario-${index}-email`}
                                             type="email"
@@ -1244,7 +1469,7 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
                                     {/* Persona políticamente expuesta */}
                                     <div className="col-span-2">
-                                        <label className="text-white"><small>Es una persona políticamente expuesta:</small></label>
+                                        <label className="text-white">Es una persona políticamente expuesta:</label>
                                         <select
                                             id={`beneficiario-${index}-esPoliticamenteExpuesta`}
                                             name="esPoliticamenteExpuesta"
@@ -1256,13 +1481,22 @@ const ModalPersona: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                                             <option value="Si">Sí</option>
                                         </select>
                                     </div>
-
-                                    <div className="col-span-2 mt-4">
-                                        <label className="text-white"><small>Adjuntar copia de pasaporte o cédula *</small></label>
+                                    {/* Adjuntar copia de pasaporte o cédula */}
+                                    <div key={index} className="col-span-2">
+                                        <label className="text-white">Adjuntar copia de pasaporte o cédula</label>
                                         <input
                                             type="file"
-                                            className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                                            name="adjuntoCedulaPasaporteBeneficiario"
+                                            onChange={(e) => handleBeneficiarioFileChange(index, e)}
+                                            className={`w-full p-2 border ${errorsBeneficiarios[index].adjuntoCedulaPasaporteBeneficiarioURL ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                                         />
+                                        {beneficiario.adjuntoCedulaPasaporteBeneficiarioURL && (
+                                            <p className="text-sm text-blue-500">
+                                                <a href={beneficiario.adjuntoCedulaPasaporteBeneficiarioURL} target="_blank" rel="noopener noreferrer">
+                                                    Ver documento actual
+                                                </a>
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Botón para eliminar el beneficiario */}

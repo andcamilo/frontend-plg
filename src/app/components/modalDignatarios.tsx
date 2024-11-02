@@ -5,18 +5,16 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 interface ModalDignatariosProps {
-    isOpen: boolean;
     onClose: () => void;
 }
 
-const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
+const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
 
     const sociedadContext = useContext(AppStateContext);
     const fundacionContext = useContext(AppStateContextFundacion);
 
     // Verificar si estamos trabajando con sociedad o fundación
-    const context = sociedadContext?.store.solicitudId ? sociedadContext : fundacionContext;;
+    const context = sociedadContext?.store.solicitudId ? sociedadContext : fundacionContext;
     if (!context) {
         throw new Error('AppStateContext must be used within an AppStateProvider');
     }
@@ -73,11 +71,9 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ isOpen, onClose }) 
     };
 
     useEffect(() => {
-        if (isOpen) {
-            fetchSolicitudData(); // Cargar datos de la solicitud (incluyendo dignatarios y sus posiciones)
-            fetchPersonas(); // Cargar las personas
-        }
-    }, [isOpen, solicitudId]);
+        fetchSolicitudData(); // Cargar datos de la solicitud (incluyendo dignatarios y sus posiciones)
+        fetchPersonas(); // Cargar las personas
+    }, [solicitudId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -99,7 +95,7 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ isOpen, onClose }) 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-    
+
         // Verificar si no se ha seleccionado un dignatario
         if (formData.servicio === 'Dignatario Propio' && !formData.seleccionar) {
             Swal.fire({
@@ -121,7 +117,7 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ isOpen, onClose }) 
             });
             return;
         }
-    
+
         // Verificar si no se ha seleccionado ninguna posición
         if (selectedPositions.length === 0) {
             Swal.fire({
@@ -143,7 +139,7 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ isOpen, onClose }) 
             });
             return;
         }
-    
+
         // Verificar si alguna de las posiciones seleccionadas ya está asignada
         const posicionesDuplicadas = selectedPositions.filter((pos) => assignedPositions.includes(pos));
         if (posicionesDuplicadas.length > 0) {
@@ -166,9 +162,9 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ isOpen, onClose }) 
             });
             return;
         }
-    
+
         setIsLoading(true); // Activar el estado de carga
-    
+
         try {
             const updatePayload = {
                 solicitudId: store.solicitudId,
@@ -178,10 +174,10 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ isOpen, onClose }) 
                     posiciones: selectedPositions.map((pos) => ({ nombre: pos })), // Guardar cada posición seleccionada como un objeto
                 },
             };
-    
+
             // Enviar solicitud a la API para actualizar la persona seleccionada o agregar el dignatario
             const response = await axios.patch('/api/update-personDignatario', updatePayload);
-    
+
             if (response.status === 200) {
                 console.log("Campo dignatario actualizado");
                 onClose(); // Cerrar el modal solo si la actualización es exitosa
@@ -193,7 +189,7 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ isOpen, onClose }) 
         } finally {
             setIsLoading(false); // Desactivar el estado de carga
         }
-    };    
+    };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">

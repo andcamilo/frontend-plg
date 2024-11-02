@@ -5,6 +5,9 @@ import AppStateContext from "@context/sociedadesContext";
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
+import countryCodes from '@utils/countryCode';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest'; 
+import get from 'lodash/get';
 
 const SociedadEmpresaSolicitante: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -18,6 +21,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
     const [formData, setFormData] = useState({
         nombreCompleto: "",
         telefono: "",
+        telefonoCodigo: 'PA',
         cedulaPasaporte: "",
         email: "",
         confirmEmail: "",
@@ -49,17 +53,45 @@ const SociedadEmpresaSolicitante: React.FC = () => {
         }
     }, []);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: type === "checkbox" ? checked : value,
-        }));
-        setErrors((prevErrors) => ({
-            ...prevErrors,
-            [name]: false // Resetea el error si el usuario empieza a escribir de nuevo
-        }));
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        if (type === 'checkbox') {
+            const checked = (e.target as HTMLInputElement).checked;
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: checked,
+            }));
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
     };
+
+    const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+    useEffect(() => {
+        if (store.solicitudId) {
+            fetchSolicitud(); 
+        }
+    }, [store.solicitudId]);
+
+    useEffect(() => {
+        if (store.request) {
+            const nombreCompleto = get(store.request, 'nombreSolicita', '');
+            const telefono = get(store.request, 'telefonoSolicita', '');
+            const emailSolicitante = get(store.request, 'emailSolicita', ''); 
+            const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
+
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                nombreCompleto, 
+                telefono, 
+                /* emailSolicitante,  */
+                cedulaPasaporte,
+            }));
+        }
+    }, [store.request]);
 
     const validateEmails = () => formData.email === formData.confirmEmail;
 
@@ -231,7 +263,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
         try {
             const requestData = {
                 nombreSolicita: formData.nombreCompleto,
-                telefonoSolicita: formData.telefono,
+                telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
                 cedulaPasaporte: formData.cedulaPasaporte,
                 emailSolicita: formData.email,
                 actualizarPorCorreo: formData.notificaciones === "yes",
@@ -311,7 +343,17 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                         />
                     </div>
 
-                    <div className="relative w-full">
+                    <div className="flex gap-2">
+                        <select
+                            name="telefonoCodigo"
+                            value={formData.telefonoCodigo}
+                            onChange={handleChange}
+                            className="p-4 bg-gray-800 text-white rounded-lg"
+                        >
+                            {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                <option key={code} value={code}>{code}: {dialCode}</option>
+                            ))}
+                        </select>
                         <input
                             ref={telefonoRef}
                             type="text"

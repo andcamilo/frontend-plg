@@ -59,22 +59,37 @@ const FundacionPoder: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            // Llamada a la API de client
-            const clientResponse = await axios.get('/api/client', {
+            const response = await axios.get(`/api/get-people-id`, {
                 params: {
-                    limit: rowsPerPage,
-                    page: currentPage,
-                },
+                    solicitudId: solicitudId
+                }
             });
-
-            const { personas, pagination: clientPagination } = clientResponse.data;
-
-            // Filtramos los poderes de personas (API client)
-            const filteredData = personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && persona.poder
+    
+            const people = response.data;
+    
+            if (!people || people.length === 0) {
+                setData([]);
+                setTotalRecords(0);
+                setTotalPages(1);
+                setHasPrevPage(false);
+                setHasNextPage(false);
+                return;
+            }
+    
+            // Filtrar solo los registros que tengan el campo 'poder'
+            const filteredPeople = people.filter((persona: any) => persona.poder);
+    
+            // Calcular paginación
+            const totalRecords = filteredPeople.length;
+            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+    
+            const paginatedData = filteredPeople.slice(
+                (currentPage - 1) * rowsPerPage,
+                currentPage * rowsPerPage
             );
-
-            const formattedClientData = filteredData.map((persona: any, index: number) => ({
+    
+            // Formatear los datos con la lógica para mostrar el nombre
+            const formattedData = paginatedData.map((persona: any) => ({
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
                         <>
@@ -90,19 +105,17 @@ const FundacionPoder: React.FC = () => {
                 correo: persona.email || '---',
                 accion: '...',
             }));
-
-            const combinedData: PoderData[] = [...formattedClientData];
-
-            setData(combinedData);
-            setTotalRecords(combinedData.length);
-            setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
-            setHasPrevPage(clientPagination.hasPrevPage);
-            setHasNextPage(clientPagination.hasNextPage);
+    
+            setData(formattedData); // Aquí se asignan los registros formateados
+            setTotalRecords(totalRecords); // Establece el número total de registros
+            setTotalPages(totalPages); // Calcula las páginas totales
+            setHasPrevPage(currentPage > 1); // Verifica si hay página anterior
+            setHasNextPage(currentPage < totalPages); // Verifica si hay página siguiente
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching people:', error);
         }
     };
-
+    
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
             <h1 className="text-white text-4xl font-bold">Poder General</h1>
@@ -159,8 +172,10 @@ const FundacionPoder: React.FC = () => {
                     )}
                 </button>
             </div>
-
-            <ModalPoder isOpen={isModalOpen} onClose={closeModal} />
+            
+            {isModalOpen
+                && <ModalPoder onClose={closeModal} />
+            }
         </div>
     );
 };
