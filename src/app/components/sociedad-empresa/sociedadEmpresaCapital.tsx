@@ -209,7 +209,7 @@ const CapitalDivisionAcciones: React.FC = () => {
             <p className="text-gray-300 mt-4">
                 * Según la cantidad de accionistas, favor definir cuál sería el capital inicial de la sociedad y la división, por ejemplo:
                 <br />
-                "CAPITAL SOCIAL DE US$10,000. DIVIDIDO EN DOS ACCIONES (Cantidad de Acciones) DE US$5,000.00 (Valor de Cada Acción)".
+                &quot;CAPITAL SOCIAL DE US$10,000. DIVIDIDO EN DOS ACCIONES (Cantidad de Acciones) DE US$5,000.00 (Valor de Cada Acción)&quot;.
             </p>
 
             <form className="mt-4" onSubmit={handleSubmit}>
