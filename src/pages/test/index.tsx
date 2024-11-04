@@ -52,7 +52,7 @@ const Payment: React.FC = () => {
 
     $.ajax({
       type: 'POST',
-      url: 'http://tokenv2.test.merchantprocess.net/TokenWebService.asmx',  // Non-SSL Sandbox Sale URL
+      url: 'https://apicomponentv2-test.merchantprocess.net/UIComponent/CreditCard',  // Non-SSL Sandbox Sale URL
       data: {
         APIKey: apiKey,  // Hardcoded API Key
         accountToken: accountToken,  // Token received after tokenization
