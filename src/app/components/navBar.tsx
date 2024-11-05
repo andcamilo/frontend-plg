@@ -42,11 +42,17 @@ const NavBar = () => {
               Inicio
             </Link>
 
-          <div>
             <IconButton
               onClick={handleSolicitudesMenuClick}
               className="text-xl text-white font-bold hover:text-profile"
               style={{ padding: 0 }}
+              sx={{
+                color: 'white !important',
+                padding: 0,
+                '&:hover': {
+                  color: 'white !important',
+                },
+              }}
             >
               Solicitudes <ArrowDropDownIcon />
             </IconButton>
@@ -57,6 +63,7 @@ const NavBar = () => {
               open={Boolean(solicitudesAnchorEl)}
               onClose={handleClose}
               MenuListProps={{ onMouseLeave: handleClose }}
+                 sx={{ px: 3, color: 'white !important' }}
               PaperProps={{
                 style: {
                   backgroundColor: '#1F1F2E',
@@ -64,50 +71,22 @@ const NavBar = () => {
                 },
               }}
             >
-              <MenuItem onClick={() => handleRedirect('/request/pension-alimenticia')}  sx={{ px: 3 }}>Pensión Alimenticia</MenuItem>
-              <MenuItem onClick={() => handleRedirect('/request/fundacion')}  sx={{ px: 3 }}>Fundaciones de Interes privado</MenuItem>
-              <MenuItem onClick={() => handleRedirect('/request/sociedad-empresa')}  sx={{ px: 3 }}>Sociedades / Empresas</MenuItem>
+              <MenuItem sx={{ px: 3, color: 'white !important' }}  onClick={() => handleRedirect('/request/pension-alimenticia')}  sx={{ px: 3 }}>Pensión Alimenticia</MenuItem>
+              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/fundacion')}  sx={{ px: 3 }}>Fundaciones de Interes privado</MenuItem>
+              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/sociedad-empresa')}  sx={{ px: 3 }}>Sociedades / Empresas</MenuItem>
 
             </Menu>
-          </div>
 
-          <div>
-            <IconButton
-              onClick={() => handleRedirect('/dashboard/faqs')}
-              className="text-xl text-white font-bold hover:text-profile"
-              style={{ padding: 0 }}
-            >
-              FAQs
-            </IconButton>
-            <Menu
-              id="faqs-menu"
-              anchorEl={faqsAnchorEl}
-              keepMounted
-              open={Boolean(faqsAnchorEl)}
-              onClose={handleClose}
-              MenuListProps={{ onMouseLeave: handleClose }}
-              PaperProps={{
-                style: {
-                  backgroundColor: '#1F1F2E',
-                  color: 'white',
-                },
-              }}
-            >
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Generales</MenuItem>
-              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Solicitudes</MenuItem>
-            </Menu>
-          </div>
-          <IconButton
-              onClick={() => handleRedirect('/login')}
-              className="text-xl text-white font-bold hover:text-profile"
-              style={{ padding: 0 }}
-            >
+            <Link href="/dashboard/faqs" className='text-xl font-bold hover:text-profile'>
+             FAQs
+            </Link>
+            <Link href="/login" className='text-xl font-bold hover:text-profile'>
               Mi Cuenta
-            </IconButton>
+            </Link>
+            
           <a href="#" className="text-xl font-bold hover:text-profile">Ayuda</a>
         </div>
 
-        {/* Right section */}
         <div className="flex items-center space-x-4">
           <button className="text-xl font-bold bg-profile rounded-lg px-4 py-2 hover:text-profile">Corporativo</button>
           <div className="flex items-center bg-[#292929] px-3 py-1 rounded-full">
