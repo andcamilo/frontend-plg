@@ -19,21 +19,10 @@ const PensionForm: React.FC = () => {
 
     setStore((prevState) => ({
       ...prevState,
-      solicitud: {
+      solictud: {
         ...prevState.solictud,
         [name]: numericValue,
         totalAmount: newTotalAmount,
-      },
-    }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setStore((prevState) => ({
-      ...prevState,
-      solicitud: {
-        ...prevState.solictud,
-        sentenceFile: file,
       },
     }));
   };

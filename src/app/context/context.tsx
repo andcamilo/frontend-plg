@@ -52,6 +52,7 @@ export interface AppState {
   solicitudId: string;
   currentPosition: number;
   solictud: FormData;
+  solicitud: boolean;
   request: any;
   
 }
@@ -69,6 +70,7 @@ const initialState: AppState = {
   solicitudId: "",
   currentPosition: 1,
   request: "",
+  solicitud: false,
   solictud: {
     pensionType: '',
     pensionAmount: 0,

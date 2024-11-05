@@ -5,16 +5,8 @@ import AppStateContext from '@context/context';
 import { checkAuthToken } from '@utils/checkAuthToken';
 import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader';
+import countryCodes from '@utils/countryCode';
 
-const countryCodes = {
-  CO: '+57',
-  US: '+1',
-  MX: '+52',
-  AR: '+54',
-  BR: '+55',
-  PA: '+507', 
-  // Add more as needed
-};
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -31,7 +23,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     telefonoAlternativo: '',
     telefonoCodigo: 'PA',
     telefonoAlternativoCodigo: 'PA',
-    cedula: '',
+    cedulaPasaporte: '',
     email: '',
     confirmEmail: '',
     notificaciones: '',
@@ -128,7 +120,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         nombreSolicita: formData.nombreCompleto || '',
         telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
         telefonoSolicita2: `${countryCodes[formData.telefonoAlternativoCodigo]}${formData.telefonoAlternativo}` || '',
-        cedula: formData.cedula || '',
+        cedulaPasaporte: formData.cedulaPasaporte || '',
         emailSolicita: formData.email || formData.summaryEmail,
         actualizarPorCorreo: formData.notificaciones === 'yes',
         cuenta: cuenta || '',
@@ -170,6 +162,11 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       console.error('Error creating request:', error);
     }
   };
+
+
+  useEffect(() => {
+    console.log("🚀 ~ solicitud:", store.solicitud);
+  }, [store.solicitud]);
 
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -238,8 +235,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           {/* Other input fields */}
           <input
             type="text"
-            name="cedula"
-            value={formData.cedula}
+            name="cedulaPasaporte"
+            value={formData.cedulaPasaporte}
             onChange={handleChange}
             className="p-4 bg-gray-800 text-white rounded-lg"
             placeholder="Cédula o ID"

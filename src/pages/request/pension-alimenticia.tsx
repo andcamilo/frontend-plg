@@ -30,6 +30,7 @@ const PensionAlimenticia: React.FC = () => {
   // Use an effect to observe changes in store.currentPosition and update the activeStep
   useEffect(() => {
     if (store.currentPosition) {
+      console.log("🚀 ~ useEffect ~ store.currentPosition:", store.currentPosition)
       setActiveStep(store.currentPosition);
     }
   }, [store.currentPosition]);
@@ -90,10 +91,10 @@ const PensionAlimenticia: React.FC = () => {
               </button>
               <button
                 className={`p-4 rounded-lg ${
-                  store.solictud ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  store.solicitud ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                 }`}
-                onClick={() => store.solictud && setActiveStep(2)}
-                disabled={!store.solictud}
+                onClick={() => store.solicitud && setActiveStep(2)}
+                disabled={!store.solicitud}
               >
                 Solicitud
               </button>

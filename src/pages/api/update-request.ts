@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { backendBaseUrl } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const {
@@ -45,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const externalApiResponse = await axios.patch(
-      `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/update-request/${solicitudId}`,
+      `${backendBaseUrl}/dev/update-request/${solicitudId}`,
       dataToSend
     );
 

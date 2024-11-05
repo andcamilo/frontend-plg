@@ -1,10 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { backendBaseUrl } from '@utils/env';
+
 
 interface RequestData {
   nombreSolicita: string;
   telefonoSolicita: string;
   telefonoSolicita2: string;
+  cedulaPasaporte: string;
   emailSolicita: string;
   actualizarPorCorreo: boolean;
   cuenta: string;
@@ -15,7 +18,7 @@ interface RequestData {
   tipo: string;
 }
 
-const createRequestUrl = `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/create-request`;
+const createRequestUrl = `${backendBaseUrl}/dev/create-request`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

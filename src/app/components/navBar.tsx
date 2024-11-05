@@ -3,6 +3,7 @@ import Logo from '@public/images/legix.png';
 import React, { useState } from 'react';
 import { slide as BurgerMenu } from 'react-burger-menu';  // Import BurgerMenu correctly
 import { Menu, MenuItem, IconButton } from '@mui/material';
+import { useRouter } from 'next/router';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,6 +11,12 @@ import Link from 'next/link';
 const NavBar = () => {
   const [solicitudesAnchorEl, setSolicitudesAnchorEl] = useState<null | HTMLElement>(null);
   const [faqsAnchorEl, setFaqsAnchorEl] = useState<null | HTMLElement>(null);
+  const router = useRouter();
+
+
+  const handleRedirect = (url) => {
+    router.push(url);
+  };
 
   const handleSolicitudesMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setSolicitudesAnchorEl(event.currentTarget);
@@ -35,20 +42,14 @@ const NavBar = () => {
               Inicio
             </Link>
 
+          <div>
             <IconButton
-              onMouseEnter={handleSolicitudesMenuClick}
-              className="text-xl font-bold hover:text-profile"
-              sx={{
-                color: 'white !important',
-                padding: 0,
-                '&:hover': {
-                  color: 'white !important',
-                },
-              }}
+              onClick={handleSolicitudesMenuClick}
+              className="text-xl text-white font-bold hover:text-profile"
+              style={{ padding: 0 }}
             >
               Solicitudes <ArrowDropDownIcon />
             </IconButton>
-
             <Menu
               id="solicitudes-menu"
               anchorEl={solicitudesAnchorEl}
@@ -59,29 +60,50 @@ const NavBar = () => {
               PaperProps={{
                 style: {
                   backgroundColor: '#1F1F2E',
-                  color: 'white !important',
+                  color: 'white',
                 },
               }}
             >
-              <MenuItem
-                onClick={() => {
-                  handleClose();
-                  window.location.href = '/request/pension-alimenticia';
-                }}
-                sx={{ px: 3, color: 'white !important' }}
-              >
-                Pensión Alimenticia
-              </MenuItem>
+              <MenuItem onClick={() => handleRedirect('/request/pension-alimenticia')}  sx={{ px: 3 }}>Pensión Alimenticia</MenuItem>
+              <MenuItem onClick={() => handleRedirect('/request/fundacion')}  sx={{ px: 3 }}>Fundaciones de Interes privado</MenuItem>
+              <MenuItem onClick={() => handleRedirect('/request/sociedad-empresa')}  sx={{ px: 3 }}>Sociedades / Empresas</MenuItem>
+
             </Menu>
+          </div>
 
-
-
-          <Link href="/faqs" className='text-xl font-bold hover:text-profile'>
-            FAQs
-          </Link>
-          <Link href="/login" className='text-xl font-bold hover:text-profile'>
-            Mi Cuenta
-          </Link>
+          <div>
+            <IconButton
+              onClick={() => handleRedirect('/dashboard/faqs')}
+              className="text-xl text-white font-bold hover:text-profile"
+              style={{ padding: 0 }}
+            >
+              FAQs
+            </IconButton>
+            <Menu
+              id="faqs-menu"
+              anchorEl={faqsAnchorEl}
+              keepMounted
+              open={Boolean(faqsAnchorEl)}
+              onClose={handleClose}
+              MenuListProps={{ onMouseLeave: handleClose }}
+              PaperProps={{
+                style: {
+                  backgroundColor: '#1F1F2E',
+                  color: 'white',
+                },
+              }}
+            >
+              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Generales</MenuItem>
+              <MenuItem onClick={handleClose} sx={{ px: 3 }}>Solicitudes</MenuItem>
+            </Menu>
+          </div>
+          <IconButton
+              onClick={() => handleRedirect('/login')}
+              className="text-xl text-white font-bold hover:text-profile"
+              style={{ padding: 0 }}
+            >
+              Mi Cuenta
+            </IconButton>
           <a href="#" className="text-xl font-bold hover:text-profile">Ayuda</a>
         </div>
 
