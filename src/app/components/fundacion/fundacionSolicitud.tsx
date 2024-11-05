@@ -64,7 +64,7 @@ const FundacionSolicitante: React.FC = () => {
         if (store.request) {
             const nombreCompleto = get(store.request, 'nombreSolicita', '');
             const telefono = get(store.request, 'telefonoSolicita', '');
-            const emailSolicitante = get(store.request, 'emailSolicita', ''); 
+            const emailSolicita = get(store.request, 'emailSolicita', ''); 
             const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
 
             // Actualizar el formData con los campos de la raíz y "fundacion"
@@ -72,7 +72,7 @@ const FundacionSolicitante: React.FC = () => {
                 ...prevFormData,
                 nombreCompleto, 
                 telefono, 
-                /* emailSolicitante,  */
+                emailSolicita,  
                 cedulaPasaporte,
             }));
         }
@@ -269,8 +269,9 @@ const FundacionSolicitante: React.FC = () => {
                 tipo: "new-fundacion",
                 item: "Registro de fundación",
             };
+            console.log("🚀 ~ sendCreateRequest ~ requestData:", requestData)
 
-            const response = await axios.post("/api/create-request", requestData, {
+            const response = await axios.post("/api/create-request-fundacion", requestData, {
                 headers: {
                     "Content-Type": "application/json",
                 },
