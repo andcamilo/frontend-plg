@@ -40,6 +40,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     viveEn: { value: '', label: '' }, 
     estudia: { value: '', label: '' }, 
     lugarEstudio: '', 
+    ocupacion: '',
     anoCursando: '', 
     tipoEstudio: { value: '', label: '' }, 
     tiempoCompleto: { value: '', label: '' }, 
@@ -219,6 +220,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
           corregimiento: formData.corregimiento,
           mantieneIngresos: formData.mantieneIngresos,
           lugarTrabajo: formData.mantieneIngresos.value === 'si' ? formData.lugarTrabajo : '', 
+          ocupacion: formData.ocupacion,
           ingresosMensuales: formData.mantieneIngresos.value === 'si' ? formData.ingresosMensuales : '', 
           viveEn: formData.mantieneIngresos.value === 'si' ? formData.viveEn : '', 
           estudia: formData.estudia,
@@ -473,6 +475,16 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 type="text"
                 name="ingresosMensuales"
                 value={formData.ingresosMensuales}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              />
+            </div>
+            <div>
+              <label className="block mb-2 text-sm">Ocupacion</label>
+              <input
+                type="text"
+                name="ocupacion"
+                value={formData.ocupacion}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               />
