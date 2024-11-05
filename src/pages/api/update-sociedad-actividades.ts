@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { backendBaseUrl } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { solicitudId, actividades } = req.body;  // Obtenemos solicitudId y actividades del cuerpo de la solicitud
@@ -108,7 +109,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Enviar solicitud a la API externa (por ejemplo, AWS Lambda o Firebase)
         const externalApiResponse = await axios.patch(
-            `http://localhost:4000/chris/update-sociedad-actividades`,  // URL de la API para actualizar las actividades
+            `${backendBaseUrl}/dev/update-sociedad-actividades`,  // URL de la API para actualizar las actividades
             updatePayload  // Enviar el cuerpo con solicitudId y actividades
         );
 

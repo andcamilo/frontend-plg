@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { backendBaseUrl } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { solicitudId, fuentesIngresos } = req.body;  // Obtenemos solicitudId y fuentesIngresos del cuerpo de la solicitud
@@ -39,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Enviar solicitud a la API externa (por ejemplo, AWS Lambda o Firebase)
     const externalApiResponse = await axios.patch(
-      `http://localhost:4000/chris/update-sociedad-ingresos`,  // URL de la API para actualizar los ingresos
+      `${backendBaseUrl}/dev/update-sociedad-ingresos`,  // URL de la API para actualizar los ingresos
       updatePayload  // Enviar el cuerpo con solicitudId y fuentesIngresos
     );
 

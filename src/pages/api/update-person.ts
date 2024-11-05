@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { backendBaseUrl } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const updatePayload = req.body;  // Recibimos todo el payload directamente desde el frontend
@@ -12,9 +13,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Enviar el payload directamente a la API externa sin modificar su estructura
     const externalApiResponse = await axios.patch(
-      `http://localhost:4000/chris/update-person`,  
+      `${backendBaseUrl}/dev/update-person`,  
       updatePayload  
     );
+    
 
     // Retornar la respuesta de la API externa
     return res.status(200).json(externalApiResponse.data);

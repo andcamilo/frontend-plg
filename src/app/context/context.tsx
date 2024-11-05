@@ -51,7 +51,7 @@ export interface AppState {
   resumen: boolean;
   solicitudId: string;
   currentPosition: number;
-  solictud: FormData;
+  solicitud: boolean;
   request: any;
 }
 
@@ -68,33 +68,7 @@ const initialState: AppState = {
   solicitudId: "",
   currentPosition: 1,
   request: "",
-  solictud: {
-    pensionType: '',
-    pensionAmount: 0,
-    receiveSupport: '',
-    pensionCategory: 'Hijos menores de edad',
-    currentSupportAmount: 0,
-    currentAmount: 0,
-    increaseAmount: 0,
-    totalAmount: 0,
-    agreesWithAmount: '',
-    disagreementReason: '',
-    province: '',
-    court: '',
-    pensionSubType: '',
-    reduceAmount: 0,
-    knowsCaseLocation: '',
-    wantsInvestigation: '',
-    suspensionReason: '',
-    desacatoDescription: '',
-    paymentDay: '',
-    lastPaymentDate: '',
-    courtName: '',
-    caseNumber: '',
-    sentenceDate: '',
-    sentenceFile: null,
-    reason: ''
-  }
+  solicitud: false
 };
 
 // Define context type

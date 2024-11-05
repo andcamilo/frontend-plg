@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { backendBaseUrl } from '@utils/env';
+
 
 interface RequestData {
   nombreSolicita: string;
@@ -16,7 +18,7 @@ interface RequestData {
   tipo: string;
 }
 
-const createRequestUrl = `http://localhost:4000/chris/create-request`;
+const createRequestUrl = `${backendBaseUrl}/dev/create-request`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
