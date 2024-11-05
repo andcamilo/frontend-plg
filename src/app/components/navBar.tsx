@@ -71,9 +71,9 @@ const NavBar = () => {
                 },
               }}
             >
-              <MenuItem sx={{ px: 3, color: 'white !important' }}  onClick={() => handleRedirect('/request/pension-alimenticia')}  sx={{ px: 3 }}>Pensión Alimenticia</MenuItem>
-              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/fundacion')}  sx={{ px: 3 }}>Fundaciones de Interes privado</MenuItem>
-              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/sociedad-empresa')}  sx={{ px: 3 }}>Sociedades / Empresas</MenuItem>
+              <MenuItem sx={{ px: 3, color: 'white !important' }}  onClick={() => handleRedirect('/request/pension-alimenticia')} >Pensión Alimenticia</MenuItem>
+              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/fundacion')}>Fundaciones de Interes privado</MenuItem>
+              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/sociedad-empresa')}>Sociedades / Empresas</MenuItem>
 
             </Menu>
 
