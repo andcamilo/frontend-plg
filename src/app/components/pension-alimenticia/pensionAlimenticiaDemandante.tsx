@@ -18,6 +18,14 @@ interface SelectOption {
   label: string;
 }
 
+interface Menor {
+  tipoPersona: SelectOption;
+  nombreCompletoMenor: string;
+  fechaNacimientoMenor: string; 
+  edadMenor: number;
+  parentescoConDemandado: SelectOption;
+}
+
 
 const PensionAlimenticiaDemandante: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -46,6 +54,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     tiempoCompleto: { value: '', label: '' }, 
     parentescoPension: { value: '', label: '' },
     representaMenor: { value: '', label: '' }, 
+    menores: [] as Menor[],
     tipoPersona: { value: '', label: '' }, 
     nombreCompletoMenor: '', 
     fechaNacimientoMenor: '', 
@@ -159,6 +168,11 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    console.log("🚀 ~ formData.menores:", formData.menores)
+  }, [formData.menores]);
+
+
+  useEffect(() => {
     if (formData.nacionalidad.value) {
       const states = State.getStatesOfCountry(formData.nacionalidad.value);
       setProvincias(states.map(state => ({ value: state.isoCode, label: state.name })));
@@ -171,6 +185,33 @@ const PensionAlimenticiaDemandante: React.FC = () => {
       setCorregimientos(cities.map(city => ({ value: city.name, label: city.name })));
     }
   }, [formData.provincia]);
+
+  const addMenor = () => {
+    setFormData((prevData: any) => ({
+      ...prevData,
+      menores: [
+        ...prevData.menores,
+        {
+          tipoPersona: { value: '', label: '' },
+          nombreCompletoMenor: '',
+          fechaNacimientoMenor: '',
+          edadMenor: '',
+          parentescoConDemandado: { value: '', label: '' },
+        },
+      ],
+    }));
+  };
+
+  const handleMenorChange = (index: number, field: keyof Menor, value: any) => {
+    setFormData((prevData) => {
+      const updatedMenores = [...prevData.menores];
+      updatedMenores[index] = {
+        ...updatedMenores[index],
+        [field]: value,
+      };
+      return { ...prevData, menores: updatedMenores };
+    });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -230,11 +271,9 @@ const PensionAlimenticiaDemandante: React.FC = () => {
           tiempoCompleto: formData.estudia.value === 'si' ? formData.tiempoCompleto : '',
           parentescoPension: formData.estudia.value === 'si' ? formData.parentescoPension : '',
           representaMenor: formData.representaMenor,
+
           tipoPersona: formData.representaMenor.value === 'si' ? formData.tipoPersona : '',
-          nombreCompletoMenor: formData.representaMenor.value === 'si' ? formData.nombreCompletoMenor : '',
-          fechaNacimientoMenor: formData.representaMenor.value === 'si' ? formData.fechaNacimientoMenor : '',
-          edadMenor: formData.representaMenor.value === 'si' ? formData.edadMenor : '',
-          parentescoConDemandado: formData.representaMenor.value === 'si' ? formData.parentescoConDemandado : ''
+          menores: formData.menores || []
         },
       };
 
@@ -584,58 +623,69 @@ const PensionAlimenticiaDemandante: React.FC = () => {
 
         {/* Conditionally render these fields if 'representaMenor' is 'Sí' */}
         {formData.representaMenor.value === 'si' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block mb-2 text-sm">¿Es la persona menor o persona con discapacidad?</label>
-              <Select
-                options={tipoPersonaOptions}
-                value={tipoPersonaOptions.find(tipo => tipo.value === formData.tipoPersona.value)}
-                onChange={(option) => handleSelectChange('tipoPersona', option)}
-                styles={customSelectStyles}
-              />
+        <div className="mt-6">
+        <label className="block mb-2 text-sm">Menores</label>
+          <button
+            type="button"
+            onClick={addMenor}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mb-4"
+          >
+            Adicionar Menor
+          </button>
+
+          {formData.menores.map((menor, index) => (
+            <div key={index} className="p-4 mb-4 bg-gray-800 rounded-md">
+                  <h4 className="mb-2 font-semibold">Menor #{index + 1}</h4>
+                  <div>
+                    <label className="block mb-2 text-sm">Tipo de Persona</label>
+                    <Select
+                      options={tipoPersonaOptions}
+                      value={tipoPersonaOptions.find(tipo => tipo.value === menor.tipoPersona.value)}
+                      onChange={(option) => handleMenorChange(index, 'tipoPersona', option)}
+                      styles={customSelectStyles}
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm">Nombre Completo</label>
+                    <input
+                      type="text"
+                      value={menor.nombreCompletoMenor}
+                      onChange={(e) => handleMenorChange(index, 'nombreCompletoMenor', e.target.value)}
+                      className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm">Fecha de Nacimiento</label>
+                    <input
+                      type="text"
+                      value={menor.fechaNacimientoMenor}
+                      onChange={(e) => handleMenorChange(index, 'fechaNacimientoMenor', e.target.value)}
+                      className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                      placeholder="dd/mm/aaaa"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm">Edad</label>
+                    <input
+                      type="text"
+                      value={menor.edadMenor}
+                      onChange={(e) => handleMenorChange(index, 'edadMenor', e.target.value)}
+                      className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm">Parentesco con Demandado</label>
+                    <Select
+                      options={parentescoConDemandadoOptions}
+                      value={parentescoConDemandadoOptions.find(par => par.value === menor.parentescoConDemandado.value)}
+                      onChange={(option) => handleMenorChange(index, 'parentescoConDemandado', option)}
+                      styles={customSelectStyles}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <label className="block mb-2 text-sm">Nombre completo</label>
-              <input
-                type="text"
-                name="nombreCompletoMenor"
-                value={formData.nombreCompletoMenor}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              />
-            </div>
-            <div>
-              <label className="block mb-2 text-sm">Fecha de nacimiento</label>
-              <input
-                type="text"
-                name="fechaNacimientoMenor"
-                value={formData.fechaNacimientoMenor}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                placeholder="dd/mm/aaaa"
-              />
-            </div>
-            <div>
-              <label className="block mb-2 text-sm">Edad</label>
-              <input
-                type="text"
-                name="edadMenor"
-                value={formData.edadMenor}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              />
-            </div>
-            <div>
-              <label className="block mb-2 text-sm">Parentesco del menor o persona con discapacidad con la persona demandada a quien se le solicita la pensión</label>
-              <Select
-                options={parentescoConDemandadoOptions}
-                value={parentescoConDemandadoOptions.find(par => par.value === formData.parentescoConDemandado.value)}
-                onChange={(option) => handleSelectChange('parentescoConDemandado', option)}
-                styles={customSelectStyles}
-              />
-            </div>
-          </div>
-        )}
+          )}
 
         <InformacionGeneralAdicional />
         <ToggleTextComponent />
