@@ -13,6 +13,16 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
     atencionMedica: 0,
     recreacion: 0,
     habitacion: 0,
+    agua: 0,
+    luz: 0,
+    telefono: 0,
+    matricula:0,
+    cuotaPadres:0,
+    uniformes:0,
+    textosLibros:0,
+    utiles:0,
+    transporte:0,
+    meriendas:0,
     otros: 0,
     supermercado: 0,
     sumaTotal: 0,
@@ -59,7 +69,18 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
       updatedFormData.recreacion +
       updatedFormData.habitacion +
       updatedFormData.otros +
+      updatedFormData.agua +
+      updatedFormData.luz +
+      updatedFormData.telefono +
+      updatedFormData.matricula +
+      updatedFormData.cuotaPadres +
+      updatedFormData.uniformes +
+      updatedFormData.textosLibros +
+      updatedFormData.utiles +
+      updatedFormData.transporte +
+      updatedFormData.meriendas +
       updatedFormData.supermercado;
+  
 
     return total;
   };
@@ -94,6 +115,16 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
           recreacion: formData.recreacion,
           habitacion: formData.habitacion,
           otros: formData.otros,
+          agua: formData.agua,
+          luz: formData.luz,
+          telefono: formData.telefono,
+          matricula: formData.matricula,
+          cuotaPadres: formData.cuotaPadres,
+          uniformes: formData.uniformes,
+          textosLibros: formData.textosLibros,
+          utiles: formData.utiles,
+          transporte: formData.transporte,
+          meriendas: formData.meriendas,
           supermercado: formData.supermercado,
           sumaTotal: formData.sumaTotal,
         },
@@ -194,11 +225,110 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block mb-2 text-sm">Otros</label>
+            <label className="block mb-2 text-sm">Factura Agua</label>
             <input
               type="number"
-              name="otros"
-              value={formData.otros}
+              name="agua"
+              value={formData.agua}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block mb-2 text-sm">Factura Luz</label>
+            <input
+              type="number"
+              name="luz"
+              value={formData.luz}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm">Factura Teléfono</label>
+            <input
+              type="number"
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm">Matrícula</label>
+            <input
+              type="number"
+              name="matricula"
+              value={formData.matricula}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block mb-2 text-sm">Cuota Padres Educación</label>
+            <input
+              type="number"
+              name="cuotaPadres"
+              value={formData.cuotaPadres}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm">Uniformes</label>
+            <input
+              type="number"
+              name="uniformes"
+              value={formData.uniformes}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm">Textos y Libros</label>
+            <input
+              type="number"
+              name="textosLibros"
+              value={formData.textosLibros}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block mb-2 text-sm">Útiles </label>
+            <input
+              type="number"
+              name="utiles"
+              value={formData.utiles}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm">Transporte</label>
+            <input
+              type="number"
+              name="transporte"
+              value={formData.transporte}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm">Meriendas</label>
+            <input
+              type="number"
+              name="meriendas"
+              value={formData.meriendas}
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
             />
@@ -212,6 +342,16 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               type="number"
               name="supermercado"
               value={formData.supermercado}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm">Otros</label>
+            <input
+              type="number"
+              name="otros"
+              value={formData.otros}
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
             />
