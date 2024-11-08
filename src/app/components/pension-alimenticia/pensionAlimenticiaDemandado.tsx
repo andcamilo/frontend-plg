@@ -7,6 +7,7 @@ import { Country, State, City } from 'country-state-city';
 import DemandadoInfo from './DemandadoInfo'
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import countryCodes from '@utils/countryCode';
 
 interface SelectOption {
   value: string;
@@ -19,22 +20,31 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     estadoCivil: { value: 'Soltero', label: 'Soltero' },
     cedula: '',
     nacionalidad: { value: 'PA', label: 'Panamá' }, // Default value
-    direccion: '',
+    direccionCasa: '',
+    detalleDireccionCasa: '',
+    telefono: '',
+    telefonoCodigo: 'PA',
     pais: { value: 'PA', label: 'Panamá' }, // Default value
     provincia: { value: '', label: '' }, // Province
     corregimiento: { value: '', label: '' }, // City
+    trabajando: { value: '', label: '' },
+    ocupacion: '',
     ingresosTrabajo: '',
-    detalleDireccion: '',
     direccionTrabajo: '',
+    detalleDireccionTrabajo: '',
     salario: 'No',
     hijosDistintos: 'No',
-    trabajando: 'No',
   });
 
   const [paises, setPaises] = useState<SelectOption[]>([]);
   const [provincias, setProvincias] = useState<SelectOption[]>([]);
   const [corregimientos, setCorregimientos] = useState<SelectOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const mantieneIngresosOptions: SelectOption[] = [
+    { value: 'no', label: 'No' },
+    { value: 'si', label: 'Sí' },
+  ];
 
   // Access the context
   const context = useContext(AppStateContext);
@@ -96,12 +106,28 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     }));
   };
 
-  // Handle form changes for select fields
-  const handleSelectChange = (name: string, selectedOption: SelectOption) => {
+  const handleSelectCountryCodeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: selectedOption,
+      [name]: value,
     }));
+  };
+
+  // Handle form changes for select fields
+  const handleSelectChange = (name: string, selectedOption: SelectOption | null) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: selectedOption ? { value: selectedOption.value, label: selectedOption.label } : { value: '', label: '' },
+    }));
+  };
+
+  const removeCountryCode = (phone: string, countryCode: string = "507") => {
+    // Check if the phone number starts with the country code
+    if (phone.startsWith(countryCode)) {
+      return phone.slice(countryCode.length); // Remove the country code for display
+    }
+    return phone;
   };
 
   // Handle form submission
@@ -117,16 +143,20 @@ const PensionAlimenticiaDemandado: React.FC = () => {
           estadoCivil: formData.estadoCivil,
           cedula: formData.cedula,
           nacionalidad: formData.nacionalidad,
-          direccion: formData.direccion,
+          direccionCasa: formData.direccionCasa,
+          detalleDireccionCasa: formData.detalleDireccionCasa,
           pais: formData.pais,
+          telefono: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
           provincia: formData.provincia,
           corregimiento: formData.corregimiento,
+          trabajando: formData.trabajando,
+          ocupacion: formData.ocupacion,
           ingresosTrabajo: formData.ingresosTrabajo,
-          detalleDireccion: formData.detalleDireccion,
+          detalleDireccionTrabajo: formData.detalleDireccionTrabajo,
           direccionTrabajo: formData.direccionTrabajo,
           salario: formData.salario,
           hijosDistintos: formData.hijosDistintos,
-          trabajando: formData.trabajando,
+
         },
       };
 
@@ -164,7 +194,6 @@ const PensionAlimenticiaDemandado: React.FC = () => {
       {/* Form Section */}
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Name and Civil Status */}
           <div>
             <label className="block mb-2 text-sm">Nombre completo:</label>
             <input
@@ -197,6 +226,28 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               type="text"
               name="cedula"
               value={formData.cedula}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              required
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm">Dirección vivienda:</label>
+            <input
+              type="text"
+              name="direccionCasa"
+              value={formData.direccionCasa}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              required
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-sm">Detalle Dirección vivienda:</label>
+            <input
+              type="text"
+              name="detalleDireccionCasa"
+              value={formData.detalleDireccionCasa}
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
@@ -236,7 +287,6 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             </select>
           </div>
 
-          {/* City */}
           <div>
             <label className="block mb-2 text-sm">Corregimiento:</label>
             <select
@@ -254,38 +304,91 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             </select>
           </div>
 
-          {/* Income, Address, and Work Address */}
           <div>
-            <label className="block mb-2 text-sm">Ingresos que recibe por su trabajo:</label>
+            <label className="block mb-2 text-sm">¿Mantiene un trabajo?</label>
+            <select
+              name="trabajando"
+              value={formData.trabajando.value}
+              onChange={(e) => {
+                const selectedOption = mantieneIngresosOptions.find(option => option.value === e.target.value) || null;
+                handleSelectChange('trabajando', selectedOption);
+              }}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              required
+            >
+              {mantieneIngresosOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {formData.trabajando.value === 'si' && (
+            <>
+              <div>
+                <label className="block mb-2 text-sm">Ocupación:</label>
+                <input
+                  type="text"
+                  name="ocupacion"
+                  value={formData.ocupacion}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                />
+              </div>
+              <div>
+                <label className="block mb-2 text-sm">Ingresos que recibe por su trabajo:</label>
+                <input
+                  type="text"
+                  name="ingresosTrabajo"
+                  value={formData.ingresosTrabajo}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                />
+              </div>
+              <div>
+                <label className="block mb-2 text-sm">Detalle de la dirección:</label>
+                <textarea
+                  name="detalleDireccionTrabajo"
+                  value={formData.detalleDireccionTrabajo}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                />
+              </div>
+              <div>
+                <label className="block mb-2 text-sm">Dirección de trabajo:</label>
+                <textarea
+                  name="direccionTrabajo"
+                  value={formData.direccionTrabajo}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                />
+              </div>
+            </>
+          )}
+                    
+          <div>
+            <label className="block mb-2 text-xs">Teléfono:</label>
+            <select
+              name="telefonoCodigo"
+              value={formData.telefonoCodigo}
+              onChange={handleSelectCountryCodeChange}
+              className="p-3 bg-gray-800 text-white rounded-lg"
+            >
+              {Object.entries(countryCodes).map(([code, dialCode]) => (
+                <option key={code} value={code}>{code}: {dialCode}</option>
+              ))}
+            </select>
             <input
               type="text"
-              name="ingresosTrabajo"
-              value={formData.ingresosTrabajo}
+              name="telefono"
+              value={removeCountryCode(formData.telefono)}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-            />
-          </div>
-          <div>
-            <label className="block mb-2 text-sm">Detalle de la dirección:</label>
-            <textarea
-              name="detalleDireccion"
-              value={formData.detalleDireccion}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-            />
-          </div>
-          <div>
-            <label className="block mb-2 text-sm">Dirección de trabajo:</label>
-            <textarea
-              name="direccionTrabajo"
-              value={formData.direccionTrabajo}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              className="ml-1 p-2 border border-gray-700 rounded bg-gray-800 text-white"
             />
           </div>
         </div>
 
-        {/* Submit button */}
         <div className="mt-6">
           <button
             type="submit"
