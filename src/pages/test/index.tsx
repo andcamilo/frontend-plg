@@ -41,32 +41,28 @@ const Payment: React.FC = () => {
     }
   };
 
-  // Function to process a sale for 1 USD after tokenization
   const processSale = (accountToken: string) => {
     if (!accountToken) {
       console.error('Token is required to process the sale.');
       return;
     }
-
-    const clientTracking = 'TX-' + new Date().getTime(); // Unique transaction tracking ID
+    console.log("🚀 ~ processSale ~ accountToken:", accountToken)
+    const clientTracking = 'TX-' + new Date().getTime(); 
 
     $.ajax({
       type: 'POST',
-      url: 'https://apicomponentv2-test.merchantprocess.net/UIComponent/CreditCard',  // Non-SSL Sandbox Sale URL
+      url: 'https://apicomponentv2-test.merchantprocess.net/UIComponent/CreditCard',
       data: {
-        APIKey: apiKey,  // Hardcoded API Key
-        accountToken: accountToken,  // Token received after tokenization
-        accessCode: accessCode,  // Access code provided by your bank
-        merchantAccountNumber: merchantAccountNumber,  // Hardcoded MID
-        terminalName: terminalName,  // Hardcoded TID
-        clientTracking: clientTracking,  // Your unique tracking ID
-        amount: '1.00',  // Charging 1 USD as a test
-        currencyCode: '840',  // Currency code (840 = USD)
-        emailAddress: 'customer@example.com'  // Customer's email (optional)
+        APIKey: apiKey,
+        accountToken: accountToken,  
+        accessCode: accessCode, 
+        clientTracking: clientTracking,
+        amount: 1.0, 
+        currencyCode: '840', 
+        cvv:'123'
       },
       success: function(response: any) {
         console.log('Sale successful:', response);
-        // Handle successful sale (e.g., show confirmation to the user)
       },
       error: function(err: any) {
         console.error('Error processing the sale:', err);

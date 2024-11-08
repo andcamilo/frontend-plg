@@ -11,6 +11,7 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
     mensualidadEscolar: 0,
     vestuario: 0,
     atencionMedica: 0,
+    medicamentos: 0,
     recreacion: 0,
     habitacion: 0,
     agua: 0,
@@ -66,6 +67,7 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
       updatedFormData.mensualidadEscolar +
       updatedFormData.vestuario +
       updatedFormData.atencionMedica +
+      updatedFormData.medicamentos +
       updatedFormData.recreacion +
       updatedFormData.habitacion +
       updatedFormData.otros +
@@ -112,6 +114,7 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
           mensualidadEscolar: formData.mensualidadEscolar,
           vestuario: formData.vestuario,
           atencionMedica: formData.atencionMedica,
+          medicamentos: formData.medicamentos,
           recreacion: formData.recreacion,
           habitacion: formData.habitacion,
           otros: formData.otros,
@@ -192,6 +195,19 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
             />
           </div>
           <div>
+            <label className="block mb-2 text-sm">Recreación</label>
+            <input
+              type="number"
+              name="recreacion"
+              value={formData.recreacion}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
             <label className="block mb-2 text-sm">Atención médica</label>
             <input
               type="number"
@@ -201,15 +217,12 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block mb-2 text-sm">Recreación</label>
+            <label className="block mb-2 text-sm">Medicina</label>
             <input
               type="number"
-              name="recreacion"
-              value={formData.recreacion}
+              name="medicamentos"
+              value={formData.medicamentos}
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
             />
@@ -235,7 +248,6 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
             />
           </div>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Factura Luz</label>

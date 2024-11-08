@@ -34,6 +34,16 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
     archivosAdjuntos: {
       cedula: null,
       certificadoNacimiento: null,
+      certificadoMatrimonio: null,
+      facturaSupermercado:null,
+      facturaAgua: null,
+      facturaVestuario: null,
+      facturaLuz: null,
+      facturaTelefono: null,
+      facturaMatricula: null,
+      facturaUtiles: null,
+      facturaMatriculaUniversitaria: null,
+      facturaCreditosAcademicos: null, 
       sentencia: null,
       additionalDocs: [],
     },
@@ -41,6 +51,16 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
 
   const [cedulaFile, setCedulaFile] = useState<File | null>(null);
   const [nacimientoFile, setNacimientoFile] = useState<File | null>(null);
+  const [matrimonioFile, setMatrimonioFile] = useState<File | null>(null);
+  const [facturaSupermercadoFile, setFacturaSupermercadoFile] = useState<File | null>(null);
+  const [facturaAguaFile, setFacturaAguaFile] = useState<File | null>(null);
+  const [facturaVestuarioFile, setFacturaVestuarioFile] = useState<File | null>(null);
+  const [facturaLuzFile, setFacturaLuzFile] = useState<File | null>(null);
+  const [facturaTelefonoFile, setFacturaTelefonoFile] = useState<File | null>(null);
+  const [facturaMatriculaFile, setFacturaMatriculaFile] = useState<File | null>(null);
+  const [facturaUtilesFile, setFacturaUtilesFile] = useState<File | null>(null);
+  const [facturaMatriculaUniversitariaFile, setFacturaMatriculaUniversitariaFile] = useState<File | null>(null);
+  const [facturaCreditosAcademicosFile, setFacturaCreditosAcademicosFile] = useState<File | null>(null);
   const [sentenciaFile, setSentenciaFile] = useState<File | null>(null);
   const [additionalDocs, setAdditionalDocs] = useState<(File | null)[]>([]);
   const [showAdditionalDocs, setShowAdditionalDocs] = useState(false);
@@ -117,8 +137,22 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const cedulaURL = cedulaFile ? await uploadFileToFirebase(cedulaFile, 'uploads/cedula') : formData.archivosAdjuntos.cedula;
-      const nacimientoURL = nacimientoFile ? await uploadFileToFirebase(nacimientoFile, 'uploads/certificadoNacimiento') : formData.archivosAdjuntos.certificadoNacimiento;
+
+      const generateFilePath = (fileName) => `uploads/${fileName}_${store.solicitudId}`;
+      
+      const cedulaURL = cedulaFile ? await uploadFileToFirebase(cedulaFile, generateFilePath('cedula')) : formData.archivosAdjuntos.cedula;
+      const nacimientoURL = nacimientoFile ? await uploadFileToFirebase(nacimientoFile, generateFilePath('certificadoNacimiento')) : formData.archivosAdjuntos.certificadoNacimiento;
+      const matrimonioURL = matrimonioFile ? await uploadFileToFirebase(matrimonioFile, generateFilePath('certificadoMatrimonio')) : formData.archivosAdjuntos.certificadoMatrimonio;
+      const facturaSupermercadoURL = facturaSupermercadoFile ? await uploadFileToFirebase(facturaSupermercadoFile, generateFilePath('facturaSupermercado')) : formData.archivosAdjuntos.facturaSupermercado;
+      const facturaAguaFileURL = facturaAguaFile ? await uploadFileToFirebase(facturaAguaFile, generateFilePath('facturaAgua')) : formData.archivosAdjuntos.facturaAgua;
+      const facturaVestuarioURL = facturaVestuarioFile ? await uploadFileToFirebase(facturaVestuarioFile, generateFilePath('facturaVestuario')) : formData.archivosAdjuntos.facturaVestuario;
+      const facturaLuzURL = facturaLuzFile ? await uploadFileToFirebase(facturaLuzFile, generateFilePath('facturaLuz')) : formData.archivosAdjuntos.facturaLuz;
+      const facturaTelefonoURL = facturaTelefonoFile ? await uploadFileToFirebase(facturaTelefonoFile, generateFilePath('facturaTelefono')) : formData.archivosAdjuntos.facturaTelefono;
+      const facturaMatriculaURL = facturaMatriculaFile ? await uploadFileToFirebase(facturaMatriculaFile, generateFilePath('facturaMatricula')) : formData.archivosAdjuntos.facturaMatricula;
+      const facturaUtilesURL = facturaUtilesFile ? await uploadFileToFirebase(facturaUtilesFile, generateFilePath('facturaUtiles')) : formData.archivosAdjuntos.facturaUtiles;
+      const facturaMatriculaUniversitariaURL = facturaMatriculaUniversitariaFile ? await uploadFileToFirebase(facturaMatriculaUniversitariaFile, generateFilePath('facturaMatriculaUniversitaria')) : formData.archivosAdjuntos.facturaMatriculaUniversitaria;
+      const facturaCreditosAcademicosURL = facturaCreditosAcademicosFile ? await uploadFileToFirebase(facturaCreditosAcademicosFile, generateFilePath('facturaCreditosAcademicos')) : formData.archivosAdjuntos.facturaCreditosAcademicos;
+
       const sentenciaURL = sentenciaFile ? await uploadFileToFirebase(sentenciaFile, 'uploads/sentencia') : formData.archivosAdjuntos.sentencia;
       const additionalDocsURLs = await Promise.all(
         additionalDocs.map((file, index) => uploadFileToFirebase(file!, `uploads/additionalDocs_${index}`))
@@ -129,6 +163,16 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
         archivosAdjuntos: {
           cedula: cedulaURL,
           certificadoNacimiento: nacimientoURL,
+          certificadoMatrimonio: matrimonioURL,
+          facturaSupermercado: facturaSupermercadoURL,
+          facturaAgua: facturaAguaFileURL,
+          facturaVestuario: facturaVestuarioURL,
+          facturaLuz: facturaLuzURL,
+          facturaTelefono: facturaTelefonoURL,
+          facturaMatricula: facturaMatriculaURL,
+          facturaUtiles: facturaUtilesURL,
+          facturaMatriculaUniversitaria: facturaMatriculaUniversitariaURL,
+          facturaCreditosAcademicos: facturaCreditosAcademicosURL,
           sentencia: sentenciaURL,
           additionalDocs: additionalDocsURLs.length ? additionalDocsURLs : formData.archivosAdjuntos.additionalDocs,
         },
@@ -199,6 +243,165 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setNacimientoFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm">Certificado de Matrimonio.</label>
+          {formData.archivosAdjuntos.certificadoMatrimonio && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.certificadoMatrimonio} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setMatrimonioFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm">Factura del supermercado.</label>
+          {formData.archivosAdjuntos.facturaSupermercado && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.facturaSupermercado} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setFacturaSupermercadoFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm">Factura de vestuario y calzado.</label>
+          {formData.archivosAdjuntos.facturaVestuario && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.facturaVestuario} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setFacturaVestuarioFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+        <div>
+          <label className="block mb-2 text-sm">Factura del servicio del Agua.</label>
+          {formData.archivosAdjuntos.facturaAgua && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.facturaAgua} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setFacturaAguaFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+        
+        <div>
+          <label className="block mb-2 text-sm">Factura del servicio de la luz.</label>
+          {formData.archivosAdjuntos.facturaLuz && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.facturaLuz} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setFacturaAguaFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm">Factura del teléfono.</label>
+          {formData.archivosAdjuntos.facturaTelefono && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.facturaTelefono} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setFacturaTelefonoFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm">Recibo de Matrícula.</label>
+          {formData.archivosAdjuntos.facturaMatricula && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.facturaMatricula} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setFacturaMatriculaFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm">Factura de útiles escolares.</label>
+          {formData.archivosAdjuntos.facturaUtiles && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.facturaUtiles} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setFacturaUtilesFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm">Créditos academicos.</label>
+          {formData.archivosAdjuntos.facturaCreditosAcademicos && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.facturaCreditosAcademicos} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setFacturaCreditosAcademicosFile)}
+            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm">Factura de Matrícula universitaria.</label>
+          {formData.archivosAdjuntos.facturaMatriculaUniversitaria && (
+            <p className="text-sm text-blue-500">
+              <a href={formData.archivosAdjuntos.facturaMatriculaUniversitaria} target="_blank" rel="noopener noreferrer">
+                Ver documento actual
+              </a>
+            </p>
+          )}
+          <input
+            type="file"
+            onChange={(e) => handleFileChange(e, setFacturaMatriculaUniversitariaFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
           />
         </div>

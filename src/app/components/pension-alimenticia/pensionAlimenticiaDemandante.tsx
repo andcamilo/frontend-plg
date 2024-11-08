@@ -205,13 +205,33 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   const handleMenorChange = (index: number, field: keyof Menor, value: any) => {
     setFormData((prevData) => {
       const updatedMenores = [...prevData.menores];
+      
+      // Update the field with the new value
       updatedMenores[index] = {
         ...updatedMenores[index],
         [field]: value,
       };
+  
+      // If the field is fechaNacimientoMenor, calculate edadMenor
+      if (field === 'fechaNacimientoMenor') {
+        const birthDate = new Date(value);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+        
+        // Adjust if the birth month and day haven't occurred yet this year
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+  
+        // Set edadMenor based on the calculated age
+        updatedMenores[index].edadMenor = age; // Convert to string if edadMenor is a text field
+      }
+  
       return { ...prevData, menores: updatedMenores };
     });
   };
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -495,7 +515,6 @@ const PensionAlimenticiaDemandante: React.FC = () => {
           </div>
         </div>
 
-        {/* Conditionally render these fields if 'mantieneIngresos' is 'Sí' */}
         {formData.mantieneIngresos.value === 'si' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -657,11 +676,10 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                   <div>
                     <label className="block mb-2 text-sm">Fecha de Nacimiento</label>
                     <input
-                      type="text"
+                      type="date"
                       value={menor.fechaNacimientoMenor}
                       onChange={(e) => handleMenorChange(index, 'fechaNacimientoMenor', e.target.value)}
                       className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                      placeholder="dd/mm/aaaa"
                     />
                   </div>
                   <div>
