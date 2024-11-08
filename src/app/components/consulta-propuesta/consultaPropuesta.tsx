@@ -1,0 +1,1099 @@
+"use client";
+import React, { useState, useEffect, useRef } from 'react';
+import Swal from "sweetalert2";
+import ClipLoader from "react-spinners/ClipLoader";
+import axios from "axios";
+import countryCodes from '@utils/countryCode';
+import { checkAuthToken } from "@utils/checkAuthToken";
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import {
+    firebaseApiKey,
+    firebaseAuthDomain,
+    firebaseProjectId,
+    firebaseStorageBucket,
+    firebaseMessagingSenderId,
+    firebaseAppId
+} from '@utils/env';
+
+// Configuración de Firebase
+const firebaseConfig = {
+    apiKey: firebaseApiKey,
+    authDomain: firebaseAuthDomain,
+    projectId: firebaseProjectId,
+    storageBucket: firebaseStorageBucket,
+    messagingSenderId: firebaseMessagingSenderId,
+    appId: firebaseAppId,
+};
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const storage = getStorage(app);
+
+const ConsultaPropuesta: React.FC = () => {
+    const [formData, setFormData] = useState({
+        nombreCompleto: "",
+        email: "",
+        cedulaPasaporte: "",
+        telefono: "",
+        telefonoCodigo: 'PA',
+        celular: "",
+        celularCodigo: 'PA',
+        emailRespuesta: "",
+        empresa: "",
+        tipoConsulta: "Propuesta Legal",
+        areaLegal: "Migración",
+        detallesPropuesta: "",
+        preguntasEspecificas: "",
+        notificaciones: "",
+        terminosAceptados: false,
+        archivoURL: "",
+        consultaOficina: "Si",
+        buscarCliente: "Si",
+        direccionBuscar: "",
+        direccionIr: "",
+    });
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null;
+        setArchivoFile(file);
+    };
+
+    const uploadFileToFirebase = (file: File, path: string): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const storageRef = ref(storage, path);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log(`Upload is ${progress}% done`);
+                },
+                (error) => {
+                    reject(error);
+                },
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                }
+            );
+        });
+    };
+
+    const [errors, setErrors] = useState({
+        nombreCompleto: false,
+        email: false,
+        telefono: false,
+        celular: false,
+        cedulaPasaporte: false,
+        detallesPropuesta: false,
+        direccionBuscar: false,
+        direccionIr: false,
+        emailRespuesta: false,
+    });
+
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isEmailNew, setIsEmailNew] = useState(true);
+    const [archivoFile, setArchivoFile] = useState<File | null>(null);
+
+    useEffect(() => {
+        const userEmail = checkAuthToken();
+        if (userEmail) {
+            setFormData((prevData) => ({
+                ...prevData,
+                email: userEmail,
+                confirmEmail: userEmail,
+            }));
+            setIsLoggedIn(true);
+        }
+    }, []);
+
+    const nombreCompletoRef = useRef<HTMLInputElement>(null);
+    const emailRef = useRef<HTMLInputElement>(null);
+    const emailRespuestaRef = useRef<HTMLInputElement>(null);
+    const cedulaPasaporteRef = useRef<HTMLInputElement>(null);
+    const telefonoRef = useRef<HTMLInputElement>(null);
+    const detallesPropuestaRef = useRef<HTMLTextAreaElement>(null);
+    const direccionBuscarRef = useRef<HTMLInputElement>(null);
+    const direccionIrRef = useRef<HTMLInputElement>(null);
+
+    const [item, setItem] = useState("Propuesta Legal");
+    const [precio, setPrecio] = useState(0);
+    const [subtotal, setSubtotal] = useState(0);
+    const [total, setTotal] = useState(0);
+    const [servicioAdicional, setServicioAdicional] = useState(false);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+        // Eliminar el error cuando el campo se llena
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: false,
+        }));
+
+        if (name === "tipoConsulta") {
+            switch (value) {
+                case "Propuesta Legal":
+                    setItem("Propuesta Legal");
+                    setPrecio(0);
+                    setSubtotal(0);
+                    setTotal(0);
+                    break;
+                case "Consulta Escrita":
+                    setItem("Consulta Escrita");
+                    setPrecio(175);
+                    setSubtotal(175);
+                    setTotal(175);
+                    setServicioAdicional(false);
+                    break;
+                case "Consulta Virtual":
+                    setItem("Consulta Virtual");
+                    setPrecio(50);
+                    setSubtotal(50);
+                    setTotal(50);
+                    setServicioAdicional(false);
+                    break;
+                case "Consulta Presencial":
+                    setItem("Consulta Presencial");
+                    setPrecio(75);
+                    setSubtotal(80);
+                    setTotal(80);
+                    setServicioAdicional(true);
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
+    const [mostrarEmailRespuesta, setMostrarEmailRespuesta] = useState(false);
+
+    const toggleEmailRespuesta = () => {
+        setMostrarEmailRespuesta(prev => !prev);
+    };
+
+    // Actualizar el subtotal y el total cuando cambian las condiciones
+    useEffect(() => {
+        let newSubtotal;
+        let newTotal;
+        let newPrecio;
+
+        // Verificar condición para agregar "Servicio Adicional"
+        if (formData.consultaOficina === "Si" && formData.buscarCliente === "Si" && formData.tipoConsulta === "Consulta Presencial") {
+            newPrecio = 75;
+            newSubtotal = newPrecio + 5;
+
+            setPrecio(newPrecio);
+            setSubtotal(newSubtotal);
+            setTotal(newSubtotal);
+            setServicioAdicional(true); // Mostrar el segundo item en la tabla
+        } else if (formData.consultaOficina === "Si" && formData.buscarCliente === "No" && formData.tipoConsulta === "Consulta Presencial") {
+            newPrecio = 75;
+            newSubtotal = newPrecio;
+
+            setPrecio(newPrecio);
+            setSubtotal(newSubtotal);
+            setTotal(newSubtotal);
+            setServicioAdicional(false);
+        }
+
+        if (formData.consultaOficina === "No") {
+            newPrecio = 100;
+            setPrecio(newPrecio);
+            setSubtotal(newPrecio);
+            setTotal(newPrecio);
+            setServicioAdicional(false);
+        }
+
+        if (formData.tipoConsulta === "Consulta Escrita") {
+            setPrecio(175);
+            setSubtotal(175);
+            setTotal(175);
+            setServicioAdicional(false);
+        }
+
+        if (formData.tipoConsulta === "Consulta Virtual") {
+            setPrecio(50);
+            setSubtotal(50);
+            setTotal(50);
+            setServicioAdicional(false);
+        }
+
+    }, [precio, formData.consultaOficina, formData.buscarCliente]);
+
+    const validateFields = () => {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // Validación de nombreCompleto
+        if (!formData.nombreCompleto) {
+            setErrors((prevErrors) => ({ ...prevErrors, nombreCompleto: true }));
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Por favor, ingrese el nombre completo.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+            nombreCompletoRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            nombreCompletoRef.current?.focus();
+            return false;
+        }
+
+        // Validación de email  
+        if (!formData.email) {
+            setErrors((prevErrors) => ({ ...prevErrors, email: true }));
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Por favor, ingrese el correo electrónico.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+            emailRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            emailRef.current?.focus();
+            return false;
+        } else if (!emailPattern.test(formData.email)) {
+            setErrors((prevErrors) => ({ ...prevErrors, email: true }));
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Por favor, ingrese un correo electrónico válido.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+            emailRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            emailRef.current?.focus();
+            return false;
+        }
+
+        // Validación de los demás campos
+        const fieldValidations = [
+            { field: "cedulaPasaporte", ref: cedulaPasaporteRef, errorMessage: "Por favor, ingrese el número de cédula o pasaporte." },
+            { field: "telefono", ref: telefonoRef, errorMessage: "Por favor, ingrese el número de teléfono." },
+            { field: "detallesPropuesta", ref: detallesPropuestaRef, errorMessage: "Por favor, ingrese los detalles de la propuesta.", condition: formData.tipoConsulta === "Propuesta Legal" }
+        ];
+
+        for (const { field, ref, errorMessage, condition = true } of fieldValidations) {
+            if (condition && !formData[field]) {
+                setErrors((prevErrors) => ({ ...prevErrors, [field]: true }));
+                Swal.fire({
+                    position: "top-end",
+                    icon: "warning",
+                    title: errorMessage,
+                    showConfirmButton: false,
+                    timer: 2500,
+                    timerProgressBar: true,
+                    toast: true,
+                    background: '#2c2c3e',
+                    color: '#fff',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        icon: 'custom-swal-icon',
+                        timerProgressBar: 'custom-swal-timer-bar'
+                    }
+                });
+                if (ref.current) {
+                    ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+                    ref.current.focus();
+                }
+                return false;
+            }
+        }
+
+        if (!formData.emailRespuesta && mostrarEmailRespuesta) {
+            setErrors((prevErrors) => ({ ...prevErrors, emailRespuesta: true }));
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Por favor, ingrese el correo electrónico.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+            emailRespuestaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            emailRespuestaRef.current?.focus();
+            return false;
+        } else if (!emailPattern.test(formData.emailRespuesta) && mostrarEmailRespuesta) {
+            setErrors((prevErrors) => ({ ...prevErrors, emailRespuesta: true }));
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Por favor, ingrese un correo electrónico válido.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+            emailRespuestaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            emailRespuestaRef.current?.focus();
+            return false;
+        }
+
+        if (formData.consultaOficina === "Si" && formData.buscarCliente === "Si" &&
+            !formData.direccionBuscar && formData.tipoConsulta === "Consulta Presencial") {
+            setErrors((prevErrors) => ({ ...prevErrors, direccionBuscar: true }));
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Por favor, ingrese la Dirección.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+            direccionBuscarRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            direccionBuscarRef.current?.focus();
+            return false;
+        }
+
+        if (formData.consultaOficina === "No" && !formData.direccionIr
+            && formData.tipoConsulta === "Consulta Presencial") {
+            setErrors((prevErrors) => ({ ...prevErrors, direccionIr: true }));
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Por favor, ingrese la Dirección.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+            direccionIrRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            direccionIrRef.current?.focus();
+            return false;
+        }
+
+        // Validación de términos y condiciones
+        if (!formData.terminosAceptados) {
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Debes aceptar los términos y condiciones.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        if (!validateFields()) {
+            setIsLoading(false);
+            return;
+        }
+
+        if (!formData.terminosAceptados) {
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Debes aceptar los términos y condiciones.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const emailResult = await axios.get("/api/validate-email", {
+                params: {
+                    email: formData.email,
+                    isLogged: isLoggedIn.toString(),
+                },
+            });
+
+            const { cuenta, isLogged } = emailResult.data;
+
+            if (isLogged && cuenta) {
+                await sendCreateRequest(cuenta);
+            } else if (!isLogged && cuenta) {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "error",
+                    title: "Este correo ya está en uso. Por favor, inicia sesión para continuar.",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+            } else if (!cuenta) {
+                await sendCreateRequest("");
+            }
+        } catch (error) {
+            Swal.fire({
+                position: "top-end",
+                icon: "error",
+                title: "Hubo un problema verificando el correo. Por favor, inténtalo de nuevo más tarde.",
+                showConfirmButton: false,
+                timer: 1500,
+            });
+            console.error("API Error:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (formData.archivoURL) {
+            // Si archivoURL ya tiene una URL, se puede mostrar el archivo cargado en el formulario
+            console.log("Archivo adjunto cargado:", formData.archivoURL);
+        }
+    }, [formData.archivoURL]);
+
+    const sendCreateRequest = async (cuenta: string) => {
+        try {
+
+            let tipo = "propuesta-legal";
+            let item = "Propuesta Legal";
+
+            // Validar el tipoConsulta y asignar valores específicos a tipo e item
+            if (formData.tipoConsulta === "Consulta Escrita") {
+                tipo = "consulta-escrita";
+                item = "Consulta Escrita";
+            } else if (formData.tipoConsulta === "Consulta Virtual") {
+                tipo = "consulta-virtual";
+                item = "Consulta Virtual";
+            } else if (formData.tipoConsulta === "Consulta Presencial") {
+                tipo = "consulta-presencial";
+                item = "Consulta Presencial";
+            }
+
+            const requestData = {
+                nombreSolicita: formData.nombreCompleto,
+                telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}`,
+                celularSolicita: `${countryCodes[formData.celularCodigo]}${formData.celular}`,
+                cedulaPasaporte: formData.cedulaPasaporte || "",
+                emailSolicita: formData.email,
+                empresaSolicita: formData.empresa || "",
+                tipoConsulta: formData.tipoConsulta,
+                areaLegal: formData.areaLegal || "",
+                detallesPropuesta: formData.detallesPropuesta || "",
+                preguntasEspecificas: formData.preguntasEspecificas || "",
+                actualizarPorCorreo: formData.notificaciones === "yes",
+                emailRespuesta: formData.emailRespuesta || "",
+
+                cuenta: cuenta || "",
+                precio: precio,
+                subtotal: subtotal,
+                total: total,
+                accion: "Creación de solicitud",
+                tipo: tipo,
+                item: item
+            };
+
+            const response = await axios.post("/api/create-request-consultaPropuesta", requestData, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const { solicitudId, status } = response.data;
+
+            let archivoURL = formData.archivoURL;
+            if (archivoFile) {
+                archivoURL = await uploadFileToFirebase(archivoFile, `uploads/${solicitudId}/adjuntoDocumentoConsulta`);
+                setFormData((prevData) => ({
+                    ...prevData,
+                    archivoURL: archivoURL,
+                }));
+            }
+
+            const updatePayload = {
+                solicitudId: solicitudId,
+                adjuntoDocumentoConsulta: archivoURL || '',
+            };
+
+            const responseData = await axios.post('/api/update-request-all', updatePayload);
+
+            if (responseData.status === 200) {
+                /* Swal.fire({
+                    icon: 'success',
+                    title: 'Solicitud Actualizada',
+                    text: 'Los datos han sido guardados correctamente.',
+                }); */
+                console.log("Los datos han sido guardados correctamente.")
+            } else {
+                /* throw new Error('Error al actualizar la solicitud.'); */
+                console.log("Error al actualizar la solicitud.")
+            }
+
+            if (status === "success" && solicitudId) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Solicitud enviada correctamente",
+                    timer: 2500,
+                    showConfirmButton: false,
+                    background: '#2c2c3e',
+                    color: '#fff',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title-main',
+                        icon: 'custom-swal-icon',
+                        timerProgressBar: 'custom-swal-timer-bar'
+                    }
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                position: "top-end",
+                icon: "error",
+                title: "Hubo un problema enviando la solicitud. Por favor, inténtalo de nuevo más tarde.",
+                showConfirmButton: false,
+                timer: 1500,
+            });
+            console.error("Error creating request:", error);
+        }
+    };
+
+    return (
+        <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
+            <h1 className="text-white text-4xl font-bold mb-4">Solicitud de Propuesta o Consulta Legal</h1>
+            <hr />
+            <p className="text-white mt-4">
+                <strong>Sabemos que puedes tener muchas dudas antes de realizar un trámite, o sólo requieres información de alguna situación o alguna propuesta de los servicios que ofrecemos, por ello, este trámite te permite hacer alguna de las siguientes solicitudes:</strong>
+            </p>
+
+            <ul className="text-white mt-4 list-disc list-inside space-y-4">
+                <li>
+                    <strong>Propuesta Legal:</strong> al escoger propuesta legal, nos podrás detallar tu necesidad y te estaríamos enviando una cotización con los requisitos. Podrás comentarnos dudas adicionales de la misma, y te estaríamos guiando sobre los próximos pasos una vez aprobada la propuesta. Solicitar una propuesta legal no tiene costo.
+                </li>
+                <li>
+                    <strong>Consulta Escrita:</strong> desde donde quiera que te encuentres, podrás hacernos consultas escritas para analizar tus casos específicos. Nos puedes enviar todos los datos y documentos respecto a tu consulta, y te estaríamos enviando un informe legal al respecto. El tiempo de respuesta es de una media de 3 a 5 días hábiles, sin embargo, dependiendo de la complejidad, te estaríamos informando si se requiere más tiempo, o un estudio legal complejo.
+                </li>
+                <li>
+                    <strong>Consulta virtual:</strong> aquí podrás solicitar una reunión virtual con alguno de nuestros abogados, que te atenderá según el requerimiento que tengas. La reunión se sostendría de manera virtual para que no tengas que trasladarte, y nosotros poder seguir dándote la atención personalizada que te mereces. Escoge 3 fechas disponibles que tengas, y estarás recibiendo la confirmación de una de las fechas, que incluirá el link. Si ocurre algo y no te puedes conectar, puedes solicitar el cambio de fecha en el sistema.
+                </li>
+                <li>
+                    <strong>Consulta presencial:</strong> sabemos que para algunos es muy importante explicarnos su requerimiento en persona, por ello, estamos siempre dispuestos a recibirlos en nuestra casa. Puedes solicitar una consulta presencial según tu disponibilidad. Escoge 3 fechas disponibles que tengas, y estarás recibiendo la confirmación de una de las fechas para tu visita a nuestras oficinas.
+                </li>
+            </ul>
+
+            <p className="text-white mt-4">
+                <strong className="text-red-500">IMPORTANTE:</strong> Si elige la opción de Consultas (Escrita, Presencial o Virtual) debe tener en cuenta que la misma tiene una duración máxima de 1 hora y 30 minutos, en caso que se extienda por más tiempo esto incurrirá en aumento en su tarifa que deberán ser cancelados al momento de finalizar dicha consulta. Por lo tanto le pedimos que sea bien específico al momento de enviar el formulario para que sus dudas sean aclaradas en el tiempo propuesto y no incurrir en gastos adicionales.
+            </p>
+
+            <p className="text-white mt-4">
+                Si desea reprogramar una Consulta o Propuesta Virtual/Presencial, debe hacerlo con un lapso de tiempo mínimo de 5 horas antes de la fecha programada; de lo contrario, su solicitud no podrá ser reagendada y deberá esperar a ser contactado por uno de nuestros especialistas para reprogramar. Además, si incurre en esta falta, no se permitirá el reembolso de su dinero una vez que haya cancelado fuera del tiempo reglamentario. Tenga en cuenta que solo podrá hacer uso de esta opción una vez; asegúrese de que en las fechas seleccionadas podrá asistir a su consulta.
+            </p>
+
+            <p className="text-white mt-4">
+                Si tienes alguna duda de nuestros servicios, pueden contactarnos a: <a className='text-blue-500' href="mailto:info@panamalegalgroup.com">info@panamalegalgroup.com</a>
+            </p>
+
+            <p className="text-white mt-4">
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    <a
+                        href="https://wa.me/50769853352"
+                        target="_blank"
+                        rel="nofollow"
+                        style={{ display: 'flex', alignItems: 'center', color: 'green', textDecoration: 'none' }}
+                    >
+                        <WhatsAppIcon style={{ color: '#25D366', fontSize: '24px', marginRight: '8px' }} />
+                        <span>WhatsApp</span>
+                    </a>
+                </span>
+            </p>
+
+            <form onSubmit={handleSubmit} className="mt-4">
+                <div className="mb-6">
+                    <h2 className="block text-white text-lg font-semibold mb-2">Tipo de consulta:</h2>
+                    <select
+                        name="tipoConsulta"
+                        value={formData.tipoConsulta}
+                        onChange={handleInputChange}
+                        className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                    >
+                        <option value="Propuesta Legal">Propuesta Legal</option>
+                        <option value="Consulta Escrita">Consulta Escrita</option>
+                        <option value="Consulta Virtual">Consulta Virtual</option>
+                        <option value="Consulta Presencial">Consulta Presencial</option>
+                    </select>
+                </div>
+
+
+                <div className="mb-6">
+                    <h2 className="text-white text-2xl font-semibold">Información Personal</h2>
+                    {formData.tipoConsulta === "Propuesta Legal" && (
+                        <>
+                            <p className="text-white text-sm">* Coméntanos tu información como solicitante de la propuesta para poder contactarte.</p>
+                        </>
+                    )}
+                    {formData.tipoConsulta !== "Propuesta Legal" && (
+                        <>
+                            <p className="text-white text-sm">* Indícanos la información de quien solicita la consulta para poder contactarnos en cualquier caso. Si estás representando a la persona que necesita asistir a la consulta virtual o presencial, puedes establecer en el detalle del caso la información de la misma.</p>
+                        </>
+                    )}
+                </div>
+                <hr className="mb-4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="relative w-full">
+                        <label className="block text-white mb-2">Nombre completo de a quién va dirigida la Propuesta (persona natural):</label>
+                        <input
+                            ref={nombreCompletoRef}
+                            type="text"
+                            name="nombreCompleto"
+                            value={formData.nombreCompleto}
+                            onChange={handleInputChange}
+                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
+                        />
+                    </div>
+
+                    <div className="relative w-full">
+                        <label className="block text-white mb-2">Dirección de correo electrónico:</label>
+                        <input
+                            ref={emailRef}
+                            type="text"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
+                        />
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div className="relative w-full">
+                        <label className="block text-white mb-2">Número de cédula o Pasaporte:</label>
+                        <input
+                            ref={cedulaPasaporteRef}
+                            type="text"
+                            name="cedulaPasaporte"
+                            value={formData.cedulaPasaporte}
+                            onChange={handleInputChange}
+                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
+                            placeholder="Número de cédula o Pasaporte"
+                        />
+                    </div>
+                    <div className="flex flex-col col-span-1">
+                        <label className="block text-white w-full">Número de teléfono:</label>
+                        <div className="flex gap-2 mt-2">
+                            <select
+                                name="telefonoCodigo"
+                                value={formData.telefonoCodigo}
+                                onChange={handleInputChange}
+                                className="p-4 bg-gray-800 text-white rounded-lg"
+                            >
+                                {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                    <option key={code} value={code}>{code}: {dialCode}</option>
+                                ))}
+                            </select>
+                            <input
+                                ref={telefonoRef}
+                                type="text"
+                                name="telefono"
+                                value={formData.telefono}
+                                onChange={handleInputChange}
+                                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex flex-col col-span-1">
+                        <label className="block text-white w-full">Número de celular / WhatsApp:</label>
+                        <div className="flex gap-2 mt-2">
+                            <select
+                                name="celularCodigo"
+                                value={formData.celularCodigo}
+                                onChange={handleInputChange}
+                                className="p-4 bg-gray-800 text-white rounded-lg"
+                            >
+                                {Object.entries(countryCodes).map(([code, dialCode]) => (
+                                    <option key={code} value={code}>{code}: {dialCode}</option>
+                                ))}
+                            </select>
+                            <input
+                                type="text"
+                                name="celular"
+                                value={formData.celular}
+                                onChange={handleInputChange}
+                                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.celular ? 'border-2 border-red-500' : ''}`}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {formData.tipoConsulta === "Propuesta Legal" && (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="relative w-full">
+                                <button
+                                    type="button" 
+                                    className="bg-profile text-white w-full py-4 rounded-lg mt-8"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        toggleEmailRespuesta();
+                                    }}
+                                >
+                                    {mostrarEmailRespuesta
+                                        ? "Quitar correo electrónico para envío de propuesta"
+                                        : "Adicionar correo electrónico para envío de propuesta"}
+                                </button>
+                            </div>
+
+                            {mostrarEmailRespuesta && (
+                                <div className="relative w-full">
+                                    {/* <label className="block text-white mb-2"></label> */}
+                                    <input
+                                        ref={emailRespuestaRef}
+                                        type="text"
+                                        name="emailRespuesta"
+                                        value={formData.emailRespuesta}
+                                        onChange={handleInputChange}
+                                        className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errors.emailRespuesta ? 'border-2 border-red-500' : ''}`}
+                                        placeholder="Correo electrónico adicional para envío de propuesta:"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="relative w-full mt-6">
+                            <label className="block text-white mb-2">Si la propuesta va dirigida a una empresa, por favor incluya el nombre:</label>
+                            <input
+                                type="text"
+                                name="empresa"
+                                value={formData.empresa}
+                                onChange={handleInputChange}
+                                className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                            />
+                        </div>
+                    </>
+                )}
+
+                <div className="mb-6 mt-4">
+                    <h2 className="text-white text-2xl font-semibold">Detalles de la Consulta</h2>
+                </div>
+
+                <div className="mb-6">
+                    <label className="block text-white text-lg font-semibold mb-2">Área Legal:</label>
+                    <select
+                        name="areaLegal"
+                        value={formData.areaLegal || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                    >
+                        <option value="Migración">Migración</option>
+                        <option value="Sociedades">Sociedades</option>
+                        <option value="Comercial">Comercial</option>
+                        <option value="Familia">Familia</option>
+                        <option value="Penal">Penal</option>
+                        <option value="Tecnología">Tecnología</option>
+                        <option value="Bienes Raíces o Inmuebles">Bienes Raíces o Inmuebles</option>
+                        <option value="Laboral">Laboral</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+
+                <div className="mb-6">
+                    <label className="block text-white text-lg font-semibold mb-2">Detalles de la Solicitud de Propuesta:</label>
+                    <textarea
+                        ref={detallesPropuestaRef}
+                        name="detallesPropuesta"
+                        value={formData.detallesPropuesta}
+                        onChange={handleInputChange}
+                        className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.detallesPropuesta ? 'border-2 border-red-500' : ''}`}
+                        rows={4}
+                    ></textarea>
+                </div>
+
+                <div className="mb-6">
+                    <label className="block text-white text-lg font-semibold mb-2">Preguntas Específicas:</label>
+                    <textarea
+                        name="preguntasEspecificas"
+                        value={formData.preguntasEspecificas || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                        rows={4}
+                    ></textarea>
+                </div>
+
+                {formData.tipoConsulta !== "Propuesta Legal" && (
+                    <>
+                        <div className="mb-4">
+                            <label className="text-white block mb-2">Adjuntar algún documento que crea relevante.</label>
+                            <input
+                                type="file"
+                                name="adjuntoDocumentoConsulta"
+                                onChange={handleFileChange}
+                                className="w-full p-2 bg-gray-800 text-white rounded-lg"
+                            />
+                            {formData.archivoURL && (
+                                <p className="text-sm text-blue-500">
+                                    <a href={formData.archivoURL} target="_blank" rel="noopener noreferrer">
+                                        Ver documento actual
+                                    </a>
+                                </p>
+                            )}
+                        </div>
+
+                        {formData.tipoConsulta !== "Consulta Escrita" && (
+                            <>
+                                <h2 className="text-white text-2xl font-semibold">Calendario y Disponibilidad</h2>
+                                <p className="text-white text-sm">* Escoge tres fechas y un rango de horas en las que estás disponible, y te confirmaremos dentro de las próximas 24 horas.</p>
+                                <hr className='mt-2 mb-2' />
+                                <p className="text-white text-sm"><strong className="text-red-500">IMPORTANTE:</strong> Las consultas tienen una duración máxima de 1 hora 30 minutos, si la consulta requiere más tiempo ten en cuenta que puede incurrir en nuevos cargos.</p>
+                                <hr className='mt-2 mb-2' />
+
+                                {formData.tipoConsulta === "Consulta Presencial" && (
+                                    <>
+                                        <div className="mb-6 mt-4">
+                                            <label className="block text-white text-lg font-semibold mb-2">¿Desea que la consulta sea en las oficinas de Panamá Legal Group o en una dirección específica?</label>
+                                            <select
+                                                name="consultaOficina"
+                                                value={formData.consultaOficina || ""}
+                                                onChange={handleInputChange}
+                                                className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                                            >
+                                                <option value="Si">Sí, en las oficinas de Panamá Legal Group.</option>
+                                                <option value="No">No, otra dirección.</option>
+
+                                            </select>
+                                        </div>
+                                        {formData.consultaOficina === "Si" && (
+                                            <>
+                                                <div className="mb-6">
+                                                    <label className="block text-white text-lg font-semibold mb-2">¿Desea que lo busquemos a un lugar en específico para llegar a nuestras oficinas?</label>
+                                                    <select
+                                                        name="buscarCliente"
+                                                        value={formData.buscarCliente || ""}
+                                                        onChange={handleInputChange}
+                                                        className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                                                    >
+                                                        <option value="Si">Sí</option>
+                                                        <option value="No">No</option>
+
+                                                    </select>
+                                                </div>
+
+                                                {formData.buscarCliente === "Si" && (
+                                                    <>
+                                                        <label className="block text-white text-lg font-semibold mb-3">Este servicio es válido para la Ciudad de Panamá, si se encuentra fuera de la Ciudad le anexáremos el cargo a su Solicitud.</label>
+                                                        <div className="relative w-full">
+                                                            <label className="block text-white mb-2">Indique la Dirección:</label>
+                                                            <input
+                                                                ref={direccionBuscarRef}
+                                                                type="text"
+                                                                name="direccionBuscar"
+                                                                value={formData.direccionBuscar}
+                                                                onChange={handleInputChange}
+                                                                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.direccionBuscar ? 'border-2 border-red-500' : ''}`}
+                                                            />
+                                                        </div>
+
+                                                    </>
+                                                )}
+                                                {formData.buscarCliente === "No" && (
+                                                    <>
+                                                        <label className="block text-white text-lg font-semibold mb-3">Le estaremos confirmando la hora que lo estará atendiendo el abogado en nuestras oficinas de Panama Legal Group.</label>
+                                                    </>
+                                                )}
+
+                                            </>
+                                        )}
+                                        {formData.consultaOficina === "No" && (
+                                            <>
+                                                <p className="text-white text-sm mb-4"><strong className="text-red-500">NOTA:</strong> El traslado de nuestros abogados a un lugar especifico puede incurrir en gastos, tenga en cuenta que si debe movilizarse fuera de la ciudad se le anexaran gastos adicionales.</p>
+                                                <div className="relative w-full">
+                                                    <label className="block text-white mb-2">Indique la Dirección:</label>
+                                                    <input
+                                                        ref={direccionIrRef}
+                                                        type="text"
+                                                        name="direccionIr"
+                                                        value={formData.direccionIr}
+                                                        onChange={handleInputChange}
+                                                        className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.direccionIr ? 'border-2 border-red-500' : ''}`}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </>
+                        )}
+                        {/* Tabla de costos */}
+                        <div className="mt-6">
+                            <h2 className="text-white text-2xl font-semibold">Costos</h2>
+                            <table className="w-full mt-4 text-white border border-gray-600">
+                                <thead>
+                                    <tr className="border-b border-gray-600">
+                                        <th className="text-left p-2">#</th>
+                                        <th className="text-left p-2">Item</th>
+                                        <th className="text-right p-2">Precio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="border-b border-gray-600">
+                                        <td className="p-2">1</td>
+                                        <td className="p-2">{item}</td>
+                                        <td className="text-right p-2">${precio}</td>
+                                    </tr>
+                                    {/* Mostrar Servicio Adicional si aplica */}
+                                    {servicioAdicional && (
+                                        <tr className="border-b border-gray-600">
+                                            <td className="p-2">2</td>
+                                            <td className="p-2">Servicio Adicional</td>
+                                            <td className="text-right p-2">$5.00</td>
+                                        </tr>
+                                    )}
+                                    <tr className="border-b border-gray-600">
+                                        <td colSpan={2} className="text-right p-2">Subtotal</td>
+                                        <td className="text-right p-2">${subtotal.toFixed(2)}</td>
+                                    </tr>
+                                    <tr className="border-b border-gray-600">
+                                        <td colSpan={2} className="text-right p-2">Total</td>
+                                        <td className="text-right p-2">${total.toFixed(2)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
+
+                <div className="mt-4">
+                    <p className="text-white">¿Deseas que te notifiquemos a tu correo?</p>
+                    <label className="inline-flex items-center mt-4">
+                        <input
+                            type="radio"
+                            name="notificaciones"
+                            value="yes"
+                            checked={formData.notificaciones === "yes"}
+                            onChange={handleInputChange}
+                            className="form-radio"
+                        />
+                        <span className="ml-2 text-white">Sí, enviarme las notificaciones por correo electrónico.</span>
+                    </label>
+                </div>
+                <div className="mt-2">
+                    <label className="inline-flex items-center mt-2">
+                        <input
+                            type="radio"
+                            name="notificaciones"
+                            value="no"
+                            checked={formData.notificaciones === "no"}
+                            onChange={handleInputChange}
+                            className="form-radio"
+                        />
+                        <span className="ml-2 text-white">No, lo reviso directamente en el sistema.</span>
+                    </label>
+                </div>
+
+                <div className="mt-4">
+                    <label className="inline-flex items-center">
+                        <input
+                            type="checkbox"
+                            name="terminosAceptados"
+                            checked={formData.terminosAceptados}
+                            onChange={handleInputChange}
+                            className="form-checkbox"
+                        />
+                        <span className="ml-2 text-white">Acepto los términos y condiciones de este servicio.</span>
+                    </label>
+                </div>
+
+                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center">
+                            <ClipLoader size={24} color="#ffffff" />
+                            <span className="ml-2">Cargando...</span>
+                        </div>
+                    ) : (
+                        "Enviar Solicitud"
+                    )}
+                </button>
+            </form>
+        </div>
+    );
+};
+
+export default ConsultaPropuesta;
