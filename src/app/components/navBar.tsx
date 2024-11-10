@@ -77,7 +77,7 @@ const NavBar = () => {
 
             </Menu>
 
-            <Link href="/dashboard/faqs" className='text-xl font-bold hover:text-profile'>
+            <Link href="/faqs" className='text-xl font-bold hover:text-profile'>
              FAQs
             </Link>
             <Link href="/login" className='text-xl font-bold hover:text-profile'>
