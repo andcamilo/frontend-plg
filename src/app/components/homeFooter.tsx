@@ -41,7 +41,7 @@ const HomeFooter: React.FC = () => {
             <li><a href="/sobre-nosotros" className="hover:underline">Sobre nosotros</a></li>
             <li><a href="/ayuda" className="hover:underline">Ayuda</a></li>
             <li><a href="/contacto" className="hover:underline">Contacto</a></li>
-            <li><a href="/faqs" className="hover:underline">FAQs</a></li>
+            <li><a href="/" className="hover:underline">FAQs</a></li>
             <li><a href="/privacidad" className="hover:underline">Políticas de privacidad</a></li>
             <li><a href="/terminos" className="hover:underline">Términos y condiciones</a></li>
           </ul>
