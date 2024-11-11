@@ -1,7 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { backendBaseUrl } from '@utils/env';
 
-const createConsultaUrl = 'http://localhost:4000/chris/create-request-consultaPropuesta';
+const createConsultaUrl = `${backendBaseUrl}/dev/create-request-consultaPropuesta`;
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
