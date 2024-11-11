@@ -5,8 +5,6 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import EmailIcon from '@mui/icons-material/Email';
 
-
-
 const SociedadEmpresaBienvenido: React.FC = () => {
     const context = useContext(AppStateContext);
 

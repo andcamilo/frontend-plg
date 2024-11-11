@@ -71,9 +71,12 @@ const NavBar = () => {
                 },
               }}
             >
+              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/consulta-propuesta')}>Consulta - Propuesta Legal</MenuItem>
               <MenuItem sx={{ px: 3, color: 'white !important' }}  onClick={() => handleRedirect('/request/pension-alimenticia')} >Pensión Alimenticia</MenuItem>
-              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/fundacion')}>Fundaciones de Interes privado</MenuItem>
+              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/menores-extranjero')}>Salida menores al extranjero</MenuItem>
               <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/sociedad-empresa')}>Sociedades / Empresas</MenuItem>
+              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/fundacion')}>Fundaciones de Interes privado</MenuItem>
+
 
             </Menu>
 

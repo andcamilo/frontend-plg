@@ -1,22 +1,27 @@
 // _app.tsx
-
 import type { AppProps } from 'next/app';
-import { AppStateProvider } from '@context/context'; // Make sure you import AppStateProvider correctly
+import { AppStateProvider } from '@context/context';
 import { SociedadesStateProvider } from '@context/sociedadesContext';
-import { FundacionStateProvider } from "@context/fundacionContext";
-import '../../src/app/globals.css'
+import { FundacionStateProvider } from '@context/fundacionContext';
+import { ConsultaStateProvider } from '@context/consultaContext';
+import { MenoresStateProvider } from '@context/menoresContext';
+import '../../src/app/globals.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    // Wrap the entire application with AppStateProvider
     <AppStateProvider>
-      <SociedadesStateProvider >
-        <FundacionStateProvider> 
-          <Component {...pageProps} />
+      <SociedadesStateProvider>
+        <FundacionStateProvider>
+          <ConsultaStateProvider>
+            <MenoresStateProvider>
+              <Component {...pageProps} />
+            </MenoresStateProvider>
+          </ConsultaStateProvider>
         </FundacionStateProvider>
-      </SociedadesStateProvider >
+      </SociedadesStateProvider>
     </AppStateProvider>
   );
 }
 
 export default MyApp;
+
