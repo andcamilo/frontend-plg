@@ -5,6 +5,7 @@ import { SociedadesStateProvider } from '@context/sociedadesContext';
 import { FundacionStateProvider } from '@context/fundacionContext';
 import { ConsultaStateProvider } from '@context/consultaContext';
 import { MenoresStateProvider } from '@context/menoresContext';
+import { DesembolsoStateProvider } from '../app/context/desembolsoContext';
 import '../../src/app/globals.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -14,7 +15,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         <FundacionStateProvider>
           <ConsultaStateProvider>
             <MenoresStateProvider>
-              <Component {...pageProps} />
+              <DesembolsoStateProvider>
+                <Component {...pageProps} />
+              </DesembolsoStateProvider>
             </MenoresStateProvider>
           </ConsultaStateProvider>
         </FundacionStateProvider>
