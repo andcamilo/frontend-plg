@@ -27,6 +27,11 @@
   display: none !important;
 }
 
+.border-red-500 {
+  border: 2px solid #fc2c2c; /* Este es el color rojo 500 en Tailwind CSS */
+  border-radius: 0.25rem; /* Opcional, puedes agregar redondeo al borde */
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -131,6 +136,49 @@ body {
   height: 5px; /* Altura de la barra */
   border-radius: 0 0 8px 8px; /* Bordes redondeados solo en la parte inferior */
 }
+
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #fff;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Clases específicas para cada estado */
+.status-rechazada {
+  background-color: #ff4d4f; /* Rojo */
+}
+
+.status-borrador {
+  background-color: #faad14; /* Amarillo */
+}
+
+.status-enviada {
+  background-color: #1890ff; /* Azul */
+}
+
+.status-aprobada {
+  background-color: #52c41a; /* Verde */
+}
+
+.status-confirmando-pago {
+  background-color: #13c2c2; /* Azul claro */
+}
+
+.status-pagada {
+  background-color: #2f54eb; /* Azul oscuro */
+}
+
+.status-en-proceso {
+  background-color: #52c41a; /* Verde */
+}
+
+.status-finalizada {
+  background-color: #722ed1; /* Morado */
+}
+
 
 /*Estilos alertas - fin*/
 

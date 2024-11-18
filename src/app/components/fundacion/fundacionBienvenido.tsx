@@ -1,12 +1,16 @@
 "use client";
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import AppStateContext from '@context/fundacionContext';
 import ClipLoader from 'react-spinners/ClipLoader';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import EmailIcon from '@mui/icons-material/Email';
+import { useRouter } from 'next/router';
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 
 const SociedadEmpresaBienvenido: React.FC = () => {
     const context = useContext(AppStateContext);
+    const router = useRouter();
+    const { id } = router.query;
 
     if (!context) {
         throw new Error('AppStateContext must be used within an AppStateProvider');
@@ -14,6 +18,45 @@ const SociedadEmpresaBienvenido: React.FC = () => {
 
     const { store, setStore } = context;
     const [isLoading, setIsLoading] = useState(false);
+
+    const solicitudId = store.solicitudId || (Array.isArray(id) ? id[0] : id);
+    const { fetchSolicitud } = useFetchSolicitud(solicitudId);
+
+    useEffect(() => {
+        // Solo actualiza store.solicitudId si aún no está configurado y si `id` está disponible como string
+        if (!store.solicitudId && solicitudId) {
+            setStore((prevState) => ({
+                ...prevState,
+                solicitudId: solicitudId,
+            }));
+        }
+
+        // Llama a fetchSolicitud si store.solicitudId está disponible o si se acaba de establecer con `id`
+        if (solicitudId) {
+            fetchSolicitud();
+        }
+    }, [id, store.solicitudId]);
+
+    useEffect(() => {
+        if (store.request) {
+            setStore((prevState) => ({
+                ...prevState,
+                ...(store.request?.nombreSolicita && { fundacion: true }),
+                ...(store.request?.fundacion && { personas: true }),
+                ...(store.request?.fundadores && { fundadores: true }),
+                ...(store.request?.fundadores && { dignatarios: true }),
+                ...(store.request?.dignatarios && { miembros: true }),
+                ...(store.request?.miembros && { protector: true }),
+                ...(store.request?.miembros && { beneficiarios: true }),
+                ...(store.request?.beneficiariosFundacion && { patrimonio: true }),
+                ...(store.request?.patrimonio && { poder: true }),
+                ...(store.request?.patrimonio && { objetivos: true }),
+                ...(store.request?.objetivos && { ingresos: true }),
+                ...(store.request?.ingresos && { activos: true }),
+                ...(store.request?.activos && { solicitudAdicional: true }),
+            }));
+        }
+    }, [store.request, setStore]);
 
     const handleContinue = () => {
         setIsLoading(true);

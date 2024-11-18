@@ -6,6 +6,7 @@ import axios from "axios";
 import countryCodes from '@utils/countryCode';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import { useRouter } from 'next/router';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
@@ -31,6 +32,10 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
 const ConsultaPropuesta: React.FC = () => {
+    const router = useRouter();
+    const { id } = router.query;
+    const [solicitudData, setSolicitudData] = useState<any>(null);
+
     const [formData, setFormData] = useState({
         nombreCompleto: "",
         email: "",
@@ -53,6 +58,57 @@ const ConsultaPropuesta: React.FC = () => {
         direccionBuscar: "",
         direccionIr: "",
     });
+
+    useEffect(() => {
+        if (id) {
+            const fetchSolicitud = async () => {
+                try {
+                    const response = await axios.get('/api/get-request-id', {
+                        params: { solicitudId: id },
+                    });
+                    setSolicitudData(response.data); // Establece solicitudData una vez obtenida
+                } catch (error) {
+                    console.error('Error fetching solicitud:', error);
+                }
+            };
+            fetchSolicitud();
+            console.log('ID del registro:', id);
+        }
+    }, [id]);
+
+    // Actualiza formData cuando solicitudData cambia
+    useEffect(() => {
+        if (solicitudData) {
+            setFormData({
+                nombreCompleto: solicitudData.nombreSolicita || "",
+                email: solicitudData.emailSolicita || "",
+                cedulaPasaporte: solicitudData.cedulaPasaporte || "",
+                telefono: solicitudData.telefonoSolicita || "",
+                telefonoCodigo: 'PA',
+                celular: solicitudData.celularSolicita || "",
+                celularCodigo: 'PA',
+                emailRespuesta: solicitudData.emailRespuesta || "",
+                empresa: solicitudData.empresa || "",
+                tipoConsulta: solicitudData.tipoConsulta || "Propuesta Legal",
+                areaLegal: solicitudData.areaLegal || "Migración",
+                detallesPropuesta: solicitudData.detallesPropuesta || "",
+                preguntasEspecificas: solicitudData.preguntasEspecificas || "",
+                notificaciones: solicitudData.notificaciones || "",
+                terminosAceptados: false,
+                archivoURL: solicitudData.adjuntoDocumentoConsulta || "",
+                consultaOficina: solicitudData.consultaOficina || "Si",
+                buscarCliente: solicitudData.buscarCliente || "Si",
+                direccionBuscar: solicitudData.direccionBuscar || "",
+                direccionIr: solicitudData.direccionIr || "",
+            });
+
+            /* setItem(solicitudData.tipoCnsulta || "Propuesta Legal");
+            setPrecio(solicitudData.canasta.items || useState(0));
+            setSubtotal(solicitudData.tipoCnsulta || useState(0));
+            setTotal(solicitudData.tipoCnsulta || useState(0));
+            setServicioAdicional(solicitudData.tipoCnsulta); */
+        }
+    }, [solicitudData]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
@@ -189,6 +245,7 @@ const ConsultaPropuesta: React.FC = () => {
             newPrecio = 75;
             newSubtotal = newPrecio + 5;
 
+            setItem("Consulta Presencial");
             setPrecio(newPrecio);
             setSubtotal(newSubtotal);
             setTotal(newSubtotal);
@@ -197,14 +254,17 @@ const ConsultaPropuesta: React.FC = () => {
             newPrecio = 75;
             newSubtotal = newPrecio;
 
+            setItem("Consulta Presencial");
             setPrecio(newPrecio);
             setSubtotal(newSubtotal);
             setTotal(newSubtotal);
             setServicioAdicional(false);
-        }
+        } 
 
         if (formData.consultaOficina === "No") {
             newPrecio = 100;
+
+            setItem("Consulta Presencial");
             setPrecio(newPrecio);
             setSubtotal(newPrecio);
             setTotal(newPrecio);
@@ -212,6 +272,7 @@ const ConsultaPropuesta: React.FC = () => {
         }
 
         if (formData.tipoConsulta === "Consulta Escrita") {
+            setItem("Consulta Escrita");
             setPrecio(175);
             setSubtotal(175);
             setTotal(175);
@@ -219,13 +280,14 @@ const ConsultaPropuesta: React.FC = () => {
         }
 
         if (formData.tipoConsulta === "Consulta Virtual") {
+            setItem("Consulta Virtual");
             setPrecio(50);
             setSubtotal(50);
             setTotal(50);
             setServicioAdicional(false);
         }
 
-    }, [precio, formData.consultaOficina, formData.buscarCliente]);
+    }, [precio, formData.consultaOficina, formData.buscarCliente, formData.tipoConsulta]);
 
     const validateFields = () => {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -565,7 +627,18 @@ const ConsultaPropuesta: React.FC = () => {
                 preguntasEspecificas: formData.preguntasEspecificas || "",
                 actualizarPorCorreo: formData.notificaciones === "yes",
                 emailRespuesta: formData.emailRespuesta || "",
-
+                ...(formData.tipoConsulta === "Consulta Presencial" && {
+                    consultaOficina: formData.consultaOficina || "",
+                    ...(formData.consultaOficina === "Si" && {
+                        buscarCliente: formData.buscarCliente || "",
+                    }),
+                    ...(formData.buscarCliente === "Si" && {
+                        direccionBuscar: formData.direccionBuscar || "",
+                    }),
+                    ...(formData.consultaOficina === "No" && {
+                        direccionIr: formData.direccionIr || "",
+                    }),
+                }),
                 cuenta: cuenta || "",
                 precio: precio,
                 subtotal: subtotal,
@@ -809,7 +882,7 @@ const ConsultaPropuesta: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="relative w-full">
                                 <button
-                                    type="button" 
+                                    type="button"
                                     className="bg-profile text-white w-full py-4 rounded-lg mt-8"
                                     onClick={(e) => {
                                         e.preventDefault();
