@@ -54,6 +54,7 @@ export interface AppState {
   solictud: FormData;
   solicitud: boolean;
   request: any;
+  token: string;
   
 }
 
@@ -71,6 +72,7 @@ const initialState: AppState = {
   currentPosition: 1,
   request: "",
   solicitud: false,
+  token: '',
   solictud: {
     pensionType: '',
     pensionAmount: 0,
