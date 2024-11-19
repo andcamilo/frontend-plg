@@ -21,6 +21,30 @@ const Disbursement: React.FC = () => {
 
     const { state, setState } = context;
 
+    // Function to call the create-disbursement API
+    const handleSave = async () => {
+        try {
+            const response = await fetch('/api/createDisbursement', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(state), // Send the current state as payload
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('Disbursement created successfully:', data);
+            alert('Disbursement saved successfully!');
+        } catch (error) {
+            console.error('Error saving disbursement:', error);
+            alert('Failed to save disbursement.');
+        }
+    };
+
     // Handler to update context state on field change
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -65,7 +89,6 @@ const Disbursement: React.FC = () => {
                         >
                             <option value="de-oficina">De oficina</option>
                             <option value="de-cliente">De Cliente</option>
-        
                         </select>
                     </div>
 
@@ -89,7 +112,7 @@ const Disbursement: React.FC = () => {
                         </select>
                     </div>
                 </div>
-                <hr className='my-2'></hr>
+                <hr className='my-2' />
                 {state.disbursementType === 'desembolso-gastos' && state.expenseType === 'de-oficina' ? (
                     <DisbursementGastosOficina />
                 ) : state.disbursementType === 'desembolso-gastos' ? (
@@ -98,13 +121,19 @@ const Disbursement: React.FC = () => {
                     <DisbursementCajaChica />
                 ) : null}
 
-                <hr className='my-6'></hr>
-                <DisbursementTransferOrPaymentDetails/>
-                <hr className='my-6'></hr>
+                <hr className='my-6' />
+                <DisbursementTransferOrPaymentDetails />
+                <hr className='my-6' />
                 <DisbursementPaidDisbursementDetails />
 
-
-           
+                <div className="mt-6 flex justify-end">
+                    <button
+                        onClick={handleSave}
+                        className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+                    >
+                        Guardar
+                    </button>
+                </div>
             </div>
         </div>
     );
