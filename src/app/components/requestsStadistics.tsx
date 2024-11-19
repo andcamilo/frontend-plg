@@ -53,6 +53,8 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
                 return `http://localhost:3000/request/sociedad-empresa?id=${id}`;
             case "menores-al-extranjero":
                 return `http://localhost:3000/request/menores-extranjero?id=${id}`;
+            case "pension":
+                return `http://localhost:3000/request/pension-alimenticia?id=${id}`;
             default:
                 return `http://localhost:3000/request/consulta-propuesta?id=${id}`;
         }
@@ -115,7 +117,7 @@ const RequestsStatistics: React.FC = () => {
 
     // Filtered requests
     const solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 /* && solicitud.status !== 1 */);
-    const solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70 );
+    const solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70);
 
     // Transform data for the table
     const transformData = (solicitudes) => {
@@ -131,7 +133,7 @@ const RequestsStatistics: React.FC = () => {
                 30: "En proceso",
                 70: "Finalizada",
             };
-    
+
             // Map status to their corresponding CSS class
             const statusClasses = {
                 0: "status-rechazada",
@@ -154,7 +156,7 @@ const RequestsStatistics: React.FC = () => {
                 "menores-al-extranjero": "Salida de Menores al Extranjero",
                 "pension": "Pensión Alimenticia",
             };
-    
+
             return {
                 Tipo: tipoLabels[tipo],
                 Fecha: formatDate(date),
@@ -170,7 +172,7 @@ const RequestsStatistics: React.FC = () => {
             };
         });
     };
-    
+
     return (
         <div className="flex flex-col gap-4 p-8 w-full">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
