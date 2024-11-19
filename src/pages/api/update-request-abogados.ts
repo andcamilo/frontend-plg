@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const externalApiResponse = await axios.patch(
-      `http://localhost:4000/chris/update-request-abogados/${solicitudId}`,
+      `http://localhost:4000/dev/update-request-abogados/${solicitudId}`,
       dataToSend
     );
 
