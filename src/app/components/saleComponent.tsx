@@ -39,10 +39,34 @@ const SaleComponent: React.FC = () => {
             <merchantAccountNumber>112549</merchantAccountNumber>
             <terminalName>112549001</terminalName>
             <clientTracking>SALE-TRACKING-01</clientTracking>
-            <amount>${saleAmount}</amount>
+            <amount>1.00</amount>
             <currencyCode>840</currencyCode>
             <emailAddress>example@test.com</emailAddress>
-            <shippingName>Test Shipping</shippingName>
+            <shippingName>panama</shippingName>
+            <shippingDate>0229</shippingDate>
+            <shippingAddress>panama</shippingAddress>
+            <shippingCity></shippingCity>
+            <shippingState></shippingState>
+            <shippingCountry></shippingCountry>
+            <shippingZipCode></shippingZipCode>
+            <shippingPhoneNumber></shippingPhoneNumber>
+            <billingAddress></billingAddress>
+            <billingCity></billingCity>
+            <billingState></billingState>
+            <billingCountry></billingCountry>
+            <billingZipCode></billingZipCode>
+            <billingPhoneNumber>995-2369</billingPhoneNumber>
+            <itemDetails>
+              <ItemDetails>
+                <ExtensionData/>
+                <Code>65</Code>
+                <Name>prueba</Name>
+                <Description>prueba</Description>
+                <Quantity>1</Quantity>
+                <UnitPrice>38</UnitPrice>
+              </ItemDetails>
+            </itemDetails>
+            <systemTracking>TEST</systemTracking>
             <cvv>${cvv}</cvv>
           </Sale>
         </soap:Body>
