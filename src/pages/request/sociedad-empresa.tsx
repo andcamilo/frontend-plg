@@ -80,8 +80,7 @@ const SociedadEmpresa: React.FC = () => {
                         <div className="grid grid-cols-3 gap-4">
                             {/* Bienvenido button */}
                             <button
-                                className={`p-4 rounded-lg ${activeStep === 1 ? 'bg-profile text-white' : 'bg-gray-800 text-gray-500'
-                                    }`}
+                                className={`p-4 rounded-lg text-white ${activeStep === 1 ? 'bg-profile' : 'bg-gray-800'}`}
                                 onClick={() => store.bienvenido && setActiveStep(1)}
                                 disabled={!store.bienvenido}
                             >

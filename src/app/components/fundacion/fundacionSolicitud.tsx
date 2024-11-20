@@ -6,12 +6,13 @@ import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
 import countryCodes from '@utils/countryCode';
-import { useFetchSolicitud } from '@utils/fetchCurrentRequest'; 
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+
 
 const FundacionSolicitante: React.FC = () => {
     const context = useContext(FundacionContext);
-
+    
     if (!context) {
         throw new Error("FundacionContext must be used within a FundacionStateProvider");
     }
@@ -56,7 +57,7 @@ const FundacionSolicitante: React.FC = () => {
     const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
     useEffect(() => {
         if (store.solicitudId) {
-            fetchSolicitud(); 
+            fetchSolicitud();
         }
     }, [store.solicitudId]);
 
