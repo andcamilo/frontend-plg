@@ -6,10 +6,14 @@ import { checkAuthToken } from '@utils/checkAuthToken';
 import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader';
 import countryCodes from '@utils/countryCode';
-
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import { useRouter } from 'next/router';
+import get from 'lodash/get';
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
+  const router = useRouter();
+  const { id } = router.query;
 
   if (!context) {
     throw new Error('AppStateContext must be used within an AppStateProvider');
@@ -31,6 +35,62 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     resumenCaso: '',
     summaryEmail: '',
   });
+
+  const solicitudId = store.solicitudId || (Array.isArray(id) ? id[0] : id);
+  const { fetchSolicitud } = useFetchSolicitud(solicitudId);
+
+  useEffect(() => {
+    // Solo actualiza store.solicitudId si aún no está configurado y si `id` está disponible como string
+    if (!store.solicitudId && solicitudId) {
+      setStore((prevState) => ({
+        ...prevState,
+        solicitudId: solicitudId,
+      }));
+    }
+
+    // Llama a fetchSolicitud si store.solicitudId está disponible o si se acaba de establecer con `id`
+    if (solicitudId) {
+      fetchSolicitud();
+    }
+  }, [id, store.solicitudId]);
+
+  useEffect(() => {
+    if (store.request) {
+      const nombreCompleto = get(store.request, 'nombreSolicita', ''); 
+      const telefono = get(store.request, 'telefonoSolicita', ''); 
+      const telefonoAlternativo = get(store.request, 'telefonoSolicita2', '');
+      const email = get(store.request, 'emailSolicita', ''); 
+      const confirmEmail = get(store.request, 'emailSolicita', ''); 
+      const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
+
+      // Actualizar el formData con los campos de la raíz y "fundacion"
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        nombreCompleto,
+        telefono,
+        telefonoAlternativo,
+        email,
+        confirmEmail,
+        cedulaPasaporte,
+      }));
+    }
+  }, [store.request]);
+
+  useEffect(() => {
+    if (store.request) {
+        setStore((prevState) => ({
+            ...prevState,
+            ...(store.request?.nombreSolicita && { solicitud: true }),
+            ...(store.request?.solicitud && { demandante: true }),
+            ...(store.request?.demandante && { demandado: true }),
+            ...(store.request?.demandado && { gastosPensionado: true }),
+            ...(store.request?.gastosPensionado && { archivosAdjuntos: true }),
+            ...(store.request?.archivosAdjuntos && { firmaYEntrega: true }),
+            ...(store.request?.firmaYEntrega && { solicitudAdicional: true }),
+            ...(store.request?.solicitudAdicional && { resumen: true }),
+        }));
+    }
+}, [store.request, setStore]);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -186,7 +246,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             placeholder="Nombre completo"
             required
           />
-          
+
           {/* Phone field with country code */}
           <div className="flex gap-2">
             <select
@@ -231,7 +291,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               placeholder="Número de teléfono alternativo"
             />
           </div>
-          
+
           {/* Other input fields */}
           <input
             type="text"

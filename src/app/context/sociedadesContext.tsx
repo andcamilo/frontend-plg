@@ -38,7 +38,7 @@ const initialState: AppState = {
   poder: false,
   actividades: false,
   ingresos: false,
-  resumen: false,
+  resumen: true,
   solicitudAdicional: false,
   solicitudId: "",
   currentPosition: 1,

@@ -5,6 +5,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
 import countryCodes from '@utils/countryCode';
 import { checkAuthToken } from "@utils/checkAuthToken";
+import { useRouter } from 'next/router';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
@@ -30,6 +31,10 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
 const MenoresAlExtranjero: React.FC = () => {
+    const router = useRouter();
+    const { id } = router.query;
+    const [solicitudData, setSolicitudData] = useState<any>(null);
+
     const [formData, setFormData] = useState({
         nombreCompleto: "",
         email: "",
@@ -106,6 +111,127 @@ const MenoresAlExtranjero: React.FC = () => {
         adjuntoBoletosViaje: null as File | null,
         archivoBoletosViajeURL: "",
     });
+
+    useEffect(() => {
+        if (id) {
+            const fetchSolicitud = async () => {
+                try {
+                    const response = await axios.get('/api/get-request-id', {
+                        params: { solicitudId: id },
+                    });
+                    setSolicitudData(response.data); // Establece solicitudData una vez obtenida
+                } catch (error) {
+                    console.error('Error fetching solicitud:', error);
+                }
+            };
+            fetchSolicitud();
+            console.log('ID del registro:', id);
+        }
+    }, [id]);
+
+    const formatDateForInput = (dateString: string) => {
+        const [day, month, year] = dateString.split('-');
+        return `${year}-${month}-${day}`;
+    };
+
+    // Actualiza formData cuando solicitudData cambia
+    useEffect(() => {
+        if (solicitudData) {
+            setFormData({
+                nombreCompleto: solicitudData.nombreSolicita || "",
+                email: solicitudData.emailSolicita || "",
+                cedulaPasaporte: solicitudData.cedulaPasaporte || "",
+                telefono: solicitudData.telefonoSolicita || "",
+                telefonoCodigo: 'PA',
+                nacionalidad: solicitudData.nacionalidad || "",
+                terminosAceptados: false,
+                ustedAutoriza: solicitudData.ustedAutoriza || "",
+                notificaciones: solicitudData.notificaciones || "",
+
+                //Autorizante
+                ...(solicitudData.autorizante && {
+                    nombreCompletoAutorizante: solicitudData.autorizante.nombreCompletoAutorizante || "",
+                    emailAutorizante: solicitudData.autorizante.emailAutorizante || "",
+                    telefonoAutorizante: solicitudData.autorizante.telefonoAutorizante || "",
+                    cedulaPasaporteAutorizante: solicitudData.autorizante.cedulaPasaporteAutorizante || "",
+                    parentescoConMenor: solicitudData.autorizante.parentescoConMenor || "Padre",
+                    parentescoConMenorOtros: solicitudData.autorizante.parentescoConMenorOtros || "",
+                    telefonoCodigoAutorizante: solicitudData.autorizante.telefonoCodigoAutorizante || "PA",
+                }),
+
+                //Autorizacion a tercero
+                autorizacionTercero: solicitudData?.autorizacionTercero || "No",
+                quienesAutorizan: solicitudData?.quienesAutorizan || "Tutor Legal",
+
+                //Tutor
+                ...(solicitudData.tutor && {
+                    nombreCompletoTutor: solicitudData.tutor.nombreCompletoTutor || "",
+                    emailTutor: solicitudData.tutor.emailTutor || "",
+                    cedulaPasaporteTutor: solicitudData.tutor.cedulaPasaporteTutor || "",
+                    telefonoTutor: solicitudData.tutor.telefonoTutor || "",
+                    telefonoCodigoTutor: 'PA',
+                }),
+
+                //Padre
+                ...(solicitudData.padre && {
+                    nombreCompletoPadre: solicitudData.padre.nombreCompletoPadre || "",
+                    emailPadre: solicitudData.padre.emailPadre || "",
+                    cedulaPasaportePadre: solicitudData.padre.cedulaPasaportePadre || "",
+                    telefonoPadre: solicitudData.padre.telefonoPadre || "",
+                    telefonoCodigoPadre: solicitudData.padre.telefonoCodigoPadre || 'PA',
+                }),
+
+                //Madre
+                ...(solicitudData.madre && {
+                    nombreCompletoMadre: solicitudData.madre.nombreCompletoMadre || "",
+                    emailMadre: solicitudData.madre.emailMadre || "",
+                    cedulaPasaporteMadre: solicitudData.madre.cedulaPasaporteMadre || "",
+                    telefonoMadre: solicitudData.madre.telefonoMadre || "",
+                    telefonoCodigoMadre: 'PA',
+                }),
+
+                //Autorizado
+                nombreCompletoAutorizado: solicitudData.autorizado.nombreCompletoAutorizado || "",
+                emailAutorizado: solicitudData.autorizado.emailAutorizado || "",
+                telefonoAutorizado: solicitudData.autorizado.telefonoAutorizado || "",
+                cedulaPasaporteAutorizado: solicitudData.autorizado.cedulaPasaporteAutorizado || "",
+                parentescoConMenorAutorizado: solicitudData.autorizado.parentescoConMenorAutorizado || "Padre",
+                parentescoAutorizadoOtros: solicitudData.autorizado.parentescoAutorizadoOtros || "",
+                telefonoCodigoAutorizado: "PA",
+                nacionalidadAutorizado: solicitudData.autorizado.nacionalidadAutorizado || 'Panamá',
+                fechaSalidaMenor: solicitudData.autorizado.fechaSalidaMenor ? formatDateForInput(solicitudData.autorizado.fechaSalidaMenor) : "",
+                fechaRetornoMenor: solicitudData.autorizado.fechaRetornoMenor ? formatDateForInput(solicitudData.autorizado.fechaRetornoMenor) : "",
+                fechaFirmaNotaria: solicitudData.autorizado.fechaFirmaNotaria ? formatDateForInput(solicitudData.autorizado.fechaFirmaNotaria) : "",
+
+                //Adjuntos
+                adjuntoIdentificacionAutorizante: null as File | null,
+                archivoAutorizanteURL: solicitudData?.adjuntoIdentificacionAutorizante || "",
+                adjuntoTutelaMenor: null as File | null,
+                archivoTutelaURL: solicitudData?.adjuntoTutelaMenor || "",
+                adjuntoIdentificacionTutor: null as File | null,
+                archivoTutorURL: solicitudData?.adjuntoIdentificacionTutor || "",
+                adjuntoTutorTutelaMenor: null as File | null,
+                archivoTutorTutelaURL: solicitudData?.adjuntoTutorTutelaMenor || "",
+                adjuntoIdentificacionPadre: null as File | null,
+                archivoPadreURL: solicitudData?.adjuntoIdentificacionPadre || "",
+                adjuntoIdentificacionMadre: null as File | null,
+                archivoMadreURL: solicitudData?.adjuntoIdentificacionMadre || "",
+                adjuntoIdentificacionAutorizado: null as File | null,
+                archivoAutorizadoURL: solicitudData?.adjuntoIdentificacionAutorizado || "",
+                adjuntoBoletosViaje: null as File | null,
+                archivoBoletosViajeURL: solicitudData?.adjuntoBoletosViaje || "",
+            });
+
+            if (solicitudData.menores) {
+                const menoresData = solicitudData.menores.map((menor: any) => ({
+                    nombreCompletoMenor: menor.nombreCompletoMenor || "",
+                    cedulaPasaporteMenor: menor.cedulaPasaporteMenor || "",
+                    AdjuntoIdentificacionMenor: menor.AdjuntoIdentificacionMenorURL || ""
+                }));
+                setMenores(menoresData);
+            }
+        }
+    }, [solicitudData]);
 
     useEffect(() => {
         if (formData.archivoAutorizanteURL) {
@@ -1129,14 +1255,18 @@ const MenoresAlExtranjero: React.FC = () => {
 
     const validateMenores = () => {
         let isValid = true;
-        const newErrors = [...errors.menores];
+        const newErrors = menores.map((_) => ({
+            nombreCompletoMenor: false,
+            cedulaPasaporteMenor: false,
+            AdjuntoIdentificacionMenor: false,
+        }));
 
         for (let index = 0; index < menores.length; index++) {
             const menor = menores[index];
 
             // Validación del Nombre Completo
             if (!menor.nombreCompletoMenor) {
-                newErrors[index] = { ...newErrors[index], nombreCompletoMenor: true };
+                newErrors[index].nombreCompletoMenor = true;
                 Swal.fire({
                     position: "top-end",
                     icon: "warning",
@@ -1156,14 +1286,14 @@ const MenoresAlExtranjero: React.FC = () => {
                 menoresRefs.current[index].nombreCompletoMenor?.scrollIntoView({ behavior: "smooth", block: "center" });
                 menoresRefs.current[index].nombreCompletoMenor?.focus();
                 isValid = false;
-                break; // Detenemos aquí para mostrar la alerta en orden
+                break;
             } else {
-                newErrors[index].nombreCompletoMenor = false; // Quita el color rojo si ya se llenó
+                newErrors[index].nombreCompletoMenor = false;
             }
 
             // Validación de Cédula/Pasaporte
             if (!menor.cedulaPasaporteMenor) {
-                newErrors[index] = { ...newErrors[index], cedulaPasaporteMenor: true };
+                newErrors[index].cedulaPasaporteMenor = true;
                 Swal.fire({
                     position: "top-end",
                     icon: "warning",
@@ -1185,12 +1315,12 @@ const MenoresAlExtranjero: React.FC = () => {
                 isValid = false;
                 break;
             } else {
-                newErrors[index].cedulaPasaporteMenor = false; // Quita el color rojo si ya se llenó
+                newErrors[index].cedulaPasaporteMenor = false;
             }
 
             // Validación del Adjunto
             if (!menor.AdjuntoIdentificacionMenor) {
-                newErrors[index] = { ...newErrors[index], AdjuntoIdentificacionMenor: true };
+                newErrors[index].AdjuntoIdentificacionMenor = true;
                 Swal.fire({
                     position: "top-end",
                     icon: "warning",
@@ -1212,13 +1342,14 @@ const MenoresAlExtranjero: React.FC = () => {
                 isValid = false;
                 break;
             } else {
-                newErrors[index].AdjuntoIdentificacionMenor = false; // Quita el color rojo si ya se llenó
+                newErrors[index].AdjuntoIdentificacionMenor = false;
             }
         }
 
         setErrors((prevErrors) => ({ ...prevErrors, menores: newErrors }));
         return isValid;
     };
+
 
     useEffect(() => {
         const userEmail = checkAuthToken();
@@ -2213,12 +2344,22 @@ const MenoresAlExtranjero: React.FC = () => {
                                 onChange={handleFileChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.AdjuntoIdentificacionMenor ? 'border-2 border-red-500' : ''}`}
                             />
-                            {menor.AdjuntoIdentificacionMenor && (
+                            {(typeof menor.AdjuntoIdentificacionMenor === "string" && menor.AdjuntoIdentificacionMenor) ? (
+                                // Renderiza el enlace si `AdjuntoIdentificacionMenor` es una URL
                                 <p className="text-sm text-blue-500">
-                                    <a href={URL.createObjectURL(menor.AdjuntoIdentificacionMenor)} target="_blank" rel="noopener noreferrer">
+                                    <a href={menor.AdjuntoIdentificacionMenor} target="_blank" rel="noopener noreferrer">
                                         Ver documento
                                     </a>
                                 </p>
+                            ) : (
+                                // Renderiza el enlace de vista previa si es un archivo de tipo `File`
+                                menor.AdjuntoIdentificacionMenor && (
+                                    <p className="text-sm text-blue-500">
+                                        <a href={URL.createObjectURL(menor.AdjuntoIdentificacionMenor)} target="_blank" rel="noopener noreferrer">
+                                            Ver documento
+                                        </a>
+                                    </p>
+                                )
                             )}
                         </div>
 
