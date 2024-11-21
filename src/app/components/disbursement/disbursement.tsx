@@ -1,13 +1,15 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import DesembolsoContext from '@context/desembolsoContext';
 import DisbursementGastosOficina from './disbursementGastosOficina';
 import DisbursementGastosCliente from './disbursementGastosCliente';
 import DisbursementCajaChica from './disbursementCajaChica';
 import DisbursementTransferOrPaymentDetails from './disbursementTransferOrPaymentDetails';
 import DisbursementPaidDisbursementDetails from './disbursementPaidDisbursementDetails';
+import Swal from 'sweetalert2';
 
 const Disbursement: React.FC = () => {
     const context = useContext(DesembolsoContext);
+    const [isLoading, setIsLoading] = useState(false); // Add loading state
 
     useEffect(() => {
         if (context) {
@@ -21,10 +23,10 @@ const Disbursement: React.FC = () => {
 
     const { state, setState } = context;
 
-    // Function to call the create-disbursement API
     const handleSave = async () => {
+        setIsLoading(true); // Start loading
         try {
-            const response = await fetch('/api/createDisbursement', {
+            const response = await fetch('/api/create-disbursement', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -38,14 +40,28 @@ const Disbursement: React.FC = () => {
 
             const data = await response.json();
             console.log('Disbursement created successfully:', data);
-            alert('Disbursement saved successfully!');
+
+            // Show success alert
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: '¡El desembolso fue guardado exitosamente!',
+            }).then(() => {
+                // Reload the page after the user closes the alert
+                window.location.reload();
+            });
         } catch (error) {
             console.error('Error saving disbursement:', error);
-            alert('Failed to save disbursement.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo guardar el desembolso. Intente de nuevo.',
+            });
+        } finally {
+            setIsLoading(false); // Stop loading
         }
     };
 
-    // Handler to update context state on field change
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target;
         setState(prevState => ({
@@ -121,17 +137,27 @@ const Disbursement: React.FC = () => {
                     <DisbursementCajaChica />
                 ) : null}
 
-                <hr className='my-6' />
-                <DisbursementTransferOrPaymentDetails />
+                {state.disbursementType === 'desembolso-gastos' && (
+                    <>
+                        <hr className="my-6" />
+                        <DisbursementTransferOrPaymentDetails />
+                    </>
+                )}
+
                 <hr className='my-6' />
                 <DisbursementPaidDisbursementDetails />
 
                 <div className="mt-6 flex justify-end">
                     <button
                         onClick={handleSave}
-                        className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+                        className={`px-6 py-2 font-semibold rounded-lg transition ${
+                            isLoading
+                                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                        disabled={isLoading} // Disable the button when loading
                     >
-                        Guardar
+                        {isLoading ? 'Cargando...' : 'Guardar'}
                     </button>
                 </div>
             </div>
