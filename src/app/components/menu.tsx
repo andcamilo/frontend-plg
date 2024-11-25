@@ -61,9 +61,9 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Dashboard
         </Link>
       </div>
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/solicitudes')}`}>
+      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/requests')}`}>
         <FeedIcon className="mr-2" />
-        <Link href="/dashboard/solicitudes" className='font-semibold' onClick={closeMenu}>
+        <Link href="/dashboard/requests" className='font-semibold' onClick={closeMenu}>
           Solicitudes
         </Link>
       </div>
