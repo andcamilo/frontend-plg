@@ -7,6 +7,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
+import Link from 'next/link';
 
 // Function to format date as dd/mm/yyyy
 const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): string => {
@@ -48,29 +49,29 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
     const getEditUrl = () => {
         switch (tipo) {
             case "new-fundacion":
-                return `http://localhost:3000/request/fundacion?id=${id}`;
+                return `/request/fundacion?id=${id}`;
             case "new-sociedad-empresa":
-                return `http://localhost:3000/request/sociedad-empresa?id=${id}`;
+                return `/request/sociedad-empresa?id=${id}`;
             case "menores-al-extranjero":
-                return `http://localhost:3000/request/menores-extranjero?id=${id}`;
+                return `/request/menores-extranjero?id=${id}`;
             case "pension":
-                return `http://localhost:3000/request/pension-alimenticia?id=${id}`;
+                return `/request/pension-alimenticia?id=${id}`;
             default:
-                return `http://localhost:3000/request/consulta-propuesta?id=${id}`;
+                return `/request/consulta-propuesta?id=${id}`;
         }
     };
 
     return (
         <div className="flex gap-2">
-            <a href={`http://localhost:3000/dashboard/request?id=${id}`}>
-                <VisibilityIcon className="cursor-pointer" titleAccess="Ver" />
-            </a>
-            <a href={getEditUrl()}>
-                <EditIcon className="cursor-pointer" titleAccess="Editar" />
-            </a>
-            <a href={`http://localhost:3000/dashboard/checkout?id=${id}`}>
-                <AttachMoneyIcon className="cursor-pointer" titleAccess="Pagar" />
-            </a>
+            <Link href={`/dashboard/request/${id}`}>
+            <VisibilityIcon className="cursor-pointer" titleAccess="Ver" />
+            </Link>
+            <Link href={getEditUrl()}>
+            <EditIcon className="cursor-pointer" titleAccess="Editar" />
+            </Link>
+            <Link href={`/dashboard/checkout/${id}`}>
+            <AttachMoneyIcon className="cursor-pointer" titleAccess="Pagar" />
+            </Link>
             <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
         </div>
     );
@@ -154,7 +155,8 @@ const RequestsStatistics: React.FC = () => {
                 "new-fundacion": "Fundaciones de Interés Privado",
                 "new-sociedad-empresa": "Sociedad / Empresa",
                 "menores-al-extranjero": "Salida de Menores al Extranjero",
-                "pension": "Pensión Alimenticia",
+                "pension": "Pensión Alimenticia", 
+                "tramite-general": "Tramite General",
             };
 
             return {

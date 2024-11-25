@@ -1,7 +1,7 @@
 // src/pages/dashboard/home.tsx
 import React from 'react';
 import DashboardLayout from '@components/dashboardLayout';
-import ClientsStatistics from '@components/clientsStadistics';
+import ClientsStatistics from '@components/dashboard/clientsStadistics';
 
 const Clients: React.FC = () => {
   return (

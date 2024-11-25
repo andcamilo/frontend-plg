@@ -274,7 +274,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                 accion: "Creación de solicitud",
                 tipo: "new-sociedad-empresa",
             };
-
+            console.log("Cuenta front ", cuenta)
             const response = await axios.post("/api/create-request-empresa", requestData, {
                 headers: {
                     "Content-Type": "application/json",
