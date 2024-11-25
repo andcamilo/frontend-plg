@@ -647,7 +647,7 @@ const ConsultaPropuesta: React.FC = () => {
                 tipo: tipo,
                 item: item
             };
-
+            console.log("Cuenta front ", cuenta)
             const response = await axios.post("/api/create-request-consultaPropuesta", requestData, {
                 headers: {
                     "Content-Type": "application/json",
