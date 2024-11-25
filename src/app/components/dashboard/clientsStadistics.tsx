@@ -23,9 +23,14 @@ const Actions: React.FC<{ id: string }> = ({ id }) => {
     if (result.isConfirmed) {
       try {
         await axios.delete(`/api/delete-user`, { params: { userId: id } });
-        Swal.fire('Eliminado', 'La solicitud ha sido eliminada.', 'success');
-        // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
-        window.location.reload();
+        Swal.fire({
+          title: 'Eliminado',
+          text: 'La solicitud ha sido eliminada.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          willClose: () => window.location.reload(),
+        });
       } catch (error) {
         console.error('Error al eliminar la solicitud:', error);
         Swal.fire('Error', 'No se pudo eliminar la solicitud.', 'error');
@@ -56,22 +61,23 @@ const ClientsStatistics: React.FC = () => {
     const fetchAllData = async () => {
       try {
         let allUsers: any[] = [];
-        let currentPage = 1;
+        let page = 1;
         const limit = 10;
 
+        // Acumula todos los registros de la API usando el `while`
         while (true) {
           const response = await axios.get('/api/user', {
             params: {
               limit,
-              page: currentPage,
+              page,
             },
           });
 
           const usuarios = get(response, 'data.usuarios', []);
           allUsers = [...allUsers, ...usuarios];
 
-          if (usuarios.length < limit) break;
-          currentPage++;
+          if (usuarios.length < limit) break; // Detiene el loop si no hay más registros
+          page++;
         }
 
         const statusLabels = {
@@ -85,15 +91,17 @@ const ClientsStatistics: React.FC = () => {
         };
 
         // Filtra los usuarios con rol <= 17
-        const filteredUsers = allUsers.filter((user: any) => user.rol <= 17 || user.rol == "cliente");
+        const filteredUsers = allUsers.filter(
+          (user: any) => user.rol <= 17 || user.rol === "cliente"
+        );
 
-        // Pagina los datos filtrados
+        // Aplica la paginación localmente
         const startIndex = (currentPage - 1) * rowsPerPage;
         const endIndex = startIndex + rowsPerPage;
         const paginatedData = filteredUsers.slice(startIndex, endIndex);
-        
+
         // Formatea los datos para la tabla
-        const formattedData = filteredUsers.map((user: any) => ({
+        const formattedData = paginatedData.map((user: any) => ({
           cliente: (
             <div>
               <p className="font-bold">{get(user, 'nombre', 'N/A')}</p>
@@ -105,7 +113,11 @@ const ClientsStatistics: React.FC = () => {
           "Cedula/Pasaporte": user.cedulaPasaporte || "N/A",
           fecha: new Date(user.date._seconds * 1000).toLocaleDateString(),
           estatus: (
-            <span className={`status-badge ${statusClasses[get(user, 'status', 'N/A')] || 'status-desconocido'}`}>
+            <span
+              className={`status-badge ${
+                statusClasses[get(user, 'status', 'N/A')] || 'status-desconocido'
+              }`}
+            >
               {statusLabels[get(user, 'status', 'N/A')] || 'Desconocido'}
             </span>
           ),
@@ -115,6 +127,8 @@ const ClientsStatistics: React.FC = () => {
         setData(formattedData);
         setTotalRecords(filteredUsers.length);
         setTotalPages(Math.ceil(filteredUsers.length / rowsPerPage));
+        setHasPrevPage(currentPage > 1);
+        setHasNextPage(currentPage < Math.ceil(filteredUsers.length / rowsPerPage));
       } catch (error) {
         console.error('Error fetching people:', error);
       }
@@ -122,7 +136,6 @@ const ClientsStatistics: React.FC = () => {
 
     fetchAllData();
   }, [currentPage]);
-
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -154,7 +167,7 @@ const ClientsStatistics: React.FC = () => {
             <TableWithRequests
               data={data}
               rowsPerPage={rowsPerPage}
-              title=""
+              title="Clientes"
               currentPage={currentPage}
               totalPages={totalPages}
               hasPrevPage={hasPrevPage}

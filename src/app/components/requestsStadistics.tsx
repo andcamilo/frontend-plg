@@ -154,7 +154,8 @@ const RequestsStatistics: React.FC = () => {
                 "new-fundacion": "Fundaciones de Interés Privado",
                 "new-sociedad-empresa": "Sociedad / Empresa",
                 "menores-al-extranjero": "Salida de Menores al Extranjero",
-                "pension": "Pensión Alimenticia",
+                "pension": "Pensión Alimenticia", 
+                "tramite-general": "Tramite General",
             };
 
             return {

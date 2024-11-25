@@ -6,6 +6,7 @@ import { FundacionStateProvider } from '@context/fundacionContext';
 import { ConsultaStateProvider } from '@context/consultaContext';
 import { MenoresStateProvider } from '@context/menoresContext';
 import { DesembolsoStateProvider } from '../app/context/desembolsoContext';
+import { TramiteStateProvider } from '../app/context/tramiteContext';
 import '../../src/app/globals.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -16,7 +17,9 @@ function MyApp({ Component, pageProps }: AppProps) {
           <ConsultaStateProvider>
             <MenoresStateProvider>
               <DesembolsoStateProvider>
-                <Component {...pageProps} />
+                <TramiteStateProvider>
+                  <Component {...pageProps} />
+                </TramiteStateProvider>
               </DesembolsoStateProvider>
             </MenoresStateProvider>
           </ConsultaStateProvider>
