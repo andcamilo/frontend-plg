@@ -5,6 +5,7 @@ import get from 'lodash/get';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
+import Link from 'next/link';
 
 const Actions: React.FC<{ id: string }> = ({ id }) => {
   const handleDelete = async () => {
@@ -40,9 +41,9 @@ const Actions: React.FC<{ id: string }> = ({ id }) => {
 
   return (
     <div className="flex gap-2">
-      <a href={`http://localhost:3000/dashboard/client?id=${id}`}>
+      <Link href={`/dashboard/client?id=${id}`}>
         <EditIcon className="cursor-pointer" titleAccess="Editar" />
-      </a>
+      </Link>
       <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
     </div>
   );

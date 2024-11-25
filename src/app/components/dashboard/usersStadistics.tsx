@@ -5,6 +5,8 @@ import get from 'lodash/get';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation'
+import Link from 'next/link';
 
 const Actions: React.FC<{ id: string }> = ({ id }) => {
   const handleDelete = async () => {
@@ -44,9 +46,9 @@ const Actions: React.FC<{ id: string }> = ({ id }) => {
 
   return (
     <div className="flex gap-2">
-      <a href={`http://localhost:3000/dashboard/user?id=${id}`}>
+      <Link href={`dashboard/user?id=${id}`}>
         <EditIcon className="cursor-pointer" titleAccess="Editar" />
-      </a>
+      </Link>
       <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
     </div>
   );
@@ -60,6 +62,13 @@ const UsersStatistics: React.FC = () => {
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(false);
   const rowsPerPage = 10;
+
+  const router = useRouter()
+
+  const handleClick = () => {
+    router.push('/dashboard/user')
+  }
+
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -155,7 +164,7 @@ const UsersStatistics: React.FC = () => {
         <div className="flex flex-row gap-8 w-full">
           <div className="w-1/2">
             <button
-              onClick={() => window.location.href = 'http://localhost:3000/dashboard/user'}
+              onClick={handleClick}
               className="bg-pink-600 text-white px-6 py-3 rounded hover:bg-pink-700"
             >
               Nuevo Usuario
