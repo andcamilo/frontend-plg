@@ -1,30 +1,38 @@
-import React, { useState, useContext } from 'react';
-import AppStateContext from '@context/context';
+'use client'
+
+import React, { useState, useContext } from 'react'
+import AppStateContext from '@/src/app/context/context'
+import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import axios from 'axios'
 
 const SaleComponent: React.FC = () => {
-  const context = useContext(AppStateContext);
+  const context = useContext(AppStateContext)
 
-  const [cvv, setCvv] = useState('');
-  const [saleAmount, setSaleAmount] = useState<number | string>('');
+  const [cvv, setCvv] = useState('')
+  const [saleAmount, setSaleAmount] = useState<number | string>('')
+  const [loading, setLoading] = useState(false)
 
   const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCvv(e.target.value);
-  };
+    setCvv(e.target.value)
+  }
 
   const handleSaleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSaleAmount(e.target.value);
-  };
+    setSaleAmount(e.target.value)
+  }
 
-  const processSale = () => {
+  const handleProcessSale = async () => {
     if (!context?.store.token) {
-      console.error('Token is required to process the sale.');
-      return;
+      toast.error('Token is required to process the sale.')
+      return
     }
 
     if (!cvv || !saleAmount) {
-      console.error('CVV and Sale Amount are required.');
-      return;
+      toast.error('CVV and Sale Amount are required.')
+      return
     }
+
+    setLoading(true)
 
     const xmlData = `
       <?xml version="1.0" encoding="utf-8"?>
@@ -39,7 +47,7 @@ const SaleComponent: React.FC = () => {
             <merchantAccountNumber>112549</merchantAccountNumber>
             <terminalName>112549001</terminalName>
             <clientTracking>SALE-TRACKING-01</clientTracking>
-            <amount>1.00</amount>
+            <amount>${saleAmount}</amount>
             <currencyCode>840</currencyCode>
             <emailAddress>example@test.com</emailAddress>
             <shippingName>panama</shippingName>
@@ -63,7 +71,7 @@ const SaleComponent: React.FC = () => {
                 <Name>prueba</Name>
                 <Description>prueba</Description>
                 <Quantity>1</Quantity>
-                <UnitPrice>38</UnitPrice>
+                <UnitPrice>${saleAmount}</UnitPrice>
               </ItemDetails>
             </itemDetails>
             <systemTracking>TEST</systemTracking>
@@ -71,26 +79,33 @@ const SaleComponent: React.FC = () => {
           </Sale>
         </soap:Body>
       </soap:Envelope>
-    `;
+    `
 
-    $.ajax({
-      type: 'POST',
-      url: 'http://tokenv2.test.merchantprocess.net/TokenWebService.asmx',
-      data: xmlData,
-      contentType: 'text/xml; charset=utf-8',
-      headers: {
-        SOAPAction: '"http://tempuri.org/Sale"',
-      },
-      success: function (response: any) {
-        console.log('Sale successful:', response);
-        alert('Sale processed successfully!');
-      },
-      error: function (err: any) {
-        console.error('Error processing the sale:', err);
-        alert('Error processing the sale. Please try again.');
-      },
-    });
-  };
+    try {
+      const response = await axios.post('/api/sale', xmlData, {
+        headers: {
+          'Content-Type': 'text/xml; charset=utf-8'
+        }
+      })
+      
+      console.log('Sale successful:', response.data)
+      toast.success('Sale processed successfully!')
+      // Reset form
+      setCvv('')
+      setSaleAmount('')
+    } catch (error) {
+      console.error('Error processing the sale:', error)
+      if (error.response?.status === 429) {
+        toast.error('Too many requests. Please try again later.')
+      } else if (error.message.includes('Network Error')) {
+        toast.error('Network error. Please check your internet connection or try again later.')
+      } else {
+        toast.error('Error processing the sale. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="p-6 bg-[#13131A] text-white rounded-lg shadow-lg">
@@ -106,8 +121,10 @@ const SaleComponent: React.FC = () => {
           name="cvv"
           value={cvv}
           onChange={handleCvvChange}
+          maxLength={4}
           className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
           placeholder="Enter CVV"
+          aria-label="CVV input"
         />
       </div>
 
@@ -121,24 +138,32 @@ const SaleComponent: React.FC = () => {
           name="saleAmount"
           value={saleAmount}
           onChange={handleSaleAmountChange}
+          min="0"
+          step="0.01"
           className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
           placeholder="Enter Sale Amount"
+          aria-label="Sale amount input"
         />
       </div>
 
       <button
-        onClick={processSale}
-        className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-800 transition-colors duration-300"
-        disabled={!context?.store.token || !cvv || !saleAmount}
+        onClick={handleProcessSale}
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        disabled={!context?.store.token || !cvv || !saleAmount || loading}
+        aria-label={loading ? 'Processing sale...' : 'Process sale'}
       >
-        Process Sale
+        {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+        {loading ? 'Processing...' : 'Process Sale'}
       </button>
 
       {!context?.store.token && (
-        <p className="mt-4 text-red-500">Token is not available. Please load the payment widget first.</p>
+        <p className="mt-4 text-yellow-500" role="alert">
+          Token is not available. Please load the payment widget first.
+        </p>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default SaleComponent;
+export default SaleComponent
+
