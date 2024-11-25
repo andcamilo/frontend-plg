@@ -179,7 +179,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </Link>
         </div>
       )}
-      {true && (
+      {formData?.rol && formData.rol >= 35 && (
         <>
           <p className='font-bold'>Trámites internos</p>
           <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
