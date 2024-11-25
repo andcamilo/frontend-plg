@@ -195,7 +195,7 @@ const Checkout: React.FC = () => {
     };
 
     const handleBack = async () => {
-        await router.push('http://localhost:3000/dashboard/requests');
+        await router.push('/dashboard/requests');
     };
 
     useEffect(() => {

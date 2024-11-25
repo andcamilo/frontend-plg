@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { slide as Menu } from 'react-burger-menu';
 import CloseIcon from '@mui/icons-material/Close';
-import Image from 'next/image'; 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'
 import Logo from '@public/images/legix-logo.png';
@@ -13,6 +13,8 @@ import PaidIcon from '@mui/icons-material/Paid';
 import PeopleIcon from '@mui/icons-material/People';
 import SupportIcon from '@mui/icons-material/Support';
 import LanguageIcon from '@mui/icons-material/Language';
+import { Hexagon } from '@mui/icons-material';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import '../globals.css';
 
 interface MenuProps {
@@ -33,7 +35,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
   const isActive = (path: string) => pathname === path ? 'bg-profile text-white rounded-xl' : '';
 
   return (
-    <Menu 
+    <Menu
       isOpen={menuOpen}
       onStateChange={(state) => handleStateChange(state)}
       customBurgerIcon={false}
@@ -47,8 +49,8 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
     >
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center justify-between w-full">
-          <Image src={Logo} alt="Logo" width={110} height={32} className="mr-2" /> 
-      
+          <Image src={Logo} alt="Logo" width={110} height={32} className="mr-2" />
+
           <button onClick={closeMenu} className="text-white">
             <CloseIcon />
           </button>
@@ -67,6 +69,36 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Solicitudes
         </Link>
       </div>
+
+      <div
+        className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/nuevo')}`}
+        onClick={toggleDropdown} 
+      >
+        <Hexagon className="mr-2" />
+        <span className="flex-grow">Nuevo</span>
+        {dropdownOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+      </div>
+
+      {/* Opciones desplegables */}
+      {dropdownOpen && (
+        <div className="ml-6 transition-all">
+          <Link href="/dashboard/tramite-general" className="block mb-4">
+            Trámite General
+          </Link>
+          <Link href="/request/consulta-propuesta" className="block mb-4">
+            Consulta - Propuesta Legal
+          </Link>
+          <Link href="/request/pension-alimenticia" className="block mb-4">
+            Pensión Alimenticia
+          </Link>
+          <Link href="/request/sociedad-empresa" className="block mb-4">
+            Sociedades / Empresas
+          </Link>
+          <Link href="/request/fundacion" className="block mb-4">
+            Fundaciones de Interés Privado
+          </Link>
+        </div>
+      )}
       <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}>
         <PaidIcon className="mr-2" />
         <Link href="/dashboard/balances" className='font-semibold' onClick={closeMenu}>
@@ -77,6 +109,12 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         <PeopleIcon className="mr-2" />
         <Link href="/dashboard/clients" className='font-semibold' onClick={closeMenu}>
           Clientes
+        </Link>
+      </div>
+      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/users')}`}>
+        <PeopleIcon className="mr-2" />
+        <Link href="/dashboard/users" className='font-semibold' onClick={closeMenu}>
+          Usuarios
         </Link>
       </div>
       <p className='font-bold'>Trámites internos</p>
