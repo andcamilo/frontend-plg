@@ -94,7 +94,6 @@ const RequestsStatistics: React.FC = () => {
             try {
                 const { solicitudes, pagination } = await getRequests(rowsPerPage, currentPage);
 
-                // Sort the requests by date in descending order
                 solicitudes.sort((a: any, b: any) => {
                     const dateA = new Date(a.date._seconds * 1000); // Convert to Date
                     const dateB = new Date(b.date._seconds * 1000);
