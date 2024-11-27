@@ -63,13 +63,13 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
 
     return (
         <div className="flex gap-2">
-            <Link href={`/dashboard/request/${id}`}>
+            <Link href={`/dashboard/request?id=${id}`}>
             <VisibilityIcon className="cursor-pointer" titleAccess="Ver" />
             </Link>
             <Link href={getEditUrl()}>
             <EditIcon className="cursor-pointer" titleAccess="Editar" />
             </Link>
-            <Link href={`/dashboard/checkout/${id}`}>
+            <Link href={`/dashboard/checkout?id=${id}`}>
             <AttachMoneyIcon className="cursor-pointer" titleAccess="Pagar" />
             </Link>
             <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
