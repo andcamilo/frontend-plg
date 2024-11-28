@@ -38,60 +38,65 @@ const NavBar = () => {
           <div className="flex items-center space-x-2">
             <Image src={Logo} alt="Logo" width={210} height={82} className="mr-8" />
           </div>
-            <Link href="/home" className='text-xl font-bold hover:text-profile'>
-              Inicio
-            </Link>
+          <Link href="/home" className='text-xl font-bold hover:text-profile'>
+            Inicio
+          </Link>
 
-            <IconButton
-              onClick={handleSolicitudesMenuClick}
-              className="text-xl text-white font-bold hover:text-profile"
-              style={{ padding: 0 }}
-              sx={{
+          <IconButton
+            onClick={handleSolicitudesMenuClick}
+            className="text-xl text-white font-bold hover:text-profile"
+            style={{ padding: 0 }}
+            sx={{
+              color: 'white !important',
+              padding: 0,
+              '&:hover': {
                 color: 'white !important',
-                padding: 0,
-                '&:hover': {
-                  color: 'white !important',
-                },
-              }}
-            >
-              Solicitudes <ArrowDropDownIcon />
-            </IconButton>
-            <Menu
-              id="solicitudes-menu"
-              anchorEl={solicitudesAnchorEl}
-              keepMounted
-              open={Boolean(solicitudesAnchorEl)}
-              onClose={handleClose}
-              MenuListProps={{ onMouseLeave: handleClose }}
-                 sx={{ px: 3, color: 'white !important' }}
-              PaperProps={{
-                style: {
-                  backgroundColor: '#1F1F2E',
-                  color: 'white',
-                },
-              }}
-            >
-              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/consulta-propuesta')}>Consulta - Propuesta Legal</MenuItem>
-              <MenuItem sx={{ px: 3, color: 'white !important' }}  onClick={() => handleRedirect('/request/pension-alimenticia')} >Pensión Alimenticia</MenuItem>
-              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/menores-extranjero')}>Salida menores al extranjero</MenuItem>
-              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/sociedad-empresa')}>Sociedades / Empresas</MenuItem>
-              <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/fundacion')}>Fundaciones de Interes privado</MenuItem>
+              },
+            }}
+          >
+            Solicitudes <ArrowDropDownIcon />
+          </IconButton>
+          <Menu
+            id="solicitudes-menu"
+            anchorEl={solicitudesAnchorEl}
+            keepMounted
+            open={Boolean(solicitudesAnchorEl)}
+            onClose={handleClose}
+            MenuListProps={{ onMouseLeave: handleClose }}
+            sx={{ px: 3, color: 'white !important' }}
+            PaperProps={{
+              style: {
+                backgroundColor: '#1F1F2E',
+                color: 'white',
+              },
+            }}
+          >
+            <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/consulta-propuesta')}>Consulta - Propuesta Legal</MenuItem>
+            <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/pension-alimenticia')} >Pensión Alimenticia</MenuItem>
+            <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/menores-extranjero')}>Salida menores al extranjero</MenuItem>
+            <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/sociedad-empresa')}>Sociedades / Empresas</MenuItem>
+            <MenuItem sx={{ px: 3, color: 'white !important' }} onClick={() => handleRedirect('/request/fundacion')}>Fundaciones de Interes privado</MenuItem>
 
 
-            </Menu>
+          </Menu>
 
-            <Link href="/faqs" className='text-xl font-bold hover:text-profile'>
-             FAQs
-            </Link>
-            <Link href="/login" className='text-xl font-bold hover:text-profile'>
-              Mi Cuenta
-            </Link>
-            
+          <Link href="/faqs" className='text-xl font-bold hover:text-profile'>
+            FAQs
+          </Link>
+          <Link href="/login" className='text-xl font-bold hover:text-profile'>
+            Mi Cuenta
+          </Link>
+
           <a href="#" className="text-xl font-bold hover:text-profile">Ayuda</a>
         </div>
 
         <div className="flex items-center space-x-4">
-          <button className="text-xl font-bold bg-profile rounded-lg px-4 py-2 hover:text-profile">Corporativo</button>
+          <button
+            className="text-xl font-bold bg-profile rounded-lg px-4 py-2 text-white hover:bg-opacity-90"
+            onClick={() => (window.location.href = "http://localhost:3000/request/corporativo")}
+          >
+            Corporativo
+          </button>
           <div className="flex items-center bg-[#292929] px-3 py-1 rounded-full">
             <input
               type="text"
