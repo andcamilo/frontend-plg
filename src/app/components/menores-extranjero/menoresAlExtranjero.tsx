@@ -1352,11 +1352,13 @@ const MenoresAlExtranjero: React.FC = () => {
 
 
     useEffect(() => {
-        const userEmail = checkAuthToken();
-        if (userEmail) {
+        const userData = checkAuthToken();
+        console.log("userData ", userData)
+        if (userData) {
             setFormData((prevData) => ({
                 ...prevData,
-                email: userEmail,
+                email: userData?.email,
+                cuenta: userData?.user_id,
             }));
             setIsLoggedIn(true);
         }

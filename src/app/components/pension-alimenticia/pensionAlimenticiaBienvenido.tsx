@@ -56,11 +56,11 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
   useEffect(() => {
     if (store.request) {
-      const nombreCompleto = get(store.request, 'nombreSolicita', ''); 
-      const telefono = get(store.request, 'telefonoSolicita', ''); 
+      const nombreCompleto = get(store.request, 'nombreSolicita', '');
+      const telefono = get(store.request, 'telefonoSolicita', '');
       const telefonoAlternativo = get(store.request, 'telefonoSolicita2', '');
-      const email = get(store.request, 'emailSolicita', ''); 
-      const confirmEmail = get(store.request, 'emailSolicita', ''); 
+      const email = get(store.request, 'emailSolicita', '');
+      const confirmEmail = get(store.request, 'emailSolicita', '');
       const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
 
       // Actualizar el formData con los campos de la raíz y "fundacion"
@@ -78,31 +78,33 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
   useEffect(() => {
     if (store.request) {
-        setStore((prevState) => ({
-            ...prevState,
-            ...(store.request?.nombreSolicita && { solicitud: true }),
-            ...(store.request?.solicitud && { demandante: true }),
-            ...(store.request?.demandante && { demandado: true }),
-            ...(store.request?.demandado && { gastosPensionado: true }),
-            ...(store.request?.gastosPensionado && { archivosAdjuntos: true }),
-            ...(store.request?.archivosAdjuntos && { firmaYEntrega: true }),
-            ...(store.request?.firmaYEntrega && { solicitudAdicional: true }),
-            ...(store.request?.solicitudAdicional && { resumen: true }),
-        }));
+      setStore((prevState) => ({
+        ...prevState,
+        ...(store.request?.nombreSolicita && { solicitud: true }),
+        ...(store.request?.solicitud && { demandante: true }),
+        ...(store.request?.demandante && { demandado: true }),
+        ...(store.request?.demandado && { gastosPensionado: true }),
+        ...(store.request?.gastosPensionado && { archivosAdjuntos: true }),
+        ...(store.request?.archivosAdjuntos && { firmaYEntrega: true }),
+        ...(store.request?.firmaYEntrega && { solicitudAdicional: true }),
+        ...(store.request?.solicitudAdicional && { resumen: true }),
+      }));
     }
-}, [store.request, setStore]);
+  }, [store.request, setStore]);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSummaryForm, setShowSummaryForm] = useState(false);
 
   useEffect(() => {
-    const userEmail = checkAuthToken();
-    if (userEmail) {
+    const userData = checkAuthToken();
+    console.log("userData ", userData)
+    if (userData) {
       setFormData((prevData) => ({
         ...prevData,
-        email: userEmail,
-        confirmEmail: userEmail,
+        email: userData?.email,
+        confirmEmail: userData?.email,
+        cuenta: userData?.user_id,
       }));
       setIsLoggedIn(true);
     }
