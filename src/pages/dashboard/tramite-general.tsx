@@ -13,7 +13,7 @@ const TramiteGeneral: React.FC = () => {
     const { state, setState } = tramiteContext;
 
     return (
-        <DashboardLayout title="Solicitud">
+        <DashboardLayout title="Tramite general">
             <TramiteGenerales />
         </DashboardLayout>
     );

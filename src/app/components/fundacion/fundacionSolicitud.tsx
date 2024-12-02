@@ -43,12 +43,14 @@ const FundacionSolicitante: React.FC = () => {
     const [isEmailNew, setIsEmailNew] = useState(true);
 
     useEffect(() => {
-        const userEmail = checkAuthToken();
-        if (userEmail) {
+        const userData = checkAuthToken();
+        console.log("userData ", userData)
+        if (userData) {
             setFormData((prevData) => ({
                 ...prevData,
-                email: userEmail,
-                confirmEmail: userEmail,
+                email: userData?.email,
+                confirmEmail: userData?.email,
+                cuenta: userData?.user_id,
             }));
             setIsLoggedIn(true);
         }

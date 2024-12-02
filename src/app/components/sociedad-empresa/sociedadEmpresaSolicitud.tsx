@@ -6,7 +6,7 @@ import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
 import countryCodes from '@utils/countryCode';
-import { useFetchSolicitud } from '@utils/fetchCurrentRequest'; 
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 
 const SociedadEmpresaSolicitante: React.FC = () => {
@@ -42,12 +42,14 @@ const SociedadEmpresaSolicitante: React.FC = () => {
     const [isEmailNew, setIsEmailNew] = useState(true);
 
     useEffect(() => {
-        const userEmail = checkAuthToken();
-        if (userEmail) {
+        const userData = checkAuthToken();
+        console.log("userData ", userData)
+        if (userData) {
             setFormData((prevData) => ({
                 ...prevData,
-                email: userEmail,
-                confirmEmail: userEmail,
+                email: userData?.email,
+                confirmEmail: userData?.email,
+                cuenta: userData?.user_id,
             }));
             setIsLoggedIn(true);
         }
@@ -72,7 +74,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
     const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
     useEffect(() => {
         if (store.solicitudId) {
-            fetchSolicitud(); 
+            fetchSolicitud();
         }
     }, [store.solicitudId]);
 
@@ -80,13 +82,13 @@ const SociedadEmpresaSolicitante: React.FC = () => {
         if (store.request) {
             const nombreCompleto = get(store.request, 'nombreSolicita', '');
             const telefono = get(store.request, 'telefonoSolicita', '');
-            const emailSolicitante = get(store.request, 'emailSolicita', ''); 
+            const emailSolicitante = get(store.request, 'emailSolicita', '');
             const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
 
             setFormData((prevFormData) => ({
                 ...prevFormData,
-                nombreCompleto, 
-                telefono, 
+                nombreCompleto,
+                telefono,
                 /* emailSolicitante,  */
                 cedulaPasaporte,
             }));

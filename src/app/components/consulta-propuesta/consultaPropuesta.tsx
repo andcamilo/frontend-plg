@@ -152,15 +152,17 @@ const ConsultaPropuesta: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isEmailNew, setIsEmailNew] = useState(true);
-    const [archivoFile, setArchivoFile] = useState<File | null>(null);
+    const [archivoFile, setArchivoFile] = useState<File | null>(null); 
 
     useEffect(() => {
-        const userEmail = checkAuthToken();
-        if (userEmail) {
+        const userData = checkAuthToken();
+        console.log("userData ", userData)
+        if (userData) {
             setFormData((prevData) => ({
                 ...prevData,
-                email: userEmail,
-                confirmEmail: userEmail,
+                email: userData?.email,
+                confirmEmail: userData?.email,
+                cuenta: userData?.user_id,
             }));
             setIsLoggedIn(true);
         }
