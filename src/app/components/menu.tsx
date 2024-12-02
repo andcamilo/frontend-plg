@@ -26,10 +26,15 @@ interface MenuProps {
 
 const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, closeMenu, showSettings }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownOpenCC, setDropdownOpenCC] = useState(false);
   const pathname = usePathname();
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
+  };
+
+  const toggleDropdownCC = () => {
+    setDropdownOpenCC(!dropdownOpenCC);
   };
 
   const isActive = (path: string) => pathname === path ? 'bg-profile text-white rounded-xl' : '';
@@ -79,7 +84,6 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         {dropdownOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
       </div>
 
-      {/* Opciones desplegables */}
       {dropdownOpen && (
         <div className="ml-6 transition-all">
           <Link href="/dashboard/tramite-general" className="block mb-4">
@@ -118,12 +122,12 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         </Link>
       </div>
       <p className='font-bold'>Trámites internos</p>
-      <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdown}>
+      <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
         <StickyNote2Icon className="mr-2" />
         <span className="flex-grow">Caja chica</span>
         <ArrowDropDownIcon />
       </div>
-      {dropdownOpen && (
+      {dropdownOpenCC && (
         <div className="ml-6 transition-all">
           <Link href="/dashboard/disbursement" className={`block mb-2  ${isActive('/dashboard/disbursement')}`} onClick={closeMenu}>
             Desembolso
@@ -131,6 +135,10 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           <Link href="/dashboard/reports" className={`block mb-2 ${isActive('/dashboard/reports')}`} onClick={closeMenu}>
             Reportes
           </Link>
+          <Link href="/dashboard/invoice" className={`block mb-2 ${isActive('/dashboard/invoice')}`} onClick={closeMenu}>
+            Crear Factura
+          </Link>
+
         </div>
       )}
       <p className='font-bold'>Otros enlaces</p>
