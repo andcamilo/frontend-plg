@@ -262,7 +262,7 @@ const SolicitudForm: React.FC = () => {
           timer: 2500,
           showConfirmButton: false,
         }).then(() => {
-          window.location.href = "http://localhost:3000/dashboard/requests";
+          window.location.href = "/dashboard/requests";
         });
       }
     } catch (error) {

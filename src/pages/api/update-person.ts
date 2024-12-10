@@ -16,7 +16,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       `${backendBaseUrl}/dev/update-person`,  
       updatePayload  
     );
-    
 
     // Retornar la respuesta de la API externa
     return res.status(200).json(externalApiResponse.data);

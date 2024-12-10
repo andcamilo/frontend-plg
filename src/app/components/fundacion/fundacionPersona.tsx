@@ -6,9 +6,58 @@ import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+const Actions: React.FC<{ id: string, solicitudId: string; onEdit: (id: string, solicitudId: string) => void }> = ({ id, solicitudId, onEdit }) => {
+    const handleDelete = async () => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Quiere eliminar esta persona?",
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#2c2c3e',
+            color: '#fff',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+        });
+
+        if (result.isConfirmed) {
+            try { 
+                await axios.delete(`/api/delete-people`, { params: { peopleId: id } });
+                await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId });
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: 'La persona ha sido eliminada.',
+                    icon: 'success',
+                    timer: 4000,
+                    showConfirmButton: false,
+                });
+                // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
+                window.location.reload();
+            } catch (error) {
+                console.error('Error al eliminar esta persona:', error);
+                Swal.fire('Error', 'No se pudo eliminar esta persona.', 'error');
+            }
+        }
+    };
+
+    return (
+        <div className="flex gap-2">
+            <EditIcon
+                className="cursor-pointer"
+                titleAccess="Editar"
+                onClick={() => onEdit(id, solicitudId)}
+            />
+            <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
+        </div>
+    );
+};
 
 const SociedadEmpresaPersona: React.FC = () => {
     const context = useContext(AppStateContext);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
 
     if (!context) {
         throw new Error('AppStateContext must be used within an AppStateProvider');
@@ -68,9 +117,14 @@ const SociedadEmpresaPersona: React.FC = () => {
         }));
     };
 
-    const openModal = () => setIsModalOpen(true);
+    const openModal = (id?: string) => {
+        setSelectedId(id || null); 
+        setIsModalOpen(true);
+    };
+
     const closeModal = () => {
         setIsModalOpen(false);
+        setSelectedId(null); 
         fetchData();
     };
 
@@ -118,7 +172,7 @@ const SociedadEmpresaPersona: React.FC = () => {
                     )
                     : persona.nombreApellido, // Mostrar solo el nombre si no es Persona Jurídica
                 Correo: persona.email,
-                acciones: '...',
+                Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
             }));
     
             setData(formattedData); // Aquí se asignan los registros formateados
@@ -157,7 +211,7 @@ const SociedadEmpresaPersona: React.FC = () => {
                 <button
                     className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
                     type="button"
-                    onClick={openModal}
+                    onClick={() => openModal()}
                 >
                     {isLoading ? (
                         <div className="flex items-center justify-center">
@@ -186,9 +240,12 @@ const SociedadEmpresaPersona: React.FC = () => {
                 </button>
             </div>
             
-            {isModalOpen
-                && <ModalPersona onClose={closeModal} />
-            }
+            {isModalOpen && (
+                <ModalPersona
+                    onClose={closeModal}
+                    id={selectedId} 
+                />
+            )}
         </div>
     );
 };

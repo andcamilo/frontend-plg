@@ -2,9 +2,12 @@
 
 import React, { useState, useContext } from 'react'
 import AppStateContext from '@/src/app/context/context'
+import SociedadContext from '@context/sociedadesContext';
+import AppStateContextFundacion from '@context/fundacionContext';
+import MenoresContext from '@context/menoresContext';
+import ConsultaContext from "@context/consultaContext";
 import { Loader2 } from 'lucide-react'
 import Swal from 'sweetalert2'
-
 import axios from 'axios'
 
 interface SaleComponentProps {
@@ -12,7 +15,24 @@ interface SaleComponentProps {
 }
 
 const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
-  const context = useContext(AppStateContext)
+  const pensionContext = useContext(AppStateContext)
+  const sociedadContext = useContext(SociedadContext);
+  const fundacionContext = useContext(AppStateContextFundacion);
+  const menoresContext = useContext(MenoresContext);
+  const consultaContext = useContext(ConsultaContext);
+
+  // Verificar con que solicitud estamos trabajando 
+  const context = pensionContext?.store.solicitudId
+    ? pensionContext
+    : fundacionContext?.store.solicitudId
+    ? fundacionContext
+    : sociedadContext?.store.solicitudId
+    ? sociedadContext
+    : menoresContext?.store.solicitudId
+    ? menoresContext
+    : consultaContext?.store.solicitudId
+    ? consultaContext
+    : pensionContext || fundacionContext || sociedadContext || menoresContext || consultaContext;
 
   const [cvv, setCvv] = useState('')
   const [loading, setLoading] = useState(false)
@@ -22,6 +42,19 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
   }
 
   const handleProcessSale = async () => {
+    let precioTotal = 0;
+    try {
+      const solicitudId = context?.store.solicitudId;
+      const response = await axios.get('/api/get-request-id', {
+        params: { solicitudId },
+      })
+
+      precioTotal = response.data.canasta.total;
+
+    } catch (error) {
+      console.error('Error fetching solicitud:', error);
+    }
+    
     if (!context?.store.token) {
       Swal.fire({
         icon: 'error',
@@ -54,7 +87,7 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
             <merchantAccountNumber>112549</merchantAccountNumber>
             <terminalName>112549001</terminalName>
             <clientTracking>SALE-TRACKING-01</clientTracking>
-            <amount>${saleAmount}</amount>
+            <amount>${precioTotal}</amount>
             <currencyCode>840</currencyCode>
             <emailAddress>example@test.com</emailAddress>
             <shippingName>Panama</shippingName>
@@ -101,6 +134,7 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
         html: `<p>The sale was processed successfully!</p>`,
         confirmButtonText: 'OK'
       })
+      window.location.href = "/dashboard/requests";
       // Reset form
       setCvv('')
     } catch (error) {

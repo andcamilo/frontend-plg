@@ -14,9 +14,14 @@ import SociedadEmpresaActividades from '@components/sociedad-empresa/sociedadEmp
 import SociedadEmpresaIngresos from '@components/sociedad-empresa/sociedadEmpresaIngresos';
 import SolicitudAdicional from '@components/sociedad-empresa/solicitudAdicional';
 import SociedadEmpresaResumen from '@components/sociedad-empresa/sociedadEmpresaResumen';
+import WidgetLoader from '@/src/app/components/widgetLoader';
+import SaleComponent from '@/src/app/components/saleComponent';
 
 const SociedadEmpresa: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(1);
+    console.log("🚀 ~ activeStep:", activeStep)
+    const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     // Access the context values
     const context = useContext(AppStateContext);
@@ -67,6 +72,11 @@ const SociedadEmpresa: React.FC = () => {
         }
     };
 
+    const handlePaymentClick = () => {
+        setLoading(true);
+        setShowPaymentWidget(true);
+    };
+    
     return (
         <HomeLayout>
             <div className="relative w-full h-screen flex overflow-hidden">
@@ -211,6 +221,23 @@ const SociedadEmpresa: React.FC = () => {
                         <p className="my-8 text-center">
                             * Para poder enviar o pagar la solicitud todos los campos deben estar llenos.
                         </p>
+
+                        {activeStep >= 12 && (
+                            <div className="mt-8">
+                                <WidgetLoader />
+                            </div>
+                        )}
+
+                        {store.token ? (
+                            <div className="mt-8">
+                                <SaleComponent saleAmount={100} />
+                            </div>
+                        ) : (
+                            <div className="mt-8 text-gray-400">
+                                Por favor, complete el widget de pago para continuar.
+                            </div>
+                        )}
+
                         <div className="mt-8">
                             <button className="bg-gray-500 text-white w-full py-3 rounded-lg">Salir</button>
                         </div>

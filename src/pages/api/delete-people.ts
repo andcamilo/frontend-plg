@@ -1,28 +1,27 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { userId } = req.query;
+  const { peopleId } = req.query;
 
   if (req.method !== 'DELETE') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  if (!userId) {
-    return res.status(400).json({ message: 'userId is required' });
+  if (!peopleId) {
+    return res.status(400).json({ message: 'peopleId is required' });
   }
 
-  console.log('🚀 ~ handler ~ userId:', userId);
+  console.log('🚀 ~ handler ~ peopleId:', peopleId);
 
   try {
     const externalApiResponse = await axios.delete(
-      `${backendBaseUrl}/dev/delete-user/${userId}`
+      `http://localhost:4000/dev/delete-people/${peopleId}`
     );
 
     console.log('🚀 ~ handler ~ externalApiResponse:', externalApiResponse.data);
 
-    return res.status(200).json({ message: 'Usuario eliminada exitosamente', data: externalApiResponse.data });
+    return res.status(200).json({ message: 'Persona eliminada exitosamente', data: externalApiResponse.data });
   } catch (error) {
     console.error('Error making DELETE request to AWS Lambda:', error.toJSON ? error.toJSON() : error);
 

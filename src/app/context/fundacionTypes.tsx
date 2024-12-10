@@ -19,6 +19,7 @@ export interface FundacionState {
     solicitudId: string;
     currentPosition: number;
     request: any;
+    token: string;
 }
 
 // Definir el tipo del contexto de Fundación

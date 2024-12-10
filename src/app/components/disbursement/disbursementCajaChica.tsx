@@ -35,7 +35,8 @@ const DisbursementCajaChica: React.FC = () => {
                     : item
             ),
         }));
-    };
+      };
+      
 
     const handleAddExpense = () => {
         const newExpense = {

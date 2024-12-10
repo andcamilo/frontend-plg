@@ -13,16 +13,16 @@ const ListDisbursement: React.FC = () => {
 
   const rowsPerPage = 10;
 
-  /**
-   * Fetch the disbursement list from the API.
-   */
   const fetchDisbursements = async (page: number) => {
     try {
       const response = await axios.get('/api/list-disbursements', {
-        params: { page, limit: rowsPerPage },
+        params: {
+          page,
+          limit: rowsPerPage,
+        },
       });
 
-      console.log('🚀 ~ fetchDisbursements ~ response:', response.data);
+      console.log("🚀 ~ fetchDisbursements ~ response:", response.data.disbursements);
 
       const { disbursements, pagination } = response.data;
       setData(disbursements);
@@ -35,16 +35,10 @@ const ListDisbursement: React.FC = () => {
     }
   };
 
-  /**
-   * Triggered when the component mounts or the current page changes.
-   */
   useEffect(() => {
     fetchDisbursements(currentPage);
   }, [currentPage]);
 
-  /**
-   * Update the current page for pagination.
-   */
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
