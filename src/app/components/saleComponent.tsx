@@ -34,11 +34,10 @@ const SaleComponent: React.FC = () => {
 
     setLoading(true)
 
-    const xmlData = `
-      <?xml version="1.0" encoding="utf-8"?>
+    const xmlData = `<?xml version="1.0" encoding="utf-8"?>
       <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-                     xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
         <soap:Body>
           <Sale xmlns="http://tempuri.org/">
             <APIKey>EhrqwakURmYS</APIKey>
@@ -50,26 +49,26 @@ const SaleComponent: React.FC = () => {
             <amount>${saleAmount}</amount>
             <currencyCode>840</currencyCode>
             <emailAddress>example@test.com</emailAddress>
-            <shippingName>panama</shippingName>
-            <shippingDate>0229</shippingDate>
-            <shippingAddress>panama</shippingAddress>
-            <shippingCity></shippingCity>
-            <shippingState></shippingState>
-            <shippingCountry></shippingCountry>
-            <shippingZipCode></shippingZipCode>
-            <shippingPhoneNumber></shippingPhoneNumber>
-            <billingAddress></billingAddress>
-            <billingCity></billingCity>
-            <billingState></billingState>
-            <billingCountry></billingCountry>
-            <billingZipCode></billingZipCode>
-            <billingPhoneNumber>995-2369</billingPhoneNumber>
+            <shippingName>Panama</shippingName>
+            <shippingDate>2024-12-31</shippingDate>
+            <shippingAddress>Panama Address</shippingAddress>
+            <shippingCity>Panama City</shippingCity>
+            <shippingState>Panama</shippingState>
+            <shippingCountry>PA</shippingCountry>
+            <shippingZipCode>12345</shippingZipCode>
+            <shippingPhoneNumber>+5071234567</shippingPhoneNumber>
+            <billingAddress>Billing Address</billingAddress>
+            <billingCity>Billing City</billingCity>
+            <billingState>Billing State</billingState>
+            <billingCountry>US</billingCountry>
+            <billingZipCode>67890</billingZipCode>
+            <billingPhoneNumber>+1123456789</billingPhoneNumber>
             <itemDetails>
               <ItemDetails>
                 <ExtensionData/>
                 <Code>65</Code>
-                <Name>prueba</Name>
-                <Description>prueba</Description>
+                <Name>Test Product</Name>
+                <Description>Test Description</Description>
                 <Quantity>1</Quantity>
                 <UnitPrice>${saleAmount}</UnitPrice>
               </ItemDetails>
@@ -78,9 +77,8 @@ const SaleComponent: React.FC = () => {
             <cvv>${cvv}</cvv>
           </Sale>
         </soap:Body>
-      </soap:Envelope>
-    `
-
+      </soap:Envelope>`;
+    
     try {
       const response = await axios.post('/api/sale', xmlData, {
         headers: {

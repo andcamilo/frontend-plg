@@ -16,15 +16,26 @@ const DisbursementGastosOficina: React.FC = () => {
 
     const { state, setState } = context;
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, index: number) => {
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+        index: number
+      ) => {
         const { name, value } = e.target;
-        setState(prevState => ({
-            ...prevState,
-            desemboloOficina: prevState.desemboloOficina.map((item, i) =>
-                i === index ? { ...item, [name]: value } : item
-            )
+      
+        setState((prevState) => ({
+          ...prevState,
+          desemboloOficina: prevState.desemboloOficina.map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  [name]: value, // Update the selected value
+                }
+              : item
+          ),
         }));
-    };
+      };
+      
+      
 
     const handleAddExpense = () => {
         const newExpense = {
@@ -35,6 +46,7 @@ const DisbursementGastosOficina: React.FC = () => {
             disbursementRecipient: '',
             associatedInvoiceNumber: '',
             client: '',
+            status: true,
         };
         setState(prevState => ({
             ...prevState,
@@ -84,19 +96,21 @@ const DisbursementGastosOficina: React.FC = () => {
                             </select>
                         </div>
 
-                        <div className="mb-4">
-                            <label htmlFor={`otherExpenseType-${index}`} className="block text-gray-300 mb-2">
-                                Otro tipos de gasto
-                            </label>
-                            <input
-                                type="text"
-                                id={`otherExpenseType-${index}`}
-                                name="otherExpenseType"
-                                value={expense.otherExpenseType || ''}
-                                onChange={(e) => handleChange(e, index)}
-                                className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
-                            />
-                        </div>
+                        {expense.expenseType === 'otros' && (
+                            <div className="mb-4">
+                                <label htmlFor={`otherExpenseType-${index}`} className="block text-gray-300 mb-2">
+                                    Otro tipos de gasto
+                                </label>
+                                <input
+                                    type="text"
+                                    id={`otherExpenseType-${index}`}
+                                    name="otherExpenseType"
+                                    value={expense.otherExpenseType || ''}
+                                    onChange={(e) => handleChange(e, index)}
+                                    className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                        )}
 
                         <div className="mb-4">
                             <label htmlFor={`expenseDetail-${index}`} className="block text-gray-300 mb-2">

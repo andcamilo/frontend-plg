@@ -16,15 +16,26 @@ const DisbursementCajaChica: React.FC = () => {
 
     const { state, setState } = context;
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, index: number) => {
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+        index: number
+      ) => {
         const { name, value } = e.target;
-        setState(prevState => ({
-            ...prevState,
-            desembolsoCajaChica: prevState.desembolsoCajaChica.map((item, i) =>
-                i === index ? { ...item, [name]: value } : item
-            )
+      
+        setState((prevState) => ({
+          ...prevState,
+          desembolsoCajaChica: prevState.desembolsoCajaChica.map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  [name]: value,
+                  status: true
+                }
+              : item
+          ),
         }));
-    };
+      };
+      
 
     const handleAddExpense = () => {
         const newExpense = {
@@ -35,6 +46,7 @@ const DisbursementCajaChica: React.FC = () => {
             disbursementType: 'Transferencia',
             reason: '',
             observation: '',
+            status: true,
         };
         setState(prevState => ({
             ...prevState,
@@ -70,7 +82,7 @@ const DisbursementCajaChica: React.FC = () => {
                                 <option value="">Selecciona un abogado</option>
                                 <option value="lawyer1">Lawyer 1</option>
                                 <option value="lawyer2">Lawyer 2</option>
-                                {/* Add more options as necessary */}
+                           
                             </select>
                         </div>
 

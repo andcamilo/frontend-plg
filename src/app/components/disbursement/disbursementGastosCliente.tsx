@@ -16,15 +16,26 @@ const DisbursementGastosCliente: React.FC = () => {
 
     const { state, setState } = context;
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, index: number) => {
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+        index: number
+      ) => {
         const { name, value } = e.target;
-        setState(prevState => ({
-            ...prevState,
-            desembolsoCliente: prevState.desembolsoCliente.map((item, i) =>
-                i === index ? { ...item, [name]: value } : item
-            )
+      
+        setState((prevState) => ({
+          ...prevState,
+          desembolsoCliente: prevState.desembolsoCliente.map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  [name]: value,
+                  status: true,
+                }
+              : item
+          ),
         }));
-    };
+      };
+      
 
     const handleAddExpense = () => {
         const newExpense = {
@@ -37,6 +48,7 @@ const DisbursementGastosCliente: React.FC = () => {
             clientPaidExpensesSent: '',
             associatedExpenseDetail: '',
             lawyer: '',
+            status: true,
         };
         setState(prevState => ({
             ...prevState,
