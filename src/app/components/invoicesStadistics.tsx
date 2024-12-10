@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import get from 'lodash/get';
-import TableWithPagination from './TableWithPagination';
 import TableWithRequests from '@components/TableWithRequests';
 
 const InvoicesStatistics: React.FC = () => {

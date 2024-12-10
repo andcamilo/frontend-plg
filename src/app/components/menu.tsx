@@ -130,13 +130,13 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
       {dropdownOpenCC && (
         <div className="ml-6 transition-all">
           <Link href="/dashboard/disbursement" className={`block mb-2  ${isActive('/dashboard/disbursement')}`} onClick={closeMenu}>
-            Desembolso
+            Solcitar Desembolso
           </Link>
-          <Link href="/dashboard/reports" className={`block mb-2 ${isActive('/dashboard/reports')}`} onClick={closeMenu}>
-            Reportes
+          <Link href="/dashboard/see" className={`block mb-2 ${isActive('/dashboard/see')}`} onClick={closeMenu}>
+            Ver Desembolsos
           </Link>
-          <Link href="/dashboard/invoice" className={`block mb-2 ${isActive('/dashboard/invoice')}`} onClick={closeMenu}>
-            Crear Factura
+          <Link href="/dashboard/expense" className={`block mb-2 ${isActive('/dashboard/expense')}`} onClick={closeMenu}>
+            Crear Gasto
           </Link>
 
         </div>

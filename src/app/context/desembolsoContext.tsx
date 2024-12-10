@@ -9,6 +9,7 @@ type DesembolsoOficina = {
     disbursementRecipient: string;
     associatedInvoiceNumber?: string;
     client: string;
+    status: boolean;
 };
 
 type DesembolsoCliente = {
@@ -21,6 +22,7 @@ type DesembolsoCliente = {
     clientPaidExpensesSent: string;
     associatedExpenseDetail: string;
     lawyer: string;
+    status: boolean;
 };
 
 type DesembolsoCajaChica = {
@@ -31,6 +33,7 @@ type DesembolsoCajaChica = {
     disbursementType: string; // Tipo de desembolso
     reason: string; // Motivo
     observation?: string; // Observación (optional)
+    status: boolean;
 };
 
 type DetalleDesembolsoPagado = {
@@ -75,6 +78,7 @@ const initialFormData: FormDataType = {
             disbursementRecipient: '',
             associatedInvoiceNumber: '',
             client: '',
+            status: false,
         },
     ],
     desembolsoCliente: [
@@ -87,7 +91,8 @@ const initialFormData: FormDataType = {
             billedExpensesSent: '', 
             clientPaidExpensesSent:'',
             lawyer: '',
-            associatedExpenseDetail: ''
+            associatedExpenseDetail: '',
+            status: false,
         },
     ],
     desembolsoCajaChica:[ {
@@ -98,6 +103,7 @@ const initialFormData: FormDataType = {
         disbursementType: '',
         reason: '',
         observation: '',
+        status: false,
     }],
     detalleDesembolsoPagado: {
         paymentDate: '',
