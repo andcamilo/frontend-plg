@@ -138,7 +138,7 @@ const UsersStatistics: React.FC = () => {
               {statusLabels[get(user, 'status', 'N/A')] || 'Desconocido'}
             </span>
           ),
-          Action: <Actions id={user.id} />,
+          Opciones: <Actions id={user.id} />,
         }));
 
         setData(formattedData);

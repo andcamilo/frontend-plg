@@ -135,7 +135,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
       )}
 
       {/* Opciones desplegables */}
-      {dropdownOpen && (
+      {dropdownOpenCC && (
         <div className="ml-6 transition-all">
           <Link href="/dashboard/tramite-general" className="block mb-4">
             Trámite General

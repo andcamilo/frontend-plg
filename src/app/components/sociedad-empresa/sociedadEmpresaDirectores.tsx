@@ -7,6 +7,8 @@ import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
 import { getRequests } from '@api/request';
 import Swal from 'sweetalert2';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 // Define el tipo de datos que manejarás en el estado `data`
 interface DirectorNominalData {
@@ -14,6 +16,47 @@ interface DirectorNominalData {
     nombre: React.ReactNode; // Porque algunos campos contienen JSX
     acciones: string;
 }
+
+const Actions: React.FC<{ id: string, solicitudId: string; }> = ({ id, solicitudId }) => {
+    const handleDelete = async () => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Quiere eliminar este director?",
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#2c2c3e',
+            color: '#fff',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+        });
+
+        if (result.isConfirmed) {
+            try { 
+                await axios.delete(`/api/delete-people`, { params: { peopleId: id } });
+                await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId });
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: 'La persona ha sido eliminada.',
+                    icon: 'success',
+                    timer: 4000,
+                    showConfirmButton: false,
+                });
+                // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
+                window.location.reload();
+            } catch (error) {
+                console.error('Error al eliminar esta persona:', error);
+                Swal.fire('Error', 'No se pudo eliminar esta persona.', 'error');
+            }
+        }
+    };
+
+    return (
+        <div className="flex gap-2">
+            <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
+        </div>
+    );
+};
 
 const SociedadEmpresaDirectores: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -83,60 +126,61 @@ const SociedadEmpresaDirectores: React.FC = () => {
 
     const fetchData = async () => {
         try {
+            let formattedData: any[] = [];
+
+            // Llamada a la API para obtener datos de personas
             const response = await axios.get(`/api/get-people-id`, {
-                params: {
-                    solicitudId: solicitudId
+                params: { solicitudId }
+            }).catch((error) => {
+                // Manejar errores específicos
+                if (axios.isAxiosError(error) && error.response?.status === 404) {
+                    console.warn('No se encontraron registros para la solicitud.');
+                    return { data: [] }; // Continuar con un arreglo vacío
                 }
+                throw error; // Lanza otros errores
             });
-    
-            const people = response.data;
-    
-            if (!people || people.length === 0) {
-                setData([]);
-                setTotalRecords(0);
-                setTotalPages(1);
-                setHasPrevPage(false);
-                setHasNextPage(false);
-                return;
+
+            const people = response?.data || []; // Asegurar que siempre sea un arreglo
+
+            if (Array.isArray(people) && people.length > 0) {
+                // Filtrar y procesar los datos si existen
+                const directores = people.filter((persona: any) => persona.director);
+
+                // Calcular paginación
+                const totalRecords = directores.length;
+                const totalPages = Math.ceil(totalRecords / rowsPerPage);
+
+                const paginatedData = directores.slice(
+                    (currentPage - 1) * rowsPerPage,
+                    currentPage * rowsPerPage
+                );
+
+                formattedData = paginatedData.map((persona: any) => ({
+                    tipo: persona.director?.servicio || '---',
+                    nombre: persona.tipoPersona === 'Persona Jurídica'
+                        ? (
+                            <>
+                                {persona.nombreApellido}
+                                <br />
+                                <span className="text-gray-400 text-sm">
+                                    <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
+                                    {persona.personaJuridica?.nombreJuridico || '---'}
+                                </span>
+                            </>
+                        )
+                        : persona.nombreApellido || '---',
+                    Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
+                }));
             }
-    
-            // Filtrar solo las personas que tienen el campo `director`
-            const directores = people.filter((persona: any) => persona.director);
-    
-            // Calcular paginación solo con los registros filtrados
-            const totalRecords = directores.length;
-            const totalPages = Math.ceil(totalRecords / rowsPerPage);
-    
-            const paginatedData = directores.slice(
-                (currentPage - 1) * rowsPerPage,
-                currentPage * rowsPerPage
-            );
-    
-            const formattedData = paginatedData.map((persona: any) => ({
-                tipo: persona.director?.servicio || '---',
-                nombre: persona.tipoPersona === 'Persona Jurídica'
-                    ? (
-                        <>
-                            {persona.nombreApellido}
-                            <br />
-                            <span className="text-gray-400 text-sm">
-                                <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
-                                {persona.personaJuridica?.nombreJuridico || '---'}
-                            </span>
-                        </>
-                    )
-                    : persona.nombreApellido || '---',
-                acciones: '...',
-            }));
-    
+
+            // Llamada a la API para obtener datos de solicitudes
             const solicitudes = await axios.get('/api/get-request-id', {
-                params: {
-                    solicitudId
-                },
+                params: { solicitudId },
             });
-    
+
             const requestData = solicitudes.data;
-    
+            console.log("AA ", requestData);
+
             let formattedRequestData = [];
             if (requestData && requestData.directores) {
                 formattedRequestData = requestData.directores
@@ -144,12 +188,15 @@ const SociedadEmpresaDirectores: React.FC = () => {
                     .map((director: any) => ({
                         tipo: director.servicio,
                         nombre: director.nombre || '---',
-                        acciones: '...',
+                        Opciones: <Actions id={""} solicitudId={store.solicitudId} />,
                     }));
             }
-    
+            console.log("AAWW ", formattedRequestData);
+
+            // Combinar los datos
             const combinedData: DirectorNominalData[] = [...formattedData, ...formattedRequestData];
-    
+
+            // Establecer los datos combinados en el estado
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(totalPages);
@@ -158,7 +205,7 @@ const SociedadEmpresaDirectores: React.FC = () => {
         } catch (error) {
             console.error('Error fetching people:', error);
         }
-    };    
+    };
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -214,7 +261,7 @@ const SociedadEmpresaDirectores: React.FC = () => {
                     )}
                 </button>
             </div>
-            
+
             {isModalOpen
                 && <ModalDirectores onClose={closeModal} />
             }

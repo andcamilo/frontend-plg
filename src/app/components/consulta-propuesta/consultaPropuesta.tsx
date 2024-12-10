@@ -101,12 +101,6 @@ const ConsultaPropuesta: React.FC = () => {
                 direccionBuscar: solicitudData.direccionBuscar || "",
                 direccionIr: solicitudData.direccionIr || "",
             });
-
-            /* setItem(solicitudData.tipoCnsulta || "Propuesta Legal");
-            setPrecio(solicitudData.canasta.items || useState(0));
-            setSubtotal(solicitudData.tipoCnsulta || useState(0));
-            setTotal(solicitudData.tipoCnsulta || useState(0));
-            setServicioAdicional(solicitudData.tipoCnsulta); */
         }
     }, [solicitudData]);
 
@@ -701,6 +695,7 @@ const ConsultaPropuesta: React.FC = () => {
                         timerProgressBar: 'custom-swal-timer-bar'
                     }
                 });
+                window.location.href = "/dashboard/requests";
             }
         } catch (error) {
             Swal.fire({

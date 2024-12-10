@@ -139,7 +139,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                     )
                     : persona.nombreApellido || '---',
                 posicion: persona.dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
-                acciones: '...',
+                Opciones: '...',
             }));
     
             const solicitudes = await axios.get('/api/get-request-id', {
@@ -157,7 +157,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                     .map((dignatario: any) => ({
                         nombre: dignatario.servicio,
                         posicion: dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
-                        acciones: '...',
+                        Opciones: '...',
                     }));
             }
     

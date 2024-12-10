@@ -1654,6 +1654,7 @@ const MenoresAlExtranjero: React.FC = () => {
                         timerProgressBar: 'custom-swal-timer-bar'
                     }
                 });
+                window.location.href = "/dashboard/requests";
             }
         } catch (error) {
             Swal.fire({

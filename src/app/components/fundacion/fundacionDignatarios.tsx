@@ -138,7 +138,7 @@ const FundacionDignatarios: React.FC = () => {
                     )
                     : persona.nombreApellido || '---',
                 posicion: persona?.dignatario?.posiciones.map((posicion: any) => posicion.nombre).join(', '),
-                acciones: '...',
+                Opciones: '...',
             }));
 
             const solicitudes = await axios.get('/api/get-request-id', {
@@ -156,7 +156,7 @@ const FundacionDignatarios: React.FC = () => {
                         tipo: dignatario.servicio,
                         nombre: dignatario.nombre || '---',
                         posicion: dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
-                        acciones: '...',
+                        Opciones: '...',
                     }));
             }
 
