@@ -22,7 +22,7 @@ const PaymentPage: React.FC = () => {
 
       {store.token ? (
         <div>
-          <SaleComponent />
+          <SaleComponent saleAmount={1} />
         </div>
       ) : (
         <p className="text-gray-400">Please complete the payment widget to proceed with the sale.</p>
