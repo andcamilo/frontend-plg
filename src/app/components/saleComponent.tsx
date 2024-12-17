@@ -2,33 +2,74 @@
 
 import React, { useState, useContext } from 'react'
 import AppStateContext from '@/src/app/context/context'
+import SociedadContext from '@context/sociedadesContext';
+import AppStateContextFundacion from '@context/fundacionContext';
+import MenoresContext from '@context/menoresContext';
+import ConsultaContext from "@context/consultaContext";
 import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
+import Swal from 'sweetalert2'
 import axios from 'axios'
 
-const SaleComponent: React.FC = () => {
-  const context = useContext(AppStateContext)
+interface SaleComponentProps {
+  saleAmount: number
+}
+
+const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
+  const pensionContext = useContext(AppStateContext)
+  const sociedadContext = useContext(SociedadContext);
+  const fundacionContext = useContext(AppStateContextFundacion);
+  const menoresContext = useContext(MenoresContext);
+  const consultaContext = useContext(ConsultaContext);
+
+  // Verificar con que solicitud estamos trabajando 
+  const context = pensionContext?.store.solicitudId
+    ? pensionContext
+    : fundacionContext?.store.solicitudId
+    ? fundacionContext
+    : sociedadContext?.store.solicitudId
+    ? sociedadContext
+    : menoresContext?.store.solicitudId
+    ? menoresContext
+    : consultaContext?.store.solicitudId
+    ? consultaContext
+    : pensionContext || fundacionContext || sociedadContext || menoresContext || consultaContext;
 
   const [cvv, setCvv] = useState('')
-  const [saleAmount, setSaleAmount] = useState<number | string>('')
   const [loading, setLoading] = useState(false)
 
   const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCvv(e.target.value)
   }
 
-  const handleSaleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSaleAmount(e.target.value)
-  }
-
   const handleProcessSale = async () => {
+    let precioTotal = 0;
+    try {
+      const solicitudId = context?.store.solicitudId;
+      const response = await axios.get('/api/get-request-id', {
+        params: { solicitudId },
+      })
+
+      precioTotal = response.data.canasta.total;
+
+    } catch (error) {
+      console.error('Error fetching solicitud:', error);
+    }
+    
     if (!context?.store.token) {
-      toast.error('Token is required to process the sale.')
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Token is required to process the sale.'
+      })
       return
     }
 
-    if (!cvv || !saleAmount) {
-      toast.error('CVV and Sale Amount are required.')
+    if (!cvv) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'CVV is required.'
+      })
       return
     }
 
@@ -46,7 +87,7 @@ const SaleComponent: React.FC = () => {
             <merchantAccountNumber>112549</merchantAccountNumber>
             <terminalName>112549001</terminalName>
             <clientTracking>SALE-TRACKING-01</clientTracking>
-            <amount>${saleAmount}</amount>
+            <amount>${precioTotal}</amount>
             <currencyCode>840</currencyCode>
             <emailAddress>example@test.com</emailAddress>
             <shippingName>Panama</shippingName>
@@ -87,18 +128,35 @@ const SaleComponent: React.FC = () => {
       })
       
       console.log('Sale successful:', response.data)
-      toast.success('Sale processed successfully!')
+      await Swal.fire({
+        icon: 'success',
+        title: 'Sale Successful',
+        html: `<p>The sale was processed successfully!</p>`,
+        confirmButtonText: 'OK'
+      })
+      window.location.href = "/dashboard/requests";
       // Reset form
       setCvv('')
-      setSaleAmount('')
     } catch (error) {
       console.error('Error processing the sale:', error)
       if (error.response?.status === 429) {
-        toast.error('Too many requests. Please try again later.')
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Too many requests. Please try again later.'
+        })
       } else if (error.message.includes('Network Error')) {
-        toast.error('Network error. Please check your internet connection or try again later.')
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Network error. Please check your internet connection or try again later.'
+        })
       } else {
-        toast.error('Error processing the sale. Please try again.')
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error processing the sale. Please try again.'
+        })
       }
     } finally {
       setLoading(false)
@@ -126,28 +184,10 @@ const SaleComponent: React.FC = () => {
         />
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="saleAmount" className="block text-gray-300 mb-2">
-          Sale Amount
-        </label>
-        <input
-          type="number"
-          id="saleAmount"
-          name="saleAmount"
-          value={saleAmount}
-          onChange={handleSaleAmountChange}
-          min="0"
-          step="0.01"
-          className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
-          placeholder="Enter Sale Amount"
-          aria-label="Sale amount input"
-        />
-      </div>
-
       <button
         onClick={handleProcessSale}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        disabled={!context?.store.token || !cvv || !saleAmount || loading}
+        disabled={!context?.store.token || !cvv || loading}
         aria-label={loading ? 'Processing sale...' : 'Process sale'}
       >
         {loading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -164,4 +204,3 @@ const SaleComponent: React.FC = () => {
 }
 
 export default SaleComponent
-

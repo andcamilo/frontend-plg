@@ -5,6 +5,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { checkAuthToken } from "@utils/checkAuthToken";
+import { useRouter } from 'next/router';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -28,6 +29,10 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
 const SolicitudForm: React.FC = () => {
+    const router = useRouter();
+    const { id } = router.query;
+    const [solicitudData, setSolicitudData] = useState<any>(null);
+
     const [formData, setFormData] = useState<{
         nombre: string;
         email: string;
@@ -44,7 +49,36 @@ const SolicitudForm: React.FC = () => {
         rol: -1,
     });
 
-    const [isEmergentFieldVisible, setIsEmergentFieldVisible] = useState(false);
+    useEffect(() => {
+        if (id) {
+            const fetchSolicitud = async () => {
+                try {
+                    const response = await axios.get('/api/get-request-id', {
+                        params: { solicitudId: id },
+                    });
+                    setSolicitudData(response.data); // Establece solicitudData una vez obtenida
+                } catch (error) {
+                    console.error('Error fetching solicitud:', error);
+                }
+            };
+            fetchSolicitud();
+            console.log('ID del registro:', id);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        if (solicitudData) {
+            setFormData((prevData) => ({
+                ...prevData,
+                nombre: solicitudData.nombreSolicita || "",
+                email: solicitudData.emailSolicita || "",
+                telefono: solicitudData.telefonoSolicita || "",
+                comentarios: solicitudData.comentarios || solicitudData.solicitudBase.comentarios || "",
+            }));
+        }
+    }, [solicitudData]);
+
+
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -95,14 +129,10 @@ const SolicitudForm: React.FC = () => {
             [name]: value,
         }));
 
-        // Mostrar/ocultar campo emergente según la opción seleccionada
-        if (name === "nivelUrgencia") {
-            setIsEmergentFieldVisible(value === "extraordinaria");
-        }
     };
 
     const [isNombreInvalid, setisNombreInvalid] = useState(false);
-    const [isTelefonoInvalid, setisTelefonoInvalid] = useState(false); 
+    const [isTelefonoInvalid, setisTelefonoInvalid] = useState(false);
     const [isEmailInvalid, setisEmailInvalid] = useState(false);
 
     const validateFields = () => {
@@ -126,7 +156,7 @@ const SolicitudForm: React.FC = () => {
             setisNombreInvalid(false);
         }
 
-        if (!formData.email.trim()) { 
+        if (!formData.email.trim()) {
             setisEmailInvalid(true);
             Swal.fire({
                 position: "top-end",
@@ -149,7 +179,7 @@ const SolicitudForm: React.FC = () => {
         } else {
             setisEmailInvalid(false);
         }
-        
+
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             setisEmailInvalid(true);
             Swal.fire({
@@ -289,7 +319,7 @@ const SolicitudForm: React.FC = () => {
                     timer: 2500,
                     showConfirmButton: false,
                 }).then(() => {
-                    window.location.href = "http://localhost:3000/dashboard/requests";
+                    window.location.href = "/dashboard/requests";
                 });
             }
         } catch (error) {
@@ -367,7 +397,7 @@ const SolicitudForm: React.FC = () => {
                             value={formData.comentarios}
                             onChange={handleChange}
                             className="p-4 bg-gray-800 text-white rounded-lg h-24"
-                            
+
                         />
                     </div>
                 </div>

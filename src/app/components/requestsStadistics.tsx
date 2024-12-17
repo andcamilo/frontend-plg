@@ -8,6 +8,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 import Link from 'next/link';
+import { checkAuthToken } from "@utils/checkAuthToken";
 
 // Function to format date as dd/mm/yyyy
 const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): string => {
@@ -36,7 +37,13 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
         if (result.isConfirmed) {
             try {
                 await axios.delete(`/api/delete-request`, { params: { solicitudId: id } });
-                Swal.fire('Eliminado', 'La solicitud ha sido eliminada.', 'success');
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: 'La solicitud ha sido eliminada.',
+                    icon: 'success',
+                    timer: 4000, 
+                    showConfirmButton: false, 
+                });
                 // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
                 window.location.reload();
             } catch (error) {
@@ -56,6 +63,12 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
                 return `/request/menores-extranjero?id=${id}`;
             case "pension":
                 return `/request/pension-alimenticia?id=${id}`;
+            case "tramite-general":
+                return `/dashboard/tramite-general?id=${id}`;
+            case "cliente-recurrente":
+                return `/request/corporativo?id=${id}`;
+            case "solicitud-cliente-recurrente":
+                return `/request/corporativo?id=${id}`;
             default:
                 return `/request/consulta-propuesta?id=${id}`;
         }
@@ -80,6 +93,17 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
 const RequestsStatistics: React.FC = () => {
     const [solicitudes, setSolicitudes] = useState<any[]>([]);
 
+    const [formData, setFormData] = useState<{
+        cuenta: string;
+        email: string;
+        rol: number;
+    }>({
+        cuenta: "",
+        email: "",
+        rol: -1,
+
+    });
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage] = useState(10);
@@ -88,6 +112,42 @@ const RequestsStatistics: React.FC = () => {
         hasNextPage: false,
         totalPages: 1,
     });
+
+    useEffect(() => {
+        const userData = checkAuthToken();
+        if (userData) {
+            setFormData((prevData) => ({
+                ...prevData,
+                email: userData?.email,
+                cuenta: userData?.user_id,
+            }));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (formData.cuenta) {
+            const fetchUser = async () => {
+                try {
+                    console.log("Cuenta ", formData.cuenta)
+                    const response = await axios.get('/api/get-user-cuenta', {
+                        params: { userCuenta: formData.cuenta },
+                    });
+
+                    const user = response.data;
+                    console.log("Usuario ", user)
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        rol: user.solicitud.rol || 0,
+                    }));
+
+                } catch (error) {
+                    console.error('Failed to fetch solicitudes:', error);
+                }
+            };
+
+            fetchUser();
+        }
+    }, [formData.cuenta]);
 
     useEffect(() => {
         const fetchSolicitudes = async () => {
@@ -115,9 +175,17 @@ const RequestsStatistics: React.FC = () => {
         fetchSolicitudes();
     }, [currentPage, rowsPerPage]);
 
-    // Filtered requests
-    const solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 /* && solicitud.status !== 1 */);
-    const solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70);
+    let solicitudesEnProceso = {};
+    let solicitudesFinalizadas = {};
+
+    if (formData.rol > 17) {
+        // Filtered requests
+        solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 /* && solicitud.status !== 1 */);
+        solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70);
+    } else {
+        solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 && solicitud.cuenta === formData.cuenta);
+        solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70 && solicitud.cuenta === formData.cuenta);
+    }
 
     // Transform data for the table
     const transformData = (solicitudes) => {
@@ -154,8 +222,10 @@ const RequestsStatistics: React.FC = () => {
                 "new-fundacion": "Fundaciones de Interés Privado",
                 "new-sociedad-empresa": "Sociedad / Empresa",
                 "menores-al-extranjero": "Salida de Menores al Extranjero",
-                "pension": "Pensión Alimenticia", 
+                "pension": "Pensión Alimenticia",
                 "tramite-general": "Tramite General",
+                "cliente-recurrente": "Cliente Recurrente",
+                "solicitud-cliente-recurrente": "Cliente Recurrente",
             };
 
             return {
@@ -169,7 +239,7 @@ const RequestsStatistics: React.FC = () => {
                 ), // Renderiza el estado con su clase correspondiente
                 Expediente: expediente,
                 Abogado: abogados.map((abogado) => abogado.nombre).join(', '), // Concatenando nombres
-                Action: <Actions tipo={tipo} id={id} /> // Pasando el id como prop al componente de acciones
+                Opciones: <Actions tipo={tipo} id={id} /> // Pasando el id como prop al componente de acciones
             };
         });
     };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { slide as Menu } from 'react-burger-menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Image from 'next/image';
@@ -16,6 +16,8 @@ import LanguageIcon from '@mui/icons-material/Language';
 import { Hexagon } from '@mui/icons-material';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import '../globals.css';
+import { checkAuthToken } from "@utils/checkAuthToken";
+import axios from 'axios';
 
 interface MenuProps {
   menuOpen: boolean;
@@ -28,6 +30,53 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownOpenCC, setDropdownOpenCC] = useState(false);
   const pathname = usePathname();
+
+  const [formData, setFormData] = useState<{
+    cuenta: string;
+    email: string;
+    rol: number;
+  }>({
+    cuenta: "",
+    email: "",
+    rol: -1,
+
+  });
+
+  useEffect(() => {
+    const userData = checkAuthToken();
+    if (userData) {
+      setFormData((prevData) => ({
+        ...prevData,
+        email: userData?.email,
+        cuenta: userData?.user_id,
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (formData.cuenta) {
+      const fetchUser = async () => {
+        try {
+          console.log("Cuenta ", formData.cuenta)
+          const response = await axios.get('/api/get-user-cuenta', {
+            params: { userCuenta: formData.cuenta },
+          });
+
+          const user = response.data;
+          console.log("Usuario ", user)
+          setFormData((prevData) => ({
+            ...prevData,
+            rol: user.solicitud.rol || 0,
+          }));
+
+        } catch (error) {
+          console.error('Failed to fetch solicitudes:', error);
+        }
+      };
+
+      fetchUser();
+    }
+  }, [formData.cuenta]);
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -74,16 +123,18 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Solicitudes
         </Link>
       </div>
+      {formData?.rol && (formData.rol === 17 || formData.rol === 99) && (
+        <div
+          className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/nuevo')}`}
+          onClick={toggleDropdown}
+        >
+          <Hexagon className="mr-2" />
+          <span className="flex-grow">Nuevo</span>
+          {dropdownOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+        </div>
+      )}
 
-      <div
-        className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/nuevo')}`}
-        onClick={toggleDropdown} 
-      >
-        <Hexagon className="mr-2" />
-        <span className="flex-grow">Nuevo</span>
-        {dropdownOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
-      </div>
-
+      {/* Opciones desplegables */}
       {dropdownOpen && (
         <div className="ml-6 transition-all">
           <Link href="/dashboard/tramite-general" className="block mb-4">
@@ -103,30 +154,40 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </Link>
         </div>
       )}
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}>
-        <PaidIcon className="mr-2" />
-        <Link href="/dashboard/balances" className='font-semibold' onClick={closeMenu}>
-          Balances
-        </Link>
-      </div>
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/clients')}`}>
-        <PeopleIcon className="mr-2" />
-        <Link href="/dashboard/clients" className='font-semibold' onClick={closeMenu}>
-          Clientes
-        </Link>
-      </div>
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/users')}`}>
-        <PeopleIcon className="mr-2" />
-        <Link href="/dashboard/users" className='font-semibold' onClick={closeMenu}>
-          Usuarios
-        </Link>
-      </div>
-      <p className='font-bold'>Trámites internos</p>
-      <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
-        <StickyNote2Icon className="mr-2" />
-        <span className="flex-grow">Caja chica</span>
-        <ArrowDropDownIcon />
-      </div>
+      {formData?.rol && formData.rol >= 35 && (
+        <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}>
+          <PaidIcon className="mr-2" />
+          <Link href="/dashboard/balances" className='font-semibold' onClick={closeMenu}>
+            Balances
+          </Link>
+        </div>
+      )}
+      {formData?.rol && formData.rol >= 50 && (
+        <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/clients')}`}>
+          <PeopleIcon className="mr-2" />
+          <Link href="/dashboard/clients" className='font-semibold' onClick={closeMenu}>
+            Clientes
+          </Link>
+        </div>
+      )}
+      {formData?.rol && formData.rol >= 80 && (
+        <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/users')}`}>
+          <PeopleIcon className="mr-2" />
+          <Link href="/dashboard/users" className='font-semibold' onClick={closeMenu}>
+            Usuarios
+          </Link>
+        </div>
+      )}
+      {formData?.rol && formData.rol >= 35 && (
+        <>
+          <p className='font-bold'>Trámites internos</p>
+          <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
+            <StickyNote2Icon className="mr-2" />
+            <span className="flex-grow">Caja chica</span>
+            <ArrowDropDownIcon />
+          </div>
+        </>
+      )}
       {dropdownOpenCC && (
         <div className="ml-6 transition-all">
           <Link href="/dashboard/disbursement" className={`block mb-2  ${isActive('/dashboard/disbursement')}`} onClick={closeMenu}>

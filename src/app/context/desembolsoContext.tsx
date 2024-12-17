@@ -6,8 +6,8 @@ type DesembolsoOficina = {
     otherExpenseType?: string;
     expenseDetail: string; 
     amount: number;
-    disbursementRecipient: string;
-    associatedInvoiceNumber?: string;
+    lawyer: string;
+    invoiceNumber?: string;
     client: string;
     status: boolean;
 };
@@ -26,13 +26,13 @@ type DesembolsoCliente = {
 };
 
 type DesembolsoCajaChica = {
-    lawyer: string; // A quién se le realiza el desembolso
-    date: string; // Fecha
-    amount: number; // Monto ($)
-    invoiceNumber: string; // Número de factura
-    disbursementType: string; // Tipo de desembolso
-    reason: string; // Motivo
-    observation?: string; // Observación (optional)
+    lawyer: string; 
+    date: string;
+    amount: number; 
+    invoiceNumber: string; 
+    disbursementType: string; 
+    reason: string; 
+    observation?: string; 
     status: boolean;
 };
 
@@ -75,8 +75,8 @@ const initialFormData: FormDataType = {
             otherExpenseType: '',
             expenseDetail: '', 
             amount: 0,
-            disbursementRecipient: '',
-            associatedInvoiceNumber: '',
+            lawyer: '',
+            invoiceNumber: '',
             client: '',
             status: false,
         },

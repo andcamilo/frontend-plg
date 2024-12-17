@@ -125,7 +125,7 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                     )
                     : persona.nombreApellido || '---',
                 '% de Acciones': persona.accionista.porcentajeAcciones || '---',
-                acciones: '...',
+                Opciones: '...',
             }));
     
             setData(formattedData);

@@ -17,7 +17,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ title, children }) =>
           <h1 className="text-4xl font-bold text-white pl-8">
             {title}
           </h1>
-          <ProfileButton />
+          {/* <ProfileButton /> */}
         </div>
         {children}
         <Footer />

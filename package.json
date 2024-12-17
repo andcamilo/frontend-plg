@@ -41,7 +41,7 @@
     "react-spinners": "^0.14.1",
     "react-tooltip": "^5.28.0",
     "recharts": "^2.12.7",
-    "sonner": "^1.7.0",
+    "sonner": "^1.7.1",
     "stream-browserify": "^3.0.0",
     "sweetalert2": "^11.13.2"
   },

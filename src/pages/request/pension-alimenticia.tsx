@@ -9,7 +9,8 @@ import PensionAlimenticiaArchivosAdjuntos from '@components/pension-alimenticia/
 import PensionAlimenticiaFirmaYEntrega from '@components/pension-alimenticia/pensionAlimenticiaFirmaYEntrega';
 import PensionAlimenticiaSolicitudAdicional from '@components/pension-alimenticia/pensionAlimenticiaSolicitudAdicional';
 import PensionAlimenticiaResumen from '@components/pension-alimenticia/pensionAlimenticiaResumen';
-import TokenizationWidget from '@components/tokenizationWidget'; // Import your TokenizationWidget component
+import WidgetLoader from '@/src/app/components/widgetLoader';
+import SaleComponent from '@/src/app/components/saleComponent';
 import AppStateContext from '@context/context';
 
 const PensionAlimenticia: React.FC = () => {
@@ -35,7 +36,6 @@ const PensionAlimenticia: React.FC = () => {
     }
   }, [store.currentPosition]);
 
-  // Function to render the active form based on the current position
   const renderActiveForm = () => {
     switch (activeStep) {
       case 1:
@@ -66,7 +66,7 @@ const PensionAlimenticia: React.FC = () => {
     setLoading(true);
     setShowPaymentWidget(true);
   };
-
+  console.log("🚀 Token ", store.token )
   return (
     <HomeLayout>
       <div className="relative w-full h-screen flex flex-col lg:flex-row overflow-hidden">
@@ -80,7 +80,6 @@ const PensionAlimenticia: React.FC = () => {
             <p className="mb-8 text-center">Complete cada uno de los siguientes apartados:</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Buttons for different sections */}
               <button
                 className={`p-4 rounded-lg ${
                   store.bienvenido ? (activeStep === 1 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
@@ -171,23 +170,40 @@ const PensionAlimenticia: React.FC = () => {
             </div>
 
           
+            {activeStep >= 1 && (
+              <div className="mt-8">
+                <WidgetLoader />
+              </div>
+            )}
+
+            {store.token ? (
+              <div className="mt-8">
+                <SaleComponent saleAmount={150} />
+              </div>
+            ) : (
+              <div className="mt-8 text-gray-400">
+                Por favor, complete el widget de pago para continuar.
+              </div>
+            )}
+
             {activeStep > 1 && (
               <div className="mt-8">
-                <button
-                  className={`bg-green-500 text-white w-full py-3 rounded-lg ${loading ? 'cursor-not-allowed opacity-50' : ''}`}
-                  onClick={handlePaymentClick}
-                  disabled={loading}
-                >
-                  {loading ? 'Cargando...' : 'Pagar'}
-                </button>
+                <WidgetLoader />
+              </div>
+            )}
+
+            {store.token ? (
+              <div className="mt-8">
+                <SaleComponent saleAmount={150} />
+              </div>
+            ) : (
+              <div className="mt-8 text-gray-400">
+                Por favor, complete el widget de pago para continuar.
               </div>
             )}
 
 
-            {/* Payment Widget */}
-            {showPaymentWidget && <TokenizationWidget />}
-
-            {/* Exit button */}
+  
             <div className="mt-8">
               <button className="bg-gray-500 text-white w-full py-3 rounded-lg">Salir</button>
             </div>

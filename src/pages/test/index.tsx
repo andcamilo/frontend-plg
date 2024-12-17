@@ -1,10 +1,15 @@
 import React, { useContext } from 'react';
 import WidgetLoader from '@/src/app/components/widgetLoader';
 import SaleComponent from '@/src/app/components/saleComponent';
-import AppStateContext from '@/src/app/context/context';
+import AppStateContext from '@/src/app/context/context'
+import SociedadContext from '@context/sociedadesContext';
 
 const PaymentPage: React.FC = () => {
-  const context = useContext(AppStateContext);
+  const pensionContext = useContext(AppStateContext)
+  const sociedadContext = useContext(SociedadContext);
+
+  // Verificar si estamos trabajando con sociedad o fundación
+  const context = pensionContext?.store.solicitudId ? pensionContext : sociedadContext;
 
   if (!context) {
     return <div>Context is not available.</div>;
@@ -22,7 +27,7 @@ const PaymentPage: React.FC = () => {
 
       {store.token ? (
         <div>
-          <SaleComponent />
+          <SaleComponent saleAmount={1} />
         </div>
       ) : (
         <p className="text-gray-400">Please complete the payment widget to proceed with the sale.</p>

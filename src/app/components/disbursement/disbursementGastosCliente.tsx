@@ -1,14 +1,35 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import DesembolsoContext from '@context/desembolsoContext';
 
 const DisbursementGastosCliente: React.FC = () => {
     const context = useContext(DesembolsoContext);
+    const [vendors, setVendors] = useState<any[]>([]);
 
     useEffect(() => {
         if (context) {
-            console.log("Current Gastos Cliente State:", context.state);
         }
     }, [context?.state]);
+
+    useEffect(() => {
+        const fetchVendors = async () => {
+          try {
+            const response = await fetch("/api/list-vendors"); 
+            const data = await response.json();
+            
+      
+            const vendorNames = data?.data?.map((vendor: any) => vendor.contact_name) || [];
+            console.log("🚀 ~ fetchVendors ~ vendorNames:", vendorNames)
+            setVendors(vendorNames);
+            
+            console.log("Fetched Vendor Names:", vendorNames);
+          } catch (error) {
+            console.error("Error fetching vendors:", error);
+          }
+        };
+      
+        fetchVendors();
+      }, []);
+
 
     if (!context) {
         return <div>Context is not available.</div>;
@@ -98,7 +119,7 @@ const DisbursementGastosCliente: React.FC = () => {
                                 <option value="">Selecciona un cliente</option>
                                 <option value="client1">Client 1</option>
                                 <option value="client2">Client 2</option>
-                                {/* Add more options as necessary */}
+                    
                             </select>
                         </div>
 
@@ -192,23 +213,32 @@ const DisbursementGastosCliente: React.FC = () => {
                             </select>
                         </div>
 
+
                         <div className="mb-4">
                             <label htmlFor={`lawyer-${index}`} className="block text-gray-300 mb-2">
                                 Abogado
                             </label>
-                            <select
+                            {vendors.length === 0 ? ( // Conditional check for vendors array
+                                <div className="text-gray-400">Cargando proveedores...</div>
+                            ) : (
+                                <select
                                 id={`lawyer-${index}`}
                                 name="lawyer"
                                 value={expense.lawyer}
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
-                            >
+                                >
                                 <option value="">Selecciona un abogado</option>
-                                <option value="lawyer1">Lawyer 1</option>
-                                <option value="lawyer2">Lawyer 2</option>
-                                {/* Add more options as necessary */}
-                            </select>
+                                {vendors.map((vendor, i) => (
+                                    <option key={i} value={vendor}>
+                                    {vendor}
+                                    </option>
+                                ))}
+                                </select>
+                            )}
                         </div>
+
+
                     </div>
                 ))}
 

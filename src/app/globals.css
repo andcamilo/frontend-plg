@@ -137,6 +137,10 @@ body {
   border-radius: 0 0 8px 8px; /* Bordes redondeados solo en la parte inferior */
 }
 
+.swal2-container {
+  z-index: 1500 !important;
+}
+
 .status-badge {
   padding: 5px 10px;
   border-radius: 12px;

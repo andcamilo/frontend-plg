@@ -208,11 +208,6 @@ const Actividades: React.FC = () => {
 
     const [archivoContribuyente, setArchivoContribuyente] = useState<File | null>(null);
 
-   /*  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] || null;
-        setArchivoContribuyente(file);
-    }; */
-
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {

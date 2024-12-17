@@ -1,8 +1,15 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import AppStateContext from '@context/context';
+import { Loader2 } from 'lucide-react';
+import SociedadContext from '@context/sociedadesContext';
 
 const WidgetLoader: React.FC = () => {
-  const context = useContext(AppStateContext);
+  const pensionContext = useContext(AppStateContext)
+  const sociedadContext = useContext(SociedadContext);
+
+  // Verificar si estamos trabajando con sociedad o fundación
+  const context = pensionContext?.store.solicitudId ? pensionContext : sociedadContext;
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -22,19 +29,25 @@ const WidgetLoader: React.FC = () => {
             token: response.TokenDetails.AccountToken,
           }));
         }
+        setIsLoading(false);
       };
 
       (window as any).SaveCreditCard_FailureCallback = function (response: any) {
         console.error('Tokenization failed:', response);
+        setIsLoading(false);
       };
 
       (window as any).SaveCreditCard_CancelCallback = function () {
         console.log('Tokenization canceled.');
+        setIsLoading(false);
       };
     }
   }, [context]);
 
   const loadWidget = () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
     if (typeof window !== 'undefined' && (window as any).$) {
       const $ = (window as any).$;
       $('#creditcard-container').slideUp(500);
@@ -48,22 +61,35 @@ const WidgetLoader: React.FC = () => {
         success: function (jsonResponse: any) {
           $('#creditcard-container').html(jsonResponse);
           $('#creditcard-container').slideDown(500);
+          setIsLoading(false);
         },
         error: function (err: any) {
           console.error('Error loading widget:', err);
+          setIsLoading(false);
         },
       });
+    } else {
+      setIsLoading(false);
     }
   };
 
   return (
     <div>
       <button
-        type="button"
+        className={`bg-green-500 text-white w-full py-3 rounded-lg flex items-center justify-center ${
+          isLoading ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
         onClick={loadWidget}
-        className="btn btn-primary"
+        disabled={isLoading}
       >
-        Mostrar Widget de Pago
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Cargando...
+          </>
+        ) : (
+          'Pagar'
+        )}
       </button>
       <div id="creditcard-container" style={{ marginTop: '20px' }}></div>
     </div>
@@ -71,3 +97,4 @@ const WidgetLoader: React.FC = () => {
 };
 
 export default WidgetLoader;
+

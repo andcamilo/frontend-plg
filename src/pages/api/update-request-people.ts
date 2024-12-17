@@ -3,28 +3,28 @@ import axios from 'axios';
 import { backendBaseUrl } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { userId } = req.query;
+  const { peopleId, solicitudId, cargo } = req.body || {};
 
-  if (req.method !== 'DELETE') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
+  console.log('🚀 ~ req.body:', req.body);
+
+  if (!peopleId) {
+    return res.status(400).json({ message: 'peopleId is required' });
   }
 
-  if (!userId) {
-    return res.status(400).json({ message: 'userId is required' });
-  }
-
-  console.log('🚀 ~ handler ~ userId:', userId);
+  console.log('🚀 ~ handler ~ peopleId:', peopleId);
+  console.log('🚀 ~ handler ~ solicitudId:', solicitudId);
 
   try {
-    const externalApiResponse = await axios.delete(
-      `${backendBaseUrl}/dev/delete-user/${userId}`
+    const externalApiResponse = await axios.patch(
+      `${backendBaseUrl}/dev/update-request-people/${peopleId}/${solicitudId}`,
+      { cargo }
     );
 
     console.log('🚀 ~ handler ~ externalApiResponse:', externalApiResponse.data);
 
-    return res.status(200).json({ message: 'Usuario eliminada exitosamente', data: externalApiResponse.data });
+    return res.status(200).json(externalApiResponse.data);
   } catch (error) {
-    console.error('Error making DELETE request to AWS Lambda:', error.toJSON ? error.toJSON() : error);
+    console.error('Error making PATCH request to AWS Lambda:', error.toJSON ? error.toJSON() : error);
 
     if (error.response) {
       console.error('🚨 ~ handler ~ error.response:', error.response.data);

@@ -31,7 +31,6 @@ const DisbursementPaidDisbursementDetails: React.FC = () => {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    console.log("Current Paid Disbursement Details:", state);
   }, [context?.state]);
 
 

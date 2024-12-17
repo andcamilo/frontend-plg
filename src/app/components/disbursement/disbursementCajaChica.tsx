@@ -6,7 +6,7 @@ const DisbursementCajaChica: React.FC = () => {
 
     useEffect(() => {
         if (context) {
-            console.log("Current Caja Chica State:", context.state);
+
         }
     }, [context?.state]);
 
@@ -15,24 +15,25 @@ const DisbursementCajaChica: React.FC = () => {
     }
 
     const { state, setState } = context;
+    console.log("🚀 ~ state:", state)
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
         index: number
-      ) => {
+    ) => {
         const { name, value } = e.target;
-      
+
         setState((prevState) => ({
-          ...prevState,
-          desembolsoCajaChica: prevState.desembolsoCajaChica.map((item, i) =>
-            i === index
-              ? {
-                  ...item,
-                  [name]: value,
-                  status: true
-                }
-              : item
-          ),
+            ...prevState,
+            desembolsoCajaChica: prevState.desembolsoCajaChica.map((item, i) =>
+                i === index
+                    ? {
+                        ...item,
+                        [name]: value,
+                        status: true
+                    }
+                    : item
+            ),
         }));
       };
       
@@ -75,14 +76,13 @@ const DisbursementCajaChica: React.FC = () => {
                             <select
                                 id={`lawyer-${index}`}
                                 name="lawyer"
-                                value={expense.lawyer}
+                                value={expense.lawyer || ''}
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                             >
                                 <option value="">Selecciona un abogado</option>
                                 <option value="lawyer1">Lawyer 1</option>
                                 <option value="lawyer2">Lawyer 2</option>
-                           
                             </select>
                         </div>
 
@@ -94,7 +94,7 @@ const DisbursementCajaChica: React.FC = () => {
                                 type="date"
                                 id={`date-${index}`}
                                 name="date"
-                                value={expense.date}
+                                value={expense.date || ''}
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                             />
@@ -108,7 +108,7 @@ const DisbursementCajaChica: React.FC = () => {
                                 type="number"
                                 id={`amount-${index}`}
                                 name="amount"
-                                value={expense.amount}
+                                value={expense.amount || ''}
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                             />
@@ -122,7 +122,7 @@ const DisbursementCajaChica: React.FC = () => {
                                 type="text"
                                 id={`invoiceNumber-${index}`}
                                 name="invoiceNumber"
-                                value={expense.invoiceNumber}
+                                value={expense.invoiceNumber || ''}
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                             />
@@ -135,7 +135,7 @@ const DisbursementCajaChica: React.FC = () => {
                             <select
                                 id={`disbursementType-${index}`}
                                 name="disbursementType"
-                                value={expense.disbursementType}
+                                value={expense.disbursementType || ''}
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                             >
@@ -153,7 +153,7 @@ const DisbursementCajaChica: React.FC = () => {
                                 type="text"
                                 id={`reason-${index}`}
                                 name="reason"
-                                value={expense.reason}
+                                value={expense.reason || ''}
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                             />

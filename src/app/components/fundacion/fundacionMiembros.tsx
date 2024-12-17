@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import FundacionContext from '@context/fundacionContext';
 import ClipLoader from 'react-spinners/ClipLoader';
-import ModalMiembros from '@components/modalMiembros'; 
+import ModalMiembros from '@components/modalMiembros';
 import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -87,9 +87,9 @@ const FundacionMiembros: React.FC = () => {
                     solicitudId: solicitudId
                 }
             });
-    
+
             const people = response.data;
-    
+
             if (!people || people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
@@ -98,19 +98,19 @@ const FundacionMiembros: React.FC = () => {
                 setHasNextPage(false);
                 return;
             }
-    
+
             // Filtrar solo las personas que tienen el campo `miembro`
             const miembros = people.filter((persona: any) => persona.miembro);
-    
+
             // Calcular paginación solo con los registros filtrados
             const totalRecords = miembros.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
-    
+
             const paginatedData = miembros.slice(
                 (currentPage - 1) * rowsPerPage,
                 currentPage * rowsPerPage
             );
-    
+
             const formattedData = paginatedData.map((persona: any) => ({
                 tipo: persona.miembro?.servicio || '---',
                 nombre: persona.tipoPersona === 'Persona Jurídica'
@@ -125,15 +125,15 @@ const FundacionMiembros: React.FC = () => {
                         </>
                     )
                     : persona.nombreApellido || '---',
-                acciones: '...',
+                Opciones: '...',
             }));
-    
+
             const solicitudes = await axios.get('/api/get-request-id', {
                 params: {
                     solicitudId
                 },
             });
-    
+
             const requestData = solicitudes.data;
             let formattedRequestData = [];
             if (requestData && requestData.miembros) {
@@ -142,22 +142,22 @@ const FundacionMiembros: React.FC = () => {
                     .map((miembro: any) => ({
                         tipo: miembro.servicio,
                         nombre: miembro.nombre || '---',
-                        acciones: '...',
+                        Opciones: '...',
                     }));
             }
-    
+
             const combinedData: MiembroData[] = [...formattedData, ...formattedRequestData];
-    
+
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
             setHasPrevPage(currentPage > 1);
             setHasNextPage(currentPage < totalPages);
-    
+
         } catch (error) {
             console.error('Error fetching people:', error);
         }
-    };    
+    };
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">

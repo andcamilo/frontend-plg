@@ -93,7 +93,7 @@ const NavBar = () => {
         <div className="flex items-center space-x-4">
           <button
             className="text-xl font-bold bg-profile rounded-lg px-4 py-2 text-white hover:bg-opacity-90"
-            onClick={() => (window.location.href = "http://localhost:3000/request/corporativo")}
+            onClick={() => (window.location.href = "/request/corporativo")}
           >
             Corporativo
           </button>

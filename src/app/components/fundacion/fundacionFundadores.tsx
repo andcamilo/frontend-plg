@@ -88,9 +88,9 @@ const FundacionFundadores: React.FC = () => {
                     solicitudId: solicitudId
                 }
             });
-    
+
             const people = response.data;
-    
+
             if (!people || people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
@@ -99,19 +99,19 @@ const FundacionFundadores: React.FC = () => {
                 setHasNextPage(false);
                 return;
             }
-    
+
             // Filtrar solo las personas que tienen el campo fundador
             const fundadores = people.filter((persona: any) => persona.fundador);
-    
+
             // Calcular paginación solo con los registros filtrados
             const totalRecords = fundadores.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
-    
+
             const paginatedData = fundadores.slice(
                 (currentPage - 1) * rowsPerPage,
                 currentPage * rowsPerPage
             );
-    
+
             const formattedData = paginatedData.map((persona: any) => ({
                 tipo: persona.fundador?.servicio || '---', // Cambiar a fundador
                 nombre: persona.tipoPersona === 'Persona Jurídica'
@@ -126,40 +126,40 @@ const FundacionFundadores: React.FC = () => {
                         </>
                     )
                     : persona.nombreApellido || '---',
-                acciones: '...',
+                Opciones: '...',
             }));
-    
+
             // Lógica para combinar los datos adicionales de fundadores nominales
             const solicitudes = await axios.get('/api/get-request-id', {
                 params: { solicitudId }
             });
-    
+
             const requestData = solicitudes.data;
             let formattedRequestData = [];
             if (requestData && requestData.fundadores) {
                 formattedRequestData = requestData.fundadores
-                    .filter((fundador: any) => 
+                    .filter((fundador: any) =>
                         fundador.servicio.trim().toLowerCase() === "fundador nominal"
                     )
                     .map((fundador: any) => ({
                         tipo: fundador.servicio,
                         nombre: fundador.nombre || '---', // Mostrar el nombre del fundador
-                        acciones: '...',
+                        Opciones: '...',
                     }));
             }
-    
+
             const combinedData: FundadorData[] = [...formattedData, ...formattedRequestData];
-    
+
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
             setHasPrevPage(currentPage > 1);
             setHasNextPage(currentPage < totalPages);
-    
+
         } catch (error) {
             console.error('Error fetching people:', error);
         }
-    };    
+    };
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">

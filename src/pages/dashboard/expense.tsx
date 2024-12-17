@@ -1,11 +1,11 @@
 import React from 'react';
 import DashboardLayout from '@components/dashboardLayout';
-import InvoiceComponent from '@/src/app/components/invoiceComponent';
+import ExpenseComponent from '@/src/app/components/ExpenseComponent';
 
 const Clients: React.FC = () => {
   return (
     <DashboardLayout title="">
-      <InvoiceComponent />
+      <ExpenseComponent />
     </DashboardLayout>
   );
 }

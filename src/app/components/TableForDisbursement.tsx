@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-interface TableForDisbursement {
+interface TableForDisbursementProps {
   data: { [key: string]: any }[];
   rowsPerPage: number;
   title: string;
@@ -9,10 +9,11 @@ interface TableForDisbursement {
   hasPrevPage: boolean;
   hasNextPage: boolean;
   onPageChange: (pageNumber: number) => void;
-  onEdit: (row: { [key: string]: any }) => void; // Callback for edit button
+  onEdit: (row: { [key: string]: any }) => void;
+  onGetSelectedIds: (selectedIds: string[]) => void; // Callback to pass selected IDs
 }
 
-const TableForDisbursement: React.FC<TableForDisbursement> = ({
+const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   data,
   rowsPerPage,
   title,
@@ -22,10 +23,11 @@ const TableForDisbursement: React.FC<TableForDisbursement> = ({
   hasNextPage,
   onPageChange,
   onEdit,
+  onGetSelectedIds,
 }) => {
   const columns = data.length > 0 ? Object.keys(data[0]) : [];
-  const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({}); // Track selected rows
-  const [selectAll, setSelectAll] = useState(false); // Track "Select All" state
+  const [selectedRows, setSelectedRows] = useState<{ [key: number]: boolean }>({});
+  const [selectAll, setSelectAll] = useState(false);
 
   const handleRowSelect = (rowIndex: number) => {
     setSelectedRows((prev) => ({
@@ -38,18 +40,27 @@ const TableForDisbursement: React.FC<TableForDisbursement> = ({
     const allSelected = !selectAll;
     setSelectAll(allSelected);
 
-    const newSelectedRows = data.reduce<{ [key: string]: boolean }>(
+    const newSelectedRows = data.reduce<{ [key: number]: boolean }>(
       (acc, _, index) => {
         acc[index] = allSelected;
         return acc;
       },
       {}
     );
+
     setSelectedRows(newSelectedRows);
   };
 
+  const handleGetSelectedIds = () => {
+    const selectedIds = Object.keys(selectedRows)
+      .filter((key) => selectedRows[Number(key)])
+      .map((key) => data[Number(key)].id);
+
+    onGetSelectedIds(selectedIds);
+  };
+
   return (
-    <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-4xl mb-4">
+    <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-6xl mb-4">
       <h2 className="text-lg font-bold text-white mb-4">{title}</h2>
       <div className="overflow-x-auto">
         {data.length > 0 ? (
@@ -86,13 +97,13 @@ const TableForDisbursement: React.FC<TableForDisbursement> = ({
                   {columns.map((column, colIndex) => (
                     <td key={colIndex} className="py-2">
                       {typeof row[column] === 'object' && row[column] !== null
-                        ? JSON.stringify(row[column]) // Convert objects to string
+                        ? JSON.stringify(row[column])
                         : row[column]}
                     </td>
                   ))}
                   <td className="py-2">
                     <button
-                      onClick={() => onEdit(row)} // Pass the row data to the callback
+                      onClick={() => onEdit(row)}
                       className="bg-profile text-white px-3 py-1 rounded-lg hover:bg-blue-500"
                     >
                       Editar
@@ -106,6 +117,24 @@ const TableForDisbursement: React.FC<TableForDisbursement> = ({
           <p className="text-gray-400">No data available</p>
         )}
       </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-4 mt-4">
+        <button
+          onClick={handleGetSelectedIds}
+          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+        >
+          Pre-Aprobar
+        </button>
+        <button
+          onClick={() => console.log("Crear Gasto clicked")} // Placeholder function
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+        >
+          Crear Gasto
+        </button>
+      </div>
+
+      {/* Pagination Controls */}
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={() => onPageChange(currentPage - 1)}
