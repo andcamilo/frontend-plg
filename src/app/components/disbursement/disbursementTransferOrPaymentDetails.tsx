@@ -6,7 +6,6 @@ const DisbursementTransferOrPaymentDetails: React.FC = () => {
 
     useEffect(() => {
         if (context) {
-            console.log("Current Transfer or Payment Details State:", context.state);
         }
     }, [context?.state]);
 

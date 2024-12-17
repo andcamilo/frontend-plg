@@ -170,19 +170,7 @@ const PensionAlimenticia: React.FC = () => {
             </div>
 
           
-            {activeStep > 1 && (
-              <div className="mt-8">
-                <button
-                  className={`bg-green-500 text-white w-full py-3 rounded-lg ${loading ? 'cursor-not-allowed opacity-50' : ''}`}
-                  onClick={handlePaymentClick}
-                  disabled={loading}
-                >
-                  {loading ? 'Cargando...' : 'Pagar'}
-                </button>
-              </div>
-            )}
-
-            {activeStep > 1 && (
+            {activeStep >= 1 && (
               <div className="mt-8">
                 <WidgetLoader />
               </div>
@@ -190,7 +178,7 @@ const PensionAlimenticia: React.FC = () => {
 
             {store.token ? (
               <div className="mt-8">
-                <SaleComponent />
+                <SaleComponent saleAmount={150} />
               </div>
             ) : (
               <div className="mt-8 text-gray-400">

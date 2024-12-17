@@ -1,28 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router'; // Import useRouter
+import { useRouter } from 'next/router';
 import TableForDisbursement from '../TableForDisbursement';
 import axios from 'axios';
 
 const ListDisbursement: React.FC = () => {
-  const router = useRouter(); // Initialize useRouter
-  const [data, setData] = useState<{ [key: string]: any }[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter(); // Next.js router for navigation
+  const [data, setData] = useState<{ [key: string]: any }[]>([]); // Table data
+  const [currentPage, setCurrentPage] = useState(1); // Current pagination page
   const [totalPages, setTotalPages] = useState(1);
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(false);
 
   const rowsPerPage = 10;
 
+  /**
+   * Fetch the disbursement list from the API.
+   */
   const fetchDisbursements = async (page: number) => {
     try {
       const response = await axios.get('/api/list-disbursements', {
-        params: {
-          page,
-          limit: rowsPerPage,
-        },
+        params: { page, limit: rowsPerPage },
       });
 
-      console.log("🚀 ~ fetchDisbursements ~ response:", response.data.disbursements);
+      console.log('🚀 ~ fetchDisbursements ~ response:', response.data);
 
       const { disbursements, pagination } = response.data;
       setData(disbursements);
@@ -35,17 +35,49 @@ const ListDisbursement: React.FC = () => {
     }
   };
 
+  /**
+   * Triggered when the component mounts or the current page changes.
+   */
   useEffect(() => {
     fetchDisbursements(currentPage);
   }, [currentPage]);
 
+  /**
+   * Update the current page for pagination.
+   */
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
 
+  /**
+   * Handle row editing and redirect to the detailed page.
+   */
   const handleEdit = (row: { [key: string]: any }) => {
-    const id = row.id; 
-    router.push(`/dashboard/see/${id}`); 
+    const id = row.id; // Extract the ID from the row
+    router.push(`/dashboard/see/${id}`); // Navigate to detail page
+  };
+
+  const handleGetSelectedIds = async (selectedIds: string[]) => {
+    console.log('Selected IDs:', selectedIds);
+
+    if (selectedIds.length === 0) {
+      alert('No se han seleccionado desembolsos.');
+      return;
+    }
+
+    try {
+      const response = await axios.patch('/api/update-disbursements', {
+        fieldUpdate: { status: 'pre-aprobada' }, // Example update field
+        ids: selectedIds,
+      });
+
+      console.log('🚀 ~ handleGetSelectedIds ~ Update Response:', response.data);
+      alert('Desembolsos actualizados correctamente.');
+      fetchDisbursements(currentPage); // Refresh the table after update
+    } catch (error) {
+      console.error('Error updating disbursements:', error);
+      alert('Error al actualizar los desembolsos.');
+    }
   };
 
   return (
@@ -60,7 +92,8 @@ const ListDisbursement: React.FC = () => {
         hasPrevPage={hasPrevPage}
         hasNextPage={hasNextPage}
         onPageChange={handlePageChange}
-        onEdit={handleEdit} // Pass the onEdit function
+        onEdit={handleEdit} // Pass the edit callback
+        onGetSelectedIds={handleGetSelectedIds} // Pass the callback to handle selected IDs
       />
     </div>
   );

@@ -9,11 +9,10 @@ import Swal from 'sweetalert2';
 
 const Disbursement: React.FC = () => {
     const context = useContext(DesembolsoContext);
-    const [isLoading, setIsLoading] = useState(false); // Add loading state
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (context) {
-            console.log("Current state:", context.state);
         }
     }, [context?.state]);
 
@@ -23,15 +22,16 @@ const Disbursement: React.FC = () => {
 
     const { state, setState } = context;
 
+
     const handleSave = async () => {
-        setIsLoading(true); // Start loading
+        setIsLoading(true);
         try {
             const response = await fetch('/api/create-disbursement', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(state), // Send the current state as payload
+                body: JSON.stringify(state),
             });
 
             if (!response.ok) {
@@ -41,13 +41,11 @@ const Disbursement: React.FC = () => {
             const data = await response.json();
             console.log('Disbursement created successfully:', data);
 
-            // Show success alert
             Swal.fire({
                 icon: 'success',
                 title: 'Éxito',
                 text: '¡El desembolso fue guardado exitosamente!',
             }).then(() => {
-                // Reload the page after the user closes the alert
                 window.location.reload();
             });
         } catch (error) {
@@ -58,11 +56,11 @@ const Disbursement: React.FC = () => {
                 text: 'No se pudo guardar el desembolso. Intente de nuevo.',
             });
         } finally {
-            setIsLoading(false); // Stop loading
+            setIsLoading(false);
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;
         setState(prevState => ({
             ...prevState,
@@ -83,10 +81,11 @@ const Disbursement: React.FC = () => {
                         <select
                             id="disbursementType"
                             name="disbursementType"
-                            value={state.disbursementType}
+                            value={state.disbursementType || ''}
                             onChange={handleChange}
                             className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                         >
+                            <option value="" disabled>Selecciona una opción</option>
                             <option value="desembolso-gastos">Desembolso de gastos</option>
                             <option value="desembolso-caja-chica">Desembolso de caja chica</option>
                         </select>
@@ -99,10 +98,11 @@ const Disbursement: React.FC = () => {
                         <select
                             id="expenseType"
                             name="expenseType"
-                            value={state.expenseType}
+                            value={state.expenseType || ''}
                             onChange={handleChange}
                             className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                         >
+                            <option value="" disabled>Selecciona una opción</option>
                             <option value="de-oficina">De oficina</option>
                             <option value="de-cliente">De Cliente</option>
                         </select>
@@ -115,10 +115,11 @@ const Disbursement: React.FC = () => {
                         <select
                             id="status"
                             name="status"
-                            value={state.status}
+                            value={state.status || ''}
                             onChange={handleChange}
                             className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                         >
+                            <option value="" disabled>Selecciona una opción</option>
                             <option value="creada">Creada</option>
                             <option value="rechada">Rechada</option>
                             <option value="pre-aprobada">Pre-Aprobada</option>
@@ -155,7 +156,7 @@ const Disbursement: React.FC = () => {
                                 ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
                         }`}
-                        disabled={isLoading} // Disable the button when loading
+                        disabled={isLoading}
                     >
                         {isLoading ? 'Cargando...' : 'Guardar'}
                     </button>

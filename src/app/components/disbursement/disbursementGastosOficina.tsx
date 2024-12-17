@@ -1,12 +1,34 @@
-import React, { useContext, useEffect } from 'react';
+"use client"
+import React, { useContext, useEffect, useState } from 'react';
 import DesembolsoContext from '@context/desembolsoContext';
 
 const DisbursementGastosOficina: React.FC = () => {
     const context = useContext(DesembolsoContext);
+    const [vendors, setVendors] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchVendors = async () => {
+          try {
+            const response = await fetch("/api/list-vendors"); 
+            const data = await response.json();
+            
+      
+            const vendorNames = data?.data?.map((vendor: any) => vendor.contact_name) || [];
+            console.log("🚀 ~ fetchVendors ~ vendorNames:", vendorNames)
+            setVendors(vendorNames);
+            
+            console.log("Fetched Vendor Names:", vendorNames);
+          } catch (error) {
+            console.error("Error fetching vendors:", error);
+          }
+        };
+      
+        fetchVendors();
+      }, []);
 
     useEffect(() => {
         if (context) {
-            console.log("Current Gastos Oficina State:", context.state);
+    
         }
     }, [context?.state]);
 
@@ -15,6 +37,8 @@ const DisbursementGastosOficina: React.FC = () => {
     }
 
     const { state, setState } = context;
+
+    
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -28,7 +52,7 @@ const DisbursementGastosOficina: React.FC = () => {
             i === index
               ? {
                   ...item,
-                  [name]: value, // Update the selected value
+                  [name]: value,
                 }
               : item
           ),
@@ -43,8 +67,8 @@ const DisbursementGastosOficina: React.FC = () => {
             otherExpenseType: '',
             expenseDetail: '',
             amount: 0,
-            disbursementRecipient: '',
-            associatedInvoiceNumber: '',
+            lawyer: '',
+            invoiceNumber: '',
             client: '',
             status: true,
         };
@@ -54,12 +78,16 @@ const DisbursementGastosOficina: React.FC = () => {
         }));
     };
 
+    
+
     const handleRemoveLastExpense = () => {
         setState(prevState => ({
             ...prevState,
             desemboloOficina: prevState.desemboloOficina.slice(0, -1)
         }));
     };
+
+    
 
     return (
         <div className="p-1">
@@ -141,32 +169,40 @@ const DisbursementGastosOficina: React.FC = () => {
                         </div>
 
                         <div className="mb-4">
-                            <label htmlFor={`disbursementRecipient-${index}`} className="block text-gray-300 mb-2">
+                            <label htmlFor={`lawyer-${index}`} className="block text-gray-300 mb-2">
                                 A quién se le realiza el desembolso
                             </label>
-                            <select
-                                id={`disbursementRecipient-${index}`}
-                                name="disbursementRecipient"
-                                value={expense.disbursementRecipient}
+                            {vendors.length === 0 ? ( // Conditional check for vendors array
+                                <div className="text-gray-400">Cargando proveedores...</div>
+                            ) : (
+                                <select
+                                id={`lawyer-${index}`}
+                                name="lawyer"
+                                value={expense.lawyer}
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
-                            >
-                                <option value="">Selecciona un abogado</option>
-                                <option value="lawyer1">Lawyer 1</option>
-                                <option value="lawyer2">Lawyer 2</option>
-                                {/* Add more options as necessary */}
-                            </select>
+                                >
+                                <option value="">Selecciona un proveedor</option>
+                                {vendors.map((vendor, i) => (
+                                    <option key={i} value={vendor}>
+                                    {vendor}
+                                    </option>
+                                ))}
+                                </select>
+                            )}
                         </div>
 
+
+
                         <div className="mb-4">
-                            <label htmlFor={`associatedInvoiceNumber-${index}`} className="block text-gray-300 mb-2">
+                            <label htmlFor={`invoiceNumber-${index}`} className="block text-gray-300 mb-2">
                                 Número de factura asociada
                             </label>
                             <input
                                 type="text"
-                                id={`associatedInvoiceNumber-${index}`}
-                                name="associatedInvoiceNumber"
-                                value={expense.associatedInvoiceNumber || ''}
+                                id={`invoiceNumber-${index}`}
+                                name="invoiceNumber"
+                                value={expense.invoiceNumber || ''}
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                             />
