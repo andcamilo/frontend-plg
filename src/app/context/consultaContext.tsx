@@ -1,27 +1,39 @@
 // consultaContext.tsx
 import React, { createContext, useState, ReactNode } from 'react';
 
-type ConsultaState = {
+
+export interface ConsultaState {
     nombre: string;
     email: string;
     mensaje: string;
+    solicitudId: string;
+    token: string;
 };
 
-const initialConsultaState: ConsultaState = {
+export interface ConsultaContextType {
+  store: ConsultaState;
+  setStore: React.Dispatch<React.SetStateAction<ConsultaState>>;
+}
+
+const initialState: ConsultaState = {
     nombre: '',
     email: '',
     mensaje: '',
+    solicitudId: '',
+    token: '',
 };
 
-const ConsultaContext = createContext<{ state: ConsultaState, setState: React.Dispatch<React.SetStateAction<ConsultaState>> } | undefined>(undefined);
+const ConsultaContext = createContext<ConsultaContextType | undefined>(undefined);
 
+// Create the provider
 export const ConsultaStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [state, setState] = useState<ConsultaState>(initialConsultaState);
-    return (
-        <ConsultaContext.Provider value={{ state, setState }}>
-            {children}
-        </ConsultaContext.Provider>
-    );
+  const [store, setStore] = useState<ConsultaState>(initialState);
+
+  return (
+    <ConsultaContext.Provider value={{ store, setStore }}>
+      {children}
+    </ConsultaContext.Provider>
+  );
 };
 
 export default ConsultaContext;

@@ -17,6 +17,8 @@ import FundacionIngresos from '@components/fundacion/fundacionIngresos';
 import FundacionActivos from '@components/fundacion/fundacionActivos'; 
 import FundacionSolicitudAdicional from '@components/fundacion/solicitudAdicional'; 
 import FundacionResumen from '@components/fundacion/fundacionResumen';
+import WidgetLoader from '@/src/app/components/widgetLoader';
+import SaleComponent from '@/src/app/components/saleComponent';
 
 const Fundacion: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -235,6 +237,21 @@ const Fundacion: React.FC = () => {
                         <p className="my-8 text-center">
                             * Para poder enviar o pagar la solicitud todos los campos deben estar llenos.
                         </p>
+                        {activeStep >= 15 && (
+                            <div className="mt-8">
+                                <WidgetLoader />
+                            </div>
+                        )}
+
+                        {store.token ? (
+                            <div className="mt-8">
+                                <SaleComponent saleAmount={100} />
+                            </div>
+                        ) : (
+                            <div className="mt-8 text-gray-400">
+                                Por favor, complete el widget de pago para continuar.
+                            </div>
+                        )}
                         <div className="mt-8">
                             <button className="bg-gray-500 text-white w-full py-3 rounded-lg">Salir</button>
                         </div>

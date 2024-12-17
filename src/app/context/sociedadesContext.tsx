@@ -18,6 +18,7 @@ export interface AppState {
   solicitudId: string;
   currentPosition: number;
   request: any,
+  token: string;
 }
 
 export interface SociedadesContextType {
@@ -43,6 +44,7 @@ const initialState: AppState = {
   solicitudId: "",
   currentPosition: 1,
   request: "",
+  token: '',
 };
 
 // Crear el nuevo contexto

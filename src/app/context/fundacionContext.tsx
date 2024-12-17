@@ -22,6 +22,7 @@ const initialFundacionState: FundacionState = {
   solicitudId: "",
   currentPosition: 1,
   request: "",
+  token: "",
 };
 
 // Crear el nuevo contexto

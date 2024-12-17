@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import Swal from "sweetalert2";
 import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
@@ -7,8 +7,12 @@ import countryCodes from '@utils/countryCode';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useRouter } from 'next/router';
+import AppStateContext from "@context/consultaContext";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import WidgetLoader from '@/src/app/components/widgetLoader';
+import SaleComponent from '@/src/app/components/saleComponent';
+import { Modal, Box, Button } from "@mui/material";
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -35,6 +39,13 @@ const ConsultaPropuesta: React.FC = () => {
     const router = useRouter();
     const { id } = router.query;
     const [solicitudData, setSolicitudData] = useState<any>(null);
+    const context = useContext(AppStateContext);
+
+    if (!context) {
+        throw new Error("AppStateContext must be used within an AppStateProvider");
+    }
+
+    const { store, setStore } = context;
 
     const [formData, setFormData] = useState({
         nombreCompleto: "",
@@ -101,12 +112,6 @@ const ConsultaPropuesta: React.FC = () => {
                 direccionBuscar: solicitudData.direccionBuscar || "",
                 direccionIr: solicitudData.direccionIr || "",
             });
-
-            /* setItem(solicitudData.tipoCnsulta || "Propuesta Legal");
-            setPrecio(solicitudData.canasta.items || useState(0));
-            setSubtotal(solicitudData.tipoCnsulta || useState(0));
-            setTotal(solicitudData.tipoCnsulta || useState(0));
-            setServicioAdicional(solicitudData.tipoCnsulta); */
         }
     }, [solicitudData]);
 
@@ -152,7 +157,7 @@ const ConsultaPropuesta: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isEmailNew, setIsEmailNew] = useState(true);
-    const [archivoFile, setArchivoFile] = useState<File | null>(null); 
+    const [archivoFile, setArchivoFile] = useState<File | null>(null);
 
     useEffect(() => {
         const userData = checkAuthToken();
@@ -261,7 +266,7 @@ const ConsultaPropuesta: React.FC = () => {
             setSubtotal(newSubtotal);
             setTotal(newSubtotal);
             setServicioAdicional(false);
-        } 
+        }
 
         if (formData.consultaOficina === "No") {
             newPrecio = 100;
@@ -598,6 +603,10 @@ const ConsultaPropuesta: React.FC = () => {
         }
     }, [formData.archivoURL]);
 
+    const [open, setOpen] = useState(false);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
     const sendCreateRequest = async (cuenta: string) => {
         try {
 
@@ -674,19 +683,15 @@ const ConsultaPropuesta: React.FC = () => {
 
             const responseData = await axios.post('/api/update-request-all', updatePayload);
 
-            if (responseData.status === 200) {
-                /* Swal.fire({
-                    icon: 'success',
-                    title: 'Solicitud Actualizada',
-                    text: 'Los datos han sido guardados correctamente.',
-                }); */
-                console.log("Los datos han sido guardados correctamente.")
-            } else {
-                /* throw new Error('Error al actualizar la solicitud.'); */
-                console.log("Error al actualizar la solicitud.")
+            if (status === "success" && solicitudId) {
+                handleOpen();
+                setStore((prevState) => ({
+                    ...prevState,
+                    solicitudId,
+                }));
             }
 
-            if (status === "success" && solicitudId) {
+            /* if (status === "success" && solicitudId) {
                 Swal.fire({
                     icon: "success",
                     title: "Solicitud enviada correctamente",
@@ -701,7 +706,12 @@ const ConsultaPropuesta: React.FC = () => {
                         timerProgressBar: 'custom-swal-timer-bar'
                     }
                 });
-            }
+                setStore((prevState) => ({
+                    ...prevState,
+                    solicitudId,
+                }));
+                window.location.href = "/dashboard/requests";
+            } */
         } catch (error) {
             Swal.fire({
                 position: "top-end",
@@ -1155,17 +1165,83 @@ const ConsultaPropuesta: React.FC = () => {
                         <span className="ml-2 text-white">Acepto los términos y condiciones de este servicio.</span>
                     </label>
                 </div>
+                {formData.tipoConsulta === "Propuesta Legal" && (
+                    <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center">
+                                <ClipLoader size={24} color="#ffffff" />
+                                <span className="ml-2">Cargando...</span>
+                            </div>
+                        ) : (
+                            "Enviar Solicitud"
+                        )}
+                    </button>
+                )}
 
-                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
+                {formData.tipoConsulta !== "Propuesta Legal" && (
+                    <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center">
+                                <ClipLoader size={24} color="#ffffff" />
+                                <span className="ml-2">Cargando...</span>
+                            </div>
+                        ) : (
+                            "Enviar y pagar"
+                        )}
+                    </button>
+                )}
+
+                {/* Modal */}
+                <Modal
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="modal-title"
+                    aria-describedby="modal-description"
+                >
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: "600px", // Ancho del modal
+                            maxWidth: "90%", // Ancho máximo en pantallas pequeñas
+                            maxHeight: "90vh", // Limita la altura al 90% del viewport
+                            overflowY: "auto", // Activa el desplazamiento vertical
+                            bgcolor: "background.paper",
+                            border: "2px solid #000",
+                            boxShadow: 24,
+                            p: 4,
+                            borderRadius: 2,
+                            zIndex: 1000,
+                        }}
+                    >
+                        {/* Contenido del Modal */}
+                        <div className="mt-8">
+                            <WidgetLoader />
                         </div>
-                    ) : (
-                        "Enviar Solicitud"
-                    )}
-                </button>
+
+                        {store.token ? (
+                            <div className="mt-8">
+                                <SaleComponent saleAmount={100} />
+                            </div>
+                        ) : (
+                            <div className="mt-8 text-gray-400">
+                                Por favor, complete el widget de pago para continuar.
+                            </div>
+                        )}
+
+                        {/* Botón para cerrar el modal */}
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            onClick={handleClose}
+                            style={{ marginTop: "20px" }}
+                        >
+                            Cerrar
+                        </Button>
+                    </Box>
+                </Modal>
             </form>
         </div>
     );

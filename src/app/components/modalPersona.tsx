@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import AppStateContext from '@context/sociedadesContext';
 import AppStateContextFundacion from '@context/fundacionContext';
 import axios from 'axios';
@@ -30,13 +30,13 @@ const storage = getStorage(app);
 
 interface ModalProps {
     onClose: () => void;
-    children?: React.ReactNode; // Para que puedas pasar cualquier contenido al modal
+    id?: string | null;
 }
 
-const ModalPersona: React.FC<ModalProps> = ({ onClose }) => {
-
+const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
     const sociedadContext = useContext(AppStateContext);
     const fundacionContext = useContext(AppStateContextFundacion);
+    const [userData, setUserData] = useState<any>(null);
 
     // Verificar si estamos trabajando con sociedad o fundación
     const context = sociedadContext?.store.solicitudId ? sociedadContext : fundacionContext;
@@ -85,6 +85,117 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose }) => {
         adjuntoDocumentoCedulaPasaporteURL: '',
         adjuntoDocumentoCedulaPasaporte2URL: '',
     });
+
+    useEffect(() => {
+        if (id) {
+            const fetchUser = async () => {
+                try {
+                    const response = await axios.get('/api/get-people-userId', {
+                        params: { userId: id },
+                    });
+                    setUserData(response.data);
+                } catch (error) {
+                    console.error('Error fetching solicitud:', error);
+                }
+            };
+            fetchUser();
+            console.log('ID del registro:', id);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        if (userData) {
+            let fechaNacimiento = userData.fechaNacimiento;
+
+            // Verificar si userData.fechaNacimiento tiene el formato esperado de Firebase
+            if (userData.fechaNacimiento?._seconds) {
+                // Convertir el timestamp de Firebase a una fecha válida
+                const timestamp = userData.fechaNacimiento._seconds * 1000; // Convertir segundos a milisegundos
+                fechaNacimiento = new Date(timestamp).toISOString().split('T')[0]; // Convertir a YYYY-MM-DD
+            }
+
+            setFormData({
+                tipoPersona: userData.tipoPersona || 'Persona Natural',
+                nombreApellido: userData.nombreApellido || '',
+                sexo: userData.sexo || 'Femenino',
+                nacionalidad: userData.nacionalidad || 'Panamá',
+                cedulaPasaporte: userData.cedulaPasaporte || '',
+                paisNacimiento: userData.paisNacimiento || 'Panamá',
+                fechaNacimiento: fechaNacimiento,
+                direccion: userData.direccion || '',
+                paisResidencia: userData.paisResidencia || 'Panamá',
+                profesion: userData.profesion || '',
+                telefono: userData.telefono || '',
+                telefonoCodigo: 'PA',
+                email: userData.email || '',
+                esPoliticamenteExpuesta: userData.esPoliticamenteExpuesta || 'No',
+                personaExpuestaFecha: userData.personaExpuestaFecha || '',
+                personaExpuestaCargo: userData.personaExpuestaCargo || '',
+
+                // Persona Jurídica  
+                nombreJuridico: userData.personaJuridica.nombreJuridico || '',
+                paisJuridico: userData.personaJuridica.paisJuridico || 'Panamá',
+                registroJuridico: userData.personaJuridica.registroJuridico || '',
+
+                // Referencias bancarias
+                bancoNombre: userData.referenciasBancarias.bancoNombre || '',
+                bancoTelefono: userData.referenciasBancarias.bancoTelefono || '',
+                bancoTelefonoCodigo: 'PA',
+                bancoEmail: userData.referenciasBancarias.bancoEmail || '',
+
+                // Referencias comerciales
+                comercialNombre: userData.referenciasComerciales.comercialNombre || '',
+                comercialTelefono: userData.referenciasComerciales.comercialTelefono || '',
+                comercialTelefonoCodigo: userData.referenciasComerciales.comercialTelefonoCodigo || 'PA',
+                comercialEmail: userData.referenciasComerciales.comercialEmail || '',
+
+                adjuntoDocumentoCedulaPasaporteURL: userData.adjuntoDocumentoCedulaPasaporteURL || '',
+                adjuntoDocumentoCedulaPasaporte2URL: userData.adjuntoDocumentoCedulaPasaporte2URL || '',
+
+            });
+
+            // Inicializar los beneficiarios si existen
+            if (userData.beneficiarios?.length) {
+                const mappedBeneficiarios = userData.beneficiarios.map((beneficiario: any) => ({
+                    nombreApellido: beneficiario.nombreApellido || '',
+                    sexo: beneficiario.sexo || 'Femenino',
+                    cedulaPasaporte: beneficiario.cedulaPasaporte || '',
+                    nacionalidad: beneficiario.nacionalidad || 'Panamá',
+                    paisNacimiento: beneficiario.paisNacimiento || 'Panamá',
+                    fechaNacimiento: beneficiario.fechaNacimiento || '',
+                    direccion: beneficiario.direccion || '',
+                    paisResidencia: beneficiario.paisResidencia || 'Panamá',
+                    profesion: beneficiario.profesion || '',
+                    telefono: beneficiario.telefono || '',
+                    telefonoCodigo: beneficiario.telefonoCodigo || 'PA',
+                    email: beneficiario.email || '',
+                    esPoliticamenteExpuesta: beneficiario.esPoliticamenteExpuesta || 'No',
+                    adjuntoCedulaPasaporteBeneficiarioURL: beneficiario.adjuntoCedulaPasaporteBeneficiarioURL || '',
+                }));
+                setBeneficiarios(mappedBeneficiarios);
+                setMostrarBeneficiarios(true);
+            } else {
+                // Inicializa como un arreglo vacío si no hay beneficiarios
+                setBeneficiarios([]);
+            }
+        }
+    }, [userData]);
+
+    useEffect(() => {
+        if (userData && userData.beneficiarios) {
+            const initialErrors = userData.beneficiarios.map(() => ({
+                nombreApellido: false,
+                cedulaPasaporte: false,
+                fechaNacimiento: false,
+                direccion: false,
+                profesion: false,
+                telefono: false,
+                email: false,
+                adjuntoCedulaPasaporteBeneficiarioURL: false,
+            }));
+            setErrorsBeneficiarios(initialErrors);
+        }
+    }, [userData]);
 
     const [isLoading, setIsLoading] = useState(false);
     const [mostrarBeneficiarios, setMostrarBeneficiarios] = useState(false);
@@ -732,9 +843,15 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose }) => {
         }
 
         try {
+            console.log("Usuario ID ", id)
             // Crear el payload para enviar a la API
             const updatePayload = {
-                solicitudId: store.solicitudId, // Identificador de la solicitud desde el contexto
+                ...(!id && {
+                    solicitudId: store.solicitudId,
+                }),
+                ...(id && {
+                    peopleId: id,
+                }),
 
                 tipoPersona: formData.tipoPersona,
                 nombreApellido: formData.nombreApellido,
@@ -751,7 +868,9 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose }) => {
                 esPoliticamenteExpuesta: formData.esPoliticamenteExpuesta,
                 personaExpuestaFecha: formData.personaExpuestaFecha,
                 personaExpuestaCargo: formData.personaExpuestaCargo,
-                beneficiarios,
+                ...(formData.tipoPersona !== "Persona Natural" && {
+                    beneficiarios,
+                }),
                 adjuntoDocumentoCedulaPasaporteURL: formData.adjuntoDocumentoCedulaPasaporteURL,
                 adjuntoDocumentoCedulaPasaporte2URL: formData.adjuntoDocumentoCedulaPasaporte2URL,
 
@@ -775,13 +894,18 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose }) => {
 
             };
 
-            // Enviar los datos a la API para actualizar la solicitud
-            const response = await axios.post('/api/create-person', updatePayload);
+            let response;
+
+            if (id) {
+                response = await axios.post('/api/update-people', updatePayload);
+            } else {
+                response = await axios.post('/api/create-person', updatePayload);
+            }
 
             if (response.status === 200) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Persona creada',
+                    title: 'Persona',
                     text: 'Persona guardada correctamente.',
                     timer: 2000,  // Cierra la alerta automáticamente después de 2 segundos
                     showConfirmButton: false,  // Oculta el botón "OK"

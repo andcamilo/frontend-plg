@@ -10,7 +10,6 @@ const ConsultaPropuesta: React.FC = () => {
         throw new Error('ConsultaContext must be used within a ConsultaStateProvider');
     }
 
-    const { state, setState } = menoresContext;
 
     return (
         <HomeLayout>

@@ -157,12 +157,11 @@ const SolicitudAdicional: React.FC = () => {
       };
 
       const response = await axios.post('/api/update-request-sociedad', updatePayload);
-      
+
 
       if (response.status === 200) {
         setStore((prevState) => ({
           ...prevState,
-          resumen: true,
           currentPosition: 13,
         }));
 
@@ -222,21 +221,35 @@ const SolicitudAdicional: React.FC = () => {
             className="w-full p-2 bg-gray-800 text-white rounded-lg"
           />
         </div>
+        <div className="flex space-x-2 mt-4">
+          <button
+            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-profile"
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <ClipLoader size={24} color="#ffffff" />
+                <span className="ml-2">Cargando...</span>
+              </div>
+            ) : (
+              'Guardar y Continuar'
+            )}
+          </button>
 
-        <button
-          className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-pink-500"
-          type="submit"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center">
-              <ClipLoader size={24} color="#ffffff" />
-              <span className="ml-2">Cargando...</span>
-            </div>
-          ) : (
-            'Guardar y Continuar'
-          )}
-        </button>
+          <button
+            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+            type="button"
+            onClick={() => {
+              setStore((prevState) => ({
+                ...prevState,
+                currentPosition: 13,
+              }));
+            }}
+          >
+            Continuar
+          </button>
+        </div>
       </form>
     </div>
   );

@@ -66,7 +66,7 @@ const PensionAlimenticia: React.FC = () => {
     setLoading(true);
     setShowPaymentWidget(true);
   };
-
+  console.log("🚀 Token ", store.token )
   return (
     <HomeLayout>
       <div className="relative w-full h-screen flex flex-col lg:flex-row overflow-hidden">
@@ -171,6 +171,22 @@ const PensionAlimenticia: React.FC = () => {
 
           
             {activeStep >= 1 && (
+              <div className="mt-8">
+                <WidgetLoader />
+              </div>
+            )}
+
+            {store.token ? (
+              <div className="mt-8">
+                <SaleComponent saleAmount={150} />
+              </div>
+            ) : (
+              <div className="mt-8 text-gray-400">
+                Por favor, complete el widget de pago para continuar.
+              </div>
+            )}
+
+            {activeStep > 1 && (
               <div className="mt-8">
                 <WidgetLoader />
               </div>
