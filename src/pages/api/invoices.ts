@@ -1,56 +1,33 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import get from 'lodash/get';
-import { getZohoAccessToken } from '@utils/zoho-utils';
 import { backendBaseUrl } from '@utils/env';
 
-const zohoInvoicesApiUrl = `${backendBaseUrl}/dev/get-invoices`;
+const listDisbursementsUrl = `${backendBaseUrl}/dev/listDisbursements`;
 
-const getInvoices = async (req: NextApiRequest, res: NextApiResponse) => {
-  try {
-    const { limit = '10', page = '1' } = req.query;
-
-    // Obtener el Access Token desde Zoho
-    const accessToken = await getZohoAccessToken();
-
-    // Realizar la solicitud a la API de Zoho para obtener las facturas
-    const response = await axios.get(zohoInvoicesApiUrl, {
-      headers: {
-        Authorization: `Zoho-oauthtoken ${accessToken}`,
-      },
-      params: {
-        organization_id: '862159159',
-        per_page: parseInt(limit as string, 10),
-        page: parseInt(page as string, 10),
-      },
-    });
-
-    const data = response.data;
-    const invoices = get(data, 'invoices', []).map((invoice: any) => ({
-      invoice_number: invoice.invoice_number,
-      customer_name: invoice.customer_name,
-      status: invoice.status,
-      date: invoice.date,
-      due_date: invoice.due_date,
-      total: invoice.total,
-      balance: invoice.balance,
-    }));
-
-    const pagination = get(data, 'page_context', {});
-
-    // Retornar la respuesta formateada
-    res.status(200).json({
-      status: 'success',
-      invoices,
-      pagination,
-    });
-  } catch (error) {
-    console.error('Error fetching invoices:', error);
-    res.status(500).json({
-      message: 'Failed to fetch invoices',
-      error: error.message,
-    });
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method Not Allowed' });
   }
-};
 
-export default getInvoices;
+  const { page = 1, limit = 10 } = req.query; // Default to page 1, limit 10
+
+  try {
+    console.log('🚀 ~ Fetching disbursements:', { page, limit });
+
+    const response = await axios.get(listDisbursementsUrl, {
+      params: {
+        page,
+        limit,
+      },
+    });
+
+    // console.log('🚀 ~ Response data:', JSON.stringify(response.data, null, 2));
+
+    return res.status(200).json(response.data);
+  } catch (error) {
+    console.error('Error fetching disbursements:', error);
+
+    const errorMessage = error.response?.data?.message || 'Failed to fetch disbursements';
+    return res.status(error.response?.status || 500).json({ message: errorMessage });
+  }
+}

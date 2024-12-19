@@ -1,9 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import DesembolsoContext from '@context/desembolsoContext';
+import Select from 'react-select';
 
 const DisbursementGastosCliente: React.FC = () => {
     const context = useContext(DesembolsoContext);
     const [vendors, setVendors] = useState<any[]>([]);
+    const [invoices, setInvoices] = useState<any[]>([]);
 
     useEffect(() => {
         if (context) {
@@ -11,25 +13,41 @@ const DisbursementGastosCliente: React.FC = () => {
     }, [context?.state]);
 
     useEffect(() => {
-        const fetchVendors = async () => {
-          try {
-            const response = await fetch("/api/list-vendors"); 
-            const data = await response.json();
-            
-      
-            const vendorNames = data?.data?.map((vendor: any) => vendor.contact_name) || [];
-            console.log("🚀 ~ fetchVendors ~ vendorNames:", vendorNames)
-            setVendors(vendorNames);
-            
-            console.log("Fetched Vendor Names:", vendorNames);
-          } catch (error) {
-            console.error("Error fetching vendors:", error);
-          }
-        };
-      
-        fetchVendors();
-      }, []);
+        const fetchInvoices = async () => {
+            try {
+                const response = await fetch("/api/list-invoices");
+                const data = await response.json();
 
+                const formattedInvoices = data?.data?.map((invoice: any) => ({
+                    label: `${invoice.invoice_number} - ${invoice.customer_name}`,
+                    value: invoice.invoice_number,
+                })) || [];
+
+                setInvoices(formattedInvoices);
+            } catch (error) {
+                console.error("Error fetching invoices:", error);
+            }
+        };
+
+        fetchInvoices();
+    }, []);
+
+    useEffect(() => {
+        const fetchVendors = async () => {
+            try {
+                const response = await fetch("/api/list-vendors");
+                const data = await response.json();
+
+                const vendorNames = data?.data?.map((vendor: any) => vendor.contact_name) || [];
+                console.log("Fetched Vendor Names:", vendorNames);
+                setVendors(vendorNames);
+            } catch (error) {
+                console.error("Error fetching vendors:", error);
+            }
+        };
+
+        fetchVendors();
+    }, []);
 
     if (!context) {
         return <div>Context is not available.</div>;
@@ -40,28 +58,26 @@ const DisbursementGastosCliente: React.FC = () => {
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
         index: number
-      ) => {
+    ) => {
         const { name, value } = e.target;
-      
+
         setState((prevState) => ({
-          ...prevState,
-          desembolsoCliente: prevState.desembolsoCliente.map((item, i) =>
-            i === index
-              ? {
-                  ...item,
-                  [name]: value,
-                  status: true,
-                }
-              : item
-          ),
+            ...prevState,
+            desembolsoCliente: prevState.desembolsoCliente.map((item, i) =>
+                i === index
+                    ? {
+                        ...item,
+                        [name]: value,
+                        status: true,
+                    }
+                    : item
+            ),
         }));
-      };
-      
+    };
 
     const handleAddExpense = () => {
         const newExpense = {
             invoiceNumber: '',
-            client: '',
             amount: 0,
             expenseObject: '',
             otherExpenses: '',
@@ -71,16 +87,30 @@ const DisbursementGastosCliente: React.FC = () => {
             lawyer: '',
             status: true,
         };
-        setState(prevState => ({
+        setState((prevState) => ({
             ...prevState,
             desembolsoCliente: [...prevState.desembolsoCliente, newExpense]
         }));
     };
 
     const handleRemoveLastExpense = () => {
-        setState(prevState => ({
+        setState((prevState) => ({
             ...prevState,
             desembolsoCliente: prevState.desembolsoCliente.slice(0, -1)
+        }));
+    };
+
+    const handleSelectChange = (selectedOption: any, index: number, name: string) => {
+        setState((prevState) => ({
+            ...prevState,
+            desembolsoCliente: prevState.desembolsoCliente.map((item, i) =>
+                i === index
+                    ? {
+                        ...item,
+                        [name]: selectedOption?.value || '',
+                    }
+                    : item
+            ),
         }));
     };
 
@@ -95,32 +125,49 @@ const DisbursementGastosCliente: React.FC = () => {
                             <label htmlFor={`invoiceNumber-${index}`} className="block text-gray-300 mb-2">
                                 Número de factura
                             </label>
-                            <input
-                                type="text"
-                                id={`invoiceNumber-${index}`}
-                                name="invoiceNumber"
-                                value={expense.invoiceNumber}
-                                onChange={(e) => handleChange(e, index)}
-                                className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+                            <Select
+                                options={invoices}
+                                value={invoices.find(invoice => invoice.value === expense.invoiceNumber) || null}
+                                onChange={(selectedOption) => handleSelectChange(selectedOption, index, 'invoiceNumber')}
+                                placeholder="Buscar número de factura"
+                                classNamePrefix="react-select"
+                                styles={{
+                                    control: (provided) => ({
+                                        ...provided,
+                                        backgroundColor: '#374151',
+                                        borderColor: '#4B5563',
+                                        color: '#FFFFFF',
+                                        padding: '4px',
+                                        borderRadius: '0.5rem',
+                                        boxShadow: 'none',
+                                        '&:hover': {
+                                            borderColor: '#3B82F6',
+                                        },
+                                    }),
+                                    singleValue: (provided) => ({
+                                        ...provided,
+                                        color: '#FFFFFF',
+                                    }),
+                                    placeholder: (provided) => ({
+                                        ...provided,
+                                        color: '#9CA3AF',
+                                    }),
+                                    input: (provided) => ({
+                                        ...provided,
+                                        color: '#FFFFFF',
+                                    }),
+                                    menu: (provided) => ({
+                                        ...provided,
+                                        backgroundColor: '#374151',
+                                        borderRadius: '0.5rem',
+                                    }),
+                                    option: (provided, state) => ({
+                                        ...provided,
+                                        backgroundColor: state.isFocused ? '#1F2937' : '#374151',
+                                        color: state.isFocused ? '#FFFFFF' : '#D1D5DB',
+                                    }),
+                                }}
                             />
-                        </div>
-
-                        <div className="mb-4">
-                            <label htmlFor={`client-${index}`} className="block text-gray-300 mb-2">
-                                Cliente
-                            </label>
-                            <select
-                                id={`client-${index}`}
-                                name="client"
-                                value={expense.client}
-                                onChange={(e) => handleChange(e, index)}
-                                className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
-                            >
-                                <option value="">Selecciona un cliente</option>
-                                <option value="client1">Client 1</option>
-                                <option value="client2">Client 2</option>
-                    
-                            </select>
                         </div>
 
                         <div className="mb-4">
@@ -165,19 +212,21 @@ const DisbursementGastosCliente: React.FC = () => {
                             </select>
                         </div>
 
-                        <div className="mb-4">
-                            <label htmlFor={`otherExpenses-${index}`} className="block text-gray-300 mb-2">
-                                Otros gastos
-                            </label>
-                            <input
-                                type="text"
-                                id={`otherExpenses-${index}`}
-                                name="otherExpenses"
-                                value={expense.otherExpenses || ''}
-                                onChange={(e) => handleChange(e, index)}
-                                className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
-                            />
-                        </div>
+                        {expense.expenseObject === 'otros' && (
+                            <div className="mb-4">
+                                <label htmlFor={`otherExpenses-${index}`} className="block text-gray-300 mb-2">
+                                    Otros gastos
+                                </label>
+                                <input
+                                    type="text"
+                                    id={`otherExpenses-${index}`}
+                                    name="otherExpenses"
+                                    value={expense.otherExpenses || ''}
+                                    onChange={(e) => handleChange(e, index)}
+                                    className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                        )}
 
                         <div className="mb-4">
                             <label htmlFor={`billedExpensesSent-${index}`} className="block text-gray-300 mb-2">
@@ -213,32 +262,29 @@ const DisbursementGastosCliente: React.FC = () => {
                             </select>
                         </div>
 
-
                         <div className="mb-4">
                             <label htmlFor={`lawyer-${index}`} className="block text-gray-300 mb-2">
                                 Abogado
                             </label>
-                            {vendors.length === 0 ? ( // Conditional check for vendors array
+                            {vendors.length === 0 ? (
                                 <div className="text-gray-400">Cargando proveedores...</div>
                             ) : (
                                 <select
-                                id={`lawyer-${index}`}
-                                name="lawyer"
-                                value={expense.lawyer}
-                                onChange={(e) => handleChange(e, index)}
-                                className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+                                    id={`lawyer-${index}`}
+                                    name="lawyer"
+                                    value={expense.lawyer}
+                                    onChange={(e) => handleChange(e, index)}
+                                    className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                                 >
-                                <option value="">Selecciona un abogado</option>
-                                {vendors.map((vendor, i) => (
-                                    <option key={i} value={vendor}>
-                                    {vendor}
-                                    </option>
-                                ))}
+                                    <option value="">Selecciona un abogado</option>
+                                    {vendors.map((vendor, i) => (
+                                        <option key={i} value={vendor}>
+                                            {vendor}
+                                        </option>
+                                    ))}
                                 </select>
                             )}
                         </div>
-
-
                     </div>
                 ))}
 

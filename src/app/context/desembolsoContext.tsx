@@ -8,13 +8,11 @@ type DesembolsoOficina = {
     amount: number;
     lawyer: string;
     invoiceNumber?: string;
-    client: string;
     status: boolean;
 };
 
 type DesembolsoCliente = {
     invoiceNumber: string;
-    client: string; 
     amount: number;
     expenseObject: string; 
     otherExpenses?: string; 
@@ -77,14 +75,12 @@ const initialFormData: FormDataType = {
             amount: 0,
             lawyer: '',
             invoiceNumber: '',
-            client: '',
             status: false,
         },
     ],
     desembolsoCliente: [
         {
             invoiceNumber: '',
-            client: '',
             amount: 0,
             expenseObject: '', 
             otherExpenses: '', 

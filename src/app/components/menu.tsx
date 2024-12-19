@@ -16,6 +16,7 @@ import LanguageIcon from '@mui/icons-material/Language';
 import { Hexagon } from '@mui/icons-material';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import '../globals.css';
+import get from 'lodash/get';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from 'axios';
 
@@ -66,7 +67,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           console.log("Usuario ", user)
           setFormData((prevData) => ({
             ...prevData,
-            rol: user.solicitud.rol || 0,
+            rol: get(user, 'solicitud.rol', 0)
           }));
 
         } catch (error) {
@@ -178,7 +179,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </Link>
         </div>
       )}
-      {formData?.rol && formData.rol >= 35 && (
+      {true && (
         <>
           <p className='font-bold'>Trámites internos</p>
           <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
