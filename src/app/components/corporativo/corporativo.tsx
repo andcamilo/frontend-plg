@@ -5,6 +5,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { checkAuthToken } from "@utils/checkAuthToken";
+import get from 'lodash/get';
 import { useRouter } from 'next/router';
 import {
     firebaseApiKey,
@@ -110,7 +111,7 @@ const SolicitudForm: React.FC = () => {
                         ...prevData,
                         nombre: user.solicitud.nombre || "",
                         telefono: user.solicitud.telefonoSolicita || "",
-                        rol: user.solicitud.rol || 0,
+                        rol: get(user, 'solicitud.rol', 0)
                     }));
                 } catch (error) {
                     console.error('Error fetching solicitud:', error);

@@ -8,6 +8,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 import Link from 'next/link';
+import get from 'lodash/get';
 import { checkAuthToken } from "@utils/checkAuthToken";
 
 // Function to format date as dd/mm/yyyy
@@ -137,7 +138,7 @@ const RequestsStatistics: React.FC = () => {
                     console.log("Usuario ", user)
                     setFormData((prevData) => ({
                         ...prevData,
-                        rol: user.solicitud.rol || 0,
+                        rol: get(user, 'solicitud.rol', 0)
                     }));
 
                 } catch (error) {
