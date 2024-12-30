@@ -98,7 +98,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
   useEffect(() => {
     const userData = checkAuthToken();
-    console.log("userData ", userData)
+    console.log("userData ", userData?.user_id)
     if (userData) {
       setFormData((prevData) => ({
         ...prevData,
@@ -178,6 +178,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
   const sendCreateRequest = async (cuenta: string, isSummary: boolean, currentPostion: number) => {
     try {
+
+      const authToken = checkAuthToken ? await checkAuthToken() : null;
       const requestData = {
         nombreSolicita: formData.nombreCompleto || '',
         telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
@@ -185,7 +187,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         cedulaPasaporte: formData.cedulaPasaporte || '',
         emailSolicita: formData.email || formData.summaryEmail,
         actualizarPorCorreo: formData.notificaciones === 'yes',
-        cuenta: cuenta || '',
+        cuenta: cuenta || authToken?.user_id,
         precio: 150,
         subtotal: 150,
         total: 150,
@@ -249,7 +251,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             required
           />
 
-          {/* Phone field with country code */}
           <div className="flex gap-2">
             <select
               name="telefonoCodigo"
@@ -272,7 +273,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             />
           </div>
 
-          {/* Alternate phone field with country code */}
           <div className="flex gap-2">
             <select
               name="telefonoAlternativoCodigo"
@@ -294,7 +294,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             />
           </div>
 
-          {/* Other input fields */}
           <input
             type="text"
             name="cedulaPasaporte"

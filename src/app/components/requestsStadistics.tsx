@@ -11,7 +11,6 @@ import Link from 'next/link';
 import get from 'lodash/get';
 import { checkAuthToken } from "@utils/checkAuthToken";
 
-// Function to format date as dd/mm/yyyy
 const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): string => {
     const date = new Date(timestamp._seconds * 1000); // Convert seconds to milliseconds
     const day = String(date.getDate()).padStart(2, '0');
@@ -20,7 +19,6 @@ const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): stri
     return `${day}/${month}/${year}`;
 };
 
-// Componente para los íconos de acciones
 const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
     const handleDelete = async () => {
         const result = await Swal.fire({

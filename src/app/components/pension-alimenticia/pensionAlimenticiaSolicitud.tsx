@@ -58,7 +58,8 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
   const { store, setStore } = context;
   const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
-
+  const [email, setEmail] = useState<String>("")
+  const [customerID, setCustomerID] = useState<String>("")
   const [formData, setFormData] = useState<FormData>({
     // For 'Primera vez'
     pensionType: 'Primera vez',
@@ -108,8 +109,12 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
   useEffect(() => {
     if (store.request) {
-      console.log("🚀 ~ Updated store.request:", store.request);
       const solicitud = get(store.request, 'solicitud', {});
+
+      const emailSolicita = get(store.request, 'emailSolicita', "");
+      if (emailSolicita) {
+        setEmail(emailSolicita);
+      }
 
       if (solicitud && Object.keys(solicitud).length > 0) {
         setFormData((prevFormData) => ({
@@ -119,6 +124,36 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
       }
     }
   }, [store.request]);
+
+
+  useEffect(() => {
+    const fetchCustomerID = async () => {
+      if (!email) return;
+
+      try {
+        console.log("joaaa entre")
+        const response = await axios.get(`/api/get-contact-id`, {
+          params: { email },
+        });
+
+        console.log("🚀 ~ fetchCustomerID ~ response:", response)
+
+        const contactId = get(response, 'data.contactId', null);
+        console.log("🚀 ~ fetchCustomerID ~ contactId:", contactId)
+
+        if (contactId) {
+          setCustomerID(contactId);
+          console.log("Customer ID fetched successfully:", contactId);
+        } else {
+          console.error("Customer ID not found for the provided email.");
+        }
+      } catch (error) {
+        console.error("Error fetching Customer ID:", error);
+      }
+    };
+
+    fetchCustomerID();
+  }, [email]);
 
 
   
@@ -168,7 +203,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
       console.log("🚀 ~ handleSubmit ~ updatePayload:", updatePayload);
 
-      // Make request to Next.js API route (which internally calls AWS Lambda)
       const response = await axios.patch('/api/update-request', updatePayload);
 
       if (response.status === 200 && response.data.status === 'success') {
@@ -194,15 +228,34 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
         title: 'Error',
         text: 'Hubo un problema al actualizar la solicitud. Por favor, inténtelo de nuevo más tarde.',
       });
-    } finally {
-      setIsLoading(false); // Set loading to false after the request is complete
+    }  finally {
+      try {
+        console.log("hola mundillo")
+        if (customerID) {
+        console.log("🚀 ~ handleSubmit ~ customerID:", customerID)
+ 
+          const invoicePayload = {
+            customer_id: customerID,
+            pensionType: formData.pensionType,
+          };
+
+          const invoiceResponse = await axios.post('/api/create-invoice', invoicePayload);
+          console.log("🚀 ~ handleSubmit ~ invoiceResponse:", invoiceResponse)
+
+          if (invoiceResponse.status === 200) {
+            console.log("Invoice created successfully:", invoiceResponse.data);
+          } else {
+            console.error("Error creating invoice:", invoiceResponse);
+          }
+        }
+      } catch (invoiceError) {
+        console.error("Error creating invoice:", invoiceError);
+      }
     }
+    setIsLoading(false); // Set loading to false after the request is complete
+
   };
 
-  // Log when 'demandante' changes in the context
-  useEffect(() => {
-    console.log("🚀 ~ demandante:", store.demandante);
-  }, [store.demandante]);
 
 
 
@@ -420,8 +473,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 </select>
               </div>
             )}
-
-            {/* Scenario when the case location is known */}
             {formData.knowsCaseLocation === 'Si' && (
               <div className="mt-6">
                 <label className="block font-bold">Indique Juzgado:</label>
@@ -481,7 +532,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
         );
       
         
-
       case 'Rebaja o Suspensión':
           return (
             <>

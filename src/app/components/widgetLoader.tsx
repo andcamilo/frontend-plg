@@ -8,7 +8,8 @@ const WidgetLoader: React.FC = () => {
   const sociedadContext = useContext(SociedadContext);
 
   // Verificar si estamos trabajando con sociedad o fundación
-  const context = pensionContext?.store.solicitudId ? pensionContext : sociedadContext;
+  // const context = pensionContext?.store.solicitudId ? pensionContext : sociedadContext;
+  const context = pensionContext
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -19,10 +20,11 @@ const WidgetLoader: React.FC = () => {
       script.onload = () => console.log('jQuery loaded');
       document.body.appendChild(script);
     }
+    
 
     if (typeof window !== 'undefined') {
       (window as any).SaveCreditCard_SuccessCallback = function (response: any) {
-        console.log('Tokenization successful:', response);
+        console.log('Tokenization successful:', response.TokenDetails.AccountToken);
         if (context) {
           context.setStore((prevState) => ({
             ...prevState,
@@ -31,6 +33,9 @@ const WidgetLoader: React.FC = () => {
         }
         setIsLoading(false);
       };
+
+      
+      
 
       (window as any).SaveCreditCard_FailureCallback = function (response: any) {
         console.error('Tokenization failed:', response);
@@ -43,6 +48,9 @@ const WidgetLoader: React.FC = () => {
       };
     }
   }, [context]);
+  useEffect(() => {
+    console.log("Updated token:", context?.store.token);
+  }, [context?.store.token]);
 
   const loadWidget = () => {
     if (isLoading) return;
