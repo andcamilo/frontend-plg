@@ -17,9 +17,8 @@ const PensionAlimenticia: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
   console.log("🚀 ~ activeStep:", activeStep)
   const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false); // Loading state for the payment button
+  const [loading, setLoading] = useState<boolean>(false); 
 
-  // Access the context values
   const context = useContext(AppStateContext);
 
   if (!context) {
@@ -28,13 +27,17 @@ const PensionAlimenticia: React.FC = () => {
 
   const { store } = context;
 
-  // Use an effect to observe changes in store.currentPosition and update the activeStep
   useEffect(() => {
     if (store.currentPosition) {
       console.log("🚀 ~ useEffect ~ store.currentPosition:", store.currentPosition)
       setActiveStep(store.currentPosition);
     }
   }, [store.currentPosition]);
+
+  useEffect(() => {
+    console.log("🚀 ~ store.token:", store.token)
+  }, [store.token]);
+
 
   const renderActiveForm = () => {
     switch (activeStep) {
@@ -170,35 +173,16 @@ const PensionAlimenticia: React.FC = () => {
             </div>
 
           
-            {activeStep >= 1 && (
+
+            {activeStep > 8 && (
               <div className="mt-8">
                 <WidgetLoader />
               </div>
             )}
 
-            {store.token ? (
+            {store.token && (
               <div className="mt-8">
                 <SaleComponent saleAmount={150} />
-              </div>
-            ) : (
-              <div className="mt-8 text-gray-400">
-                Por favor, complete el widget de pago para continuar.
-              </div>
-            )}
-
-            {activeStep > 1 && (
-              <div className="mt-8">
-                <WidgetLoader />
-              </div>
-            )}
-
-            {store.token ? (
-              <div className="mt-8">
-                <SaleComponent saleAmount={150} />
-              </div>
-            ) : (
-              <div className="mt-8 text-gray-400">
-                Por favor, complete el widget de pago para continuar.
               </div>
             )}
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import AppStateContext from '@/src/app/context/context'
 import SociedadContext from '@context/sociedadesContext';
 import AppStateContextFundacion from '@context/fundacionContext';
@@ -9,6 +9,7 @@ import ConsultaContext from "@context/consultaContext";
 import { Loader2 } from 'lucide-react'
 import Swal from 'sweetalert2'
 import axios from 'axios'
+import xml2js from 'xml2js';
 
 interface SaleComponentProps {
   saleAmount: number
@@ -22,19 +23,21 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
   const consultaContext = useContext(ConsultaContext);
 
   // Verificar con que solicitud estamos trabajando 
-  const context = pensionContext?.store.solicitudId
-    ? pensionContext
-    : fundacionContext?.store.solicitudId
-    ? fundacionContext
-    : sociedadContext?.store.solicitudId
-    ? sociedadContext
-    : menoresContext?.store.solicitudId
-    ? menoresContext
-    : consultaContext?.store.solicitudId
-    ? consultaContext
-    : pensionContext || fundacionContext || sociedadContext || menoresContext || consultaContext;
+  const context = pensionContext
+  // const context = pensionContext?.store.solicitudId
+  //   ? pensionContext
+  //   : fundacionContext?.store.solicitudId
+  //   ? fundacionContext
+  //   : sociedadContext?.store.solicitudId
+  //   ? sociedadContext
+  //   : menoresContext?.store.solicitudId
+  //   ? menoresContext
+  //   : consultaContext?.store.solicitudId
+  //   ? consultaContext
+  //   : pensionContext || fundacionContext || sociedadContext || menoresContext || consultaContext;
 
   const [cvv, setCvv] = useState('')
+  const [transactionId, setTransactionId] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,15 +129,32 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
           'Content-Type': 'text/xml; charset=utf-8'
         }
       })
-      
-      console.log('Sale successful:', response.data)
+      console.log("🚀 ~ handleProcessSale ~ response:", response.data)
+
+      const xmlResponse = response.data;
+      xml2js.parseString(xmlResponse, { explicitArray: false }, (err, result) => {
+        if (err) {
+          console.error("Error parsing XML:", err);
+          return;
+        }
+        
+
+        const transactionId = result['soap:Envelope']['soap:Body']['SaleResponse']['SaleResult']['TransactionId'];
+        console.log("🚀 ~ xml2js.parseString ~ transactionId:", transactionId)
+        setTransactionId(transactionId)
+        
+
+      });
+
+  
+
       await Swal.fire({
         icon: 'success',
         title: 'Sale Successful',
         html: `<p>The sale was processed successfully!</p>`,
         confirmButtonText: 'OK'
       })
-      window.location.href = "/dashboard/requests";
+      // window.location.href = "/dashboard/requests";
       // Reset form
       setCvv('')
     } catch (error) {
@@ -162,6 +182,45 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const validateSale = async () => {
+      if (transactionId) {
+        try {
+          const validateResponse = await axios.post('/api/getTransactionResult', {
+            transactionId,
+            amount: saleAmount,
+          });
+
+          console.log("🚀 ~ validateSale ~ validateResponse:", validateResponse.data);
+
+          if (validateResponse.data?.data.includes('<Result>Success</Result>')) {
+            await Swal.fire({
+              icon: 'success',
+              title: 'Sale Successful',
+              html: `<p>The sale was processed and validated successfully!</p>Transaction ID: ${transactionId}`,
+              confirmButtonText: 'OK',
+            });
+
+            window.location.href = "/dashboard/requests";
+            setCvv('');
+          } else {
+            throw new Error('Validation failed');
+          }
+        } catch (error) {
+          console.error("Error validating the sale:", error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to validate the sale. Please try again.',
+          });
+        }
+      }
+    };
+
+    validateSale();
+  }, [transactionId, saleAmount]); // Depend on transactionId and saleAmount
+
 
   return (
     <div className="p-6 bg-[#13131A] text-white rounded-lg shadow-lg">
