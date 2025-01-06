@@ -72,20 +72,20 @@ const ActivosFundacion: React.FC = () => {
     useEffect(() => {
         if (store.request) {
             const activosData = get(store.request, 'activos.activos', []);
-    
+
             // Rellena hasta tener siempre 5 elementos en el array de activos
             const completosActivos = [...activosData];
             while (completosActivos.length < 5) {
                 completosActivos.push({ nombre: '', ubicacion: '' });
             }
-    
+
             // Asignar los valores de activos completados al formData
             setFormData((prevFormData) => ({
                 ...prevFormData,
                 activos: completosActivos
             }));
         }
-    }, [store.request]);    
+    }, [store.request]);
 
     // Validación de los campos
     const validateFields = () => {
@@ -303,6 +303,7 @@ const ActivosFundacion: React.FC = () => {
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.activos[index].nombre ? 'border-2 border-red-500' : ''}`}
                                 placeholder="Ingrese el nombre del activo"
                                 ref={(el) => setRef(el, index, 'nombre')} // Usando setRef para manejar la referencia
+                                disabled={store.request.status >= 10 && store.rol < 20}
                             />
 
                         </div>
@@ -315,26 +316,48 @@ const ActivosFundacion: React.FC = () => {
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.activos[index].ubicacion ? 'border-2 border-red-500' : ''}`}
                                 placeholder="Ingrese la ubicación del activo"
                                 ref={(el) => setRef(el, index, 'ubicacion')}
+                                disabled={store.request.status >= 10 && store.rol < 20}
                             />
 
                         </div>
                     </div>
                 ))}
 
-                <button
-                    className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Guardar y continuar'
-                    )}
-                </button>
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+                    <>
+                        <button
+                            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Guardar y continuar'
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 15,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );

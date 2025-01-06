@@ -184,23 +184,47 @@ const PatrimonioInicialFundacion: React.FC = () => {
                         onChange={handleChange}
                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.patrimonioInicial ? 'border-2 border-red-500' : ''}`}
                         placeholder="Patrimonio inicial en dólares"
+                        disabled={store.request.status >= 10 && store.rol < 20}
                     />
                 </div>
 
-                <button
-                    className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Guardar y continuar'
-                    )}
-                </button>
+
+
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+                    <>
+                        <button
+                            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Guardar y continuar'
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 11,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );

@@ -66,10 +66,10 @@ const ProtectorFundacion: React.FC = () => {
                     solicitudId: solicitudId,
                 },
             });
-    
+
             // Filtrar solo las personas que tienen el campo `protector`
             const people = response.data.filter((persona: any) => persona.protector);
-    
+
             if (!people || people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
@@ -78,15 +78,15 @@ const ProtectorFundacion: React.FC = () => {
                 setHasNextPage(false);
                 return;
             }
-    
+
             const totalRecords = people.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
-    
+
             const paginatedData = people.slice(
                 (currentPage - 1) * rowsPerPage,
                 currentPage * rowsPerPage
             );
-    
+
             const formattedData = paginatedData.map((persona: any) => ({
                 nombre: persona.tipoPersona === 'Persona Jurídica' ? (
                     <>
@@ -104,7 +104,7 @@ const ProtectorFundacion: React.FC = () => {
                 cargo: persona.protector.cargo || '---', // Ahora no es necesario verificar porque solo hay personas con `protector`
                 accion: '...',
             }));
-    
+
             setData(formattedData);
             setTotalRecords(totalRecords);
             setTotalPages(totalPages);
@@ -113,7 +113,7 @@ const ProtectorFundacion: React.FC = () => {
         } catch (error) {
             console.error('Error fetching people:', error);
         }
-    };    
+    };
 
     const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
@@ -179,38 +179,64 @@ const ProtectorFundacion: React.FC = () => {
                     </div>
 
                     <div className="flex space-x-2 mt-4">
-                        <button
-                            className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
-                            type="button"
-                            onClick={openModal}
-                        >
-                            {isLoading ? (
-                                <div className="flex items-center justify-center">
-                                    <ClipLoader size={24} color="#ffffff" />
-                                    <span className="ml-2">Cargando...</span>
-                                </div>
-                            ) : (
-                                'Nuevo Protector'
-                            )}
-                        </button>
+
+                        {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+                            <>
+                                <button
+                                    className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
+                                    type="button"
+                                    onClick={openModal}
+                                >
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center">
+                                            <ClipLoader size={24} color="#ffffff" />
+                                            <span className="ml-2">Cargando...</span>
+                                        </div>
+                                    ) : (
+                                        'Nuevo Protector'
+                                    )}
+                                </button>
+                            </>
+                        )}
                     </div>
                 </>
             )}
 
-            <button
-                className="bg-profile text-white py-2 px-4 rounded-lg inline-block mt-4"
-                type="button"
-                onClick={handleContinue}
-            >
-                {isLoading ? (
-                    <div className="flex items-center justify-center">
-                        <ClipLoader size={24} color="#ffffff" />
-                        <span className="ml-2">Cargando...</span>
-                    </div>
-                ) : (
-                    'Guardar y continuar'
-                )}
-            </button>
+            {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+                <>
+                    <button
+                        className="bg-profile text-white py-2 px-4 rounded-lg inline-block mt-4"
+                        type="button"
+                        onClick={handleContinue}
+                    >
+                        {isLoading ? (
+                            <div className="flex items-center justify-center">
+                                <ClipLoader size={24} color="#ffffff" />
+                                <span className="ml-2">Cargando...</span>
+                            </div>
+                        ) : (
+                            'Guardar y continuar'
+                        )}
+                    </button>
+                </>
+            )}
+
+            {store.request.status >= 10 && (
+                <>
+                    <button
+                        className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                        type="button"
+                        onClick={() => {
+                            setStore((prevState) => ({
+                                ...prevState,
+                                currentPosition: 9,
+                            }));
+                        }}
+                    >
+                        Continuar
+                    </button>
+                </>
+            )}
 
             {isModalOpen && <ModalProtector onClose={() => closeModal(true)} />}
         </div>

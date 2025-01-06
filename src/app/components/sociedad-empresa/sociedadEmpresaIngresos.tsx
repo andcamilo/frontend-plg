@@ -67,7 +67,7 @@ const FuentesDeIngresos: React.FC = () => {
     useEffect(() => {
         if (store.request) {
             const ingresosData = get(store.request, 'fuentesIngresos', {});
-    
+
             // Actualizar el estado de formData con los valores obtenidos de la base de datos
             setFormData((prevFormData) => ({
                 ...prevFormData,
@@ -78,13 +78,13 @@ const FuentesDeIngresos: React.FC = () => {
                 ingresoInmueble: ingresosData.ingresoInmueble || false,
                 otroFuente: ingresosData.otro || '', // Asigna el valor de "otro" a otroFuente
             }));
-    
+
             // Mostrar el campo "Otro" si tiene algún valor en la base de datos
             if (ingresosData.otro) {
                 setMostrarOtro(true);
             }
         }
-    }, [store.request]);    
+    }, [store.request]);
 
     const validateSelection = () => {
         // Verifica si se ha seleccionado al menos una fuente de ingreso
@@ -181,6 +181,7 @@ const FuentesDeIngresos: React.FC = () => {
                             checked={formData.ingresoNegocios}
                             onChange={handleCheckboxChange}
                             className="mr-3"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                         Ingreso de Negocios
                     </label>
@@ -191,6 +192,7 @@ const FuentesDeIngresos: React.FC = () => {
                             checked={formData.herencia}
                             onChange={handleCheckboxChange}
                             className="mr-3"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                         Herencia
                     </label>
@@ -201,6 +203,7 @@ const FuentesDeIngresos: React.FC = () => {
                             checked={formData.ahorrosPersonales}
                             onChange={handleCheckboxChange}
                             className="mr-3"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                         Ahorros Personales
                     </label>
@@ -211,6 +214,7 @@ const FuentesDeIngresos: React.FC = () => {
                             checked={formData.ventaActivos}
                             onChange={handleCheckboxChange}
                             className="mr-3"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                         Venta de activos
                     </label>
@@ -221,6 +225,7 @@ const FuentesDeIngresos: React.FC = () => {
                             checked={formData.ingresoInmueble}
                             onChange={handleCheckboxChange}
                             className="mr-3"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                         Ingreso por alquiler de inmueble
                     </label>
@@ -231,6 +236,7 @@ const FuentesDeIngresos: React.FC = () => {
                             checked={mostrarOtro}
                             onChange={handleCheckboxChange} // Maneja mostrar el campo "Otro"
                             className="mr-3"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                         Otro
                     </label>
@@ -242,24 +248,46 @@ const FuentesDeIngresos: React.FC = () => {
                             onChange={handleInputChange} // Maneja el valor de "Otro" en el campo de texto
                             className="w-full p-4 bg-gray-800 text-white rounded-lg"
                             placeholder="Especifique la fuente de ingresos"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     )}
                 </div>
 
-                <button
-                    className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Guardar y continuar'
-                    )}
-                </button>
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 19)) && (
+                    <>
+                        <button
+                            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Guardar y continuar'
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 12,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );

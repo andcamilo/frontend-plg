@@ -34,6 +34,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     terminosAceptados: false,
     resumenCaso: '',
     summaryEmail: '',
+    cuenta: '',
   });
 
   const solicitudId = store.solicitudId || (Array.isArray(id) ? id[0] : id);
@@ -91,6 +92,30 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       }));
     }
   }, [store.request, setStore]);
+
+  useEffect(() => {
+    if (formData.cuenta) {
+      const fetchUser = async () => {
+        try {
+          console.log("Cuenta ", formData.cuenta)
+          const response = await axios.get('/api/get-user-cuenta', {
+            params: { userCuenta: formData.cuenta },
+          });
+
+          const user = response.data;
+          setStore((prevData) => ({
+            ...prevData,
+            rol: user.solicitud.rol || 0,
+          }));
+
+        } catch (error) {
+          console.error('Failed to fetch solicitudes:', error);
+        }
+      };
+
+      fetchUser();
+    }
+  }, [formData.cuenta]);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -249,6 +274,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             className="p-4 bg-gray-800 text-white rounded-lg"
             placeholder="Nombre completo"
             required
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
 
           <div className="flex gap-2">
@@ -270,6 +296,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               className="p-4 bg-gray-800 text-white rounded-lg w-full"
               placeholder="Número de teléfono"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
 
@@ -291,6 +318,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               onChange={handleChange}
               className="p-4 bg-gray-800 text-white rounded-lg w-full"
               placeholder="Número de teléfono alternativo"
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
 
@@ -303,6 +331,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             className="p-4 bg-gray-800 text-white rounded-lg"
             placeholder="Cédula o ID"
             required
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
           <input
             type="email"
@@ -312,6 +341,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             className="p-4 bg-gray-800 text-white rounded-lg"
             placeholder="Dirección de correo electrónico"
             required
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
           <input
             type="email"
@@ -321,6 +351,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             className="p-4 bg-gray-800 text-white rounded-lg"
             placeholder="Confirmar correo electrónico"
             required
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -345,6 +376,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               rows={5}
               className="p-4 w-full bg-gray-800 text-white rounded-lg"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
             <input
               type="email"
@@ -354,22 +386,28 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               className="p-4 w-full bg-gray-800 text-white rounded-lg"
               placeholder="Dirección de correo electrónico"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
-            <button
-              className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
-              type="button"
-              onClick={(e) => handleSubmit(e as any, true, 1)}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <ClipLoader size={24} color="#ffffff" />
-                  <span className="ml-2">Cargando...</span>
-                </div>
-              ) : (
-                'Enviar y salir'
-              )}
-            </button>
+
+            {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+              <>
+                <button
+                  className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
+                  type="button"
+                  onClick={(e) => handleSubmit(e as any, true, 1)}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <ClipLoader size={24} color="#ffffff" />
+                      <span className="ml-2">Cargando...</span>
+                    </div>
+                  ) : (
+                    'Enviar y salir'
+                  )}
+                </button>
+              </>
+            )}
           </div>
         )}
 
@@ -416,20 +454,41 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         </div>
 
         {/* Submit button */}
-        <button
-          className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
-          type="submit"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center">
-              <ClipLoader size={24} color="#ffffff" />
-              <span className="ml-2">Cargando...</span>
-            </div>
-          ) : (
-            'Guardar y continuar'
-          )}
-        </button>
+        {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+          <>
+            <button
+              className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <ClipLoader size={24} color="#ffffff" />
+                  <span className="ml-2">Cargando...</span>
+                </div>
+              ) : (
+                'Guardar y continuar'
+              )}
+            </button>
+          </>
+        )}
+
+        {store.request.status >= 10 && (
+          <>
+            <button
+              className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+              type="button"
+              onClick={() => {
+                setStore((prevState) => ({
+                  ...prevState,
+                  currentPosition: 2,
+                }));
+              }}
+            >
+              Continuar
+            </button>
+          </>
+        )}
       </form>
     </div>
   );

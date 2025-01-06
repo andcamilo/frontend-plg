@@ -55,6 +55,7 @@ export interface AppState {
   solicitud: boolean;
   request: any;
   token: string;
+  rol: number;
   
 }
 
@@ -73,6 +74,7 @@ const initialState: AppState = {
   request: "",
   solicitud: false,
   token: '',
+  rol: -1,
   solictud: {
     pensionType: '',
     pensionAmount: 0,

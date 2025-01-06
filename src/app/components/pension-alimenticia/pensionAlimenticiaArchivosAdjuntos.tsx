@@ -5,13 +5,13 @@ import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { 
-  firebaseApiKey, 
-  firebaseAuthDomain, 
-  firebaseProjectId, 
-  firebaseStorageBucket, 
-  firebaseMessagingSenderId, 
-  firebaseAppId 
+import {
+  firebaseApiKey,
+  firebaseAuthDomain,
+  firebaseProjectId,
+  firebaseStorageBucket,
+  firebaseMessagingSenderId,
+  firebaseAppId
 } from '@utils/env';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
@@ -35,7 +35,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
       cedula: null,
       certificadoNacimiento: null,
       certificadoMatrimonio: null,
-      facturaSupermercado:null,
+      facturaSupermercado: null,
       facturaAgua: null,
       facturaVestuario: null,
       facturaLuz: null,
@@ -43,7 +43,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
       facturaMatricula: null,
       facturaUtiles: null,
       facturaMatriculaUniversitaria: null,
-      facturaCreditosAcademicos: null, 
+      facturaCreditosAcademicos: null,
       sentencia: null,
       additionalDocs: [],
     },
@@ -68,12 +68,12 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
 
   const context = useContext(AppStateContext);
   if (!context) throw new Error('AppStateContext must be used within an AppStateProvider');
-  
+
   const { store, setStore } = context;
   const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
 
   useEffect(() => {
-    if (store.solicitudId) fetchSolicitud(); 
+    if (store.solicitudId) fetchSolicitud();
   }, [store.solicitudId]);
 
   useEffect(() => {
@@ -113,7 +113,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
   };
 
   const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>, 
+    e: React.ChangeEvent<HTMLInputElement>,
     setFile: React.Dispatch<React.SetStateAction<File | null>>
   ) => {
     const file = e.target.files?.[0] || null;
@@ -139,7 +139,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
     try {
 
       const generateFilePath = (fileName) => `uploads/${fileName}_${store.solicitudId}`;
-      
+
       const cedulaURL = cedulaFile ? await uploadFileToFirebase(cedulaFile, generateFilePath('cedula')) : formData.archivosAdjuntos.cedula;
       const nacimientoURL = nacimientoFile ? await uploadFileToFirebase(nacimientoFile, generateFilePath('certificadoNacimiento')) : formData.archivosAdjuntos.certificadoNacimiento;
       const matrimonioURL = matrimonioFile ? await uploadFileToFirebase(matrimonioFile, generateFilePath('certificadoMatrimonio')) : formData.archivosAdjuntos.certificadoMatrimonio;
@@ -228,6 +228,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setCedulaFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -244,6 +245,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setNacimientoFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -260,6 +262,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setMatrimonioFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -276,6 +279,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaSupermercadoFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -292,6 +296,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaVestuarioFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
         <div>
@@ -307,9 +312,10 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaAguaFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
-        
+
         <div>
           <label className="block mb-2 text-sm">Factura del servicio de la luz.</label>
           {formData.archivosAdjuntos.facturaLuz && (
@@ -323,6 +329,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaAguaFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -339,6 +346,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaTelefonoFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -355,6 +363,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaMatriculaFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -371,6 +380,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaUtilesFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -387,6 +397,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaCreditosAcademicosFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -403,6 +414,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaMatriculaUniversitariaFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
@@ -419,59 +431,81 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             type="file"
             onChange={(e) => handleFileChange(e, setSentenciaFile)}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
         {/* Additional Documents Section */}
         {showAdditionalDocs && (
           <>
-          {additionalDocs.map((doc, index) => (
-            <div key={index} className="space-y-4 mt-4">
-              <div>
-                <label className="block mb-2 text-sm">- Documento adicional:</label>
-                <input
-                  type="file"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setAdditionalDocs((prevDocs) => {
-                      const newDocs = [...prevDocs];
-                      newDocs[index] = file; // Update with File or null
-                      return newDocs;
-                    });
-                  }}
-                  className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
-                />
+            {additionalDocs.map((doc, index) => (
+              <div key={index} className="space-y-4 mt-4">
+                <div>
+                  <label className="block mb-2 text-sm">- Documento adicional:</label>
+                  <input
+                    type="file"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setAdditionalDocs((prevDocs) => {
+                        const newDocs = [...prevDocs];
+                        newDocs[index] = file; // Update with File or null
+                        return newDocs;
+                      });
+                    }}
+                    className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveDocument(index)}
+                    className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => handleRemoveDocument(index)}
-                  className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
-                >
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
 
           </>
         )}
 
         <div className="mt-6">
-          <button
-            type="submit"
-            className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <ClipLoader size={24} color="#ffffff" />
-                <span className="ml-2">Cargando...</span>
-              </div>
-            ) : (
-              'Guardar y continuar'
-            )}
-          </button>
+          {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+            <>
+              <button
+                type="submit"
+                className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <ClipLoader size={24} color="#ffffff" />
+                    <span className="ml-2">Cargando...</span>
+                  </div>
+                ) : (
+                  'Guardar y continuar'
+                )}
+              </button>
+            </>
+          )}
+
+          {store.request.status >= 10 && (
+            <>
+              <button
+                className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                type="button"
+                onClick={() => {
+                  setStore((prevState) => ({
+                    ...prevState,
+                    currentPosition: 7,
+                  }));
+                }}
+              >
+                Continuar
+              </button>
+            </>
+          )}
         </div>
       </form>
     </div>

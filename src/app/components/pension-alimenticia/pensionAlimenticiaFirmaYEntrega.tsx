@@ -3,12 +3,12 @@ import Swal from 'sweetalert2';
 import AppStateContext from '@context/context';
 import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader';
-import {useFetchSolicitud} from '@utils/fetchCurrentRequest'
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
 
 const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>('office');
-  const [isLoading, setIsLoading] = useState<boolean>(false); 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const context = useContext(AppStateContext);
 
@@ -21,7 +21,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
 
   useEffect(() => {
     if (store.solicitudId) {
-      fetchSolicitud(); 
+      fetchSolicitud();
     }
   }, [store.solicitudId]);
 
@@ -58,7 +58,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
       if (response.status === 200) {
         setStore((prevState) => ({
           ...prevState,
-          solicitudAdicional: true, 
+          solicitudAdicional: true,
           currentPosition: 8
         }));
 
@@ -103,6 +103,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
             checked={selectedOption === 'office'}
             onChange={() => setSelectedOption('office')}
             className="form-radio h-4 w-4 text-purple-600"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
           <label htmlFor="office" className="ml-3 text-sm">
             Puedo ir a sus oficinas a firmar y entregar todo.
@@ -118,6 +119,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
             checked={selectedOption === 'home'}
             onChange={() => setSelectedOption('home')}
             className="form-radio h-4 w-4 text-purple-600"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
           <label htmlFor="home" className="ml-3 text-sm">
             Entrega y firma a domicilio.
@@ -160,21 +162,42 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
       </p>
 
       <div className="mt-6">
-        <button
-          type="submit"
-          className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
-          onClick={handleSubmit}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center">
-              <ClipLoader size={24} color="#ffffff" />
-              <span className="ml-2">Cargando...</span>
-            </div>
-          ) : (
-            'Guardar y continuar'
-          )}
-        </button>
+        {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+          <>
+            <button
+              type="submit"
+              className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <ClipLoader size={24} color="#ffffff" />
+                  <span className="ml-2">Cargando...</span>
+                </div>
+              ) : (
+                'Guardar y continuar'
+              )}
+            </button>
+          </>
+        )}
+
+        {store.request.status >= 10 && (
+          <>
+            <button
+              className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+              type="button"
+              onClick={() => {
+                setStore((prevState) => ({
+                  ...prevState,
+                  currentPosition: 8,
+                }));
+              }}
+            >
+              Continuar
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

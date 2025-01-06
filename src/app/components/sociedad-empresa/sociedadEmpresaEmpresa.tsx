@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import ClipLoader from 'react-spinners/ClipLoader';
 import AppStateContext from '@context/sociedadesContext';
 import axios from 'axios';
-import { useFetchSolicitud } from '@utils/fetchCurrentRequest'; 
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 
 const SociedadEmpresaEmpresa: React.FC = () => {
@@ -20,6 +20,7 @@ const SociedadEmpresaEmpresa: React.FC = () => {
         nombreSociedad1: '',
         nombreSociedad2: '',
         nombreSociedad3: '',
+        cuenta: "",
     });
 
     const [errors, setErrors] = useState({
@@ -49,13 +50,13 @@ const SociedadEmpresaEmpresa: React.FC = () => {
     const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
     useEffect(() => {
         if (store.solicitudId) {
-            fetchSolicitud(); 
+            fetchSolicitud();
         }
     }, [store.solicitudId]);
 
     useEffect(() => {
         if (store.request) {
-            const empresaData = get(store.request, 'empresa', {}); 
+            const empresaData = get(store.request, 'empresa', {});
             if (empresaData && Object.keys(empresaData).length > 0) {
                 setFormData((prevFormData) => ({
                     ...prevFormData,
@@ -227,7 +228,7 @@ const SociedadEmpresaEmpresa: React.FC = () => {
                     personas: true,
                     currentPosition: 4,
                 }));
-                
+
                 Swal.fire({
                     position: "top-end",
                     icon: "success",
@@ -292,6 +293,7 @@ const SociedadEmpresaEmpresa: React.FC = () => {
                         onChange={handleChange}
                         className={`p-4 bg-gray-800 text-white rounded-lg ${errors.nombreSociedad1 ? 'border-2 border-red-500' : ''}`}
                         placeholder="Nombre Sociedad (1)"
+                        disabled={store.request.status >= 10 && store.rol < 20}
                     />
                     <input
                         ref={nombreSociedad2Ref}
@@ -301,6 +303,7 @@ const SociedadEmpresaEmpresa: React.FC = () => {
                         onChange={handleChange}
                         className={`p-4 bg-gray-800 text-white rounded-lg ${errors.nombreSociedad2 ? 'border-2 border-red-500' : ''}`}
                         placeholder="Nombre Sociedad (2)"
+                        disabled={store.request.status >= 10 && store.rol < 20}
                     />
                     <input
                         ref={nombreSociedad3Ref}
@@ -310,23 +313,45 @@ const SociedadEmpresaEmpresa: React.FC = () => {
                         onChange={handleChange}
                         className={`p-4 bg-gray-800 text-white rounded-lg ${errors.nombreSociedad3 ? 'border-2 border-red-500' : ''}`}
                         placeholder="Nombre Sociedad (3)"
+                        disabled={store.request.status >= 10 && store.rol < 20}
                     />
                 </div>
 
-                <button
-                    className="bg-gray-600 text-white w-full py-3 rounded-lg mt-4 hover:bg-gray-500"
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Guardar y continuar'
-                    )}
-                </button>
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 19)) && (
+                    <>
+                        <button
+                            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-4 hover:bg-gray-500"
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Guardar y continuar'
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 4,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );

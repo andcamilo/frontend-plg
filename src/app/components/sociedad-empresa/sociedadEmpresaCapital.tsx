@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import ClipLoader from 'react-spinners/ClipLoader';
 import AppStateContext from '@context/sociedadesContext';
 import axios from 'axios';
-import { useFetchSolicitud } from '@utils/fetchCurrentRequest'; 
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 
 const CapitalDivisionAcciones: React.FC = () => {
@@ -67,13 +67,13 @@ const CapitalDivisionAcciones: React.FC = () => {
     const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
     useEffect(() => {
         if (store.solicitudId) {
-            fetchSolicitud(); 
+            fetchSolicitud();
         }
     }, [store.solicitudId]);
 
     useEffect(() => {
         if (store.request) {
-            const capitalData = get(store.request, 'capital', {}); 
+            const capitalData = get(store.request, 'capital', {});
             if (capitalData && Object.keys(capitalData).length > 0) {
                 setFormData((prevFormData) => ({
                     ...prevFormData,
@@ -224,6 +224,7 @@ const CapitalDivisionAcciones: React.FC = () => {
                             onChange={handleChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.capital ? 'border-2 border-red-500' : ''}`}
                             placeholder="Capital social en dólares"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -237,6 +238,7 @@ const CapitalDivisionAcciones: React.FC = () => {
                             onChange={handleChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cantidadAcciones ? 'border-2 border-red-500' : ''}`}
                             placeholder="Cantidad de Acciones"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -271,20 +273,41 @@ const CapitalDivisionAcciones: React.FC = () => {
                     </div>
                 </div>
 
-                <button
-                    className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Guardar y continuar'
-                    )}
-                </button>
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 19)) && (
+                    <>
+                        <button
+                            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Guardar y continuar'
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 9,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );

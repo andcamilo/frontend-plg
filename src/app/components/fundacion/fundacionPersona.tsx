@@ -24,7 +24,7 @@ const Actions: React.FC<{ id: string, solicitudId: string; onEdit: (id: string, 
         });
 
         if (result.isConfirmed) {
-            try { 
+            try {
                 await axios.delete(`/api/delete-people`, { params: { peopleId: id } });
                 await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId });
                 Swal.fire({
@@ -118,13 +118,13 @@ const SociedadEmpresaPersona: React.FC = () => {
     };
 
     const openModal = (id?: string) => {
-        setSelectedId(id || null); 
+        setSelectedId(id || null);
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
-        setSelectedId(null); 
+        setSelectedId(null);
         fetchData();
     };
 
@@ -135,9 +135,9 @@ const SociedadEmpresaPersona: React.FC = () => {
                     solicitudId: solicitudId
                 }
             });
-    
+
             const people = response.data;
-    
+
             if (!people || people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
@@ -146,16 +146,16 @@ const SociedadEmpresaPersona: React.FC = () => {
                 setHasNextPage(false);
                 return;
             }
-    
+
             // Calcular paginación
             const totalRecords = people.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
-    
+
             const paginatedData = people.slice(
                 (currentPage - 1) * rowsPerPage,
                 currentPage * rowsPerPage
             );
-    
+
             // Formatear los datos con la lógica para mostrar el nombre
             const formattedData = paginatedData.map((persona: any) => ({
                 tipo: persona.tipoPersona,
@@ -174,7 +174,7 @@ const SociedadEmpresaPersona: React.FC = () => {
                 Correo: persona.email,
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
             }));
-    
+
             setData(formattedData); // Aquí se asignan los registros formateados
             setTotalRecords(totalRecords); // Establece el número total de registros
             setTotalPages(totalPages); // Calcula las páginas totales
@@ -184,7 +184,7 @@ const SociedadEmpresaPersona: React.FC = () => {
             console.error('Error fetching people:', error);
         }
     };
-    
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
             <h1 className="text-white text-4xl font-bold">Integrantes de la Fundación</h1>
@@ -208,20 +208,25 @@ const SociedadEmpresaPersona: React.FC = () => {
             </div>
 
             <div className="flex space-x-2 mt-4">
-                <button
-                    className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
-                    type="button"
-                    onClick={() => openModal()}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Nueva Persona'
-                    )}
-                </button>
+
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+                    <>
+                        <button
+                            className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
+                            type="button"
+                            onClick={() => openModal()}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Nueva Persona'
+                            )}
+                        </button>
+                    </>
+                )}
 
                 <button
                     className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
@@ -239,11 +244,11 @@ const SociedadEmpresaPersona: React.FC = () => {
                     )}
                 </button>
             </div>
-            
+
             {isModalOpen && (
                 <ModalPersona
                     onClose={closeModal}
-                    id={selectedId} 
+                    id={selectedId}
                 />
             )}
         </div>

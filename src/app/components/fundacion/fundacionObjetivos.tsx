@@ -120,12 +120,12 @@ const FundacionObjetivos: React.FC = () => {
             try {
                 const path = `uploads/${store.solicitudId}/adjuntoDocumentoContribuyente`;
                 const downloadURL = await uploadFileToFirebase(file, path);
-    
+
                 setFormData((prevData) => ({
                     ...prevData,
                     adjuntoDocumentoContribuyenteURL: downloadURL,
                 }));
-    
+
                 // Quitar el error del campo de archivo si ya se subió un archivo
                 setFieldErrors((prevErrors) => ({
                     ...prevErrors,
@@ -396,6 +396,7 @@ const FundacionObjetivos: React.FC = () => {
                                 checked={formData.selectedObjetivos.includes(objective.value)}
                                 onChange={handleCheckboxChange}
                                 className="mr-3"
+                                disabled={store.request.status >= 10 && store.rol < 20}
                             />
                             <label htmlFor={objective.value} className="text-white">
                                 {objective.label}
@@ -411,6 +412,7 @@ const FundacionObjetivos: React.FC = () => {
                             onChange={handleChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${inputError ? 'border border-red-500' : ''}`}
                             placeholder="Especifique el objetivo"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     )}
                 </div>
@@ -452,6 +454,7 @@ const FundacionObjetivos: React.FC = () => {
                                     onChange={handleChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.nombreContador ? 'border-2 border-red-500' : ''}`}
                                     placeholder="Ingrese el nombre del contador"
+                                    disabled={store.request.status >= 10 && store.rol < 20}
                                 />
                             </div>
 
@@ -465,6 +468,7 @@ const FundacionObjetivos: React.FC = () => {
                                     onChange={handleChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.idoneidadContador ? 'border-2 border-red-500' : ''}`}
                                     placeholder="Ingrese la idoneidad del contador"
+                                    disabled={store.request.status >= 10 && store.rol < 20}
                                 />
                             </div>
                         </div>
@@ -491,6 +495,7 @@ const FundacionObjetivos: React.FC = () => {
                                         onChange={handleChange}
                                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.telefonoContador ? 'border-2 border-red-500' : ''}`}
                                         placeholder="Ingrese el teléfono del contador"
+                                        disabled={store.request.status >= 10 && store.rol < 20}
                                     />
                                 </div>
                             </div>
@@ -505,6 +510,7 @@ const FundacionObjetivos: React.FC = () => {
                                     onChange={handleChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.correoContador ? 'border-2 border-red-500' : ''}`}
                                     placeholder="Ingrese el correo electrónico del contador"
+                                    disabled={store.request.status >= 10 && store.rol < 20}
                                 />
                             </div>
                         </div>
@@ -540,20 +546,41 @@ const FundacionObjetivos: React.FC = () => {
                     )}
                 </div>
 
-                <button
-                    className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Guardar y continuar'
-                    )}
-                </button>
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+                    <>
+                        <button
+                            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Guardar y continuar'
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 13,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );
