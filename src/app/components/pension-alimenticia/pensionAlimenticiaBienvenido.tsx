@@ -294,6 +294,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             />
           </div>
 
+
           <input
             type="text"
             name="cedulaPasaporte"
