@@ -27,6 +27,8 @@ const SociedadEmpresaSolicitante: React.FC = () => {
         confirmEmail: "",
         notificaciones: "",
         terminosAceptados: false,
+        cuenta: "",
+
     });
 
     const [errors, setErrors] = useState({
@@ -54,6 +56,31 @@ const SociedadEmpresaSolicitante: React.FC = () => {
             setIsLoggedIn(true);
         }
     }, []);
+
+    useEffect(() => {
+        if (formData.cuenta) {
+            const fetchUser = async () => {
+                try {
+                    console.log("Cuenta ", formData.cuenta)
+                    const response = await axios.get('/api/get-user-cuenta', {
+                        params: { userCuenta: formData.cuenta },
+                    });
+
+                    const user = response.data;
+                    console.log("Usuario ", user)
+                    setStore((prevData) => ({
+                        ...prevData,
+                        rol: user.solicitud.rol || 0,
+                    }));
+
+                } catch (error) {
+                    console.error('Failed to fetch solicitudes:', error);
+                }
+            };
+
+            fetchUser();
+        }
+    }, [formData.cuenta]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -342,6 +369,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                             onChange={handleChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
                             placeholder="Nombre completo"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -364,6 +392,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                             onChange={handleChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
                             placeholder="Número de teléfono"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -376,6 +405,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                             onChange={handleChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
                             placeholder="Número de cédula o Pasaporte"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -388,6 +418,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                             onChange={handleChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
                             placeholder="Dirección de correo electrónico"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -400,6 +431,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                             onChange={handleChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.confirmEmail ? 'border-2 border-red-500' : ''}`}
                             placeholder="Confirmar correo electrónico"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     </div>
                 </div>
@@ -445,16 +477,37 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                     </label>
                 </div>
 
-                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        "Guardar y continuar"
-                    )}
-                </button>
+                {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+                    <>
+                        <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                "Guardar y continuar"
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 3,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );

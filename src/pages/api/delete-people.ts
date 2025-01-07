@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const externalApiResponse = await axios.delete(
-      `http://localhost:4000/dev/delete-people/${peopleId}`
+      `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/delete-people/${peopleId}`
     );
 
     console.log('🚀 ~ handler ~ externalApiResponse:', externalApiResponse.data);

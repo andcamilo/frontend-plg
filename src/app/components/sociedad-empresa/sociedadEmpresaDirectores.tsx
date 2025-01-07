@@ -32,7 +32,7 @@ const Actions: React.FC<{ id: string, solicitudId: string; }> = ({ id, solicitud
         });
 
         if (result.isConfirmed) {
-            try { 
+            try {
                 /* await axios.delete(`/api/delete-people`, { params: { peopleId: id } }); */
                 await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId, cargo: "directores" });
                 Swal.fire({
@@ -230,20 +230,25 @@ const SociedadEmpresaDirectores: React.FC = () => {
             </div>
 
             <div className="flex space-x-2 mt-4">
-                <button
-                    className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
-                    type="button"
-                    onClick={openModal}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Nuevo Director'
-                    )}
-                </button>
+
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 19)) && (
+                    <>
+                        <button
+                            className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
+                            type="button"
+                            onClick={openModal}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Nuevo Director'
+                            )}
+                        </button>
+                    </>
+                )}
 
                 <button
                     className="bg-profile text-white py-2 px-4 rounded-lg inline-block"

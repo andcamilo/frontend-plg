@@ -58,6 +58,7 @@ const MenoresAlExtranjero: React.FC = () => {
         ustedAutoriza: "Si",
         notificaciones: "",
         pago: false,
+        cuenta: "",
 
         //Autorizante
         nombreCompletoAutorizante: "",
@@ -124,6 +125,45 @@ const MenoresAlExtranjero: React.FC = () => {
         adjuntoBoletosViaje: null as File | null,
         archivoBoletosViajeURL: "",
     });
+
+    useEffect(() => {
+        const userData = checkAuthToken();
+        console.log("userData ", userData)
+        if (userData) {
+            setFormData((prevData) => ({
+                ...prevData,
+                email: userData?.email,
+                confirmEmail: userData?.email,
+                cuenta: userData?.user_id,
+            }));
+            setIsLoggedIn(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (formData.cuenta) {
+            const fetchUser = async () => {
+                try {
+                    console.log("Cuenta ", formData.cuenta)
+                    const response = await axios.get('/api/get-user-cuenta', {
+                        params: { userCuenta: formData.cuenta },
+                    });
+
+                    const user = response.data;
+                    console.log("Usuario ", user)
+                    setStore((prevData) => ({
+                        ...prevData,
+                        rol: user.solicitud.rol || 0,
+                    }));
+
+                } catch (error) {
+                    console.error('Failed to fetch solicitudes:', error);
+                }
+            };
+
+            fetchUser();
+        }
+    }, [formData.cuenta]);
 
     useEffect(() => {
         if (id) {
@@ -1770,6 +1810,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             value={formData.nombreCompleto}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -1782,6 +1823,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             value={formData.email}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
                 </div>
@@ -1797,6 +1839,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
                             placeholder="Número de cédula o pasaporte"
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -1807,6 +1850,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             value={formData.nacionalidad}
                             onChange={handleInputChange}
                             className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         >
                             {getCountries().map((country) => (
                                 <option key={country} value={country}>
@@ -1836,6 +1880,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                 value={formData.telefono}
                                 onChange={handleInputChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                         </div>
                     </div>
@@ -1848,6 +1893,7 @@ const MenoresAlExtranjero: React.FC = () => {
                         value={formData.ustedAutoriza}
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                     >
                         <option value="Si">Si</option>
                         <option value="No">No</option>
@@ -1868,6 +1914,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                     value={formData.nombreCompletoAutorizante || ""}
                                     onChange={handleInputChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompletoAutorizante ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                 />
                             </div>
 
@@ -1880,6 +1927,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                     value={formData.emailAutorizante || ""}
                                     onChange={handleInputChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.emailAutorizante ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                 />
                             </div>
                         </div>
@@ -1905,6 +1953,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                         value={formData.telefonoAutorizante || ""}
                                         onChange={handleInputChange}
                                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefonoAutorizante ? 'border-2 border-red-500' : ''}`}
+                                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                     />
                                 </div>
                             </div>
@@ -1918,6 +1967,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                     value={formData.cedulaPasaporteAutorizante || ""}
                                     onChange={handleInputChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporteAutorizante ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                 />
                             </div>
                         </div>
@@ -1932,6 +1982,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             value={formData.parentescoConMenor || "Padre"}
                             onChange={handleInputChange}
                             className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         >
                             <option value="Padre">Padre</option>
                             <option value="Madre">Madre</option>
@@ -1948,6 +1999,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             name="AdjuntoIdentificacionAutorizante"
                             onChange={handleFileChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoIdentificacionAutorizante ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                         {formData.archivoAutorizanteURL && (
                             <p className="text-sm text-blue-500">
@@ -1970,6 +2022,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                     name="adjuntoTutelaMenor"
                                     onChange={handleFileChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoTutelaMenor ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                 />
                                 {formData.archivoTutelaURL && (
                                     <p className="text-sm text-blue-500">
@@ -1994,6 +2047,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                     value={formData.parentescoConMenorOtros || ""}
                                     onChange={handleInputChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.parentescoConMenorOtros ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                 />
                             </div>
                         </div>
@@ -2010,6 +2064,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                     value={formData.autorizacionTercero || "No"}
                                     onChange={handleInputChange}
                                     className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                 >
                                     <option value="No">No</option>
                                     <option value="Si">Si</option>
@@ -2029,6 +2084,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                             value={formData.quienesAutorizan || "Tutor Legal"}
                                             onChange={handleInputChange}
                                             className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                         >
                                             <option value="Tutor Legal">Tutor Legal</option>
                                             <option value="Padres">Padres</option>
@@ -2050,6 +2106,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                     value={formData.nombreCompletoTutor || ""}
                                                     onChange={handleInputChange}
                                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompletoTutor ? 'border-2 border-red-500' : ''}`}
+                                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                 />
                                             </div>
 
@@ -2062,6 +2119,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                     value={formData.emailTutor || ""}
                                                     onChange={handleInputChange}
                                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.emailTutor ? 'border-2 border-red-500' : ''}`}
+                                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                 />
                                             </div>
                                         </div>
@@ -2087,6 +2145,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                         value={formData.telefonoTutor || ""}
                                                         onChange={handleInputChange}
                                                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefonoTutor ? 'border-2 border-red-500' : ''}`}
+                                                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                     />
                                                 </div>
                                             </div>
@@ -2100,6 +2159,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                     value={formData.cedulaPasaporteTutor || ""}
                                                     onChange={handleInputChange}
                                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporteTutor ? 'border-2 border-red-500' : ''}`}
+                                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                 />
                                             </div>
                                         </div>
@@ -2113,6 +2173,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                     name="adjuntoIdentificacionTutor"
                                                     onChange={handleFileChange}
                                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoIdentificacionTutor ? 'border-2 border-red-500' : ''}`}
+                                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                 />
                                                 {formData.archivoTutorURL && (
                                                     <p className="text-sm text-blue-500">
@@ -2130,6 +2191,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                     name="adjuntoTutorTutelaMenor"
                                                     onChange={handleFileChange}
                                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoTutorTutelaMenor ? 'border-2 border-red-500' : ''}`}
+                                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                 />
                                                 {formData.archivoTutorTutelaURL && (
                                                     <p className="text-sm text-blue-500">
@@ -2159,6 +2221,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             value={formData.nombreCompletoMadre || ""}
                                                             onChange={handleInputChange}
                                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompletoMadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                     </div>
 
@@ -2171,6 +2234,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             value={formData.emailMadre || ""}
                                                             onChange={handleInputChange}
                                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.emailMadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                     </div>
                                                 </div>
@@ -2196,6 +2260,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                                 value={formData.telefonoMadre || ""}
                                                                 onChange={handleInputChange}
                                                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefonoMadre ? 'border-2 border-red-500' : ''}`}
+                                                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                             />
                                                         </div>
                                                     </div>
@@ -2209,6 +2274,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             value={formData.cedulaPasaporteMadre || ""}
                                                             onChange={handleInputChange}
                                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporteMadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                     </div>
 
@@ -2220,6 +2286,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             name="adjuntoIdentificacionMadre"
                                                             onChange={handleFileChange}
                                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoIdentificacionMadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                         {formData.archivoMadreURL && (
                                                             <p className="text-sm text-blue-500">
@@ -2247,6 +2314,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             value={formData.nombreCompletoPadre || ""}
                                                             onChange={handleInputChange}
                                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompletoPadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                     </div>
 
@@ -2259,6 +2327,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             value={formData.emailPadre || ""}
                                                             onChange={handleInputChange}
                                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.emailPadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                     </div>
                                                 </div>
@@ -2284,6 +2353,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                                 value={formData.telefonoPadre || ""}
                                                                 onChange={handleInputChange}
                                                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefonoPadre ? 'border-2 border-red-500' : ''}`}
+                                                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                             />
                                                         </div>
                                                     </div>
@@ -2297,6 +2367,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             value={formData.cedulaPasaportePadre || ""}
                                                             onChange={handleInputChange}
                                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaportePadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                     </div>
 
@@ -2308,6 +2379,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             name="adjuntoIdentificacionPadre"
                                                             onChange={handleFileChange}
                                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoIdentificacionPadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                         {formData.archivoPadreURL && (
                                                             <p className="text-sm text-blue-500">
@@ -2344,6 +2416,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                 value={menor.nombreCompletoMenor}
                                 onChange={(e) => handleMenorChange(index, e)}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.nombreCompletoMenor ? 'border-2 border-red-500' : ''}`}
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                         </div>
 
@@ -2360,6 +2433,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                 value={menor.cedulaPasaporteMenor}
                                 onChange={(e) => handleMenorChange(index, e)}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.cedulaPasaporteMenor ? 'border-2 border-red-500' : ''}`}
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                         </div>
 
@@ -2375,6 +2449,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                 name={`AdjuntoIdentificacionMenor${index}`}
                                 onChange={handleFileChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.AdjuntoIdentificacionMenor ? 'border-2 border-red-500' : ''}`}
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                             {(typeof menor.AdjuntoIdentificacionMenor === "string" && menor.AdjuntoIdentificacionMenor) ? (
                                 // Renderiza el enlace si `AdjuntoIdentificacionMenor` es una URL
@@ -2400,6 +2475,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                 type="button"
                                 onClick={() => handleRemoveMenor(index)}
                                 className="bg-red-600 text-white p-2 rounded-lg mt-4 md:col-span-3"
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             >
                                 Eliminar Menor
                             </button>
@@ -2411,6 +2487,7 @@ const MenoresAlExtranjero: React.FC = () => {
                     type="button"
                     onClick={handleAddMenor}
                     className="bg-gray-600 text-white p-3 rounded-lg mt-4"
+                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                 >
                     Adicionar Menor
                 </button>
@@ -2427,6 +2504,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             value={formData.nombreCompletoAutorizado}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompletoAutorizado ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -2439,6 +2517,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             value={formData.emailAutorizado}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.emailAutorizado ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
                 </div>
@@ -2454,6 +2533,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporteAutorizado ? 'border-2 border-red-500' : ''}`}
                             placeholder="Número de cédula o pasaporte"
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -2464,6 +2544,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             value={formData.nacionalidadAutorizado}
                             onChange={handleInputChange}
                             className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         >
                             {getCountries().map((country) => (
                                 <option key={country} value={country}>
@@ -2493,6 +2574,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                 value={formData.telefonoAutorizado}
                                 onChange={handleInputChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefonoAutorizado ? 'border-2 border-red-500' : ''}`}
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                         </div>
                     </div>
@@ -2507,6 +2589,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             name="adjuntoIdentificacionAutorizado"
                             onChange={handleFileChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoIdentificacionAutorizado ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                         {formData.archivoAutorizadoURL && (
                             <p className="text-sm text-blue-500">
@@ -2525,6 +2608,7 @@ const MenoresAlExtranjero: React.FC = () => {
                         value={formData.parentescoConMenorAutorizado || "Padre"}
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                     >
                         <option value="Padre">Padre</option>
                         <option value="Madre">Madre</option>
@@ -2545,6 +2629,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                     value={formData.parentescoAutorizadoOtros || ""}
                                     onChange={handleInputChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.parentescoAutorizadoOtros ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                 />
                             </div>
                         </div>
@@ -2562,6 +2647,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             placeholder="dd/mm/aaaa"
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.fechaSalidaMenor ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -2575,6 +2661,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             placeholder="dd/mm/aaaa"
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.fechaRetornoMenor ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -2588,6 +2675,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             placeholder="dd/mm/aaaa"
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.fechaFirmaNotaria ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
                 </div>
@@ -2600,6 +2688,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             name="adjuntoBoletosViaje"
                             onChange={handleFileChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoBoletosViaje ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                         {formData.archivoBoletosViajeURL && (
                             <p className="text-sm text-blue-500">
@@ -2681,20 +2770,49 @@ const MenoresAlExtranjero: React.FC = () => {
                     </label>
                 </div>
 
-                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        "Enviar y pagar"
-                    )}
-                </button>
+                {!solicitudData && (
+                    <>
+                        <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                "Enviar y pagar"
+                            )}
+                        </button>
+                    </>
+                )}
 
-                {/* <Button variant="contained" color="primary" onClick={handleOpen}>
-                    Realizar Pago
-                </Button> */}
+                {solicitudData && solicitudData.status < 10 && (
+                    <>
+                        <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                "Enviar y pagar"
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {solicitudData && solicitudData.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                window.location.href = "/dashboard/requests";
+                            }}
+                        >
+                            Volver
+                        </button>
+                    </>
+                )}
 
                 {/* Modal */}
                 <Modal

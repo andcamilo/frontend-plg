@@ -101,9 +101,9 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                     solicitudId: solicitudId
                 }
             });
-    
+
             const people = response.data;
-    
+
             if (!people || people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
@@ -112,19 +112,19 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                 setHasNextPage(false);
                 return;
             }
-    
+
             // Filtrar solo las personas que tienen el campo `dignatario`
             const dignatarios = people.filter((persona: any) => persona.dignatario);
-    
+
             // Calcular paginación solo con los registros filtrados
             const totalRecords = dignatarios.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
-    
+
             const paginatedData = dignatarios.slice(
                 (currentPage - 1) * rowsPerPage,
                 currentPage * rowsPerPage
             );
-    
+
             const formattedData = paginatedData.map((persona: any) => ({
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
@@ -141,15 +141,15 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                 posicion: persona.dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
                 Opciones: '...',
             }));
-    
+
             const solicitudes = await axios.get('/api/get-request-id', {
                 params: {
                     solicitudId
                 },
             });
-    
+
             const requestData = solicitudes.data;
-    
+
             let formattedRequestData = [];
             if (requestData && requestData.dignatarios) {
                 formattedRequestData = requestData.dignatarios
@@ -160,9 +160,9 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                         Opciones: '...',
                     }));
             }
-    
+
             const combinedData: DignatarioNominalData[] = [...formattedData, ...formattedRequestData];
-    
+
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(totalPages);
@@ -171,7 +171,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
         } catch (error) {
             console.error('Error fetching people:', error);
         }
-    };    
+    };
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -197,20 +197,25 @@ const SociedadEmpresaDignatarios: React.FC = () => {
             </div>
 
             <div className="flex space-x-2 mt-4">
-                <button
-                    className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
-                    type="button"
-                    onClick={openModal}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Nuevo Dignatario'
-                    )}
-                </button>
+
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 19)) && (
+                    <>
+                        <button
+                            className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
+                            type="button"
+                            onClick={openModal}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Nuevo Dignatario'
+                            )}
+                        </button>
+                    </>
+                )}
 
                 <button
                     className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
@@ -228,7 +233,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                     )}
                 </button>
             </div>
-            
+
             {isModalOpen
                 && <ModalDignatarios onClose={closeModal} />
             }

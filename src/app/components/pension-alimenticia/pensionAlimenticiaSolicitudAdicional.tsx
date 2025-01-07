@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import AppStateContext from '@context/context'; // Import the context
 import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
-import {useFetchSolicitud} from '@utils/fetchCurrentRequest'
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
 
 const convertFileToBase64 = (file: File) => {
@@ -32,7 +32,7 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
 
   useEffect(() => {
     if (store.solicitudId) {
-      fetchSolicitud(); 
+      fetchSolicitud();
     }
   }, [store.solicitudId]);
 
@@ -74,7 +74,7 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
         // Update context after successful submission
         setStore((prevState) => ({
           ...prevState,
-          resumen: true, 
+          resumen: true,
           currentPosition: 9
         }));
 
@@ -117,6 +117,7 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
             value={additionalRequest}
             onChange={(e) => setAdditionalRequest(e.target.value)}
             className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            disabled={store.request.status >= 10 && store.rol < 20}
           ></textarea>
         </div>
 
@@ -127,25 +128,47 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
             type="file"
             onChange={handleFileChange}
             className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
 
         {/* Submit Button */}
         <div className="mt-6">
-          <button
-            type="submit"
-            className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
-            disabled={isLoading} // Disable button while loading
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <ClipLoader size={24} color="#ffffff" />
-                <span className="ml-2">Cargando...</span>
-              </div>
-            ) : (
-              'Guardar y Continuar'
-            )}
-          </button>
+          {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+            <>
+              <button
+                type="submit"
+                className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+                disabled={isLoading} // Disable button while loading
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <ClipLoader size={24} color="#ffffff" />
+                    <span className="ml-2">Cargando...</span>
+                  </div>
+                ) : (
+                  'Guardar y Continuar'
+                )}
+              </button>
+            </>
+          )}
+
+          {store.request.status >= 10 && (
+            <>
+              <button
+                className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                type="button"
+                onClick={() => {
+                  setStore((prevState) => ({
+                    ...prevState,
+                    currentPosition: 9,
+                  }));
+                }}
+              >
+                Continuar
+              </button>
+            </>
+          )}
         </div>
       </form>
     </div>

@@ -64,9 +64,9 @@ const SociedadEmpresaPoder: React.FC = () => {
                     solicitudId: solicitudId
                 }
             });
-    
+
             const people = response.data;
-    
+
             if (!people || people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
@@ -75,19 +75,19 @@ const SociedadEmpresaPoder: React.FC = () => {
                 setHasNextPage(false);
                 return;
             }
-    
+
             // Filtrar solo las personas que tienen el campo `poder`
             const personasConPoder = people.filter((persona: any) => persona.poder);
-    
+
             // Calcular paginación solo con los registros filtrados
             const totalRecords = personasConPoder.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
-    
+
             const paginatedData = personasConPoder.slice(
                 (currentPage - 1) * rowsPerPage,
                 currentPage * rowsPerPage
             );
-    
+
             const formattedData = paginatedData.map((persona: any) => ({
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
@@ -104,7 +104,7 @@ const SociedadEmpresaPoder: React.FC = () => {
                 correo: persona.email || '---',
                 accion: '...',
             }));
-    
+
             setData(formattedData); // Asigna los registros filtrados y formateados
             setTotalRecords(totalRecords); // Total de registros filtrados
             setTotalPages(totalPages); // Páginas totales después del filtro
@@ -113,7 +113,7 @@ const SociedadEmpresaPoder: React.FC = () => {
         } catch (error) {
             console.error('Error fetching people:', error);
         }
-    };        
+    };
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -140,20 +140,26 @@ const SociedadEmpresaPoder: React.FC = () => {
             </div>
 
             <div className="flex space-x-2 mt-4">
-                <button
-                    className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
-                    type="button"
-                    onClick={openModal}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Nuevo Poder'
-                    )}
-                </button>
+
+
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 19)) && (
+                    <>
+                        <button
+                            className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
+                            type="button"
+                            onClick={openModal}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Nuevo Poder'
+                            )}
+                        </button>
+                    </>
+                )}
 
                 <button
                     className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
@@ -171,7 +177,7 @@ const SociedadEmpresaPoder: React.FC = () => {
                     )}
                 </button>
             </div>
-            
+
             {isModalOpen
                 && <ModalPoder onClose={closeModal} />
             }

@@ -18,7 +18,7 @@ interface RequestData {
   tipo: string;
 }
 
-const createRequestUrl = `${backendBaseUrl}/dev/create-request`;
+const createRequestUrl = `${backendBaseUrl}/chris/create-request`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
