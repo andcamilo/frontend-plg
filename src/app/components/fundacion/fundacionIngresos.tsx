@@ -220,6 +220,7 @@ const IngresosFundacion: React.FC = () => {
                                 checked={formData.ingresos.includes(ingreso.value)} // Comprobar si está seleccionado
                                 onChange={handleCheckboxChange} // Maneja los cambios en los checkboxes
                                 className="mr-3"
+                                disabled={store.request.status >= 10 && store.rol < 20}
                             />
                             {ingreso.label}
                         </label>
@@ -233,6 +234,7 @@ const IngresosFundacion: React.FC = () => {
                             checked={mostrarOtro}
                             onChange={(e) => setMostrarOtro(e.target.checked)}
                             className="mr-3"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                         Otro
                     </label>
@@ -248,24 +250,46 @@ const IngresosFundacion: React.FC = () => {
                             }}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${inputError ? 'border border-red-500' : ''}`}
                             placeholder="Especifique el ingreso"
+                            disabled={store.request.status >= 10 && store.rol < 20}
                         />
                     )}
                 </div>
 
-                <button
-                    className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Guardar y continuar'
-                    )}
-                </button>
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+                    <>
+                        <button
+                            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Guardar y continuar'
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 14,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );

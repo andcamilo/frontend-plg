@@ -24,7 +24,7 @@ const Actions: React.FC<{ id: string, solicitudId: string; onEdit: (id: string, 
         });
 
         if (result.isConfirmed) {
-            try { 
+            try {
                 await axios.delete(`/api/delete-people`, { params: { peopleId: id } });
                 await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId });
                 Swal.fire({
@@ -70,7 +70,6 @@ const SociedadEmpresaPersona: React.FC = () => {
     const [hasPrevPage, setHasPrevPage] = useState(false);
     const [hasNextPage, setHasNextPage] = useState(false);
     const rowsPerPage = 10;
-
 
     const { store, setStore } = context;
     const solicitudId = store.solicitudId; // Aquí obtienes el `solicitudId` actual del store
@@ -208,20 +207,25 @@ const SociedadEmpresaPersona: React.FC = () => {
             </div>
 
             <div className="flex space-x-2 mt-4">
-                <button
-                    className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
-                    type="button"
-                    onClick={() => openModal()}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Nueva Persona'
-                    )}
-                </button>
+
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 19)) && (
+                    <>
+                        <button
+                            className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
+                            type="button"
+                            onClick={() => openModal()}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Nueva Persona'
+                            )}
+                        </button>
+                    </>
+                )}
 
                 <button
                     className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
@@ -243,7 +247,7 @@ const SociedadEmpresaPersona: React.FC = () => {
             {isModalOpen && (
                 <ModalPersona
                     onClose={closeModal}
-                    id={selectedId} 
+                    id={selectedId}
                 />
             )}
         </div>

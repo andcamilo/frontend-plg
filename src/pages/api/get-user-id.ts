@@ -15,7 +15,7 @@ const getUserById = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     // Enviar solicitud al backend con el `userId`
-    const response = await axios.get(`${backendBaseUrl}/dev/get-user-id/${userId}`);
+    const response = await axios.get(`${backendBaseUrl}/chris/get-user-id/${userId}`);
 
     // Retornar la respuesta del backend
     res.status(200).json(response.data);

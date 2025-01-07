@@ -64,9 +64,9 @@ const FundacionPoder: React.FC = () => {
                     solicitudId: solicitudId
                 }
             });
-    
+
             const people = response.data;
-    
+
             if (!people || people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
@@ -75,19 +75,19 @@ const FundacionPoder: React.FC = () => {
                 setHasNextPage(false);
                 return;
             }
-    
+
             // Filtrar solo los registros que tengan el campo 'poder'
             const filteredPeople = people.filter((persona: any) => persona.poder);
-    
+
             // Calcular paginación
             const totalRecords = filteredPeople.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
-    
+
             const paginatedData = filteredPeople.slice(
                 (currentPage - 1) * rowsPerPage,
                 currentPage * rowsPerPage
             );
-    
+
             // Formatear los datos con la lógica para mostrar el nombre
             const formattedData = paginatedData.map((persona: any) => ({
                 nombre: persona.tipoPersona === 'Persona Jurídica'
@@ -105,7 +105,7 @@ const FundacionPoder: React.FC = () => {
                 correo: persona.email || '---',
                 accion: '...',
             }));
-    
+
             setData(formattedData); // Aquí se asignan los registros formateados
             setTotalRecords(totalRecords); // Establece el número total de registros
             setTotalPages(totalPages); // Calcula las páginas totales
@@ -115,7 +115,7 @@ const FundacionPoder: React.FC = () => {
             console.error('Error fetching people:', error);
         }
     };
-    
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
             <h1 className="text-white text-4xl font-bold">Poder General</h1>
@@ -141,20 +141,25 @@ const FundacionPoder: React.FC = () => {
             </div>
 
             <div className="flex space-x-2 mt-4">
-                <button
-                    className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
-                    type="button"
-                    onClick={openModal}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Nuevo Poder'
-                    )}
-                </button>
+
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+                    <>
+                        <button
+                            className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
+                            type="button"
+                            onClick={openModal}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Nuevo Poder'
+                            )}
+                        </button>
+                    </>
+                )}
 
                 <button
                     className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
@@ -172,7 +177,7 @@ const FundacionPoder: React.FC = () => {
                     )}
                 </button>
             </div>
-            
+
             {isModalOpen
                 && <ModalPoder onClose={closeModal} />
             }

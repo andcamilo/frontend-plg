@@ -3,15 +3,27 @@ import { backendBaseUrl } from '@utils/env';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export const getLineItem = (pensionType) => {
-  return {
-    item_id: "5848961000000098003",
-    name: "Legal Services",
-    description: "Professional legal services rendered.",
-    quantity: 1,
-    rate: 150,
-    item_order: 1,
-  };
+  if (pensionType === "Primera vez") {
+    return {
+      item_id: "5848961000000098003",
+      name: "Legal Services",
+      description: "Professional legal services rendered.",
+      quantity: 1,
+      rate: 150,
+      item_order: 1,
+    };
+  } else {
+    return {
+      item_id: "5848961000000148093",
+      name: "Legal Services 2",
+      description: "Professional legal services rendered.",
+      quantity: 1,
+      rate: 200,
+      item_order: 1,
+    };
+  }
 };
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

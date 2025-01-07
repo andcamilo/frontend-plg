@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import ClipLoader from 'react-spinners/ClipLoader';
 import FundacionContext from '@context/fundacionContext'; // Cambiar al contexto de Fundación
 import axios from 'axios';
-import { useFetchSolicitud } from '@utils/fetchCurrentRequest'; 
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 
 const FundacionFundacion: React.FC = () => {
@@ -15,7 +15,7 @@ const FundacionFundacion: React.FC = () => {
     }
 
     const { store, setStore } = context;
-    
+
 
     const [formData, setFormData] = useState({
         nombreFundacion1: '',
@@ -225,6 +225,7 @@ const FundacionFundacion: React.FC = () => {
                         onChange={handleChange}
                         className={`p-4 bg-gray-800 text-white rounded-lg ${errors.nombreFundacion1 ? 'border-2 border-red-500' : ''}`}
                         placeholder="Nombre Fundación (1)"
+                        disabled={store.request.status >= 10 && store.rol < 20}
                     />
                     <input
                         ref={nombreFundacion2Ref}
@@ -234,6 +235,7 @@ const FundacionFundacion: React.FC = () => {
                         onChange={handleChange}
                         className={`p-4 bg-gray-800 text-white rounded-lg ${errors.nombreFundacion2 ? 'border-2 border-red-500' : ''}`}
                         placeholder="Nombre Fundación (2)"
+                        disabled={store.request.status >= 10 && store.rol < 20}
                     />
                     <input
                         ref={nombreFundacion3Ref}
@@ -243,23 +245,45 @@ const FundacionFundacion: React.FC = () => {
                         onChange={handleChange}
                         className={`p-4 bg-gray-800 text-white rounded-lg ${errors.nombreFundacion3 ? 'border-2 border-red-500' : ''}`}
                         placeholder="Nombre Fundación (3)"
+                        disabled={store.request.status >= 10 && store.rol < 20}
                     />
                 </div>
 
-                <button
-                    className="bg-gray-600 text-white w-full py-3 rounded-lg mt-4 hover:bg-gray-500"
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Guardar y continuar'
-                    )}
-                </button>
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 19)) && (
+                    <>
+                        <button
+                            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-4 hover:bg-gray-500"
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Guardar y continuar'
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 4,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );

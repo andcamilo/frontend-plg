@@ -76,7 +76,6 @@ const SolicitudAdicional: React.FC = () => {
     if (store.request) {
       const solicitudAdicional = get(store.request, 'solicitudAdicional.solicitudAdicional', '');
       const archivoURL = get(store.request, 'solicitudAdicional.archivoURL', '');
-
       setFormData((prevFormData) => ({
         ...prevFormData,
         solicitudAdicional,
@@ -202,6 +201,8 @@ const SolicitudAdicional: React.FC = () => {
             onChange={handleInputChange}
             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${inputError ? 'border-2 border-red-500' : ''}`}
             placeholder="Describe tu solicitud adicional"
+            disabled={(store.request?.solicitudAdicional?.solicitudAdicional &&
+              store.request?.solicitudAdicional?.solicitudAdicional !== "") && store.rol < 20}
           />
         </div>
 
@@ -222,20 +223,25 @@ const SolicitudAdicional: React.FC = () => {
           />
         </div>
         <div className="flex space-x-2 mt-4">
-          <button
-            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-profile"
-            type="submit"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <ClipLoader size={24} color="#ffffff" />
-                <span className="ml-2">Cargando...</span>
-              </div>
-            ) : (
-              'Guardar y Continuar'
-            )}
-          </button>
+
+          {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+            <>
+              <button
+                className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-profile"
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <ClipLoader size={24} color="#ffffff" />
+                    <span className="ml-2">Cargando...</span>
+                  </div>
+                ) : (
+                  'Guardar y Continuar'
+                )}
+              </button>
+            </>
+          )}
 
           <button
             className="bg-profile text-white w-full py-3 rounded-lg mt-6"
@@ -249,6 +255,7 @@ const SolicitudAdicional: React.FC = () => {
           >
             Continuar
           </button>
+
         </div>
       </form>
     </div>

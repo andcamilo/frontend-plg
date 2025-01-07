@@ -179,7 +179,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </Link>
         </div>
       )}
-      {true && (
+      {formData?.rol && formData.rol >= 35 && (
         <>
           <p className='font-bold'>Trámites internos</p>
           <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
@@ -197,8 +197,8 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           <Link href="/dashboard/see" className={`block mb-2 ${isActive('/dashboard/see')}`} onClick={closeMenu}>
             Ver Desembolsos
           </Link>
-          <Link href="/dashboard/expense" className={`block mb-2 ${isActive('/dashboard/expense')}`} onClick={closeMenu}>
-            Crear Gasto
+          <Link href="/dashboard/invoices" className={`block mb-2 ${isActive('/dashboard/invoices')}`} onClick={closeMenu}>
+            Ver Facturas
           </Link>
 
         </div>

@@ -214,12 +214,12 @@ const Actividades: React.FC = () => {
             try {
                 const path = `uploads/${store.solicitudId}/adjuntoDocumentoContribuyente`;
                 const downloadURL = await uploadFileToFirebase(file, path);
-    
+
                 setFormData((prevData) => ({
                     ...prevData,
                     archivoContribuyenteURL: downloadURL,
                 }));
-    
+
                 // Quitar el error del campo de archivo si ya se subió un archivo
                 setFieldErrors((prevErrors) => ({
                     ...prevErrors,
@@ -230,7 +230,7 @@ const Actividades: React.FC = () => {
             }
         }
     };
-    
+
 
     const uploadFileToFirebase = (file: File, path: string): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -581,6 +581,7 @@ const Actividades: React.FC = () => {
                                 onChange={handleChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.nombreComercial ? 'border-2 border-red-500' : ''}`}
                                 placeholder="Ingrese el nombre comercial"
+                                disabled={store.request.status >= 10 && store.rol < 20}
                             />
                             {/* Solo muestra el mensaje de error una vez */}
                             {error === 'Por favor, ingrese el nombre comercial.' && <p className="text-red-500">{error}</p>}
@@ -600,6 +601,7 @@ const Actividades: React.FC = () => {
                                 onChange={handleChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.direccionComercial ? 'border-2 border-red-500' : ''}`}
                                 placeholder="Ingrese la dirección comercial"
+                                disabled={store.request.status >= 10 && store.rol < 20}
                             />
                             {error === 'Por favor, ingrese la dirección comercial.' && <p className="text-red-500">{error}</p>}
 
@@ -617,7 +619,7 @@ const Actividades: React.FC = () => {
                                 onChange={handleChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.comoLlegar ? 'border-2 border-red-500' : ''}`}
                                 placeholder="Especifique cómo llegar"
-                            /* required */
+                                disabled={store.request.status >= 10 && store.rol < 20}
                             />
                         </div>
 
@@ -661,7 +663,7 @@ const Actividades: React.FC = () => {
                                 onChange={handleChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.numeroLocal ? 'border-2 border-red-500' : ''}`}
                                 placeholder="Ingrese el número de local"
-                            /* required */
+                                disabled={store.request.status >= 10 && store.rol < 20}
                             />
                         </div>
 
@@ -675,7 +677,7 @@ const Actividades: React.FC = () => {
                                 onChange={handleChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.nombreEdificio ? 'border-2 border-red-500' : ''}`}
                                 placeholder="Ingrese el nombre del edificio"
-                            /* required */
+                                disabled={store.request.status >= 10 && store.rol < 20}
                             />
                         </div>
 
@@ -690,7 +692,7 @@ const Actividades: React.FC = () => {
                                     onChange={handleChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.inversionSucursal ? 'border-2 border-red-500' : ''}`}
                                     placeholder="Monto de la inversión"
-                                /* required */
+                                    disabled={store.request.status >= 10 && store.rol < 20}
                                 />
                             </div>
 
@@ -704,7 +706,7 @@ const Actividades: React.FC = () => {
                                     onChange={handleChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.cantidadTrabajadores ? 'border-2 border-red-500' : ''}`}
                                     placeholder="Número de trabajadores"
-                                /* required */
+                                    disabled={store.request.status >= 10 && store.rol < 20}
                                 />
                             </div>
                         </div>
@@ -744,7 +746,7 @@ const Actividades: React.FC = () => {
                                         onChange={handleChange}
                                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.telefono ? 'border-2 border-red-500' : ''}`}
                                         placeholder="Ingrese el teléfono"
-                                    /* required */
+                                        disabled={store.request.status >= 10 && store.rol < 20}
                                     />
                                 </div>
                             </div>
@@ -759,7 +761,7 @@ const Actividades: React.FC = () => {
                                     onChange={handleChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.correoElectronico ? 'border-2 border-red-500' : ''}`}
                                     placeholder="Ingrese el correo electrónico"
-                                /* required */
+                                    disabled={store.request.status >= 10 && store.rol < 20}
                                 />
                             </div>
                         </div>
@@ -781,7 +783,7 @@ const Actividades: React.FC = () => {
                                     onChange={handleChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.actividad1 ? 'border-2 border-red-500' : ''}`}
                                     placeholder="Ingrese la actividad comercial"
-                                /* required */
+                                    disabled={store.request.status >= 10 && store.rol < 20}
                                 />
                             </div>
 
@@ -795,6 +797,7 @@ const Actividades: React.FC = () => {
                                     onChange={handleChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.actividad2 ? 'border-2 border-red-500' : ''}`}
                                     placeholder="Ingrese la segunda actividad"
+                                    disabled={store.request.status >= 10 && store.rol < 20}
                                 />
                             </div>
 
@@ -808,6 +811,7 @@ const Actividades: React.FC = () => {
                                     onChange={handleChange}
                                     className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.actividad3 ? 'border-2 border-red-500' : ''}`}
                                     placeholder="Ingrese la tercera actividad"
+                                    disabled={store.request.status >= 10 && store.rol < 20}
                                 />
                             </div>
                         </div>
@@ -849,7 +853,7 @@ const Actividades: React.FC = () => {
                                             onChange={handleChange}
                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.nombreContador ? 'border-2 border-red-500' : ''}`}
                                             placeholder="Ingrese el nombre del contador"
-                                        /* required */
+                                            disabled={store.request.status >= 10 && store.rol < 20}
                                         />
                                     </div>
 
@@ -863,7 +867,7 @@ const Actividades: React.FC = () => {
                                             onChange={handleChange}
                                             className="w-full p-4 bg-gray-800 text-white rounded-lg"
                                             placeholder="Ingrese la idoneidad del contador"
-                                        /* required */
+                                            disabled={store.request.status >= 10 && store.rol < 20}
                                         />
                                     </div>
                                 </div>
@@ -890,6 +894,7 @@ const Actividades: React.FC = () => {
                                                 onChange={handleChange}
                                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.telefonoContador ? 'border-2 border-red-500' : ''}`}
                                                 placeholder="Ingrese el teléfono del contador"
+                                                disabled={store.request.status >= 10 && store.rol < 20}
                                             />
                                         </div>
                                     </div>
@@ -904,7 +909,7 @@ const Actividades: React.FC = () => {
                                             onChange={handleChange}
                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.correoContador ? 'border-2 border-red-500' : ''}`}
                                             placeholder="Ingrese el correo electrónico del contador"
-                                        /* required */
+                                            disabled={store.request.status >= 10 && store.rol < 20}
                                         />
                                     </div>
                                 </div>
@@ -1012,6 +1017,7 @@ const Actividades: React.FC = () => {
                                             onChange={handleChange}
                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.actividadOffshore1 ? 'border-2 border-red-500' : ''}`}
                                             placeholder="Ingrese la primera actividad comercial"
+                                            disabled={store.request.status >= 10 && store.rol < 20}
                                         />
                                     </div>
 
@@ -1025,6 +1031,7 @@ const Actividades: React.FC = () => {
                                             onChange={handleChange}
                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.actividadOffshore2 ? 'border-2 border-red-500' : ''}`}
                                             placeholder="Ingrese la segunda actividad comercial"
+                                            disabled={store.request.status >= 10 && store.rol < 20}
                                         />
                                     </div>
 
@@ -1037,6 +1044,7 @@ const Actividades: React.FC = () => {
                                             onChange={handleChange}
                                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.paisesActividadesOffshore ? 'border-2 border-red-500' : ''}`}
                                             placeholder="Ingrese los países principales"
+                                            disabled={store.request.status >= 10 && store.rol < 20}
                                         />
                                     </div>
                                 </div>
@@ -1058,6 +1066,7 @@ const Actividades: React.FC = () => {
                                                 checked={Array.isArray(formData.actividadTenedora) && formData.actividadTenedora.includes('vehiculoInversion')}
                                                 onChange={handleCheckboxChange}
                                                 className="mr-3"
+                                                disabled={store.request.status >= 10 && store.rol < 20}
                                             />
                                             <label htmlFor="vehiculoInversion" className="text-white">Vehículo de Inversión</label>
                                         </div>
@@ -1071,6 +1080,7 @@ const Actividades: React.FC = () => {
                                                 checked={Array.isArray(formData.actividadTenedora) && formData.actividadTenedora.includes('portafolioBienesRaices')}
                                                 onChange={handleCheckboxChange}
                                                 className="mr-3"
+                                                disabled={store.request.status >= 10 && store.rol < 20}
                                             />
                                             <label htmlFor="portafolioBienesRaices" className="text-white">Portafolio de Bienes Raíces</label>
                                         </div>
@@ -1084,6 +1094,7 @@ const Actividades: React.FC = () => {
                                                 checked={Array.isArray(formData.actividadTenedora) && formData.actividadTenedora.includes('tenedoraActivos')}
                                                 onChange={handleCheckboxChange}
                                                 className="mr-3"
+                                                disabled={store.request.status >= 10 && store.rol < 20}
                                             />
                                             <label htmlFor="tenedoraActivos" className="text-white">Tenedora de Activos</label>
                                         </div>
@@ -1097,6 +1108,7 @@ const Actividades: React.FC = () => {
                                                 checked={Array.isArray(formData.actividadTenedora) && formData.actividadTenedora.includes('grupoEconomico')}
                                                 onChange={handleCheckboxChange}
                                                 className="mr-3"
+                                                disabled={store.request.status >= 10 && store.rol < 20}
                                             />
                                             <label htmlFor="grupoEconomico" className="text-white">Como parte de una estructura o grupo económico</label>
                                         </div>
@@ -1110,6 +1122,7 @@ const Actividades: React.FC = () => {
                                                 checked={Array.isArray(formData.actividadTenedora) && formData.actividadTenedora.includes('duenoNaveAeronave')}
                                                 onChange={handleCheckboxChange}
                                                 className="mr-3"
+                                                disabled={store.request.status >= 10 && store.rol < 20}
                                             />
                                             <label htmlFor="duenoNaveAeronave" className="text-white">Dueño de Nave o Aeronave</label>
                                         </div>
@@ -1120,20 +1133,42 @@ const Actividades: React.FC = () => {
 
                     </>
                 )}
-                <button
-                    className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center">
-                            <ClipLoader size={24} color="#ffffff" />
-                            <span className="ml-2">Cargando...</span>
-                        </div>
-                    ) : (
-                        'Guardar y continuar'
-                    )}
-                </button>
+
+                {(store.request.status < 10 || (store.request.status >= 10 && store.rol > 19)) && (
+                    <>
+                        <button
+                            className="bg-gray-600 text-white w-full py-3 rounded-lg mt-6 hover:bg-gray-500"
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <ClipLoader size={24} color="#ffffff" />
+                                    <span className="ml-2">Cargando...</span>
+                                </div>
+                            ) : (
+                                'Guardar y continuar'
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {store.request.status >= 10 && (
+                    <>
+                        <button
+                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                            type="button"
+                            onClick={() => {
+                                setStore((prevState) => ({
+                                    ...prevState,
+                                    currentPosition: 11,
+                                }));
+                            }}
+                        >
+                            Continuar
+                        </button>
+                    </>
+                )}
             </form>
         </div>
     );

@@ -56,7 +56,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
 
   useEffect(() => {
     if (store.solicitudId) {
-      fetchSolicitud(); 
+      fetchSolicitud();
     }
   }, [store.solicitudId]);
 
@@ -203,6 +203,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -229,6 +230,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -240,6 +242,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -251,6 +254,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -260,6 +264,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               value={formData.nacionalidad.value}
               onChange={(e) => handleSelectChange('nacionalidad', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              disabled={store.request.status >= 10 && store.rol < 20}
             >
               {paises.map((pais) => (
                 <option key={pais.value} value={pais.value}>
@@ -278,6 +283,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               onChange={(e) => handleSelectChange('provincia', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             >
               {provincias.map((provincia) => (
                 <option key={provincia.value} value={provincia.value}>
@@ -294,7 +300,8 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               value={formData.corregimiento.value}
               onChange={(e) => handleSelectChange('corregimiento', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              required
+              /* required */
+              disabled={store.request.status >= 10 && store.rol < 20}
             >
               {corregimientos.map((corregimiento) => (
                 <option key={corregimiento.value} value={corregimiento.value}>
@@ -315,6 +322,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               }}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             >
               {mantieneIngresosOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -334,6 +342,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
                   value={formData.ocupacion}
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  disabled={store.request.status >= 10 && store.rol < 20}
                 />
               </div>
               <div>
@@ -344,6 +353,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
                   value={formData.ingresosTrabajo}
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  disabled={store.request.status >= 10 && store.rol < 20}
                 />
               </div>
               <div>
@@ -353,6 +363,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
                   value={formData.detalleDireccionTrabajo}
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  disabled={store.request.status >= 10 && store.rol < 20}
                 />
               </div>
               <div>
@@ -362,11 +373,12 @@ const PensionAlimenticiaDemandado: React.FC = () => {
                   value={formData.direccionTrabajo}
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  disabled={store.request.status >= 10 && store.rol < 20}
                 />
               </div>
             </>
           )}
-                    
+
           <div>
             <label className="block mb-2 text-xs">Teléfono:</label>
             <select
@@ -374,6 +386,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               value={formData.telefonoCodigo}
               onChange={handleSelectCountryCodeChange}
               className="p-3 bg-gray-800 text-white rounded-lg"
+              disabled={store.request.status >= 10 && store.rol < 20}
             >
               {Object.entries(countryCodes).map(([code, dialCode]) => (
                 <option key={code} value={code}>{code}: {dialCode}</option>
@@ -385,25 +398,48 @@ const PensionAlimenticiaDemandado: React.FC = () => {
               value={removeCountryCode(formData.telefono)}
               onChange={handleChange}
               className="ml-1 p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
         </div>
 
         <div className="mt-6">
-          <button
-            type="submit"
-            className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <ClipLoader size={24} color="#ffffff" />
-                <span className="ml-2">Cargando...</span>
-              </div>
-            ) : (
-              'Guardar y continuar'
-            )}
-          </button>
+
+          {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+            <>
+              <button
+                type="submit"
+                className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <ClipLoader size={24} color="#ffffff" />
+                    <span className="ml-2">Cargando...</span>
+                  </div>
+                ) : (
+                  'Guardar y continuar'
+                )}
+              </button>
+            </>
+          )}
+
+          {store.request.status >= 10 && (
+            <>
+              <button
+                className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                type="button"
+                onClick={() => {
+                  setStore((prevState) => ({
+                    ...prevState,
+                    currentPosition: 5,
+                  }));
+                }}
+              >
+                Continuar
+              </button>
+            </>
+          )}
         </div>
       </form>
     </div>

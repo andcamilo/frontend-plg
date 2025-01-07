@@ -6,6 +6,7 @@ export interface MenoresState {
     mensaje: string;
     solicitudId: string;
     token: string;
+    rol: number;
 };
 
 export interface MenoresContextType {
@@ -20,6 +21,7 @@ const initialState: MenoresState = {
     mensaje: '',
     solicitudId: '',
     token: '',
+    rol: -1,
 };
 
 const MenoresContext = createContext<MenoresContextType | undefined>(undefined);

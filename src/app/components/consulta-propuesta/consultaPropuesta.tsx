@@ -68,6 +68,7 @@ const ConsultaPropuesta: React.FC = () => {
         buscarCliente: "Si",
         direccionBuscar: "",
         direccionIr: "",
+        cuenta: "",
     });
 
     useEffect(() => {
@@ -99,7 +100,7 @@ const ConsultaPropuesta: React.FC = () => {
                 celular: solicitudData.celularSolicita || "",
                 celularCodigo: 'PA',
                 emailRespuesta: solicitudData.emailRespuesta || "",
-                empresa: solicitudData.empresa || "",
+                empresa: solicitudData.empresaSolicita || "",
                 tipoConsulta: solicitudData.tipoConsulta || "Propuesta Legal",
                 areaLegal: solicitudData.areaLegal || "Migración",
                 detallesPropuesta: solicitudData.detallesPropuesta || "",
@@ -111,9 +112,49 @@ const ConsultaPropuesta: React.FC = () => {
                 buscarCliente: solicitudData.buscarCliente || "Si",
                 direccionBuscar: solicitudData.direccionBuscar || "",
                 direccionIr: solicitudData.direccionIr || "",
+                cuenta: "",
             });
         }
     }, [solicitudData]);
+
+    useEffect(() => {
+        const userData = checkAuthToken();
+        console.log("userData ", userData)
+        if (userData) {
+            setFormData((prevData) => ({
+                ...prevData,
+                email: userData?.email,
+                confirmEmail: userData?.email,
+                cuenta: userData?.user_id,
+            }));
+            setIsLoggedIn(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (formData.cuenta) {
+            const fetchUser = async () => {
+                try {
+                    console.log("Cuenta ", formData.cuenta)
+                    const response = await axios.get('/api/get-user-cuenta', {
+                        params: { userCuenta: formData.cuenta },
+                    });
+
+                    const user = response.data;
+                    console.log("Usuario ", user)
+                    setStore((prevData) => ({
+                        ...prevData,
+                        rol: user.solicitud.rol || 0,
+                    }));
+
+                } catch (error) {
+                    console.error('Failed to fetch solicitudes:', error);
+                }
+            };
+
+            fetchUser();
+        }
+    }, [formData.cuenta]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
@@ -236,6 +277,14 @@ const ConsultaPropuesta: React.FC = () => {
     };
 
     const [mostrarEmailRespuesta, setMostrarEmailRespuesta] = useState(false);
+
+    useEffect(() => {
+        if (formData.emailRespuesta && formData.emailRespuesta.trim() !== "") {
+            setMostrarEmailRespuesta(true);
+        } else {
+            setMostrarEmailRespuesta(false);
+        }
+    }, [formData.emailRespuesta]);
 
     const toggleEmailRespuesta = () => {
         setMostrarEmailRespuesta(prev => !prev);
@@ -656,7 +705,13 @@ const ConsultaPropuesta: React.FC = () => {
                 total: total,
                 accion: "Creación de solicitud",
                 tipo: tipo,
-                item: item
+                item: item,
+                ...(formData.tipoConsulta === "Propuesta Legal" && {
+                    status: 10,
+                }),
+                ...(formData.tipoConsulta !== "Propuesta Legal" && {
+                    status: 1,
+                }),
             };
             console.log("Cuenta front ", cuenta)
             const response = await axios.post("/api/create-request-consultaPropuesta", requestData, {
@@ -683,35 +738,38 @@ const ConsultaPropuesta: React.FC = () => {
 
             const responseData = await axios.post('/api/update-request-all', updatePayload);
 
-            if (status === "success" && solicitudId) {
-                handleOpen();
-                setStore((prevState) => ({
-                    ...prevState,
-                    solicitudId,
-                }));
+            if (formData.tipoConsulta !== "Propuesta Legal") {
+                if (status === "success" && solicitudId) {
+                    handleOpen();
+                    setStore((prevState) => ({
+                        ...prevState,
+                        solicitudId,
+                    }));
+                }
+            } else {
+                if (status === "success" && solicitudId) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Propuesta enviada correctamente",
+                        timer: 2500,
+                        showConfirmButton: false,
+                        background: '#2c2c3e',
+                        color: '#fff',
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title-main',
+                            icon: 'custom-swal-icon',
+                            timerProgressBar: 'custom-swal-timer-bar'
+                        }
+                    });
+                    setStore((prevState) => ({
+                        ...prevState,
+                        solicitudId,
+                    }));
+                    window.location.href = "/dashboard/requests";
+                }
             }
 
-            /* if (status === "success" && solicitudId) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Solicitud enviada correctamente",
-                    timer: 2500,
-                    showConfirmButton: false,
-                    background: '#2c2c3e',
-                    color: '#fff',
-                    customClass: {
-                        popup: 'custom-swal-popup',
-                        title: 'custom-swal-title-main',
-                        icon: 'custom-swal-icon',
-                        timerProgressBar: 'custom-swal-timer-bar'
-                    }
-                });
-                setStore((prevState) => ({
-                    ...prevState,
-                    solicitudId,
-                }));
-                window.location.href = "/dashboard/requests";
-            } */
         } catch (error) {
             Swal.fire({
                 position: "top-end",
@@ -781,6 +839,7 @@ const ConsultaPropuesta: React.FC = () => {
                         value={formData.tipoConsulta}
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                     >
                         <option value="Propuesta Legal">Propuesta Legal</option>
                         <option value="Consulta Escrita">Consulta Escrita</option>
@@ -814,6 +873,7 @@ const ConsultaPropuesta: React.FC = () => {
                             value={formData.nombreCompleto}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
 
@@ -826,6 +886,7 @@ const ConsultaPropuesta: React.FC = () => {
                             value={formData.email}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
                 </div>
@@ -840,6 +901,7 @@ const ConsultaPropuesta: React.FC = () => {
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
                             placeholder="Número de cédula o Pasaporte"
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         />
                     </div>
                     <div className="flex flex-col col-span-1">
@@ -862,6 +924,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 value={formData.telefono}
                                 onChange={handleInputChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                         </div>
                     </div>
@@ -884,6 +947,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 value={formData.celular}
                                 onChange={handleInputChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.celular ? 'border-2 border-red-500' : ''}`}
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                         </div>
                     </div>
@@ -918,6 +982,7 @@ const ConsultaPropuesta: React.FC = () => {
                                         onChange={handleInputChange}
                                         className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errors.emailRespuesta ? 'border-2 border-red-500' : ''}`}
                                         placeholder="Correo electrónico adicional para envío de propuesta:"
+                                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                     />
                                 </div>
                             )}
@@ -931,6 +996,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 value={formData.empresa}
                                 onChange={handleInputChange}
                                 className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                         </div>
                     </>
@@ -947,6 +1013,7 @@ const ConsultaPropuesta: React.FC = () => {
                         value={formData.areaLegal || ""}
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                     >
                         <option value="Migración">Migración</option>
                         <option value="Sociedades">Sociedades</option>
@@ -969,6 +1036,7 @@ const ConsultaPropuesta: React.FC = () => {
                         onChange={handleInputChange}
                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.detallesPropuesta ? 'border-2 border-red-500' : ''}`}
                         rows={4}
+                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                     ></textarea>
                 </div>
 
@@ -980,6 +1048,7 @@ const ConsultaPropuesta: React.FC = () => {
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
                         rows={4}
+                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                     ></textarea>
                 </div>
 
@@ -992,6 +1061,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 name="adjuntoDocumentoConsulta"
                                 onChange={handleFileChange}
                                 className="w-full p-2 bg-gray-800 text-white rounded-lg"
+                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                             {formData.archivoURL && (
                                 <p className="text-sm text-blue-500">
@@ -1019,6 +1089,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                 value={formData.consultaOficina || ""}
                                                 onChange={handleInputChange}
                                                 className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                             >
                                                 <option value="Si">Sí, en las oficinas de Panamá Legal Group.</option>
                                                 <option value="No">No, otra dirección.</option>
@@ -1034,6 +1105,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                         value={formData.buscarCliente || ""}
                                                         onChange={handleInputChange}
                                                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
+                                                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                     >
                                                         <option value="Si">Sí</option>
                                                         <option value="No">No</option>
@@ -1053,6 +1125,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                                 value={formData.direccionBuscar}
                                                                 onChange={handleInputChange}
                                                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.direccionBuscar ? 'border-2 border-red-500' : ''}`}
+                                                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                             />
                                                         </div>
 
@@ -1078,6 +1151,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                         value={formData.direccionIr}
                                                         onChange={handleInputChange}
                                                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.direccionIr ? 'border-2 border-red-500' : ''}`}
+                                                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                     />
                                                 </div>
                                             </>
@@ -1166,29 +1240,99 @@ const ConsultaPropuesta: React.FC = () => {
                     </label>
                 </div>
                 {formData.tipoConsulta === "Propuesta Legal" && (
-                    <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
-                        {isLoading ? (
-                            <div className="flex items-center justify-center">
-                                <ClipLoader size={24} color="#ffffff" />
-                                <span className="ml-2">Cargando...</span>
-                            </div>
-                        ) : (
-                            "Enviar Solicitud"
+                    <>
+                        {solicitudData && solicitudData.status < 10 && (
+                            <>
+                                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center">
+                                            <ClipLoader size={24} color="#ffffff" />
+                                            <span className="ml-2">Cargando...</span>
+                                        </div>
+                                    ) : (
+                                        "Enviar Solicitud"
+                                    )}
+                                </button>
+                            </>
                         )}
-                    </button>
+
+                        {!solicitudData && (
+                            <>
+                                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center">
+                                            <ClipLoader size={24} color="#ffffff" />
+                                            <span className="ml-2">Cargando...</span>
+                                        </div>
+                                    ) : (
+                                        "Enviar Solicitud"
+                                    )}
+                                </button>
+                            </>
+                        )}
+
+                        {solicitudData && solicitudData.status >= 10 && (
+                            <>
+                                <button
+                                    className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                                    type="button"
+                                    onClick={() => {
+                                        window.location.href = "/dashboard/requests";
+                                    }}
+                                >
+                                    Volver
+                                </button>
+                            </>
+                        )}
+                    </>
                 )}
 
                 {formData.tipoConsulta !== "Propuesta Legal" && (
-                    <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
-                        {isLoading ? (
-                            <div className="flex items-center justify-center">
-                                <ClipLoader size={24} color="#ffffff" />
-                                <span className="ml-2">Cargando...</span>
-                            </div>
-                        ) : (
-                            "Enviar y pagar"
+                    <>
+                        {!solicitudData && (
+                            <>
+                                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center">
+                                            <ClipLoader size={24} color="#ffffff" />
+                                            <span className="ml-2">Cargando...</span>
+                                        </div>
+                                    ) : (
+                                        "Enviar y pagar"
+                                    )}
+                                </button>
+                            </>
                         )}
-                    </button>
+
+                        {solicitudData && solicitudData.status < 10 && (
+                            <>
+                                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center">
+                                            <ClipLoader size={24} color="#ffffff" />
+                                            <span className="ml-2">Cargando...</span>
+                                        </div>
+                                    ) : (
+                                        "Enviar y pagar"
+                                    )}
+                                </button>
+                            </>
+                        )}
+
+                        {solicitudData && solicitudData.status >= 10 && (
+                            <>
+                                <button
+                                    className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                                    type="button"
+                                    onClick={() => {
+                                        window.location.href = "/dashboard/requests";
+                                    }}
+                                >
+                                    Volver
+                                </button>
+                            </>
+                        )}
+                    </>
                 )}
 
                 {/* Modal */}

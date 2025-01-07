@@ -19,6 +19,7 @@ export interface AppState {
   currentPosition: number;
   request: any,
   token: string;
+  rol: number;
 }
 
 export interface SociedadesContextType {
@@ -45,6 +46,7 @@ const initialState: AppState = {
   currentPosition: 1,
   request: "",
   token: '',
+  rol: -1,
 };
 
 // Crear el nuevo contexto

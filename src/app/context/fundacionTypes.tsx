@@ -20,6 +20,7 @@ export interface FundacionState {
     currentPosition: number;
     request: any;
     token: string;
+    rol: number;
 }
 
 // Definir el tipo del contexto de Fundación

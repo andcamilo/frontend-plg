@@ -1,14 +1,14 @@
 import axios from 'axios';
 import React, { useState, useEffect, useContext, FormEvent } from 'react';
 import Swal from 'sweetalert2';
-import AppStateContext from '@context/context'; 
-import ClipLoader from 'react-spinners/ClipLoader'; 
-import Select from 'react-select'; 
-import { Country, State, City } from 'country-state-city'; 
+import AppStateContext from '@context/context';
+import ClipLoader from 'react-spinners/ClipLoader';
+import Select from 'react-select';
+import { Country, State, City } from 'country-state-city';
 import InformacionDelDemandante from './InformacionDelDemandante'
 import InformacionGeneralAdicional from './InformacionGeneralAdicional'
 import ToggleTextComponent from './ToggleTextComponen'
-import {useFetchSolicitud} from '@utils/fetchCurrentRequest'
+import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
 import countryCodes from '@utils/countryCode';
 
@@ -21,7 +21,7 @@ interface SelectOption {
 interface Menor {
   tipoPersona: SelectOption;
   nombreCompletoMenor: string;
-  fechaNacimientoMenor: string; 
+  fechaNacimientoMenor: string;
   edadMenor: number;
   parentescoConDemandado: SelectOption;
 }
@@ -31,34 +31,34 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   const [formData, setFormData] = useState({
     nombreCompleto: '',
     telefonoSolicita: '',
-    telefonoCodigo: 'PA', 
+    telefonoCodigo: 'PA',
     cedula: '',
     email: '',
     confirmEmail: '',
     direccion: '',
     detalleDireccion: '',
-    estadoCivil: { value: '', label: '' }, 
-    relacionDemandado: { value: '', label: '' }, 
-    nacionalidad: { value: '', label: '' }, 
-    provincia: { value: '', label: '' }, 
-    corregimiento: { value: '', label: '' }, 
-    mantieneIngresos: { value: '', label: '' }, 
-    lugarTrabajo: '', 
-    ingresosMensuales: '', 
-    viveEn: { value: '', label: '' }, 
-    estudia: { value: '', label: '' }, 
-    lugarEstudio: '', 
+    estadoCivil: { value: '', label: '' },
+    relacionDemandado: { value: '', label: '' },
+    nacionalidad: { value: '', label: '' },
+    provincia: { value: '', label: '' },
+    corregimiento: { value: '', label: '' },
+    mantieneIngresos: { value: '', label: '' },
+    lugarTrabajo: '',
+    ingresosMensuales: '',
+    viveEn: { value: '', label: '' },
+    estudia: { value: '', label: '' },
+    lugarEstudio: '',
     ocupacion: '',
-    anoCursando: '', 
-    tipoEstudio: { value: '', label: '' }, 
-    tiempoCompleto: { value: '', label: '' }, 
+    anoCursando: '',
+    tipoEstudio: { value: '', label: '' },
+    tiempoCompleto: { value: '', label: '' },
     parentescoPension: { value: '', label: '' },
-    representaMenor: { value: '', label: '' }, 
+    representaMenor: { value: '', label: '' },
     menores: [] as Menor[],
-    tipoPersona: { value: '', label: '' }, 
-    nombreCompletoMenor: '', 
-    fechaNacimientoMenor: '', 
-    edadMenor: '', 
+    tipoPersona: { value: '', label: '' },
+    nombreCompletoMenor: '',
+    fechaNacimientoMenor: '',
+    edadMenor: '',
     parentescoConDemandado: { value: '', label: '' }
   });
 
@@ -129,7 +129,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   const [paises, setPaises] = useState<SelectOption[]>([]);
   const [provincias, setProvincias] = useState<SelectOption[]>([]);
   const [corregimientos, setCorregimientos] = useState<SelectOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
 
   const context = useContext(AppStateContext);
 
@@ -142,7 +142,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
 
   useEffect(() => {
     if (store.solicitudId) {
-      fetchSolicitud(); 
+      fetchSolicitud();
     }
   }, [store.solicitudId]);
 
@@ -205,33 +205,33 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   const handleMenorChange = (index: number, field: keyof Menor, value: any) => {
     setFormData((prevData) => {
       const updatedMenores = [...prevData.menores];
-      
+
       // Update the field with the new value
       updatedMenores[index] = {
         ...updatedMenores[index],
         [field]: value,
       };
-  
+
       // If the field is fechaNacimientoMenor, calculate edadMenor
       if (field === 'fechaNacimientoMenor') {
         const birthDate = new Date(value);
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDifference = today.getMonth() - birthDate.getMonth();
-        
+
         // Adjust if the birth month and day haven't occurred yet this year
         if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
-  
+
         // Set edadMenor based on the calculated age
         updatedMenores[index].edadMenor = age; // Convert to string if edadMenor is a text field
       }
-  
+
       return { ...prevData, menores: updatedMenores };
     });
   };
-  
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -280,10 +280,10 @@ const PensionAlimenticiaDemandante: React.FC = () => {
           provincia: formData.provincia,
           corregimiento: formData.corregimiento,
           mantieneIngresos: formData.mantieneIngresos,
-          lugarTrabajo: formData.mantieneIngresos.value === 'si' ? formData.lugarTrabajo : '', 
+          lugarTrabajo: formData.mantieneIngresos.value === 'si' ? formData.lugarTrabajo : '',
           ocupacion: formData.ocupacion,
-          ingresosMensuales: formData.mantieneIngresos.value === 'si' ? formData.ingresosMensuales : '', 
-          viveEn: formData.mantieneIngresos.value === 'si' ? formData.viveEn : '', 
+          ingresosMensuales: formData.mantieneIngresos.value === 'si' ? formData.ingresosMensuales : '',
+          viveEn: formData.mantieneIngresos.value === 'si' ? formData.viveEn : '',
           estudia: formData.estudia,
           lugarEstudio: formData.estudia.value === 'si' ? formData.lugarEstudio : '',
           anoCursando: formData.estudia.value === 'si' ? formData.anoCursando : '',
@@ -332,7 +332,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
         });
       }
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
@@ -372,6 +372,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -394,6 +395,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               className=" p-2 border border-gray-700 rounded bg-gray-800 text-white"
               placeholder="Número de teléfono"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -405,6 +407,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -416,6 +419,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -427,6 +431,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -438,6 +443,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -478,6 +484,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               onChange={handleChange}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               required
+              disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
           <div>
@@ -525,6 +532,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 value={formData.lugarTrabajo}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
             <div>
@@ -535,6 +543,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 value={formData.ingresosMensuales}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
             <div>
@@ -545,6 +554,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 value={formData.ocupacion}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
             <div>
@@ -584,6 +594,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 value={formData.lugarEstudio}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
             <div>
@@ -594,6 +605,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 value={formData.anoCursando}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
             <div>
@@ -642,87 +654,113 @@ const PensionAlimenticiaDemandante: React.FC = () => {
 
         {/* Conditionally render these fields if 'representaMenor' is 'Sí' */}
         {formData.representaMenor.value === 'si' && (
-        <div className="mt-6">
-        <label className="block mb-2 text-sm">Menores</label>
-          <button
-            type="button"
-            onClick={addMenor}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mb-4"
-          >
-            Adicionar Menor
-          </button>
+          <div className="mt-6">
+            <label className="block mb-2 text-sm">Menores</label>
 
-          {formData.menores.map((menor, index) => (
-            <div key={index} className="p-4 mb-4 bg-gray-800 rounded-md">
-                  <h4 className="mb-2 font-semibold">Menor #{index + 1}</h4>
-                  <div>
-                    <label className="block mb-2 text-sm">Tipo de Persona</label>
-                    <Select
-                      options={tipoPersonaOptions}
-                      value={tipoPersonaOptions.find(tipo => tipo.value === menor.tipoPersona.value)}
-                      onChange={(option) => handleMenorChange(index, 'tipoPersona', option)}
-                      styles={customSelectStyles}
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm">Nombre Completo</label>
-                    <input
-                      type="text"
-                      value={menor.nombreCompletoMenor}
-                      onChange={(e) => handleMenorChange(index, 'nombreCompletoMenor', e.target.value)}
-                      className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm">Fecha de Nacimiento</label>
-                    <input
-                      type="date"
-                      value={menor.fechaNacimientoMenor}
-                      onChange={(e) => handleMenorChange(index, 'fechaNacimientoMenor', e.target.value)}
-                      className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm">Edad</label>
-                    <input
-                      type="text"
-                      value={menor.edadMenor}
-                      onChange={(e) => handleMenorChange(index, 'edadMenor', e.target.value)}
-                      className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm">Parentesco con Demandado</label>
-                    <Select
-                      options={parentescoConDemandadoOptions}
-                      value={parentescoConDemandadoOptions.find(par => par.value === menor.parentescoConDemandado.value)}
-                      onChange={(option) => handleMenorChange(index, 'parentescoConDemandado', option)}
-                      styles={customSelectStyles}
-                    />
-                  </div>
+            {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+              <>
+                <button
+                  type="button"
+                  onClick={addMenor}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mb-4"
+                >
+                  Adicionar Menor
+                </button>
+              </>
+            )}
+
+            {formData.menores.map((menor, index) => (
+              <div key={index} className="p-4 mb-4 bg-gray-800 rounded-md">
+                <h4 className="mb-2 font-semibold">Menor #{index + 1}</h4>
+                <div>
+                  <label className="block mb-2 text-sm">Tipo de Persona</label>
+                  <Select
+                    options={tipoPersonaOptions}
+                    value={tipoPersonaOptions.find(tipo => tipo.value === menor.tipoPersona.value)}
+                    onChange={(option) => handleMenorChange(index, 'tipoPersona', option)}
+                    styles={customSelectStyles}
+                  />
                 </div>
-              ))}
-            </div>
-          )}
+                <div>
+                  <label className="block mb-2 text-sm">Nombre Completo</label>
+                  <input
+                    type="text"
+                    value={menor.nombreCompletoMenor}
+                    onChange={(e) => handleMenorChange(index, 'nombreCompletoMenor', e.target.value)}
+                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm">Fecha de Nacimiento</label>
+                  <input
+                    type="date"
+                    value={menor.fechaNacimientoMenor}
+                    onChange={(e) => handleMenorChange(index, 'fechaNacimientoMenor', e.target.value)}
+                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm">Edad</label>
+                  <input
+                    type="text"
+                    value={menor.edadMenor}
+                    onChange={(e) => handleMenorChange(index, 'edadMenor', e.target.value)}
+                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm">Parentesco con Demandado</label>
+                  <Select
+                    options={parentescoConDemandadoOptions}
+                    value={parentescoConDemandadoOptions.find(par => par.value === menor.parentescoConDemandado.value)}
+                    onChange={(option) => handleMenorChange(index, 'parentescoConDemandado', option)}
+                    styles={customSelectStyles}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <InformacionGeneralAdicional />
         <ToggleTextComponent />
 
         <div className="mt-6">
-          <button
-            type="submit"
-            className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <ClipLoader size={24} color="#ffffff" />
-                <span className="ml-2">Cargando...</span>
-              </div>
-            ) : (
-              'Guardar y continuar'
-            )}
-          </button>
+          {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
+            <>
+              <button
+                type="submit"
+                className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <ClipLoader size={24} color="#ffffff" />
+                    <span className="ml-2">Cargando...</span>
+                  </div>
+                ) : (
+                  'Guardar y continuar'
+                )}
+              </button>
+            </>
+          )}
+
+          {store.request.status >= 10 && (
+            <>
+              <button
+                className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                type="button"
+                onClick={() => {
+                  setStore((prevState) => ({
+                    ...prevState,
+                    currentPosition: 4,
+                  }));
+                }}
+              >
+                Continuar
+              </button>
+            </>
+          )}
         </div>
       </form>
     </div>
