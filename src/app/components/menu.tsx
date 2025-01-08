@@ -18,6 +18,7 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import '../globals.css';
 import get from 'lodash/get';
 import { checkAuthToken } from "@utils/checkAuthToken";
+import LogoutButton from './profileButton';
 import axios from 'axios';
 
 interface MenuProps {
@@ -215,6 +216,9 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         <Link href="" onClick={closeMenu}>
           Sitio Web
         </Link>
+      </div>
+      <div className={`flex items-center mb-1 p-2 rounded ${isActive('')}`}>
+        <LogoutButton />
       </div>
     </Menu>
   );
