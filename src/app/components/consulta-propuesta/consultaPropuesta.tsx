@@ -69,6 +69,7 @@ const ConsultaPropuesta: React.FC = () => {
         direccionBuscar: "",
         direccionIr: "",
         cuenta: "",
+        userId: "",
     });
 
     useEffect(() => {
@@ -113,6 +114,7 @@ const ConsultaPropuesta: React.FC = () => {
                 direccionBuscar: solicitudData.direccionBuscar || "",
                 direccionIr: solicitudData.direccionIr || "",
                 cuenta: "",
+                userId: "",
             });
         }
     }, [solicitudData]);
@@ -145,6 +147,10 @@ const ConsultaPropuesta: React.FC = () => {
                     setStore((prevData) => ({
                         ...prevData,
                         rol: user.solicitud.rol || 0,
+                    }));
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        userId: user.solicitud.id || null,
                     }));
 
                 } catch (error) {
