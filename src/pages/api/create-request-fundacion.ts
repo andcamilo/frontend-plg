@@ -18,7 +18,7 @@ interface RequestData {
 }
 
 // Cambiar la URL del endpoint para la solicitud de Fundación
-const createRequestUrl = `${backendBaseUrl}/chris/create-request-fundacion`;
+const createRequestUrl = `${backendBaseUrl}/dev/create-request-fundacion`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Solo permitir el método POST

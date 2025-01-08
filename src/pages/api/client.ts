@@ -3,10 +3,11 @@ import axios from 'axios';
 import get from 'lodash/get';
 import { backendBaseUrl } from '@utils/env';
 
-const peopleApiUrl = `${backendBaseUrl}/chris/get-people`;
+const peopleApiUrl = `${backendBaseUrl}/dev/get-people`;
 
 
 const getPeople = async (req: NextApiRequest, res: NextApiResponse) => {
+
   console.log("🚀 ~ peopleApiUrl:", peopleApiUrl)
   try {
     const { limit = '10', page = '1' } = req.query;
