@@ -21,7 +21,7 @@ const LogoutButton: React.FC = () => {
       onClick={handleLogout}
       className="bg-profile text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition-colors"
     >
-      SALIR
+      CERRAR SESION
     </button>
   );
 };
