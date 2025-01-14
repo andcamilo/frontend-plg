@@ -105,7 +105,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           const user = response.data;
           setStore((prevData) => ({
             ...prevData,
-            rol: user.solicitud.rol || 0,
+            rol: get(user, 'solicitud.rol', 0)
           }));
 
         } catch (error) {

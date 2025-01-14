@@ -70,7 +70,7 @@ const FundacionSolicitante: React.FC = () => {
                     console.log("Usuario ", user)
                     setStore((prevData) => ({
                         ...prevData,
-                        rol: user.solicitud.rol || 0,
+                        rol: get(user, 'solicitud.rol', 0)
                     }));
 
                 } catch (error) {

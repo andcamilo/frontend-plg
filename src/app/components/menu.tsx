@@ -20,6 +20,7 @@ import get from 'lodash/get';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import LogoutButton from './profileButton';
 import axios from 'axios';
+import { tree } from 'next/dist/build/templates/app-page';
 
 interface MenuProps {
   menuOpen: boolean;
@@ -180,7 +181,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </Link>
         </div>
       )}
-      {formData?.rol && formData.rol >= 35 && (
+      {true && (
         <>
           <p className='font-bold'>Trámites internos</p>
           <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
