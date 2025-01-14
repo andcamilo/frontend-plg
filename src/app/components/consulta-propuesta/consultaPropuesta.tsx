@@ -69,7 +69,28 @@ const ConsultaPropuesta: React.FC = () => {
         direccionBuscar: "",
         direccionIr: "",
         cuenta: "",
+        userId: "",
     });
+
+    const [disponibilidad, setDisponibilidad] = React.useState([
+        { fecha: "", horaInicio: "", horaFin: "" },
+        { fecha: "", horaInicio: "", horaFin: "" },
+        { fecha: "", horaInicio: "", horaFin: "" },
+    ]);
+
+    const handleDisponibilidadChange = (index, field, value) => {
+        const updatedDisponibilidad = [...disponibilidad];
+        updatedDisponibilidad[index][field] = value;
+        setDisponibilidad(updatedDisponibilidad);
+    
+        // Eliminar errores al corregir los campos
+        setErrorsDisponibilidad((prevErrors) => {
+            const updatedErrors = [...prevErrors];
+            updatedErrors[index][field] = false;
+            return updatedErrors;
+        });
+    };
+    
 
     useEffect(() => {
         if (id) {
@@ -113,7 +134,14 @@ const ConsultaPropuesta: React.FC = () => {
                 direccionBuscar: solicitudData.direccionBuscar || "",
                 direccionIr: solicitudData.direccionIr || "",
                 cuenta: "",
+                userId: "",
             });
+            
+            setDisponibilidad(solicitudData.disponibilidad.map((item) => ({
+                fecha: item.fecha || "",
+                horaInicio: item.horaInicio || "",
+                horaFin: item.horaFin || "",
+            })));
         }
     }, [solicitudData]);
 
@@ -145,6 +173,10 @@ const ConsultaPropuesta: React.FC = () => {
                     setStore((prevData) => ({
                         ...prevData,
                         rol: user.solicitud.rol || 0,
+                    }));
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        userId: user.solicitud.id || null,
                     }));
 
                 } catch (error) {
@@ -195,6 +227,10 @@ const ConsultaPropuesta: React.FC = () => {
         emailRespuesta: false,
     });
 
+    const [errorsDisponibilidad, setErrorsDisponibilidad] = useState(
+        disponibilidad.map(() => ({ fecha: false, horaInicio: false, horaFin: false }))
+    );
+
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isEmailNew, setIsEmailNew] = useState(true);
@@ -222,6 +258,13 @@ const ConsultaPropuesta: React.FC = () => {
     const detallesPropuestaRef = useRef<HTMLTextAreaElement>(null);
     const direccionBuscarRef = useRef<HTMLInputElement>(null);
     const direccionIrRef = useRef<HTMLInputElement>(null);
+    const fechaRefs = useRef([]);
+    const horaInicioRefs = useRef([]);
+    const horaFinRefs = useRef([]);
+
+    fechaRefs.current = disponibilidad.map((_, i) => fechaRefs.current[i] || React.createRef());
+    horaInicioRefs.current = disponibilidad.map((_, i) => horaInicioRefs.current[i] || React.createRef());
+    horaFinRefs.current = disponibilidad.map((_, i) => horaFinRefs.current[i] || React.createRef());
 
     const [item, setItem] = useState("Propuesta Legal");
     const [precio, setPrecio] = useState(0);
@@ -501,6 +544,118 @@ const ConsultaPropuesta: React.FC = () => {
             return false;
         }
 
+        if (formData.tipoConsulta === "Consulta Presencial" || formData.tipoConsulta === "Consulta Virtual") {
+            for (let i = 0; i < disponibilidad.length; i++) {
+                const { fecha, horaInicio, horaFin } = disponibilidad[i];
+
+                if (!fecha) {
+                    setErrorsDisponibilidad((prevErrors) => {
+                        const newErrors = [...prevErrors];
+                        newErrors[i] = { ...newErrors[i], fecha: true };
+                        return newErrors;
+                    });
+
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "warning",
+                        title: `Por favor, seleccione una fecha para la opción ${i + 1}.`,
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true,
+                        toast: true,
+                        background: '#2c2c3e',
+                        color: '#fff',
+                    });
+
+                    document.getElementById(`fecha-${i}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    document.getElementById(`fecha-${i}`)?.focus();
+                    return false;
+                }
+
+                if (!horaInicio) {
+                    setErrorsDisponibilidad((prevErrors) => {
+                        const newErrors = [...prevErrors];
+                        newErrors[i] = { ...newErrors[i], horaInicio: true };
+                        return newErrors;
+                    });
+
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "warning",
+                        title: `Por favor, seleccione una hora de inicio para la opción ${i + 1}.`,
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true,
+                        toast: true,
+                        background: '#2c2c3e',
+                        color: '#fff',
+                    });
+
+                    document.getElementById(`horaInicio-${i}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    document.getElementById(`horaInicio-${i}`)?.focus();
+                    return false;
+                }
+
+                if (!horaFin) {
+                    setErrorsDisponibilidad((prevErrors) => {
+                        const newErrors = [...prevErrors];
+                        newErrors[i] = { ...newErrors[i], horaFin: true };
+                        return newErrors;
+                    });
+
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "warning",
+                        title: `Por favor, seleccione una hora de fin para la opción ${i + 1}.`,
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true,
+                        toast: true,
+                        background: '#2c2c3e',
+                        color: '#fff',
+                    });
+
+                    document.getElementById(`horaFin-${i}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    document.getElementById(`horaFin-${i}`)?.focus();
+                    return false;
+                }
+            }
+        }
+
+        // Validación de fechas y horarios para Consulta Presencial
+        if (formData.tipoConsulta === "Consulta Presencial" || formData.tipoConsulta === "Consulta Virtual") {
+            for (let i = 0; i < disponibilidad.length; i++) {
+                const { fecha, horaInicio, horaFin } = disponibilidad[i];
+
+                if (!fecha || !horaInicio || !horaFin || horaInicio >= horaFin) {
+                    setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        [`disponibilidad${i}`]: true
+                    }));
+
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "warning",
+                        title: `Por favor, complete correctamente la fecha y los horarios para la opción ${i + 1}.`,
+                        showConfirmButton: false,
+                        timer: 2500,
+                        timerProgressBar: true,
+                        toast: true,
+                        background: '#2c2c3e',
+                        color: '#fff',
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title',
+                            icon: 'custom-swal-icon',
+                            timerProgressBar: 'custom-swal-timer-bar'
+                        }
+                    });
+
+                    return false;
+                }
+            }
+        }
+
         if (formData.consultaOficina === "Si" && formData.buscarCliente === "Si" &&
             !formData.direccionBuscar && formData.tipoConsulta === "Consulta Presencial") {
             setErrors((prevErrors) => ({ ...prevErrors, direccionBuscar: true }));
@@ -656,12 +811,20 @@ const ConsultaPropuesta: React.FC = () => {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
+    const prepararDatos = () => {
+        return disponibilidad.map((item) => ({
+            fecha: item.fecha,
+            horaInicio: item.horaInicio,
+            horaFin: item.horaFin,
+        }));
+    };
+
     const sendCreateRequest = async (cuenta: string) => {
         try {
-
+            const datosPreparados = prepararDatos();
             let tipo = "propuesta-legal";
             let item = "Propuesta Legal";
-
+            console.log("Dispo ", datosPreparados)
             // Validar el tipoConsulta y asignar valores específicos a tipo e item
             if (formData.tipoConsulta === "Consulta Escrita") {
                 tipo = "consulta-escrita";
@@ -687,7 +850,11 @@ const ConsultaPropuesta: React.FC = () => {
                 preguntasEspecificas: formData.preguntasEspecificas || "",
                 actualizarPorCorreo: formData.notificaciones === "yes",
                 emailRespuesta: formData.emailRespuesta || "",
+                ...(formData.tipoConsulta === "Consulta Virtual" && {
+                    disponibilidad: datosPreparados,
+                }),
                 ...(formData.tipoConsulta === "Consulta Presencial" && {
+                    disponibilidad: datosPreparados,
                     consultaOficina: formData.consultaOficina || "",
                     ...(formData.consultaOficina === "Si" && {
                         buscarCliente: formData.buscarCliente || "",
@@ -729,14 +896,14 @@ const ConsultaPropuesta: React.FC = () => {
                     ...prevData,
                     archivoURL: archivoURL,
                 }));
+
+                const updatePayload = {
+                    solicitudId: solicitudId,
+                    adjuntoDocumentoConsulta: archivoURL || '',
+                };
+    
+                const responseData = await axios.post('/api/update-request-all', updatePayload);
             }
-
-            const updatePayload = {
-                solicitudId: solicitudId,
-                adjuntoDocumentoConsulta: archivoURL || '',
-            };
-
-            const responseData = await axios.post('/api/update-request-all', updatePayload);
 
             if (formData.tipoConsulta !== "Propuesta Legal") {
                 if (status === "success" && solicitudId) {
@@ -1079,6 +1246,47 @@ const ConsultaPropuesta: React.FC = () => {
                                 <hr className='mt-2 mb-2' />
                                 <p className="text-white text-sm"><strong className="text-red-500">IMPORTANTE:</strong> Las consultas tienen una duración máxima de 1 hora 30 minutos, si la consulta requiere más tiempo ten en cuenta que puede incurrir en nuevos cargos.</p>
                                 <hr className='mt-2 mb-2' />
+
+                                <div className="mb-6">
+                                    <h3 className="text-white text-lg font-semibold mb-4">Selecciona tu disponibilidad</h3>
+                                    {disponibilidad.map((item, index) => (
+                                        <div key={index} className="mb-4">
+                                            <div className="flex space-x-4">
+                                                <div>
+                                                    <label className="block text-white mb-2">Fecha {index + 1}:</label>
+                                                    <input
+                                                        id={`fecha-${index}`}
+                                                        type="date"
+                                                        value={item.fecha}
+                                                        onChange={(e) => handleDisponibilidadChange(index, "fecha", e.target.value)}
+                                                        className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errorsDisponibilidad[index]?.fecha ? 'border-2 border-red-500' : ''}`}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-white mb-2">Hora Inicio:</label>
+                                                    <input
+                                                        id={`horaInicio-${index}`}
+                                                        type="time"
+                                                        value={item.horaInicio}
+                                                        onChange={(e) => handleDisponibilidadChange(index, "horaInicio", e.target.value)}
+                                                        className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errorsDisponibilidad[index]?.horaInicio ? 'border-2 border-red-500' : ''}`}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-white mb-2">Hora Fin:</label>
+                                                    <input
+                                                        id={`horaFin-${index}`}
+                                                        type="time"
+                                                        value={item.horaFin}
+                                                        onChange={(e) => handleDisponibilidadChange(index, "horaFin", e.target.value)}
+                                                        className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errorsDisponibilidad[index]?.horaFin ? 'border-2 border-red-500' : ''}`}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                </div>
 
                                 {formData.tipoConsulta === "Consulta Presencial" && (
                                     <>

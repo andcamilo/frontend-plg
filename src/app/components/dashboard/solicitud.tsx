@@ -4,6 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import { backendBaseUrl } from '@utils/env';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -346,20 +347,20 @@ const Request: React.FC = () => {
 
     function mostrarDate(dateInput) {
         console.log("Valor de dateInput:", dateInput);
-    
+
         // Verifica si el objeto tiene _seconds y _nanoseconds (formato Firestore Timestamp)
         if (dateInput && typeof dateInput._seconds === 'number' && typeof dateInput._nanoseconds === 'number') {
             const milliseconds = dateInput._seconds * 1000 + dateInput._nanoseconds / 1000000;
             const date = new Date(milliseconds);
-    
+
             // Formatea la fecha en dd-mm-yyyy
             const day = date.getDate().toString().padStart(2, '0');
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
             const year = date.getFullYear();
-            
+
             return `${day}-${month}-${year}`;
         }
-    
+
         // Verifica si `dateInput` es un Timestamp de Firestore
         if (dateInput && typeof dateInput.toDate === 'function') {
             const date = dateInput.toDate();
@@ -368,15 +369,15 @@ const Request: React.FC = () => {
             const year = date.getFullYear();
             return `${day}-${month}-${year}`;
         }
-    
+
         // Si dateInput ya es una instancia de Date
         if (dateInput instanceof Date) {
             const day = dateInput.getDate().toString().padStart(2, '0');
             const month = (dateInput.getMonth() + 1).toString().padStart(2, '0');
             const year = dateInput.getFullYear();
             return `${day}-${month}-${year}`;
-        }        
-    
+        }
+
         // Si es una cadena de texto, intenta parsear como fecha
         if (typeof dateInput === 'string') {
             const date = new Date(dateInput);
@@ -387,10 +388,41 @@ const Request: React.FC = () => {
                 return `${day}-${month}-${year}`;
             }
         }
-    
+
         console.warn("Formato de fecha inválido:", dateInput);
         return "Fecha inválida";
-    }    
+    }
+
+    const handleDownload = async () => {
+        try {
+            let solicitudId = id;
+            // Llamar a la API para obtener la URL del archivo
+            const response = await axios.post(`${backendBaseUrl}/chris/create-fundacion-file/${solicitudId}`);
+            console.log("URL ", response)
+            console.log("URL ", response.data)
+            if (response.data && response.data.fileUrl) {
+                // Crear un enlace temporal para descargar el archivo
+                const url = response.data.fileUrl;
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'pacto_social.docx'); // Establecer el nombre del archivo
+                document.body.appendChild(link);
+
+                // Simular clic para descargar el archivo
+                link.click();
+
+                // Verificar si `link` tiene un nodo padre antes de eliminarlo
+                if (link.parentNode) {
+                    link.parentNode.removeChild(link);
+                }
+            } else {
+                alert('No se pudo obtener el archivo. Por favor, inténtelo nuevamente.');
+            }
+        } catch (error) {
+            console.error('Error al descargar el archivo:', error);
+            alert('Hubo un error al intentar descargar el archivo.');
+        }
+    };
 
     return (
         <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
@@ -556,7 +588,19 @@ const Request: React.FC = () => {
                         </tr>
                     </tfoot>
                 </table>
-                <button className="bg-profile text-white px-4 py-2 rounded mt-8">Descargar PDF</button>
+
+                <div className="flex space-x-4 mt-2">
+                    <button className="bg-profile text-white px-4 py-2 rounded mt-8">Descargar Resumen PDF</button>
+
+                    <button
+                        className="bg-profile text-white px-4 py-2 rounded mt-8"
+                        onClick={handleDownload}
+                    >
+                        Descargar Pacto Social
+                    </button>
+                </div>
+
+
             </div>
         </div>
     );

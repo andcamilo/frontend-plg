@@ -96,11 +96,12 @@ const RequestsStatistics: React.FC = () => {
         cuenta: string;
         email: string;
         rol: number;
+        userId: string;
     }>({
         cuenta: "",
         email: "",
         rol: -1,
-
+        userId: "",
     });
 
     // Pagination state
@@ -136,7 +137,8 @@ const RequestsStatistics: React.FC = () => {
                     console.log("Usuario ", user)
                     setFormData((prevData) => ({
                         ...prevData,
-                        rol: get(user, 'solicitud.rol', 0)
+                        rol: get(user, 'solicitud.rol', 0),
+                        userId: get(user, 'solicitud.id', "")
                     }));
 
                 } catch (error) {
@@ -182,8 +184,8 @@ const RequestsStatistics: React.FC = () => {
         solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 /* && solicitud.status !== 1 */);
         solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70);
     } else {
-        solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 && solicitud.cuenta === formData.cuenta);
-        solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70 && solicitud.cuenta === formData.cuenta);
+        solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 && solicitud.cuenta === formData.userId);
+        solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70 && solicitud.cuenta === formData.userId);
     }
 
     // Transform data for the table

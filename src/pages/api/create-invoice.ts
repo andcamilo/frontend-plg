@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     
-    const lambdaUrl = `${backendBaseUrl}/dev/createInvoice`;
+    const lambdaUrl = `${backendBaseUrl}/chris/createInvoice`;
 
     // Make a POST request to the Lambda function
     const response = await axios.post(lambdaUrl, payload, {

@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import { backendBaseUrl } from '@utils/env'; 
 
-const listItemsUrl = `${backendBaseUrl}/dev/listItems`;
+const listItemsUrl = `${backendBaseUrl}/chris/listItems`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
