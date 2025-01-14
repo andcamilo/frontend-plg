@@ -4,6 +4,7 @@ import Logo from '@public/images/legix.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCcVisa, faCcMastercard, faBitcoin } from '@fortawesome/free-brands-svg-icons';
 import { faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
+import Link from 'next/link';
 
 const HomeFooter: React.FC = () => {
   return (
@@ -18,13 +19,30 @@ const HomeFooter: React.FC = () => {
       
         <div>
           <h4 className="font-bold text-xl mb-4">Solicitudes</h4>
-          <ul>
-            <li><a href="/consulta" className="hover:underline">Consulta - Propuesta legal</a></li>
-            <li><a href="/pension" className="hover:underline">Pensión Alimenticia</a></li>
-            <li><a href="/sociedades" className="hover:underline">Sociedades / Empresas</a></li>
-            <li><a href="/fundaciones" className="hover:underline">Fundaciones de Interés Privado</a></li>
+          <ul className="space-y-2">
+            <li>
+              <Link href="/request/consulta-propuesta" className="hover:underline block">
+                Consulta - Propuesta legal
+              </Link>
+            </li>
+            <li>
+              <Link href="/request/pension-alimenticia" className="hover:underline block">
+                Pensión Alimenticia
+              </Link>
+            </li>
+            <li>
+              <Link href="/request/sociedad-empresa" className="hover:underline block">
+                Sociedades / Empresas
+              </Link>
+            </li>
+            <li>
+              <Link href="/request/fundacion" className="hover:underline block">
+                Fundaciones de Interés Privado
+              </Link>
+            </li>
           </ul>
         </div>
+
 
 
         <div>
