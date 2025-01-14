@@ -20,6 +20,7 @@ import {
     firebaseMessagingSenderId,
     firebaseAppId
 } from '@utils/env';
+import get from 'lodash/get';
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -153,7 +154,7 @@ const MenoresAlExtranjero: React.FC = () => {
                     console.log("Usuario ", user)
                     setStore((prevData) => ({
                         ...prevData,
-                        get(user, 'solicitud.rol', 0)
+                        rol: get(user, 'solicitud.rol', 0)
                     }));
 
                 } catch (error) {
