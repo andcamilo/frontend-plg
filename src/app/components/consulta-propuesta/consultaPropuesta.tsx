@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
 import countryCodes from '@utils/countryCode';
+import get from 'lodash/get';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useRouter } from 'next/router';
@@ -172,7 +173,7 @@ const ConsultaPropuesta: React.FC = () => {
                     console.log("Usuario ", user)
                     setStore((prevData) => ({
                         ...prevData,
-                        rol: user.solicitud.rol || 0,
+                        rol: get(user, 'solicitud.rol', 0),
                     }));
                     setFormData((prevData) => ({
                         ...prevData,

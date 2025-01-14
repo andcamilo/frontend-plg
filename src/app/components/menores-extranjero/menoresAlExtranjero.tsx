@@ -153,7 +153,7 @@ const MenoresAlExtranjero: React.FC = () => {
                     console.log("Usuario ", user)
                     setStore((prevData) => ({
                         ...prevData,
-                        rol: user.solicitud.rol || 0,
+                        get(user, 'solicitud.rol', 0)
                     }));
 
                 } catch (error) {
