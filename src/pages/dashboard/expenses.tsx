@@ -1,11 +1,11 @@
 import React from 'react';
 import DashboardLayout from '@components/dashboardLayout';
-import ListInvoices from '@/src/app/components/disbursement/listInvoices';
+import ListExpenses from '@/src/app/components/disbursement/listExpenses';
 
 const See: React.FC = () => {
   return (
-    <DashboardLayout title="Ver Facturas">
-      <ListInvoices/>
+    <DashboardLayout title="Ver Gastos">
+      <ListExpenses/>
     </DashboardLayout>
   );
 }

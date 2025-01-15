@@ -81,6 +81,7 @@ const ListDisbursement: React.FC = () => {
         data={data}
         rowsPerPage={rowsPerPage}
         title="Desembolsos"
+        showActionButtons={false}
         currentPage={currentPage}
         totalPages={totalPages}
         hasPrevPage={hasPrevPage}
