@@ -202,6 +202,9 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           <Link href="/dashboard/invoices" className={`block mb-2 ${isActive('/dashboard/invoices')}`} onClick={closeMenu}>
             Ver Facturas
           </Link>
+          <Link href="/dashboard/expenses" className={`block mb-2 ${isActive('/dashboard/expenses')}`} onClick={closeMenu}>
+            Ver Gastos
+          </Link>
 
         </div>
       )}

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import TableForDisbursement from '../TableForDisbursement';
 import axios from 'axios';
 
-const ListInvoices: React.FC = () => {
+const ListExpenses: React.FC = () => {
   const router = useRouter();
   const [data, setData] = useState<{ [key: string]: any }[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -15,7 +15,7 @@ const ListInvoices: React.FC = () => {
 
   const fetchInvoices = async (page: number) => {
     try {
-      const response = await axios.get('/api/list-invoices', {
+      const response = await axios.get('/api/list-expenses', {
         params: {
           page,
           limit: rowsPerPage,
@@ -77,18 +77,18 @@ const ListInvoices: React.FC = () => {
       <TableForDisbursement
         data={data}
         rowsPerPage={rowsPerPage}
-        title="Facturas"
+        title="Gastos"
         currentPage={currentPage}
         totalPages={totalPages}
         hasPrevPage={hasPrevPage}
+        showActionButtons={false}
         hasNextPage={hasNextPage}
         onPageChange={handlePageChange}
         onEdit={handleEdit}
-        showActionButtons={true}
         onGetSelectedIds={handleGetSelectedIds}
       />
     </div>
   );
 };
 
-export default ListInvoices;
+export default ListExpenses;

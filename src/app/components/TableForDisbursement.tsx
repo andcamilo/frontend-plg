@@ -7,11 +7,18 @@ interface TableForDisbursementProps {
   currentPage: number;
   totalPages: number;
   hasPrevPage: boolean;
+  showActionButtons: boolean;
   hasNextPage: boolean;
   onPageChange: (pageNumber: number) => void;
   onEdit: (row: { [key: string]: any }) => void;
   onGetSelectedIds: (selectedIds: string[]) => void; // Callback to pass selected IDs
 }
+
+const toCamelCase = (str: string) => {
+  return str
+    .toLowerCase()
+    .replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
+};
 
 const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   data,
@@ -19,6 +26,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   title,
   currentPage,
   totalPages,
+  showActionButtons,
   hasPrevPage,
   hasNextPage,
   onPageChange,
@@ -77,7 +85,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                 </th>
                 {columns.map((column, index) => (
                   <th key={index} className="py-2 capitalize text-white">
-                    {column}
+                    {toCamelCase(column)}
                   </th>
                 ))}
                 <th className="py-2 capitalize text-white">Actions</th>
@@ -118,22 +126,23 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-4 mt-4">
-        <button
-          onClick={handleGetSelectedIds}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
-        >
-          Pre-Aprobar
-        </button>
-        <button
-          onClick={() => console.log("Crear Gasto clicked")} // Placeholder function
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-        >
-          Crear Gasto
-        </button>
-      </div>
-
+       {/* Conditionally Render Action Buttons */}
+       {showActionButtons && (
+        <div className="flex justify-end gap-4 mt-4">
+          <button
+            onClick={handleGetSelectedIds}
+            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+          >
+            Pre-Aprobar
+          </button>
+          <button
+            onClick={() => console.log("Crear Gasto clicked")} // Placeholder function
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+          >
+            Crear Gasto
+          </button>
+        </div>
+      )}
       {/* Pagination Controls */}
       <div className="flex justify-between items-center mt-4">
         <button
