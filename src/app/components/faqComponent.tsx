@@ -4,6 +4,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const FaqComponent: React.FC = () => {
   const [expanded, setExpanded] = useState<number | false>(false);
+  const [allExpanded, setAllExpanded] = useState(false); // State to track whether all FAQs are expanded
 
   const faqItems = [
     {
@@ -37,8 +38,20 @@ const FaqComponent: React.FC = () => {
     setExpanded(isExpanded ? panel : false);
   };
 
+  const handleExpandAll = () => {
+    if (allExpanded) {
+      // Collapse all FAQs
+      setExpanded(false);
+      setAllExpanded(false);
+    } else {
+      // Expand all FAQs
+      setExpanded(-1); // Special value to indicate all are expanded
+      setAllExpanded(true);
+    }
+  };
+
   return (
-    <div className=" max-w-6xl mx-auto ">
+    <div className="max-w-6xl mx-auto">
       <Typography variant="h4" className="text-white font-bold mb-4">
         FAQ
       </Typography>
@@ -46,7 +59,7 @@ const FaqComponent: React.FC = () => {
         <Accordion
           key={index}
           className="bg-component text-white mb-2"
-          expanded={expanded === index}
+          expanded={allExpanded || expanded === index}
           onChange={handleChange(index)}
         >
           <AccordionSummary
@@ -59,17 +72,15 @@ const FaqComponent: React.FC = () => {
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Typography>
-              {item.answer}
-            </Typography>
+            <Typography>{item.answer}</Typography>
           </AccordionDetails>
         </Accordion>
       ))}
 
       {/* Button to view all FAQs */}
       <div className="text-center mt-8">
-        <Button variant="text" className="text-white">
-          Ver todas las FAQ
+        <Button variant="text" className="text-white" onClick={handleExpandAll}>
+          {allExpanded ? 'Colapsar todas las FAQ' : 'Ver todas las FAQ'}
         </Button>
       </div>
     </div>
@@ -77,4 +88,3 @@ const FaqComponent: React.FC = () => {
 };
 
 export default FaqComponent;
-0
