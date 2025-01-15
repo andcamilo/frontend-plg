@@ -71,11 +71,11 @@ const Home: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
+      </div> 
       <div className="relative w-full overflow-hidden my-8" ref={carouselRef}>
         <TramitesPopulares tramites={carouselItems} />
-      </div>
-      <div className="relative w-full h-screen mt-8 overflow-hidden">
+      </div> 
+      <div className="relative w-full  h-full mt-8 overflow-hidden">
         <FaqComponent />
       </div>
     </HomeLayout>
