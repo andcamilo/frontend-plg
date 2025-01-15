@@ -214,7 +214,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
       </div>
       <div className={`flex items-center mb-1 p-2 rounded ${isActive('')}`}>
         <LanguageIcon className="mr-2" />
-        <Link href="" onClick={closeMenu}>
+        <Link href="/home" onClick={closeMenu}>
           Sitio Web
         </Link>
       </div>
