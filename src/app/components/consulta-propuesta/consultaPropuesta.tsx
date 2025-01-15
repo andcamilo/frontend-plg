@@ -77,7 +77,7 @@ const ConsultaPropuesta: React.FC = () => {
         { fecha: "", horaInicio: "", horaFin: "" },
         { fecha: "", horaInicio: "", horaFin: "" },
     ]);
-
+    
     const handleDisponibilidadChange = (index, field, value) => {
         const updatedDisponibilidad = [...disponibilidad];
         updatedDisponibilidad[index][field] = value;

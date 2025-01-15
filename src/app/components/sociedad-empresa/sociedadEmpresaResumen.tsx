@@ -1,6 +1,8 @@
 import React, { useEffect, useContext, useState } from 'react';
 import axios from 'axios';
 import AppStateContext from '@context/sociedadesContext';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const SociedadEmpresaResumen: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -56,6 +58,21 @@ const SociedadEmpresaResumen: React.FC = () => {
         }
         // Si no es persona jurídica, mostrar solo el nombreApellido
         return person.nombreApellido;
+    };
+
+    const generatePDF = () => {
+        const input = document.getElementById('resumen-solicitud');
+        if (!input) return;
+
+        html2canvas(input).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('Resumen_Solicitud.pdf');
+        });
     };
 
     if (!solicitudData) {
@@ -196,7 +213,7 @@ const SociedadEmpresaResumen: React.FC = () => {
                 <h2 className="text-2xl font-bold mt-2 mb-4">Poder de la Sociedad</h2>
                 {peopleData.length > 0 ? (
                     peopleData
-                        .filter(person => person.poder)  
+                        .filter(person => person.poder)
                         .map((person, index) => (
                             <div key={index}>
                                 {renderField(`Poder #${index + 1}`, renderPersonName(person))}
@@ -359,6 +376,13 @@ const SociedadEmpresaResumen: React.FC = () => {
                         {renderField('Solicitud Adicional', solicitudData.solicitudAdicional.solicitudAdicional)}
                     </>
                 )}
+
+                <button
+                    onClick={generatePDF}
+                    className="mt-6 px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600"
+                >
+                    Descargar PDF
+                </button>
 
             </div>
         </div>
