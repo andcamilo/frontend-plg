@@ -4,7 +4,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const FaqComponent: React.FC = () => {
   const [expanded, setExpanded] = useState<number | false>(false);
-  const [allExpanded, setAllExpanded] = useState(false); // State to track whether all FAQs are expanded
+  const [allExpanded, setAllExpanded] = useState(false);
 
   const faqItems = [
     {
@@ -40,46 +40,70 @@ const FaqComponent: React.FC = () => {
 
   const handleExpandAll = () => {
     if (allExpanded) {
-      // Collapse all FAQs
       setExpanded(false);
       setAllExpanded(false);
     } else {
-      // Expand all FAQs
-      setExpanded(-1); // Special value to indicate all are expanded
+      setExpanded(-1);
       setAllExpanded(true);
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <Typography variant="h4" className="text-white font-bold mb-4">
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <Typography
+        variant="h4"
+        sx={{
+          color: 'white',
+          fontWeight: 'bold',
+          mb: 4,
+        }}
+      >
         FAQ
       </Typography>
       {faqItems.map((item, index) => (
         <Accordion
           key={index}
-          className="bg-component text-white mb-2"
           expanded={allExpanded || expanded === index}
           onChange={handleChange(index)}
+          sx={{
+            backgroundColor: 'rgb(33, 33, 33)',
+            color: 'white',
+            mb: 2,
+            borderRadius: '8px',
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+            '&:before': {
+              display: 'none', // Remove the default border effect in MUI Accordion
+            },
+          }}
         >
           <AccordionSummary
-            expandIcon={<ExpandMoreIcon className="text-white" />}
+            expandIcon={<ExpandMoreIcon sx={{ color: 'white' }} />}
             aria-controls={`panel${index + 1}-content`}
             id={`panel${index + 1}-header`}
           >
-            <Typography variant="h6" className="font-bold">
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               {index + 1}. {item.question}
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Typography>{item.answer}</Typography>
+            <Typography sx={{ color: 'white' }}>{item.answer}</Typography>
           </AccordionDetails>
         </Accordion>
       ))}
 
       {/* Button to view all FAQs */}
-      <div className="text-center mt-8">
-        <Button variant="text" className="text-white" onClick={handleExpandAll}>
+      <div style={{ textAlign: 'center', marginTop: '32px' }}>
+        <Button
+          variant="text"
+          sx={{
+            color: 'white',
+            textTransform: 'uppercase',
+            '&:hover': {
+              color: '#03a9f4', // Light blue hover effect
+            },
+          }}
+          onClick={handleExpandAll}
+        >
           {allExpanded ? 'Colapsar todas las FAQ' : 'Ver todas las FAQ'}
         </Button>
       </div>
