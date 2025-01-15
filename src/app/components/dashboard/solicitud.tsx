@@ -397,7 +397,7 @@ const Request: React.FC = () => {
         try {
             let solicitudId = id;
             // Llamar a la API para obtener la URL del archivo
-            const response = await axios.post(`${backendBaseUrl}/chris/create-fundacion-file/${solicitudId}`);
+            const response = await axios.post(`${backendBaseUrl}/dev/create-fundacion-file/${solicitudId}`);
             console.log("URL ", response)
             console.log("URL ", response.data)
             if (response.data && response.data.fileUrl) {

@@ -177,7 +177,7 @@ const ConsultaPropuesta: React.FC = () => {
                     }));
                     setFormData((prevData) => ({
                         ...prevData,
-                        userId: user.solicitud.id || null,
+                        userId: get(user, "solicitud.id", ""),
                     }));
 
                 } catch (error) {
