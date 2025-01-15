@@ -101,6 +101,13 @@ const NavBar = () => {
             onClick={handleSolicitudesMenuClick}
             className="text-xl text-white font-bold hover:text-profile"
             style={{ padding: 0 }}
+            sx={{
+              color: 'white !important',
+              padding: 0,
+              '&:hover': {
+                color: 'white !important',
+              },
+            }}
           >
             Solicitudes <ArrowDropDownIcon />
           </IconButton>
@@ -111,6 +118,7 @@ const NavBar = () => {
             open={Boolean(solicitudesAnchorEl)}
             onClose={handleClose}
             MenuListProps={{ onMouseLeave: handleClose }}
+            sx={{ px: 3, color: 'white !important' }}
             PaperProps={{
               style: {
                 backgroundColor: '#1F1F2E',
