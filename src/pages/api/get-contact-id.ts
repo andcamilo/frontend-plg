@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'The email parameter is required and must be a string.' });
   }
 
-  const lambdaUrl = `${backendBaseUrl}/chris/users/contact/${email}`;
+  const lambdaUrl = `${backendBaseUrl}/dev/users/contact/${email}`;
 
   console.log("🚀 ~ handler ~ lambdaUrl:", lambdaUrl);
 
