@@ -11,6 +11,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import WidgetLoader from '@/src/app/components/widgetLoader';
 import SaleComponent from '@/src/app/components/saleComponent';
+import CountrySelect from '@components/CountrySelect';
 import { Modal, Box, Button } from "@mui/material";
 import {
     firebaseApiKey,
@@ -1738,6 +1739,13 @@ const MenoresAlExtranjero: React.FC = () => {
         }
     };
 
+    const handleCountryChange = (name: string, value: string) => {
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: value,
+        }));
+      };
+
     const getCountries = () => {
         return [
             'Panama', 'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -1864,16 +1872,12 @@ const MenoresAlExtranjero: React.FC = () => {
                     <div className="flex flex-col w-full">
                         <label className="block text-white">Número de teléfono:</label>
                         <div className="flex gap-2 mt-2">
-                            <select
+                            <CountrySelect
                                 name="telefonoCodigo"
                                 value={formData.telefonoCodigo}
-                                onChange={handleInputChange}
-                                className="p-4 bg-gray-800 text-white rounded-lg"
-                            >
-                                {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                    <option key={code} value={code}>{code}: {dialCode}</option>
-                                ))}
-                            </select>
+                                onChange={(value) => handleCountryChange('telefonoCodigo', value)}
+                                className="w-contain"
+                            />
                             <input
                                 ref={telefonoRef}
                                 type="text"
@@ -1937,16 +1941,12 @@ const MenoresAlExtranjero: React.FC = () => {
                             <div className="flex flex-col w-full">
                                 <label className="block text-white">Número de teléfono del Autorizante:</label>
                                 <div className="flex gap-2 mt-2">
-                                    <select
+                                    <CountrySelect
                                         name="telefonoCodigoAutorizante"
                                         value={formData.telefonoCodigoAutorizante}
-                                        onChange={handleInputChange}
-                                        className="p-4 bg-gray-800 text-white rounded-lg"
-                                    >
-                                        {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                            <option key={code} value={code}>{code}: {dialCode}</option>
-                                        ))}
-                                    </select>
+                                        onChange={(value) => handleCountryChange('telefonoCodigoAutorizante', value)}
+                                        className="w-contain"
+                                    />
                                     <input
                                         ref={telefonoAutorizanteRef}
                                         type="text"
@@ -2129,16 +2129,12 @@ const MenoresAlExtranjero: React.FC = () => {
                                             <div className="flex flex-col w-full">
                                                 <label className="block text-white">Número de teléfono del Tutor:</label>
                                                 <div className="flex gap-2 mt-2">
-                                                    <select
+                                                    <CountrySelect
                                                         name="telefonoCodigoTutor"
                                                         value={formData.telefonoCodigoTutor}
-                                                        onChange={handleInputChange}
-                                                        className="p-4 bg-gray-800 text-white rounded-lg"
-                                                    >
-                                                        {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                                            <option key={code} value={code}>{code}: {dialCode}</option>
-                                                        ))}
-                                                    </select>
+                                                        onChange={(value) => handleCountryChange('telefonoCodigoTutor', value)}
+                                                        className="w-contain"
+                                                    />
                                                     <input
                                                         ref={telefonoTutorRef}
                                                         type="text"
@@ -2558,16 +2554,12 @@ const MenoresAlExtranjero: React.FC = () => {
                     <div className="flex flex-col w-full">
                         <label className="block text-white">Número de teléfono:</label>
                         <div className="flex gap-2 mt-2">
-                            <select
+                            <CountrySelect
                                 name="telefonoCodigoAutorizado"
                                 value={formData.telefonoCodigoAutorizado}
-                                onChange={handleInputChange}
-                                className="p-4 bg-gray-800 text-white rounded-lg"
-                            >
-                                {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                    <option key={code} value={code}>{code}: {dialCode}</option>
-                                ))}
-                            </select>
+                                onChange={(value) => handleCountryChange('telefonoCodigoAutorizado', value)}
+                                className="w-contain"
+                            />
                             <input
                                 ref={telefonoAutorizadoRef}
                                 type="text"

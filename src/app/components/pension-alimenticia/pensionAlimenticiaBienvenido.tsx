@@ -1,3 +1,4 @@
+// PensionAlimenticiaBienvenido.tsx
 "use client";
 import React, { useState, useEffect, useContext } from 'react';
 import Swal from 'sweetalert2';
@@ -9,6 +10,7 @@ import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import { useRouter } from 'next/router';
 import get from 'lodash/get';
+import CountrySelect from '@components/CountrySelect'; // Adjust the path accordingly
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -40,8 +42,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
   const solicitudId = store.solicitudId || (Array.isArray(id) ? id[0] : id);
   const { fetchSolicitud } = useFetchSolicitud(solicitudId);
 
+  // Initialize solicitudId and fetchSolicitud
   useEffect(() => {
-    // Solo actualiza store.solicitudId si aún no está configurado y si `id` está disponible como string
     if (!store.solicitudId && solicitudId) {
       setStore((prevState) => ({
         ...prevState,
@@ -49,12 +51,12 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       }));
     }
 
-    // Llama a fetchSolicitud si store.solicitudId está disponible o si se acaba de establecer con `id`
     if (solicitudId) {
       fetchSolicitud();
     }
-  }, [id, store.solicitudId]);
+  }, [id, solicitudId, store.solicitudId, setStore, fetchSolicitud]);
 
+  // Populate formData from store.request
   useEffect(() => {
     if (store.request) {
       const nombreCompleto = get(store.request, 'nombreSolicita', '');
@@ -64,7 +66,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       const confirmEmail = get(store.request, 'emailSolicita', '');
       const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
 
-      // Actualizar el formData con los campos de la raíz y "fundacion"
       setFormData((prevFormData) => ({
         ...prevFormData,
         nombreCompleto,
@@ -77,27 +78,29 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   }, [store.request]);
 
+  // Update store based on store.request flags
   useEffect(() => {
     if (store.request) {
       setStore((prevState) => ({
         ...prevState,
-        ...(store.request?.nombreSolicita && { solicitud: true }),
-        ...(store.request?.solicitud && { demandante: true }),
-        ...(store.request?.demandante && { demandado: true }),
-        ...(store.request?.demandado && { gastosPensionado: true }),
-        ...(store.request?.gastosPensionado && { archivosAdjuntos: true }),
-        ...(store.request?.archivosAdjuntos && { firmaYEntrega: true }),
-        ...(store.request?.firmaYEntrega && { solicitudAdicional: true }),
-        ...(store.request?.solicitudAdicional && { resumen: true }),
+        ...(store.request.nombreSolicita && { solicitud: true }),
+        ...(store.request.solicitud && { demandante: true }),
+        ...(store.request.demandante && { demandado: true }),
+        ...(store.request.demandado && { gastosPensionado: true }),
+        ...(store.request.gastosPensionado && { archivosAdjuntos: true }),
+        ...(store.request.archivosAdjuntos && { firmaYEntrega: true }),
+        ...(store.request.firmaYEntrega && { solicitudAdicional: true }),
+        ...(store.request.solicitudAdicional && { resumen: true }),
       }));
     }
   }, [store.request, setStore]);
 
+  // Fetch user data based on cuenta
   useEffect(() => {
     if (formData.cuenta) {
       const fetchUser = async () => {
         try {
-          console.log("Cuenta ", formData.cuenta)
+          console.log("Cuenta ", formData.cuenta);
           const response = await axios.get('/api/get-user-cuenta', {
             params: { userCuenta: formData.cuenta },
           });
@@ -109,27 +112,28 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           }));
 
         } catch (error) {
-          console.error('Failed to fetch solicitudes:', error);
+          console.error('Failed to fetch user:', error);
         }
       };
 
       fetchUser();
     }
-  }, [formData.cuenta]);
+  }, [formData.cuenta, setStore]);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSummaryForm, setShowSummaryForm] = useState(false);
 
+  // Check authentication token on mount
   useEffect(() => {
     const userData = checkAuthToken();
-    console.log("userData ", userData?.user_id)
+    console.log("userData ", userData?.user_id);
     if (userData) {
       setFormData((prevData) => ({
         ...prevData,
-        email: userData?.email,
-        confirmEmail: userData?.email,
-        cuenta: userData?.user_id,
+        email: userData?.email || '',
+        confirmEmail: userData?.email || '',
+        cuenta: userData?.user_id || '',
       }));
       setIsLoggedIn(true);
     }
@@ -151,9 +155,20 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   };
 
+  const handleCountryChange = (name: string, value: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
   const validateEmails = () => formData.email === formData.confirmEmail;
 
-  const handleSubmit = async (e: React.FormEvent, isSummary: boolean = false, currentPostion: number) => {
+  const handleSubmit = async (
+    e: React.FormEvent,
+    isSummary: boolean = false,
+    currentPosition: number
+  ) => {
     e.preventDefault();
 
     if (!validateEmails()) {
@@ -178,7 +193,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       const { cuenta, isLogged } = emailResult.data;
 
       if (isLogged && cuenta) {
-        await sendCreateRequest(cuenta, isSummary, currentPostion);
+        await sendCreateRequest(cuenta, isSummary, currentPosition);
       } else if (!isLogged && cuenta) {
         Swal.fire({
           icon: 'error',
@@ -186,7 +201,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           text: 'Este correo ya está en uso. Por favor, inicia sesión para continuar.',
         });
       } else if (!cuenta) {
-        await sendCreateRequest('', isSummary, currentPostion);
+        await sendCreateRequest('', isSummary, currentPosition);
       }
 
     } catch (error) {
@@ -201,9 +216,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   };
 
-  const sendCreateRequest = async (cuenta: string, isSummary: boolean, currentPostion: number) => {
+  const sendCreateRequest = async (cuenta: string, isSummary: boolean, currentPosition: number) => {
     try {
-
       const authToken = checkAuthToken ? await checkAuthToken() : null;
       const requestData = {
         nombreSolicita: formData.nombreCompleto || '',
@@ -212,7 +226,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         cedulaPasaporte: formData.cedulaPasaporte || '',
         emailSolicita: formData.email || formData.summaryEmail,
         actualizarPorCorreo: formData.notificaciones === 'yes',
-        cuenta: cuenta || authToken?.user_id,
+        cuenta: cuenta || authToken?.user_id || '',
         precio: 150,
         subtotal: 150,
         total: 150,
@@ -252,7 +266,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   };
 
-
+  // Debugging useEffect
   useEffect(() => {
     console.log("🚀 ~ solicitud:", store.solicitud);
   }, [store.solicitud]);
@@ -277,17 +291,15 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             disabled={store.request.status >= 10 && store.rol < 20}
           />
 
+       
           <div className="flex gap-2">
-            <select
+            <CountrySelect
               name="telefonoCodigo"
               value={formData.telefonoCodigo}
-              onChange={handleChange}
-              className="p-4 bg-gray-800 text-white rounded-lg"
-            >
-              {Object.entries(countryCodes).map(([code, dialCode]) => (
-                <option key={code} value={code}>{code}: {dialCode}</option>
-              ))}
-            </select>
+              onChange={(value) => handleCountryChange('telefonoCodigo', value)}
+              isDisabled={store.request.status >= 10 && store.rol < 20}
+              className="w-contain"
+            />
             <input
               type="text"
               name="telefono"
@@ -301,16 +313,13 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           </div>
 
           <div className="flex gap-2">
-            <select
+            <CountrySelect
               name="telefonoAlternativoCodigo"
               value={formData.telefonoAlternativoCodigo}
-              onChange={handleChange}
-              className="p-4 bg-gray-800 text-white rounded-lg"
-            >
-              {Object.entries(countryCodes).map(([code, dialCode]) => (
-                <option key={code} value={code}>{code}: {dialCode}</option>
-              ))}
-            </select>
+              onChange={(value) => handleCountryChange('telefonoAlternativoCodigo', value)}
+              isDisabled={store.request.status >= 10 && store.rol < 20}
+              className="w-contain"
+            />
             <input
               type="text"
               name="telefonoAlternativo"
@@ -321,7 +330,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
-
 
           <input
             type="text"
@@ -358,6 +366,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         {/* Toggle button for case summary */}
         <div className="mt-8">
           <button
+            type="button"
             className="bg-profile text-white w-full py-3 rounded-lg"
             onClick={() => setShowSummaryForm((prev) => !prev)}
           >
@@ -390,23 +399,21 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             />
 
             {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
-              <>
-                <button
-                  className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
-                  type="button"
-                  onClick={(e) => handleSubmit(e as any, true, 1)}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <ClipLoader size={24} color="#ffffff" />
-                      <span className="ml-2">Cargando...</span>
-                    </div>
-                  ) : (
-                    'Enviar y salir'
-                  )}
-                </button>
-              </>
+              <button
+                className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
+                type="button"
+                onClick={(e) => handleSubmit(e as any, true, 1)}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <ClipLoader size={24} color="#ffffff" />
+                    <span className="ml-2">Cargando...</span>
+                  </div>
+                ) : (
+                  'Enviar y salir'
+                )}
+              </button>
             )}
           </div>
         )}
@@ -455,39 +462,36 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
         {/* Submit button */}
         {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
-          <>
-            <button
-              className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <ClipLoader size={24} color="#ffffff" />
-                  <span className="ml-2">Cargando...</span>
-                </div>
-              ) : (
-                'Guardar y continuar'
-              )}
-            </button>
-          </>
+          <button
+            className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <ClipLoader size={24} color="#ffffff" />
+                <span className="ml-2">Cargando...</span>
+              </div>
+            ) : (
+              'Guardar y continuar'
+            )}
+          </button>
         )}
 
+        {/* Continue button when request status >= 10 */}
         {store.request.status >= 10 && (
-          <>
-            <button
-              className="bg-profile text-white w-full py-3 rounded-lg mt-6"
-              type="button"
-              onClick={() => {
-                setStore((prevState) => ({
-                  ...prevState,
-                  currentPosition: 2,
-                }));
-              }}
-            >
-              Continuar
-            </button>
-          </>
+          <button
+            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+            type="button"
+            onClick={() => {
+              setStore((prevState) => ({
+                ...prevState,
+                currentPosition: 2,
+              }));
+            }}
+          >
+            Continuar
+          </button>
         )}
       </form>
     </div>

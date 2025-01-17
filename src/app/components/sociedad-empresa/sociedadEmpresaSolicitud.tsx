@@ -8,6 +8,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import CountrySelect from '@components/CountrySelect';
 
 const SociedadEmpresaSolicitante: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -56,6 +57,13 @@ const SociedadEmpresaSolicitante: React.FC = () => {
             setIsLoggedIn(true);
         }
     }, []);
+
+    const handleCountryChange = (name: string, value: string) => {
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: value,
+        }));
+      };
 
     useEffect(() => {
         if (formData.cuenta) {
@@ -374,16 +382,12 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                     </div>
 
                     <div className="flex gap-2">
-                        <select
+                        <CountrySelect
                             name="telefonoCodigo"
                             value={formData.telefonoCodigo}
-                            onChange={handleChange}
-                            className="p-4 bg-gray-800 text-white rounded-lg"
-                        >
-                            {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                <option key={code} value={code}>{code}: {dialCode}</option>
-                            ))}
-                        </select>
+                            onChange={(value) => handleCountryChange('telefonoCodigo', value)}
+                            className="w-contain"
+                        />
                         <input
                             ref={telefonoRef}
                             type="text"
