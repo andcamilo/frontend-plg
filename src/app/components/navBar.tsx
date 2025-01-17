@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Image from 'next/image';
 import Link from 'next/link';
+import { checkAuthToken } from "@utils/checkAuthToken";
 
 interface Tramite {
   tramite: string;
@@ -88,6 +89,15 @@ const NavBar = () => {
     setSolicitudesAnchorEl(null);
   };
 
+  const handleMiCuentaClick = () => {
+    const auth = checkAuthToken();
+    if (auth) {
+      router.push('/dashboard/home');
+    } else {
+      router.push('/login');
+    }
+  };
+
   return (
     <nav className="w-full bg-[#1C1A1F] text-white">
       <div className="hidden md:flex items-center justify-between px-8 py-4">
@@ -140,9 +150,12 @@ const NavBar = () => {
           <Link href="/faqs" className="text-xl font-bold hover:text-profile">
             FAQs
           </Link>
-          <Link href="/login" className="text-xl font-bold hover:text-profile">
+          <button
+            onClick={handleMiCuentaClick}
+            className="text-xl font-bold hover:text-profile focus:outline-none"
+          >
             Mi Cuenta
-          </Link>
+          </button>
           <a href="#" className="text-xl font-bold hover:text-profile">
             Ayuda
           </a>
