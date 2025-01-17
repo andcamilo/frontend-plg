@@ -43,7 +43,9 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
                     timer: 4000, 
                     showConfirmButton: false, 
                 });
-                // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
+                // Remove the deleted solicitud from the state instead of reloading
+                // This requires lifting the state up or using a context/state management solution
+                // For simplicity, we'll reload the page
                 window.location.reload();
             } catch (error) {
                 console.error('Error al eliminar la solicitud:', error);
@@ -65,7 +67,6 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
             case "tramite-general":
                 return `/dashboard/tramite-general?id=${id}`;
             case "cliente-recurrente":
-                return `/request/corporativo?id=${id}`;
             case "solicitud-cliente-recurrente":
                 return `/request/corporativo?id=${id}`;
             default:
@@ -76,13 +77,13 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
     return (
         <div className="flex gap-2">
             <Link href={`/dashboard/request?id=${id}`}>
-            <VisibilityIcon className="cursor-pointer" titleAccess="Ver" />
+                <VisibilityIcon className="cursor-pointer" titleAccess="Ver" />
             </Link>
             <Link href={getEditUrl()}>
-            <EditIcon className="cursor-pointer" titleAccess="Editar" />
+                <EditIcon className="cursor-pointer" titleAccess="Editar" />
             </Link>
             <Link href={`/dashboard/checkout?id=${id}`}>
-            <AttachMoneyIcon className="cursor-pointer" titleAccess="Pagar" />
+                <AttachMoneyIcon className="cursor-pointer" titleAccess="Pagar" />
             </Link>
             <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
         </div>
@@ -91,7 +92,6 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
 
 const RequestsStatistics: React.FC = () => {
     const [solicitudes, setSolicitudes] = useState<any[]>([]);
-
     const [formData, setFormData] = useState<{
         cuenta: string;
         email: string;
@@ -113,86 +113,104 @@ const RequestsStatistics: React.FC = () => {
         totalPages: 1,
     });
 
-    useEffect(() => {
-        const userData = checkAuthToken();
-        if (userData) {
-            setFormData((prevData) => ({
-                ...prevData,
-                email: userData?.email,
-                cuenta: userData?.user_id,
-            }));
-        }
-    }, []);
+    // Loading state
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (formData.cuenta) {
-            const fetchUser = async () => {
-                try {
-                    console.log("Cuenta ", formData.cuenta)
-                    const response = await axios.get('/api/get-user-cuenta', {
-                        params: { userCuenta: formData.cuenta },
-                    });
-
-                    const user = response.data;
-                    console.log("Usuario ", user)
-                    setFormData((prevData) => ({
-                        ...prevData,
-                        rol: get(user, 'solicitud.rol', 0),
-                        userId: get(user, 'solicitud.id', "")
-                    }));
-
-                } catch (error) {
-                    console.error('Failed to fetch solicitudes:', error);
-                }
-            };
-
-            fetchUser();
-        }
-    }, [formData.cuenta]);
-
-    useEffect(() => {
-        const fetchSolicitudes = async () => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            setError(null);
             try {
-                const { solicitudes, pagination } = await getRequests(rowsPerPage, currentPage);
+                // 1. Check Auth Token and set formData.cuenta and email
+                const userData = checkAuthToken();
+                if (!userData) {
+                    throw new Error("User is not authenticated.");
+                }
+                setFormData((prevData) => ({
+                    ...prevData,
+                    email: userData.email,
+                    cuenta: userData.user_id,
+                }));
 
-                solicitudes.sort((a: any, b: any) => {
+                // 2. Fetch User Data based on cuenta
+                console.log("Cuenta ", userData.user_id);
+                const userResponse = await axios.get('/api/get-user-cuenta', {
+                    params: { userCuenta: userData.user_id },
+                });
+
+                const user = userResponse.data;
+                console.log("Usuario ", user);
+                setFormData((prevData) => ({
+                    ...prevData,
+                    rol: get(user, 'solicitud.rol', 0),
+                    userId: get(user, 'solicitud.id', "")
+                }));
+
+                // 3. Fetch Solicitudes
+                const { solicitudes: fetchedSolicitudes, pagination: fetchedPagination } = await getRequests(rowsPerPage, currentPage);
+
+                solicitudesEnProceso = fetchedSolicitudes.filter((solicitud: any) => {
+                    if (formData.rol > 17) {
+                        return solicitud.status !== 70;
+                    } else {
+                        return solicitud.status !== 70 && solicitud.cuenta === get(user, 'solicitud.id', "");
+                    }
+                }).sort((a: any, b: any) => {
                     const dateA = new Date(a.date._seconds * 1000); // Convert to Date
                     const dateB = new Date(b.date._seconds * 1000);
                     return dateB.getTime() - dateA.getTime(); // Descending order
                 });
 
-                setSolicitudes(solicitudes);
-                setPagination({
-                    hasPrevPage: pagination.hasPrevPage,
-                    hasNextPage: pagination.hasNextPage,
-                    totalPages: pagination.totalPages,
+                solicitudesFinalizadas = fetchedSolicitudes.filter((solicitud: any) => {
+                    if (formData.rol > 17) {
+                        return solicitud.status === 70;
+                    } else {
+                        return solicitud.status === 70 && solicitud.cuenta === get(user, 'solicitud.id', "");
+                    }
+                }).sort((a: any, b: any) => {
+                    const dateA = new Date(a.date._seconds * 1000); // Convert to Date
+                    const dateB = new Date(b.date._seconds * 1000);
+                    return dateB.getTime() - dateA.getTime(); // Descending order
                 });
 
-            } catch (error) {
-                console.error('Failed to fetch solicitudes:', error);
+                setSolicitudes(fetchedSolicitudes);
+                setPagination({
+                    hasPrevPage: fetchedPagination.hasPrevPage,
+                    hasNextPage: fetchedPagination.hasNextPage,
+                    totalPages: fetchedPagination.totalPages,
+                });
+            } catch (err: any) {
+                console.error('Error fetching data:', err);
+                setError(err.message || 'An error occurred while fetching data.');
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        fetchSolicitudes();
+        fetchData();
     }, [currentPage, rowsPerPage]);
 
-    let solicitudesEnProceso = {};
-    let solicitudesFinalizadas = {};
+    // Separate solicitudes based on status and user role
+    let solicitudesEnProceso: any[] = [];
+    let solicitudesFinalizadas: any[] = [];
 
     if (formData.rol > 17) {
-        // Filtered requests
+        // Filtered requests for roles > 17
         solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 /* && solicitud.status !== 1 */);
         solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70);
     } else {
+        // Filtered requests for roles <= 17
         solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 && solicitud.cuenta === formData.userId);
         solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70 && solicitud.cuenta === formData.userId);
     }
 
     // Transform data for the table
-    const transformData = (solicitudes) => {
+    const transformData = (solicitudes: any[]) => {
+        console.log("🚀 ~ transformData ~ solicitudes:", solicitudes);
         return solicitudes.map(({ id, tipo, emailSolicita, date, status, expediente, abogados }) => {
             // Map status values to their corresponding labels
-            const statusLabels = {
+            const statusLabels: { [key: number]: string } = {
                 0: "Rechazada",
                 1: "Borrador",
                 10: "Enviada",
@@ -204,7 +222,7 @@ const RequestsStatistics: React.FC = () => {
             };
 
             // Map status to their corresponding CSS class
-            const statusClasses = {
+            const statusClasses: { [key: number]: string } = {
                 0: "status-rechazada",
                 1: "status-borrador",
                 10: "status-enviada",
@@ -215,7 +233,7 @@ const RequestsStatistics: React.FC = () => {
                 70: "status-finalizada",
             };
 
-            const tipoLabels = {
+            const tipoLabels: { [key: string]: string } = {
                 "propuesta-legal": "Propuesta Legal",
                 "consulta-escrita": "Consulta Escrita",
                 "consulta-virtual": "Consulta Virtual",
@@ -230,7 +248,7 @@ const RequestsStatistics: React.FC = () => {
             };
 
             return {
-                Tipo: tipoLabels[tipo],
+                Tipo: tipoLabels[tipo] || tipo,
                 Fecha: formatDate(date),
                 Email: emailSolicita,
                 Estatus: (
@@ -239,7 +257,7 @@ const RequestsStatistics: React.FC = () => {
                     </span>
                 ), // Renderiza el estado con su clase correspondiente
                 Expediente: expediente,
-                Abogado: abogados.map((abogado) => abogado.nombre).join(', '), // Concatenando nombres
+                Abogado: abogados.map((abogado: any) => abogado.nombre).join(', '), // Concatenando nombres
                 Opciones: <Actions tipo={tipo} id={id} /> // Pasando el id como prop al componente de acciones
             };
         });
@@ -247,35 +265,68 @@ const RequestsStatistics: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-4 p-8 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-                <div className="lg:col-span-3">
-                    <TableWithRequests
-                        data={transformData(solicitudesEnProceso)}
-                        rowsPerPage={rowsPerPage}
-                        title="Últimas Solicitudes"
-                        currentPage={currentPage}
-                        totalPages={pagination.totalPages}
-                        hasPrevPage={pagination.hasPrevPage}
-                        hasNextPage={pagination.hasNextPage}
-                        onPageChange={setCurrentPage}
-                    />
+            {isLoading ? (
+                // Loading Indicator
+                <div className="flex justify-center items-center h-64">
+                    <svg
+                        className="animate-spin h-10 w-10 text-blue-500"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                        ></circle>
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8H4z"
+                        ></path>
+                    </svg>
                 </div>
-            </div>
+            ) : error ? (
+                // Error Message
+                <div className="flex justify-center items-center h-64">
+                    <p className="text-red-500 text-lg">{error}</p>
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+                        <div className="lg:col-span-3">
+                            <TableWithRequests
+                                data={transformData(solicitudesEnProceso)}
+                                rowsPerPage={rowsPerPage}
+                                title="Últimas Solicitudes"
+                                currentPage={currentPage}
+                                totalPages={pagination.totalPages}
+                                hasPrevPage={pagination.hasPrevPage}
+                                hasNextPage={pagination.hasNextPage}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-                <div className="lg:col-span-3">
-                    <TableWithRequests
-                        data={transformData(solicitudesFinalizadas)}
-                        rowsPerPage={rowsPerPage}
-                        title="Solicitudes Finalizadas"
-                        currentPage={currentPage}
-                        totalPages={pagination.totalPages}
-                        hasPrevPage={pagination.hasPrevPage}
-                        hasNextPage={pagination.hasNextPage}
-                        onPageChange={setCurrentPage}
-                    />
-                </div>
-            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+                        <div className="lg:col-span-3">
+                            <TableWithRequests
+                                data={transformData(solicitudesFinalizadas)}
+                                rowsPerPage={rowsPerPage}
+                                title="Solicitudes Finalizadas"
+                                currentPage={currentPage}
+                                totalPages={pagination.totalPages}
+                                hasPrevPage={pagination.hasPrevPage}
+                                hasNextPage={pagination.hasNextPage}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
