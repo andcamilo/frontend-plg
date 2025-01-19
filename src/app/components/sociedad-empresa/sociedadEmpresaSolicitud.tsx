@@ -8,6 +8,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const SociedadEmpresaSolicitante: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -347,9 +348,90 @@ const SociedadEmpresaSolicitante: React.FC = () => {
         }
     };
 
+    const [showModal, setShowModal] = useState(false);
+
+    const handleOpenModal = () => {
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+    };
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold">Información del Solicitante</h1>
+            <h1 className="text-white text-4xl font-bold flex items-center">
+                Información del Solicitante
+                <button
+                    className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+                    type="button"
+                    onClick={handleOpenModal}
+                >
+                    <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+                        <i className="fa-solid fa-info text-sm"></i>
+                    </span>
+                </button>
+            </h1>
+
+            {/* Modal */}
+            {showModal && (
+                <div
+                    className="modal fade show d-block"
+                    tabIndex={-1}
+                    role="dialog"
+                    style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+                    onClick={handleCloseModal}
+                >
+                    <div
+                        className="modal-dialog modal-xl"
+                        role="document"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h1 className="modal-title fs-5" id="paso2_ModalLabel">
+                                    Información
+                                </h1>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    aria-label="Close"
+                                    onClick={handleCloseModal}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <h5>Información del Solicitante</h5>
+                                <p>
+                                    Descubre en este Clip cada detalle que te ayudará a entender
+                                    el tipo de información que debes anexar en esta sección.
+                                    <br />
+                                    <br />¡No dudes en explorar nuestros videos!
+                                </p>
+
+                                <h5>Video</h5>
+                                <iframe
+                                    width="560"
+                                    height="315"
+                                    src="https://www.youtube.com/embed/rcxouRczS9Q"
+                                    title="YouTube video player"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                ></iframe>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={handleCloseModal}
+                                >
+                                    Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             <p className="text-white mt-4">
                 Aquí podrás agregar los datos de la persona que realizara la solicitud.
             </p>

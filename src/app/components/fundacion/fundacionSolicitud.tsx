@@ -8,6 +8,8 @@ import ClipLoader from "react-spinners/ClipLoader";
 import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import '@fortawesome/fontawesome-free/css/all.css';
 
 
 const FundacionSolicitante: React.FC = () => {
@@ -345,7 +347,19 @@ const FundacionSolicitante: React.FC = () => {
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold">Información del Solicitante</h1>
+            {/* <h1 className="text-white text-4xl font-bold">Información del Solicitante</h1> */}
+            <h1 className="text-white text-4xl font-bold flex items-center">
+                Información del Solicitante
+                <button
+                    className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+                    type="button"
+                >
+                    <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+                        <i className="fa-solid fa-info text-sm"></i>
+                    </span>
+                </button>
+            </h1>
+
             <p className="text-white mt-4">
                 Aquí podrás agregar los datos de la persona que realizará la solicitud.
             </p>

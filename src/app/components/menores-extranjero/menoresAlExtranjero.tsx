@@ -2786,7 +2786,7 @@ const MenoresAlExtranjero: React.FC = () => {
                     </>
                 )}
 
-                {solicitudData && solicitudData.status < 10 && (
+                {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && store.rol > 19)) && (
                     <>
                         <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                             {isLoading ? (

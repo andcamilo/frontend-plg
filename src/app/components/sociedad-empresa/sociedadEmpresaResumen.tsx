@@ -1,6 +1,8 @@
 import React, { useEffect, useContext, useState } from 'react';
 import axios from 'axios';
 import AppStateContext from '@context/sociedadesContext';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const SociedadEmpresaResumen: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -58,6 +60,221 @@ const SociedadEmpresaResumen: React.FC = () => {
         return person.nombreApellido;
     };
 
+    const generatePDF = () => {
+        const doc = new jsPDF();
+        let y = 20; // Posición inicial en Y
+        const pageHeight = doc.internal.pageSize.height; // Altura de la página
+
+        // Función auxiliar para manejar texto con saltos de página automáticos
+        const addLine = (text: string) => {
+            if (y + 10 > pageHeight) {
+                doc.addPage();
+                y = 20; // Reinicia la posición Y en la nueva página
+            }
+            doc.text(text, 10, y);
+            y += 10;
+        };
+
+        // Título del documento
+        doc.setFontSize(20);
+        addLine('Resumen de la Solicitud');
+
+        // Información del Solicitante
+        if (solicitudData) {
+            doc.setFontSize(16);
+            addLine('Información del Solicitante');
+            doc.setFontSize(12);
+            addLine(`Nombre: ${solicitudData.nombreSolicita || 'N/A'}`);
+            addLine(`Teléfono: ${solicitudData.telefonoSolicita || 'N/A'}`);
+            addLine(`Correo Electrónico: ${solicitudData.emailSolicita || 'N/A'}`);
+            y += 10;
+        }
+
+        // Opciones para el nombre de la sociedad
+        if (solicitudData?.empresa) {
+            doc.setFontSize(16);
+            addLine('Opciones para el nombre de la sociedad:');
+            doc.setFontSize(12);
+            addLine(`1. ${solicitudData.empresa.nombreSociedad1 || 'N/A'}`);
+            addLine(`2. ${solicitudData.empresa.nombreSociedad2 || 'N/A'}`);
+            addLine(`3. ${solicitudData.empresa.nombreSociedad3 || 'N/A'}`);
+            y += 10;
+        }
+
+        // Directores de la Sociedad
+        if (peopleData.length > 0 || (solicitudData.directores && solicitudData.directores.length > 0)) {
+            doc.setFontSize(16);
+            addLine('Directores de la Sociedad:');
+            doc.setFontSize(12);
+
+            // Combinar directores propios y nominales
+            const allDirectors = [
+                ...peopleData.filter(person => person.director),
+                ...(solicitudData.directores || []).filter(director => director.servicio === 'Director Nominal'),
+            ];
+
+            allDirectors.forEach((director, index) => {
+                if (director.servicio === 'Director Nominal') {
+                    addLine(`Director #${index + 1}: Director Nominal`);
+                } else {
+                    addLine(`Director #${index + 1}: ${renderPersonName(director)}`);
+                }
+            });
+
+            y += 10;
+        } else {
+            addLine('No hay directores registrados.');
+        }
+
+        // Dignatarios de la Sociedad
+        if (peopleData.length > 0 || (solicitudData.dignatarios && solicitudData.dignatarios.length > 0)) {
+            doc.setFontSize(16);
+            addLine('Dignatarios de la Sociedad:');
+            doc.setFontSize(12);
+
+            const allDignatarios = [
+                ...peopleData.filter(person => person.dignatario),
+                ...(solicitudData.dignatarios || []).filter(dignatario => dignatario.servicio === 'Dignatario Nominal'),
+            ];
+
+            allDignatarios.forEach((dignatario, index) => {
+                if (dignatario.servicio === 'Dignatario Nominal') {
+                    addLine(`Dignatario Nominal #${index + 1}:`);
+                    const posicionesNominales = dignatario.posiciones || [];
+                    const posicionesConcatenadasNominal = posicionesNominales.map(posicion => posicion.nombre).join(', ');
+                    if (posicionesNominales.length > 0) {
+                        addLine(`  Posiciones: ${posicionesConcatenadasNominal}`);
+                    }
+                } else {
+                    addLine(`Dignatario #${index + 1}: ${renderPersonName(dignatario)}`);
+                    const posiciones = dignatario.dignatario?.posiciones || [];
+                    const posicionesConcatenadas = posiciones.map(posicion => posicion.nombre).join(', ');
+                    if (posiciones.length > 0) {
+                        addLine(`  Posiciones: ${posicionesConcatenadas}`);
+                    }
+                }
+            });
+
+            y += 10;
+        } else {
+            addLine('No hay dignatarios registrados.');
+        }
+
+        // Accionistas de la Sociedad
+        if (peopleData.length > 0) {
+            const accionistas = peopleData.filter(person => person.accionista);
+            if (accionistas.length > 0) {
+                doc.setFontSize(16);
+                addLine('Accionistas de la Sociedad:');
+                doc.setFontSize(12);
+                accionistas.forEach((accionista, index) => {
+                    const porcentaje = accionista.accionista?.porcentajeAcciones || 'N/A';
+                    addLine(`${index + 1}. ${renderPersonName(accionista)} - ${porcentaje}% acciones`);
+                });
+                y += 10;
+            }
+        }
+
+        // Capital y División de Acciones
+        if (solicitudData?.capital) {
+            doc.setFontSize(16);
+            addLine('Capital y División de Acciones:');
+            doc.setFontSize(12);
+            addLine(`Capital social: ${solicitudData.capital.capital || 'N/A'}`);
+            addLine(`Cantidad de Acciones: ${solicitudData.capital.cantidadAcciones || 'N/A'}`);
+            addLine(`Acciones sin Valor Nominal: ${solicitudData.capital.accionesSinValorNominal || 'N/A'}`);
+            addLine(`Valor por Acción: ${solicitudData.capital.valorPorAccion || 'N/A'}`);
+            y += 10;
+        }
+
+        // Poder de la Sociedad
+        if (peopleData.length > 0) {
+            const poderes = peopleData.filter(person => person.poder);
+            if (poderes.length > 0) {
+                doc.setFontSize(16);
+                addLine('Poder de la Sociedad:');
+                doc.setFontSize(12);
+                poderes.forEach((poder, index) => {
+                    addLine(`${index + 1}. ${renderPersonName(poder)}`);
+                });
+                y += 10;
+            }
+        }
+
+        // Actividades de la Sociedad
+        if (solicitudData?.actividades) {
+            doc.setFontSize(16);
+            addLine('Actividades de la Sociedad:');
+            doc.setFontSize(12);
+            if (solicitudData.actividades.actividadesDentroPanama === 'SiYaTengoLocal') {
+                addLine(`Nombre Comercial: ${solicitudData.actividades.actividadesDentroPanamaData.nombreComercial || 'N/A'}`);
+                addLine(`Dirección Comercial: ${solicitudData.actividades.actividadesDentroPanamaData.direccionComercial || 'N/A'}`);
+            } else if (solicitudData.actividades.actividadesDentroPanama === 'SiRequieroSociedadPrimero') {
+                addLine(`Actividad #1: ${solicitudData.actividades.actividad1 || 'N/A'}`);
+                addLine(`Actividad #2: ${solicitudData.actividades.actividad2 || 'N/A'}`);
+                addLine(`Actividad #3: ${solicitudData.actividades.actividad3 || 'N/A'}`);
+            } else if (solicitudData.actividades.actividadesDentroPanama === 'No' && solicitudData.actividades.actividadesOffshore) {
+                addLine(`Actividad Offshore #1: ${solicitudData.actividades.actividadesOffshore.actividadOffshore1 || 'N/A'}`);
+                addLine(`Actividad Offshore #2: ${solicitudData.actividades.actividadesOffshore.actividadOffshore2 || 'N/A'}`);
+                addLine(`Países: ${solicitudData.actividades.actividadesOffshore.paisesActividadesOffshore || 'N/A'}`);
+            }
+
+            // Actividades de Tenedora de Activos
+            if (Array.isArray(solicitudData.actividades.actividadTenedora)) {
+                doc.setFontSize(14);
+                addLine('Actividades de Tenedora de Activos:');
+                doc.setFontSize(12);
+                const actividadNombres = {
+                    vehiculoInversion: 'Vehículo de Inversión',
+                    portafolioBienesRaices: 'Portafolio de Bienes Raíces',
+                    tenedoraActivos: 'Tenedora de Activos',
+                    grupoEconomico: 'Como parte de una estructura o grupo económico',
+                    duenoNaveAeronave: 'Dueño de Nave o Aeronave',
+                };
+                solicitudData.actividades.actividadTenedora.forEach((actividad, index) => {
+                    const actividadTexto = actividadNombres[actividad] || actividad;
+                    addLine(`Actividad #${index + 1}: ${actividadTexto}`);
+                });
+                y += 10;
+            }
+        }
+
+        // Fuentes de Ingresos
+        if (solicitudData?.fuentesIngresos) {
+            doc.setFontSize(16);
+            addLine('Fuentes de Ingresos:');
+            doc.setFontSize(12);
+            const fuenteMap = {
+                ahorrosPersonales: 'Ahorros Personales',
+                herencia: 'Herencia',
+                ingresoInmueble: 'Ingreso por Inmueble',
+                ingresoNegocios: 'Ingreso por Negocios',
+                ventaActivos: 'Venta de Activos',
+            };
+
+            Object.entries(solicitudData.fuentesIngresos)
+                .filter(([, value]) => value === true)
+                .forEach(([key], index) => {
+                    addLine(`Fuente ${index + 1}: ${fuenteMap[key] || key}`);
+                });
+
+            if (solicitudData.fuentesIngresos.otro) {
+                addLine(`Otro: ${solicitudData.fuentesIngresos.otro}`);
+            }
+        }
+
+        // Solicitud Adicional
+        if (solicitudData?.solicitudAdicional?.solicitudAdicional) {
+            doc.setFontSize(16);
+            addLine('Solicitud Adicional:');
+            doc.setFontSize(12);
+            addLine(solicitudData.solicitudAdicional.solicitudAdicional);
+        }
+
+        // Guardar el PDF
+        doc.save('Resumen_Solicitud.pdf');
+    };
+
     if (!solicitudData) {
         return <p className="text-white">Cargando los detalles de la solicitud...</p>;
     }
@@ -68,7 +285,7 @@ const SociedadEmpresaResumen: React.FC = () => {
             <p>Aquí encontrarás el resumen de tu solicitud.</p>
             <hr></hr>
 
-            <div className="mt-4">
+            <div className="mt-4" >
                 <h2 className="text-2xl font-bold mb-4">Información del Solicitante</h2>
                 {renderField('Nombre del Solicitante', solicitudData.nombreSolicita)}
                 {renderField('Teléfono', solicitudData.telefonoSolicita)}
@@ -196,7 +413,7 @@ const SociedadEmpresaResumen: React.FC = () => {
                 <h2 className="text-2xl font-bold mt-2 mb-4">Poder de la Sociedad</h2>
                 {peopleData.length > 0 ? (
                     peopleData
-                        .filter(person => person.poder)  
+                        .filter(person => person.poder)
                         .map((person, index) => (
                             <div key={index}>
                                 {renderField(`Poder #${index + 1}`, renderPersonName(person))}
@@ -359,6 +576,13 @@ const SociedadEmpresaResumen: React.FC = () => {
                         {renderField('Solicitud Adicional', solicitudData.solicitudAdicional.solicitudAdicional)}
                     </>
                 )}
+
+                <button
+                    onClick={generatePDF}
+                    className="mt-6 px-4 py-2 bg-profile text-white font-bold rounded hover:bg-profile-600"
+                >
+                    Descargar Resumen PDF
+                </button>
 
             </div>
         </div>
