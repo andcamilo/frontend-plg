@@ -8,10 +8,12 @@ import ClipLoader from "react-spinners/ClipLoader";
 import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import ReCAPTCHA from 'react-google-recaptcha';
 import CountrySelect from '@components/CountrySelect';
 
 const SociedadEmpresaSolicitante: React.FC = () => {
     const context = useContext(AppStateContext);
+    const [recaptchaToken, setRecaptchaToken] = useState(null);
 
     if (!context) {
         throw new Error("AppStateContext must be used within an AppStateProvider");
@@ -214,6 +216,10 @@ const SociedadEmpresaSolicitante: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!recaptchaToken) {
+            alert('Please complete the reCAPTCHA');
+            return;
+          }
         setIsLoading(true); // Empieza el loader
 
         // Validación genérica para los campos vacíos
@@ -295,6 +301,10 @@ const SociedadEmpresaSolicitante: React.FC = () => {
         }
 
     };
+
+    const handleRecaptchaChange = (token) => {
+        setRecaptchaToken(token); 
+      };
 
     const sendCreateRequest = async (cuenta: string) => {
         try {
@@ -479,6 +489,13 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                         />
                         <span className="ml-2 text-white">Acepto los términos y condiciones de este servicio.</span>
                     </label>
+                </div>
+
+                <div className="mt-4">
+                    <ReCAPTCHA
+                        sitekey="6LejlrwqAAAAAN_WiEXqKIAT3qhfqPm-y1wh3BPi"
+                        onChange={handleRecaptchaChange}
+                    />
                 </div>
 
                 {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (

@@ -174,7 +174,7 @@ const PensionAlimenticia: React.FC = () => {
 
           
 
-            {activeStep > 8 && (
+            {true && (
               <div className="mt-8">
                 <WidgetLoader />
               </div>

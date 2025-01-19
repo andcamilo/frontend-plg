@@ -8,11 +8,13 @@ import ClipLoader from "react-spinners/ClipLoader";
 import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import CountrySelect from '@components/CountrySelect';
+import ReCAPTCHA from 'react-google-recaptcha';
 import get from 'lodash/get';
 
 
 const FundacionSolicitante: React.FC = () => {
     const context = useContext(FundacionContext);
+    const [recaptchaToken, setRecaptchaToken] = useState(null);
 
     if (!context) {
         throw new Error("FundacionContext must be used within a FundacionStateProvider");
@@ -210,8 +212,19 @@ const FundacionSolicitante: React.FC = () => {
         return true;
     };
 
+    const handleRecaptchaChange = (token) => {
+        setRecaptchaToken(token); 
+      };
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!recaptchaToken) {
+            alert('Please complete the reCAPTCHA');
+            return;
+          }
+
         setIsLoading(true);
 
         if (!validateFields()) {
@@ -253,6 +266,7 @@ const FundacionSolicitante: React.FC = () => {
             setIsLoading(false);
             return;
         }
+        
 
         try {
             const emailResult = await axios.get("/api/validate-email", {
@@ -477,6 +491,13 @@ const FundacionSolicitante: React.FC = () => {
                         />
                         <span className="ml-2 text-white">Acepto los términos y condiciones de este servicio.</span>
                     </label>
+                </div>
+
+                <div className="mt-4">
+                    <ReCAPTCHA
+                        sitekey="6LejlrwqAAAAAN_WiEXqKIAT3qhfqPm-y1wh3BPi"
+                        onChange={handleRecaptchaChange}
+                    />
                 </div>
 
                 {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
