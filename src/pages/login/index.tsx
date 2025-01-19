@@ -7,11 +7,13 @@ import errorMessages from './errorMessages.json';
 import { FirebaseErrorMessages } from '@utils/types';
 import { useRouter } from 'next/router';
 import cookie from 'js-cookie';
+import { Eye, EyeOff } from 'lucide-react'; // Import icons for password visibility toggle
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
   const router = useRouter();
 
   const handleLogin = async (event: React.FormEvent) => {
@@ -31,12 +33,16 @@ const Login: React.FC = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <div className="flex flex-col min-h-screen md:flex-row">
       <div className="w-full md:w-1/2 min-h-screen bg-[#151521] flex flex-col justify-center items-center">
         <div className="text-center">
           <div className="flex flex-col items-start text-white mb-[20%]">
-            <Image src={Logo} alt="Logo" width={210} height={32} className="mb-8" /> 
+            <Image src={Logo || "/placeholder.svg"} alt="Logo" width={210} height={32} className="mb-8" /> 
             <p className='text-[#323232] font-bold font-[32px]'>Ingresar</p>
             <p className='text-[#A8AEBB] font-semibold font-3xl'>Inicie sesión con los datos que ingresó durante el registro.</p>
           </div>
@@ -53,10 +59,10 @@ const Login: React.FC = () => {
                 required
               />
             </div>
-            <div>
+            <div className="relative">
               <label htmlFor="password" className="sr-only">Password</label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -64,6 +70,17 @@ const Login: React.FC = () => {
                 placeholder="Password"
                 required
               />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-300" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-300" />
+                )}
+              </button>
             </div>
             <button
               type="submit"
@@ -86,3 +103,4 @@ const Login: React.FC = () => {
 };
 
 export default Login;
+
