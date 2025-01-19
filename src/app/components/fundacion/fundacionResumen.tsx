@@ -1,6 +1,8 @@
 import React, { useEffect, useContext, useState } from 'react';
 import axios from 'axios';
 import AppStateContext from '@context/fundacionContext';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const FundacionResumen: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -57,6 +59,245 @@ const FundacionResumen: React.FC = () => {
         // Si no es persona jurídica, mostrar solo el nombreApellido
         return person.nombreApellido;
     };
+
+    const generatePDF = () => {
+        const doc = new jsPDF();
+        let y = 20; // Posición inicial en Y
+        const pageHeight = doc.internal.pageSize.height; // Altura de la página
+
+        // Función para agregar texto y manejar saltos de página
+        const addLine = (text: string) => {
+            if (y + 10 > pageHeight) {
+                doc.addPage();
+                y = 20;
+            }
+            doc.text(text, 10, y);
+            y += 10;
+        };
+
+        // Título principal
+        doc.setFontSize(20);
+        addLine('Resumen de la Fundación');
+
+        // Información del Solicitante
+        if (solicitudData) {
+            doc.setFontSize(16);
+            addLine('Información del Solicitante');
+            doc.setFontSize(12);
+            addLine(`Nombre: ${solicitudData.nombreSolicita || 'N/A'}`);
+            addLine(`Teléfono: ${solicitudData.telefonoSolicita || 'N/A'}`);
+            addLine(`Correo Electrónico: ${solicitudData.emailSolicita || 'N/A'}`);
+            y += 10;
+        }
+
+        // Opciones para el nombre de la fundación
+        if (solicitudData?.fundacion) {
+            doc.setFontSize(16);
+            addLine('Opciones para el nombre de la Fundación:');
+            doc.setFontSize(12);
+            addLine(`1. ${solicitudData.fundacion.nombreFundacion1 || 'N/A'}`);
+            addLine(`2. ${solicitudData.fundacion.nombreFundacion2 || 'N/A'}`);
+            addLine(`3. ${solicitudData.fundacion.nombreFundacion3 || 'N/A'}`);
+            y += 10;
+        }
+
+        // Fundadores de la Fundación
+        if (peopleData.length > 0 || (solicitudData.fundadores && solicitudData.fundadores.length > 0)) {
+            doc.setFontSize(16);
+            addLine('Fundadores de la Fundación:');
+            doc.setFontSize(12);
+
+            // Combinar fundadores propios y nominales
+            const allFundadores = [
+                ...peopleData.filter(person => person.fundador),
+                ...(solicitudData.fundadores || []).filter(fundador => fundador.servicio === 'Fundador Nominal'),
+            ];
+
+            allFundadores.forEach((fundador, index) => {
+                if (fundador.servicio === 'Fundador Nominal') {
+                    addLine(`Fundador #${index + 1}: Fundador Nominal`);
+                } else {
+                    addLine(`Fundador #${index + 1}: ${renderPersonName(fundador)}`);
+                }
+            });
+
+            y += 10;
+        }
+
+        // Dignatarios
+        if (peopleData.length > 0 || (solicitudData.dignatarios && solicitudData.dignatarios.length > 0)) {
+            doc.setFontSize(16);
+            addLine('Dignatarios de la Fundación:');
+            doc.setFontSize(12);
+
+            const allDignatarios = [
+                ...peopleData.filter(person => person.dignatario),
+                ...(solicitudData.dignatarios || []).filter(dignatario => dignatario.servicio === 'Dignatario Nominal'),
+            ];
+
+            allDignatarios.forEach((dignatario, index) => {
+                if (dignatario.servicio === 'Dignatario Nominal') {
+                    addLine(`Dignatario Nominal #${index + 1}:`);
+                    const posicionesNominales = dignatario.posiciones || [];
+                    const posicionesConcatenadasNominal = posicionesNominales.map(posicion => posicion.nombre).join(', ');
+                    if (posicionesNominales.length > 0) {
+                        addLine(`  Posiciones: ${posicionesConcatenadasNominal}`);
+                    }
+                } else {
+                    addLine(`Dignatario #${index + 1}: ${renderPersonName(dignatario)}`);
+                    const posiciones = dignatario.dignatario?.posiciones || [];
+                    const posicionesConcatenadas = posiciones.map(posicion => posicion.nombre).join(', ');
+                    if (posiciones.length > 0) {
+                        addLine(`  Posiciones: ${posicionesConcatenadas}`);
+                    }
+                }
+            });
+
+            y += 10;
+        } else {
+            addLine('No hay dignatarios registrados.');
+        }
+
+        // Miembros de la Fundación
+        if (peopleData.length > 0 || (solicitudData.miembros && solicitudData.miembros.length > 0)) {
+            doc.setFontSize(16);
+            addLine('Miembros de la Fundación:');
+            doc.setFontSize(12);
+
+            // Combinar miembros propios y nominales
+            const allMiembros = [
+                ...peopleData.filter(person => person.miembro),
+                ...(solicitudData.miembros || []).filter(miembro => miembro.servicio === 'Miembro Nominal'),
+            ];
+
+            allMiembros.forEach((miembro, index) => {
+                if (miembro.servicio === 'Miembro Nominal') {
+                    addLine(`Miembro #${index + 1}: Miembro Nominal`);
+                } else {
+                    addLine(`Miembro #${index + 1}: ${renderPersonName(miembro)}`);
+                }
+            });
+
+            y += 10;
+        } else {
+            doc.setFontSize(16);
+            addLine('Miembros de la Fundación:');
+            doc.setFontSize(12);
+            addLine('No hay miembros registrados.');
+            y += 10;
+        }
+
+        // Protectores
+        if (peopleData.some(person => person.protector)) {
+            doc.setFontSize(16);
+            addLine('Protectores de la Fundación:');
+            doc.setFontSize(12);
+
+            peopleData
+                .filter(person => person.protector)
+                .forEach((protector, index) => {
+                    addLine(`Protector #${index + 1}: ${renderPersonName(protector)}`);
+                });
+
+            y += 10;
+        }
+
+        // Beneficiarios
+        if (peopleData.some(person => person.beneficiariosFundacion)) {
+            doc.setFontSize(16);
+            addLine('Beneficiarios de la Fundación:');
+            doc.setFontSize(12);
+
+            peopleData
+                .filter(person => person.beneficiariosFundacion)
+                .forEach((beneficiario, index) => {
+                    addLine(`Beneficiario #${index + 1}: ${renderPersonName(beneficiario)}`);
+                });
+
+            y += 10;
+        }
+
+        // Patrimonio inicial
+        if (solicitudData.patrimonio) {
+            doc.setFontSize(16);
+            addLine('Patrimonio Inicial:');
+            doc.setFontSize(12);
+            addLine(`Capital Social: ${solicitudData.patrimonio || 'N/A'}`);
+            y += 10;
+        }
+
+        // Poder de la Fundación
+        if (peopleData.length > 0 && peopleData.some(person => person.poder)) {
+            doc.setFontSize(16);
+            addLine('Poder de la Fundación:');
+            doc.setFontSize(12);
+
+            peopleData
+                .filter(person => person.poder)
+                .forEach((person, index) => {
+                    addLine(`Poder #${index + 1}: ${renderPersonName(person)}`);
+                });
+
+            y += 10;
+        }
+
+        // Objetivos
+        if (solicitudData.objetivos?.objetivos) {
+            doc.setFontSize(16);
+            addLine('Objetivos de la Fundación:');
+            doc.setFontSize(12);
+
+            solicitudData.objetivos.objetivos.forEach((objetivo, index) => {
+                addLine(`Objetivo #${index + 1}: ${objetivo}`);
+            });
+
+            y += 10;
+        }
+
+        // Fuentes de Ingresos
+        if (solicitudData.ingresos?.ingresos) {
+            doc.setFontSize(16);
+            addLine('Fuentes de Ingresos:');
+            doc.setFontSize(12);
+
+            solicitudData.ingresos.ingresos.forEach((ingreso, index) => {
+                addLine(`Fuente de Ingreso #${index + 1}: ${ingreso}`);
+            });
+
+            if (solicitudData.ingresos.otroIngreso) {
+                addLine(`Otro: ${solicitudData.ingresos.otroIngreso}`);
+            }
+
+            y += 10;
+        }
+
+        // Activos de la Fundación
+        if (solicitudData.activos?.activos) {
+            doc.setFontSize(16);
+            addLine('Activos de la Fundación:');
+            doc.setFontSize(12);
+
+            solicitudData.activos.activos.forEach((activo, index) => {
+                addLine(`Activo #${index + 1}: ${activo.nombre}`);
+                addLine(`Ubicación: ${activo.ubicacion}`);
+            });
+
+            y += 10;
+        }
+
+        // Solicitud Adicional
+        if (solicitudData.solicitudAdicional?.solicitudAdicional) {
+            doc.setFontSize(16);
+            addLine('Solicitud Adicional:');
+            doc.setFontSize(12);
+            addLine(solicitudData.solicitudAdicional.solicitudAdicional);
+        }
+
+        // Guardar el PDF
+        doc.save('Resumen_Fundacion.pdf');
+    };
+
+
 
     if (!solicitudData) {
         return <p className="text-white">Cargando los detalles de la solicitud...</p>;
@@ -341,6 +582,13 @@ const FundacionResumen: React.FC = () => {
                         {renderField('Solicitud Adicional', solicitudData.solicitudAdicional.solicitudAdicional)}
                     </>
                 )}
+
+                <button
+                    onClick={generatePDF}
+                    className="mt-6 px-4 py-2 bg-profile text-white font-bold rounded hover:bg-profile-600"
+                >
+                    Descargar Resumen PDF
+                </button>
 
             </div>
         </div>

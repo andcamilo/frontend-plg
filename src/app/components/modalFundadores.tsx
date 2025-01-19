@@ -16,7 +16,7 @@ const ModalFundadores: React.FC<ModalFundadoresProps> = ({  onClose }) => {
 
     const { store } = context;
     const solicitudId = store.solicitudId; // Obtenemos el `solicitudId` del contexto
-
+    console.log("ID ss ", solicitudId)
     const [personas, setPersonas] = useState([]); // Estado para guardar las personas de la base de datos
     const [isLoading, setIsLoading] = useState(false); // Estado de carga
     const [formData, setFormData] = useState({

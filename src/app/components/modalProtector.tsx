@@ -74,14 +74,14 @@ const ModalProtector: React.FC<ModalProtectorProps> = ({ onClose }) => {
             persona.protector?.cargo === 'Protector Principal'
         );
         const existeProtectorSecundario = protectoresExistentes.some((persona: any) =>
-            persona.protector?.cargo === 'Protector Secundario'
+            persona.protector?.cargo === 'Protector Sustituto'
         );
 
         if (existeProtectorPrincipal && existeProtectorSecundario) {
             Swal.fire({
                 position: "top-end",
                 icon: "warning",
-                title: "Ya existen un Protector Principal y un Protector Secundario asignados.",
+                title: "Ya existen un Protector Principal y un Protector Sustituto asignados.",
                 showConfirmButton: false,
                 timer: 2500,
                 timerProgressBar: true,
@@ -101,7 +101,7 @@ const ModalProtector: React.FC<ModalProtectorProps> = ({ onClose }) => {
         setIsLoading(true);
 
         try {
-            const cargoAsignado = existeProtectorPrincipal ? 'Protector Secundario' : 'Protector Principal';
+            const cargoAsignado = existeProtectorPrincipal ? 'Protector Sustituto' : 'Protector Principal';
 
             const updatePayload = {
                 solicitudId,
