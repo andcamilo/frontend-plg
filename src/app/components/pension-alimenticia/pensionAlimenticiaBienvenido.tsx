@@ -1,6 +1,6 @@
 // PensionAlimenticiaBienvenido.tsx
 "use client";
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import Swal from 'sweetalert2';
 import AppStateContext from '@context/context';
 import { checkAuthToken } from '@utils/checkAuthToken';
@@ -10,10 +10,12 @@ import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import { useRouter } from 'next/router';
 import get from 'lodash/get';
+import ReCAPTCHA from 'react-google-recaptcha';
 import CountrySelect from '@components/CountrySelect'; // Adjust the path accordingly
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
   const router = useRouter();
   const { id } = router.query;
 
@@ -171,6 +173,12 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
   ) => {
     e.preventDefault();
 
+    if (!recaptchaToken) {
+      alert('Please complete the reCAPTCHA');
+      return;
+    }
+
+
     if (!validateEmails()) {
       Swal.fire({
         icon: 'error',
@@ -266,10 +274,14 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   };
 
-  // Debugging useEffect
   useEffect(() => {
     console.log("🚀 ~ solicitud:", store.solicitud);
   }, [store.solicitud]);
+
+
+  const handleRecaptchaChange = (token) => {
+    setRecaptchaToken(token); 
+  };
 
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -458,6 +470,13 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             />
             <span className="ml-2 text-white">Acepto los términos y condiciones de este servicio.</span>
           </label>
+        </div>
+
+        <div className="mt-4">
+          <ReCAPTCHA
+            sitekey="6LejlrwqAAAAAN_WiEXqKIAT3qhfqPm-y1wh3BPi"
+            onChange={handleRecaptchaChange}
+          />
         </div>
 
         {/* Submit button */}

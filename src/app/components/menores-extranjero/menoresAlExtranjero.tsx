@@ -12,6 +12,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import WidgetLoader from '@/src/app/components/widgetLoader';
 import SaleComponent from '@/src/app/components/saleComponent';
 import CountrySelect from '@components/CountrySelect';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { Modal, Box, Button } from "@mui/material";
 import {
     firebaseApiKey,
@@ -42,6 +43,7 @@ const MenoresAlExtranjero: React.FC = () => {
     const [solicitudData, setSolicitudData] = useState<any>(null);
 
     const context = useContext(AppStateContext);
+    const [recaptchaToken, setRecaptchaToken] = useState(null);
 
     if (!context) {
         throw new Error("AppStateContext must be used within an AppStateProvider");
@@ -1421,6 +1423,13 @@ const MenoresAlExtranjero: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!recaptchaToken) {
+            alert('Please complete the reCAPTCHA');
+            return;
+        }
+
+
         setIsLoading(true);
 
         if (!validateFields() || !validateMenores()) {
@@ -1494,6 +1503,11 @@ const MenoresAlExtranjero: React.FC = () => {
     };
 
     const [open, setOpen] = useState(false);
+
+    const handleRecaptchaChange = (token) => {
+        setRecaptchaToken(token); 
+      };
+    
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -2761,6 +2775,13 @@ const MenoresAlExtranjero: React.FC = () => {
                         />
                         <span className="ml-2 text-white">Acepto los términos y condiciones de este servicio.</span>
                     </label>
+                </div>
+
+                <div className="mt-4">
+                    <ReCAPTCHA
+                        sitekey="6LejlrwqAAAAAN_WiEXqKIAT3qhfqPm-y1wh3BPi"
+                        onChange={handleRecaptchaChange}
+                    />
                 </div>
 
                 {!solicitudData && (
