@@ -221,9 +221,6 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Sitio Web
         </Link>
       </div>
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('')}`}>
-        <LogoutButton />
-      </div>
     </Menu>
   );
 }
