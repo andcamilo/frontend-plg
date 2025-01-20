@@ -6,7 +6,7 @@ import Disbursement from '@/src/app/components/disbursement/disbursement';
 const Invoices: React.FC = () => {
   return (
     <DashboardLayout title="Desembolso">
-      <Disbursement/>
+      <Disbursement id=''/>
     </DashboardLayout>
   );
 }

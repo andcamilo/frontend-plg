@@ -7,7 +7,12 @@ import DisbursementTransferOrPaymentDetails from './disbursementTransferOrPaymen
 import DisbursementPaidDisbursementDetails from './disbursementPaidDisbursementDetails';
 import Swal from 'sweetalert2';
 
-const Disbursement: React.FC = () => {
+interface DisbursementProps {
+    id: string; // Define the prop type for `id`
+  }
+  
+
+const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
     const context = useContext(DesembolsoContext);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -26,39 +31,62 @@ const Disbursement: React.FC = () => {
     const handleSave = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/create-disbursement', {
-                method: 'POST',
+            // Determine the endpoint and method based on whether `id` is null or not
+            const endpoint = id
+                ? `/api/update-disbursement-id` // Use update endpoint
+                : `/api/create-disbursement`; // Use create endpoint for new disbursement
+    
+            const method = id ? 'PATCH' : 'POST'; // PATCH for update, POST for create
+    
+            // Construct the request body
+            const requestBody = id ? { ...state, id } : state; // Include `id` in the body if updating
+    
+            // Make the API request
+            const response = await fetch(endpoint, {
+                method,
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(state),
+                body: JSON.stringify(requestBody), // Send the state (with id if updating) as the request body
             });
-
+    
             if (!response.ok) {
                 throw new Error(`Error: ${response.statusText}`);
             }
-
+    
             const data = await response.json();
-            console.log('Disbursement created successfully:', data);
-
+            console.log(
+                `Disbursement ${id ? 'updated' : 'created'} successfully:`,
+                data
+            );
+    
             Swal.fire({
                 icon: 'success',
                 title: 'Éxito',
-                text: '¡El desembolso fue guardado exitosamente!',
+                text: `¡El desembolso fue ${
+                    id ? 'actualizado' : 'guardado'
+                } exitosamente!`,
             }).then(() => {
-                window.location.reload();
+                window.location.reload(); // Reload the page after successful save
             });
         } catch (error) {
-            console.error('Error saving disbursement:', error);
+            console.error(
+                `Error ${id ? 'updating' : 'saving'} disbursement:`,
+                error
+            );
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'No se pudo guardar el desembolso. Intente de nuevo.',
+                text: `No se pudo ${
+                    id ? 'actualizar' : 'guardar'
+                } el desembolso. Intente de nuevo.`,
             });
         } finally {
             setIsLoading(false);
         }
     };
+    
+    
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -121,7 +149,7 @@ const Disbursement: React.FC = () => {
                         >
                             <option value="" disabled>Selecciona una opción</option>
                             <option value="creada">Creada</option>
-                            <option value="rechada">Rechada</option>
+                            <option value="rechazada">Rechazada</option>
                             <option value="pre-aprobada">Pre-Aprobada</option>
                             <option value="aprobada">Aprobada</option>
                             <option value="deseembolsado">Deseembolsado</option>
