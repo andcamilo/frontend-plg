@@ -12,8 +12,10 @@ const See: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true; // Track whether the component is mounted
+
     const fetchDisbursement = async () => {
-      if (id && context) {
+      if (typeof id === 'string' && context) {
         try {
           const response = await axios.get(`/api/get-disbursement`, {
             params: { id },
@@ -22,24 +24,28 @@ const See: React.FC = () => {
           const { disbursement } = response.data;
           console.log("🚀 ~ fetchDisbursement ~ disbursement:", disbursement);
 
-          context.setState((prevState) => ({
-            ...prevState,
-            ...disbursement,
-          }));
+          if (isMounted) {
+            context.setState((prevState) => ({
+              ...prevState,
+              ...disbursement,
+            }));
 
-          console.log("🚀 ~ context:", context?.state)
-
-          setLoading(false);
+            console.log("🚀 ~ context:", context?.state);
+            setLoading(false);
+          }
         } catch (error) {
           console.error('Error fetching disbursement:', error);
-          setLoading(false);
+          if (isMounted) setLoading(false);
         }
       }
     };
 
     fetchDisbursement();
-  }, [id]);
 
+    return () => {
+      isMounted = false; // Cleanup function to avoid state updates
+    };
+  }, [id]);
 
   if (loading) {
     return (
@@ -49,9 +55,17 @@ const See: React.FC = () => {
     );
   }
 
+  if (typeof id !== 'string') {
+    return (
+      <DashboardLayout title="Editar Desembolso">
+        <div>Error: Invalid Disbursement ID</div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout title="Editar Desembolso">
-      <Disbursement />
+      <Disbursement id={id} />
     </DashboardLayout>
   );
 };
