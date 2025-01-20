@@ -6,6 +6,9 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import EmailIcon from '@mui/icons-material/Email';
 import { useRouter } from 'next/router';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import { checkAuthToken } from "@utils/checkAuthToken";
+import axios from "axios";
+import get from 'lodash/get';
 
 const SociedadEmpresaBienvenido: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -18,9 +21,29 @@ const SociedadEmpresaBienvenido: React.FC = () => {
 
     const { store, setStore } = context;
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const solicitudId = store.solicitudId || (Array.isArray(id) ? id[0] : id);
     const { fetchSolicitud } = useFetchSolicitud(solicitudId);
+
+    const [formData, setFormData] = useState({
+        cuenta: "",
+
+    });
+
+    useEffect(() => {
+        const userData = checkAuthToken();
+        console.log("userData ", userData)
+        if (userData) {
+            setFormData((prevData) => ({
+                ...prevData,
+                email: userData?.email,
+                confirmEmail: userData?.email,
+                cuenta: userData?.user_id,
+            }));
+            setIsLoggedIn(true);
+        }
+    }, []);
 
     useEffect(() => {
         // Solo actualiza store.solicitudId si aún no está configurado y si `id` está disponible como string
@@ -58,6 +81,31 @@ const SociedadEmpresaBienvenido: React.FC = () => {
         }
     }, [store.request, setStore]);
 
+    useEffect(() => {
+        if (formData.cuenta) {
+            const fetchUser = async () => {
+                try {
+                    console.log("Cuenta ", formData.cuenta)
+                    const response = await axios.get('/api/get-user-cuenta', {
+                        params: { userCuenta: formData.cuenta },
+                    });
+
+                    const user = response.data;
+                    console.log("Usuario ", user)
+                    setStore((prevData) => ({
+                        ...prevData,
+                        rol: get(user, 'solicitud.rol', 0)
+                    }));
+
+                } catch (error) {
+                    console.error('Failed to fetch solicitudes:', error);
+                }
+            };
+
+            fetchUser();
+        }
+    }, [formData.cuenta]);
+
     const handleContinue = () => {
         setIsLoading(true);
         setStore((prevState) => ({
@@ -69,22 +117,22 @@ const SociedadEmpresaBienvenido: React.FC = () => {
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold">¡Bienvenidos a nuestro servicio de Solicitud de Fundaciones de Interés Privado en línea de Panamá!</h1>
-            <p className="text-white mt-4">
+            <h1 className="text-white text-4xl font-bold texto_justificado">¡Bienvenidos a nuestro servicio de Solicitud de Fundaciones de Interés Privado en línea de Panamá!</h1>
+            <p className="text-white mt-4 texto_justificado">
                 Aquí puedes solicitar la creación de una Fundaciones de Interés Privado de forma sencilla y segura, totalmente en línea desde tu teléfono o computadora, y desde cualquier lugar del mundo. Las Fundaciones de Interés Privado son una excelente opción para proteger tus activos y llevar a cabo tus negocios de manera formal. Podrás optar por diferentes actividades fuera de la República de Panamá, o dentro de la República de Panamá.
             </p>
 
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 Podrás iniciar el trámite y continuar cuando desees.
             </p>
 
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 Si necesitas más información sobre las Fundaciones de Interés Privado puedes ir <a href="https://www.panamalegalgroup.com/sociedades-anonimas-en-panama/#" target="_blank">aquí</a>.
             </p>
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 También puedes obtener información <a href="/pag/faqs-sociedades" target="_blank">aquí</a>.
             </p>
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 Si necesitas asistencia previa o tienes dudas adicionales, también puedes contactarnos:
             </p>
             <p className="text-white mt-4">
@@ -93,7 +141,7 @@ const SociedadEmpresaBienvenido: React.FC = () => {
                     <span>WhatsApp</span>
                 </a>
             </p>
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 Puedes solicitar tu consulta escrita, virtual o presencial <a href="/pag/consulta-legal">aquí</a>.
             </p>
             <p className="text-white mt-4">
@@ -113,11 +161,11 @@ const SociedadEmpresaBienvenido: React.FC = () => {
                 </a>
             </p>
             <hr className="text-white mt-4"></hr>
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 <strong>¿Cómo te vamos a facilitar la apertura?</strong>
             </p>
 
-            <ol className="text-white mt-4">
+            <ol className="text-white mt-4 texto_justificado">
                 <li>
                     <b>Completa el Formulario:</b> ¡Dinos lo que quieres! Proporciona información básica sobre la empresa que quieres crear, como el nombre, dirección y actividad principal. Te guiamos en el formulario.
                 </li>
@@ -138,11 +186,11 @@ const SociedadEmpresaBienvenido: React.FC = () => {
                 </li>
             </ol>
 
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 Estamos aquí para ayudarte a hacer realidad tus planes empresariales. Si tienes alguna pregunta, no dudes en contactarnos. ¡Estamos emocionados de ser parte de tu éxito empresarial!
             </p>
 
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 Iniciemos con la información general de la persona que está llenando el formulario, y es a quien le vamos a notificar avances. Puede ser cualquier persona mayor de edad, que no necesariamente será parte de la fundación.
             </p>
 

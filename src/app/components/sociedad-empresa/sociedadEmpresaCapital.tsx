@@ -6,6 +6,7 @@ import AppStateContext from '@context/sociedadesContext';
 import axios from 'axios';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import '@fortawesome/fontawesome-free/css/all.css';
 
 const CapitalDivisionAcciones: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -198,15 +199,71 @@ const CapitalDivisionAcciones: React.FC = () => {
         }
     };
 
+    const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
+
+    const toggleModal = () => {
+        setShowModal(!showModal); // Alterna el estado del modal
+    };
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold">
+            <h1 className="text-white text-4xl font-bold flex items-center">
                 Capital y división de Acciones
-                <span className="ml-2">
-                    <i className="fa fa-info-circle"></i>
-                </span>
+                <button
+                    className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+                    type="button"
+                    onClick={toggleModal}
+                >
+                    <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+                        <i className="fa-solid fa-info text-sm"></i>
+                    </span>
+                </button>
             </h1>
-            <p className="text-gray-300 mt-4">
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
+                        <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+                            <h2 className="text-white text-xl">Capital y división de Acciones</h2>
+                            <button
+                                className="text-white"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                <i className="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                        <div className="p-4 text-white">
+                            <h5 className="text-lg">Información</h5>
+                            <p className="mt-2 texto_justificado">
+                                Descubre en este Clip cada detalle que te ayudará a entender el tipo de información que debes anexar en esta sección.
+                                <br />
+                                <br />
+                                ¡No dudes en explorar nuestros videos!
+                            </p>
+                            <h5 className="text-lg mt-4">Video</h5>
+                            <iframe
+                                width="100%"
+                                height="315"
+                                src="https://www.youtube.com/embed/0SQORn-hQz4"
+                                title="YouTube video player"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                        <div className="p-4 border-t border-gray-600 text-right">
+                            <button
+                                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <p className="text-gray-300 mt-4 texto_justificado">
                 * Según la cantidad de accionistas, favor definir cuál sería el capital inicial de la sociedad y la división, por ejemplo:
                 <br />
                 &quot;CAPITAL SOCIAL DE US$10,000. DIVIDIDO EN DOS ACCIONES (Cantidad de Acciones) DE US$5,000.00 (Valor de Cada Acción)&quot;.
@@ -253,13 +310,13 @@ const CapitalDivisionAcciones: React.FC = () => {
                             <option value="No">No</option>
                             <option value="Sí">Sí</option>
                         </select>
-                        <small className="text-gray-400">
+                        <small className="text-gray-400 texto_justificado">
                             * Significa que debe poner la cantidad de acciones pero no tendrán un valor asignado.
                         </small>
                     </div>
 
                     <div>
-                        <label className="text-white block mb-2">Valor de cada acción (debe totalizar el capital social)</label>
+                        <label className="text-white block mb-2 texto_justificado">Valor de cada acción (debe totalizar el capital social)</label>
                         <input
                             ref={valorPorAccionRef}
                             type="number"

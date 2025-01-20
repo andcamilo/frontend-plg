@@ -921,6 +921,8 @@ const Request: React.FC = () => {
                 }
 
             }
+        } else if (solicitudData.tipo === "menores-al-extranjero") {
+
         }
 
         // Guardar el PDF
@@ -950,6 +952,14 @@ const Request: React.FC = () => {
         if (Array.isArray(peopleData) && peopleData.length > 0) {
             // Recorrer cada persona en el array
             peopleData.forEach((person, index) => {
+                let fechaNacimiento = person.fechaNacimiento;
+
+                // Verificar si userData.fechaNacimiento tiene el formato esperado de Firebase
+                if (person.fechaNacimiento?._seconds) {
+                    // Convertir el timestamp de Firebase a una fecha válida
+                    const timestamp = person.fechaNacimiento._seconds * 1000; // Convertir segundos a milisegundos
+                    fechaNacimiento = new Date(timestamp).toISOString().split('T')[0]; // Convertir a YYYY-MM-DD
+                }
                 doc.setFontSize(16);
                 addLine(`Información del Representante Legal ${index + 1}:`);
                 doc.setFontSize(12);
@@ -966,7 +976,7 @@ const Request: React.FC = () => {
                 addLine(`Nacionalidad: ${person.nacionalidad || 'N/A'}`);
                 addLine(`Sexo: ${person.sexo || 'N/A'}`);
                 addLine(`País de Nacimiento: ${person.paisNacimiento || 'N/A'}`);
-                addLine(`Fecha de Nacimiento: ${person.fechaNacimiento || 'N/A'}`);
+                addLine(`Fecha de Nacimiento: ${fechaNacimiento || 'N/A'}`);
                 addLine(`Dirección: ${person.direccion || 'N/A'}`);
                 addLine(`País de Residencia: ${person.paisResidencia || 'N/A'}`);
                 addLine(`Profesión: ${person.profesion || 'N/A'}`);
@@ -1005,6 +1015,15 @@ const Request: React.FC = () => {
 
                 if (person.beneficiarios && person.beneficiarios.length > 0) {
                     person.beneficiarios.forEach((beneficiario, index) => {
+                        let fechaNacimiento = beneficiario.fechaNacimiento;
+
+                        // Verificar si userData.fechaNacimiento tiene el formato esperado de Firebase
+                        if (beneficiario.fechaNacimiento?._seconds) {
+                            // Convertir el timestamp de Firebase a una fecha válida
+                            const timestamp = beneficiario.fechaNacimiento._seconds * 1000; // Convertir segundos a milisegundos
+                            fechaNacimiento = new Date(timestamp).toISOString().split('T')[0]; // Convertir a YYYY-MM-DD
+                        }
+
                         doc.setFontSize(16);
                         addLine(`Información del Beneficiario Final ${index + 1}:`);
                         doc.setFontSize(12);
@@ -1013,7 +1032,7 @@ const Request: React.FC = () => {
                         addLine(`Nacionalidad: ${beneficiario.nacionalidad || 'N/A'}`);
                         addLine(`Sexo: ${beneficiario.sexo || 'N/A'}`);
                         addLine(`País de Nacimiento: ${beneficiario.paisNacimiento || 'N/A'}`);
-                        addLine(`Fecha de Nacimiento: ${beneficiario.fechaNacimiento || 'N/A'}`);
+                        addLine(`Fecha de Nacimiento: ${fechaNacimiento || 'N/A'}`);
                         addLine(`Dirección: ${beneficiario.direccion || 'N/A'}`);
                         addLine(`País de Residencia: ${beneficiario.paisResidencia || 'N/A'}`);
                         addLine(`Profesión: ${beneficiario.profesion || 'N/A'}`);
