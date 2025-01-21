@@ -6,9 +6,10 @@ import Swal from 'sweetalert2';
 
 interface ModalDignatariosProps {
     onClose: () => void;
+    id?: string | null;
 }
 
-const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
+const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
 
     const sociedadContext = useContext(AppStateContext);
     const fundacionContext = useContext(AppStateContextFundacion);
@@ -20,13 +21,18 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
     }
 
     const { store } = context;
-    const solicitudId = store.solicitudId; // Obtenemos el `solicitudId` del contexto
+    const solicitudId = store.solicitudId; // Obtenemos el `solicitudId` del contexto 
 
     const [personas, setPersonas] = useState([]); // Estado para guardar las personas de la base de datos
+    const [solicitudData, setSolicitudData] = useState<{ dignatarios: any[] }>({
+        dignatarios: [],
+    });
+    const [isSolicitudDataProcessed, setIsSolicitudDataProcessed] = useState(false);
     const [assignedPositions, setAssignedPositions] = useState<string[]>([]); // Guardar las posiciones asignadas de los dignatarios
     const [isLoading, setIsLoading] = useState(false); // Estado de carga
+    const [userData, setUserData] = useState<any>(null);
     const [formData, setFormData] = useState({
-        servicio: 'Dignatario Propio', // Valor por defecto
+        servicio: 'Dignatario Propio', 
         seleccionar: '', // Campo vacío por defecto
     });
     const [selectedPositions, setSelectedPositions] = useState<string[]>([]); // Estado para las posiciones seleccionadas
@@ -46,11 +52,77 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
             const posicionesAsignadas = dignatarios.flatMap((dignatario: any) =>
                 dignatario.posiciones.map((posicion: any) => posicion.nombre)
             );
+            setSolicitudData(solicitudData);
             setAssignedPositions(posicionesAsignadas);
         } catch (error) {
             console.error('Error al obtener los datos de la solicitud:', error);
         }
     };
+
+    useEffect(() => {
+        fetchSolicitudData(); // Cargar datos de la solicitud (incluyendo dignatarios y sus posiciones)
+        fetchPersonas(); // Cargar las personas
+    }, [solicitudId]);
+
+    useEffect(() => {
+        if (id) {
+            setFormData((prevData) => ({
+                ...prevData,
+                seleccionar: id, // Establece el id como valor seleccionado
+            }));
+        }
+    }, [id]);
+
+    useEffect(() => {
+        if (solicitudData.dignatarios && id) {
+            const dignatario = solicitudData.dignatarios.find(
+                (dignatario: any) => dignatario.personId === id
+            );
+
+            if (dignatario) {
+                // Actualizar `formData.servicio` con el valor de `servicio` del dignatario
+                setFormData((prevData) => ({
+                    ...prevData,
+                    servicio: dignatario.servicio,
+                }));
+
+                // Extraer las posiciones y actualizar `selectedPositions`
+                const posiciones = dignatario.posiciones.map((posicion: any) => posicion.nombre);
+                setSelectedPositions(posiciones);
+            }
+
+            // Marcar que los datos de solicitud han sido procesados
+            setIsSolicitudDataProcessed(true);
+        }
+    }, [solicitudData, id]);
+
+    useEffect(() => {
+        if (!id || !isSolicitudDataProcessed) {
+            console.log("Esperando que se procese solicitudData o que exista un ID válido.");
+            return; // Si no hay ID o no se ha procesado solicitudData, no hacemos nada
+        }
+
+        console.log("Servicio actual: ", formData.servicio);
+
+        if (formData.servicio !== "Dignatario Propio") {
+            console.log("No se realiza la consulta porque el servicio no es 'Dignatario Propio'.");
+            return; // Salimos temprano si el servicio no es 'Dignatario Propio'
+        }
+
+        // Realizamos la consulta solo si es 'Dignatario Propio'
+        const fetchUser = async () => {
+            try {
+                console.log("Realizando consulta al API para Dignatario Propio");
+                const response = await axios.get('/api/get-people-userId', {
+                    params: { userId: id },
+                });
+                setUserData(response.data);
+            } catch (error) {
+                console.error('Error fetching solicitud:', error);
+            }
+        };
+        fetchUser();
+    }, [id, isSolicitudDataProcessed, formData.servicio]);
 
     // Función para obtener personas desde la base de datos
     const fetchPersonas = async () => {
@@ -63,17 +135,12 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
 
             const { personas } = response.data;
             setPersonas(personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && (persona.dignatario !== true || persona.dignatario === undefined)
+                persona.solicitudId === solicitudId && (!persona.dignatario)
             ));
         } catch (error) {
             console.error('Error fetching personas:', error);
         }
     };
-
-    useEffect(() => {
-        fetchSolicitudData(); // Cargar datos de la solicitud (incluyendo dignatarios y sus posiciones)
-        fetchPersonas(); // Cargar las personas
-    }, [solicitudId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -142,7 +209,7 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
 
         // Verificar si alguna de las posiciones seleccionadas ya está asignada
         const posicionesDuplicadas = selectedPositions.filter((pos) => assignedPositions.includes(pos));
-        if (posicionesDuplicadas.length > 0) {
+        if (posicionesDuplicadas.length > 0 && !id) {
             Swal.fire({
                 position: "top-end",
                 icon: "warning",
@@ -165,11 +232,18 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
 
         setIsLoading(true); // Activar el estado de carga
 
+        let personId = formData.seleccionar || null;
+
+        // Generar un nuevo `personId` si el servicio es "Dignatario Nominal" y no existe `personId`
+        if (formData.servicio === 'Dignatario Nominal' && !personId) {
+            personId = crypto.randomUUID(); // Generar un UUID seguro y único
+        }
+        console.log("Person ID ", personId)
         try {
             const updatePayload = {
                 solicitudId: store.solicitudId,
                 dignatario: {
-                    personId: formData.seleccionar || null, // personId solo se envía si es Dignatario Propio
+                    personId: personId,
                     servicio: formData.servicio,
                     posiciones: selectedPositions.map((pos) => ({ nombre: pos })), // Guardar cada posición seleccionada como un objeto
                 },
@@ -207,6 +281,7 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
                             value={formData.servicio}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                            disabled={!!id}
                         >
                             <option value="Dignatario Propio">Dignatario Propio</option>
                             <option value="Dignatario Nominal">Dignatario Nominal</option>
@@ -222,15 +297,28 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
                                     value={formData.seleccionar}
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                                    disabled={!!id} // Deshabilita el select si se está editando
                                 >
-                                    <option value="">Seleccione una persona</option>
-                                    {personas.map((persona: any) => (
-                                        <option key={persona.id} value={persona.id}>
-                                            {persona.tipoPersona === 'Persona Jurídica'
-                                                ? `${persona.personaJuridica.nombreJuridico} - ${persona.nombreApellido}`
-                                                : persona.nombreApellido}
-                                        </option>
-                                    ))}
+                                    {!id && <option value="">Seleccione una persona</option>}
+                                    {id ? (
+                                        personas
+                                            .filter((persona: any) => persona.id === id) // Solo permite la opción con el id actual
+                                            .map((persona: any) => (
+                                                <option key={persona.id} value={persona.id}>
+                                                    {persona.tipoPersona === 'Persona Jurídica'
+                                                        ? `${persona.personaJuridica.nombreJuridico} - ${persona.nombreApellido}`
+                                                        : persona.nombreApellido}
+                                                </option>
+                                            ))
+                                    ) : (
+                                        personas.map((persona: any) => (
+                                            <option key={persona.id} value={persona.id}>
+                                                {persona.tipoPersona === 'Persona Jurídica'
+                                                    ? `${persona.personaJuridica.nombreJuridico} - ${persona.nombreApellido}`
+                                                    : persona.nombreApellido}
+                                            </option>
+                                        ))
+                                    )}
                                 </select>
                             </div>
                             <p className="text-gray-300 mt-4 texto_justificado">

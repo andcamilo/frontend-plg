@@ -80,6 +80,13 @@ const ModalFundadores: React.FC<ModalFundadoresProps> = ({  onClose }) => {
 
         setIsLoading(true); 
 
+        let personId = formData.seleccionar || null;
+
+        // Generar un nuevo `personId` si el servicio es "Dignatario Nominal" y no existe `personId`
+        if (formData.servicio === 'Fundador Nominal' && !personId) {
+            personId = crypto.randomUUID(); // Generar un UUID seguro y único
+        }
+
         try {
             let updatePayload;
 
@@ -87,6 +94,7 @@ const ModalFundadores: React.FC<ModalFundadoresProps> = ({  onClose }) => {
                 updatePayload = {
                     solicitudId: store.solicitudId,
                     fundadores: {
+                        personId: personId,
                         servicio: formData.servicio,
                     },
                 };

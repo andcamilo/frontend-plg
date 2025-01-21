@@ -27,6 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updatePayload = {
         solicitudId,  
         dignatario: {
+          personId: dignatario.personId,
           servicio: dignatario.servicio,  // Solo servicio para dignatario nominal
           posiciones: dignatario.posiciones,
         }
@@ -55,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Enviar solicitud a la API externa (por ejemplo, AWS Lambda o Firebase)
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/dev/update-personDignatario`,  // Solo usamos la URL sin personId
+      `${backendBaseUrl}/chris/update-personDignatario`,  // Solo usamos la URL sin personId
       updatePayload  // Enviar el cuerpo con solicitudId y dignatario
     );
 

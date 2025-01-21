@@ -10,7 +10,6 @@ import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 import ReCAPTCHA from 'react-google-recaptcha';
 import CountrySelect from '@components/CountrySelect';
-import "bootstrap/dist/css/bootstrap.min.css";
 import '@fortawesome/fontawesome-free/css/all.css';
 
 const SociedadEmpresaSolicitante: React.FC = () => {
@@ -64,10 +63,10 @@ const SociedadEmpresaSolicitante: React.FC = () => {
 
     const handleCountryChange = (name: string, value: string) => {
         setFormData((prevData) => ({
-          ...prevData,
-          [name]: value,
+            ...prevData,
+            [name]: value,
         }));
-      };
+    };
 
     useEffect(() => {
         if (formData.cuenta) {
@@ -221,7 +220,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
         if (!recaptchaToken) {
             alert('Please complete the reCAPTCHA');
             return;
-          }
+        }
         setIsLoading(true); // Empieza el loader
 
         // Validación genérica para los campos vacíos
@@ -305,8 +304,8 @@ const SociedadEmpresaSolicitante: React.FC = () => {
     };
 
     const handleRecaptchaChange = (token) => {
-        setRecaptchaToken(token); 
-      };
+        setRecaptchaToken(token);
+    };
 
     const sendCreateRequest = async (cuenta: string) => {
         try {
@@ -413,7 +412,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                             <iframe
                                 width="100%"
                                 height="315"
-                                src="https://www.youtube.com/embed/S0Fg6EPzNp8" 
+                                src="https://www.youtube.com/embed/S0Fg6EPzNp8"
                                 title="YouTube video player"
                                 frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

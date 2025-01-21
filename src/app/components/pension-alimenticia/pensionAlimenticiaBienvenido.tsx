@@ -56,7 +56,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     if (solicitudId) {
       fetchSolicitud();
     }
-  }, [id, solicitudId, store.solicitudId, setStore, fetchSolicitud]);
+  }, [id, solicitudId, store.solicitudId, /* setStore, fetchSolicitud */]);
 
   // Populate formData from store.request
   useEffect(() => {
@@ -140,6 +140,31 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       setIsLoggedIn(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (formData.cuenta) {
+      const fetchUser = async () => {
+        try {
+          console.log("Cuenta ", formData.cuenta)
+          const response = await axios.get('/api/get-user-cuenta', {
+            params: { userCuenta: formData.cuenta },
+          });
+
+          const user = response.data;
+          console.log("Usuario ", user)
+          setStore((prevData) => ({
+            ...prevData,
+            rol: get(user, 'solicitud.rol', 0)
+          }));
+
+        } catch (error) {
+          console.error('Failed to fetch solicitudes:', error);
+        }
+      };
+
+      fetchUser();
+    }
+  }, [formData.cuenta]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -280,7 +305,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
 
   const handleRecaptchaChange = (token) => {
-    setRecaptchaToken(token); 
+    setRecaptchaToken(token);
   };
 
   return (
@@ -303,7 +328,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             disabled={store.request.status >= 10 && store.rol < 20}
           />
 
-       
+
           <div className="flex gap-2">
             <CountrySelect
               name="telefonoCodigo"
@@ -431,25 +456,27 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         )}
 
         {/* Email notification section */}
-        <div className="mt-8">
+        <div className="mt-4">
           <p className="text-white">¿Deseas que te notifiquemos a tu correo?</p>
           <label className="inline-flex items-center mt-4">
             <input
               type="radio"
               name="notificaciones"
               value="yes"
-              checked={formData.notificaciones === 'yes'}
+              checked={formData.notificaciones === "yes"}
               onChange={handleChange}
               className="form-radio"
             />
             <span className="ml-2 text-white">Sí, enviarme las notificaciones por correo electrónico.</span>
           </label>
+        </div>
+        <div className="mt-2">
           <label className="inline-flex items-center mt-2">
             <input
               type="radio"
               name="notificaciones"
               value="no"
-              checked={formData.notificaciones === 'no'}
+              checked={formData.notificaciones === "no"}
               onChange={handleChange}
               className="form-radio"
             />

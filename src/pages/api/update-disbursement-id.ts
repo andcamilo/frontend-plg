@@ -3,7 +3,7 @@ import axios from 'axios';
 import { backendBaseUrl } from '@utils/env'; 
 
 // Define the base URL for the Lambda API
-const updateDisbursementByIdUrl = `${backendBaseUrl}/dev/updateDisbursementID`;
+const updateDisbursementByIdUrl = `${backendBaseUrl}/chris/updateDisbursementID`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PATCH') {

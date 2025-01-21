@@ -8,12 +8,55 @@ import BusinessIcon from '@mui/icons-material/Business';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 import '@fortawesome/fontawesome-free/css/all.css';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Swal from 'sweetalert2';
 
 interface ProtectorData {
     nombre: React.ReactNode;
     correo: string;
     cargo: string;
 }
+
+const Actions: React.FC<{ id: string, solicitudId: string; }> = ({ id, solicitudId }) => {
+    const handleDelete = async () => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Quiere eliminar este protector?",
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#2c2c3e',
+            color: '#fff',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId, cargo: "protectores" });
+                await axios.post('/api/update-people-cargo', { peopleId: id, cargo: "protector" });
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: 'El protector ha sido eliminado.',
+                    icon: 'success',
+                    timer: 4000,
+                    showConfirmButton: false,
+                });
+                // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
+                window.location.reload();
+            } catch (error) {
+                console.error('Error al eliminar este protector:', error);
+                Swal.fire('Error', 'No se pudo eliminar este protector.', 'error');
+            }
+        }
+    };
+
+    return (
+        <div className="flex gap-2">
+            <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
+        </div>
+    );
+};
 
 const ProtectorFundacion: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -103,7 +146,7 @@ const ProtectorFundacion: React.FC = () => {
                 ),
                 correo: persona.email || '---',
                 cargo: persona.protector.cargo || '---', // Ahora no es necesario verificar porque solo hay personas con `protector`
-                accion: '...',
+                Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
             }));
 
             setData(formattedData);
