@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import '@fortawesome/fontawesome-free/css/all.css';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
@@ -493,20 +494,76 @@ const Actividades: React.FC = () => {
         }
     };
 
+    const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
+
+    const toggleModal = () => {
+        setShowModal(!showModal); // Alterna el estado del modal
+    };
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold">
-                Actividades
-                <span className="ml-2">
-                    <i className="fa fa-info-circle"></i>
-                </span>
+            <h1 className="text-white text-4xl font-bold flex items-center">
+                Actividades de la Sociedad
+                <button
+                    className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+                    type="button"
+                    onClick={toggleModal}
+                >
+                    <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+                        <i className="fa-solid fa-info text-sm"></i>
+                    </span>
+                </button>
             </h1>
-            <p className="text-gray-300 mt-4">
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
+                        <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+                            <h2 className="text-white text-xl">Actividades de la Sociedad</h2>
+                            <button
+                                className="text-white"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                <i className="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                        <div className="p-4 text-white">
+                            <h5 className="text-lg">Información</h5>
+                            <p className="mt-2 texto_justificado">
+                                Descubre en este Clip cada detalle que te ayudará a entender el tipo de información que debes anexar en esta sección.
+                                <br />
+                                <br />
+                                ¡No dudes en explorar nuestros videos!
+                            </p>
+                            <h5 className="text-lg mt-4">Video</h5>
+                            <iframe
+                                width="100%"
+                                height="315"
+                                src="https://www.youtube.com/embed/2XKcZijSMio"
+                                title="YouTube video player"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                        <div className="p-4 border-t border-gray-600 text-right">
+                            <button
+                                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <p className="text-gray-300 mt-4 texto_justificado">
                 Aquí podrás agregar la información de las actividades de la nueva sociedad / empresa.
             </p>
             <hr></hr>
             <form className="mt-4" onSubmit={handleSubmit}>
-                <p className="text-gray-300 mb-2">
+                <p className="text-gray-300 mb-2 texto_justificado">
                     ¿La sociedad va a ejecutar actividades DENTRO de la República de Panamá?
                 </p>
 
@@ -522,9 +579,9 @@ const Actividades: React.FC = () => {
                             className="mr-3"
                         />
                         <label htmlFor="SiYaTengoLocal" className="text-white">
-                            <span className="font-bold">Sí, ya tengo la local / dirección de dónde voy a ejecutar las actividades comerciales</span>
+                            <span className="font-bold texto_justificado">Sí, ya tengo la local / dirección de dónde voy a ejecutar las actividades comerciales</span>
                             <br />
-                            <span className="text-gray-400 text-sm">
+                            <span className="text-gray-400 text-sm texto_justificado">
                                 Quiere decir que va a ejecutar el comercio dentro de Panamá. Implica obtener un Aviso de Operación y Registro Municipal. Se utilizarán las actividades mencionadas en el punto subsiguiente.
                             </span>
                         </label>
@@ -540,10 +597,10 @@ const Actividades: React.FC = () => {
                             onChange={handleChange}
                             className="mr-3"
                         />
-                        <label htmlFor="SiRequieroSociedadPrimero" className="text-white">
-                            <span className="font-bold">Sí, pero requiero la sociedad primero para gestionar el local donde se ejecutarán las actividades comerciales</span>
+                        <label htmlFor="SiRequieroSociedadPrimero" className="text-white ">
+                            <span className="font-bold texto_justificado">Sí, pero requiero la sociedad primero para gestionar el local donde se ejecutarán las actividades comerciales</span>
                             <br />
-                            <span className="text-gray-400 text-sm">
+                            <span className="text-gray-400 text-sm texto_justificado">
                                 Quiere decir que se gestionará el Aviso de Operación posterior al registro de la sociedad / empresa.
                             </span>
                         </label>
@@ -562,7 +619,7 @@ const Actividades: React.FC = () => {
                         <label htmlFor="No" className="text-white">
                             <span className="font-bold">No</span>
                             <br />
-                            <span className="text-gray-400 text-sm">
+                            <span className="text-gray-400 text-sm texto_justificado">
                                 Quiere decir que su sociedad / empresa NO estará ejecutando actividades comerciales dentro de Panamá.
                             </span>
                         </label>
@@ -586,14 +643,14 @@ const Actividades: React.FC = () => {
                             {/* Solo muestra el mensaje de error una vez */}
                             {error === 'Por favor, ingrese el nombre comercial.' && <p className="text-red-500">{error}</p>}
 
-                            <small className="text-gray-400">
+                            <small className="text-gray-400 texto_justificado">
                                 * No tiene que ser el mismo que el Nombre de la Sociedad, pero puede serlo.
                             </small>
                         </div>
 
 
                         <div className="mt-4">
-                            <label className="text-white block mb-2">Dirección donde va a ejecutar las actividades comerciales</label>
+                            <label className="text-white block mb-2 texto_justificado">Dirección donde va a ejecutar las actividades comerciales</label>
                             <textarea
                                 ref={formRefs.direccionComercial}
                                 name="direccionComercial"
@@ -605,7 +662,7 @@ const Actividades: React.FC = () => {
                             />
                             {error === 'Por favor, ingrese la dirección comercial.' && <p className="text-red-500">{error}</p>}
 
-                            <small className="text-gray-400">
+                            <small className="text-gray-400 texto_justificado">
                                 * Local comercial, oficina o apartamento. Incluir urbanización, calle.
                             </small>
                         </div>
@@ -771,7 +828,7 @@ const Actividades: React.FC = () => {
                 {(formData.actividadesDentroPanama === 'SiRequieroSociedadPrimero' || formData.actividadesDentroPanama === 'SiYaTengoLocal') && (
                     <>
                         <div className="mt-4">
-                            <label className="text-white block mb-2">Detalle las Actividades que va a realizar (actividad comercial)</label>
+                            <label className="text-white block mb-2 texto_justificado">Detalle las Actividades que va a realizar (actividad comercial)</label>
 
                             <div className="mt-2">
                                 <label className="text-white block mb-2">Actividad #1</label>
@@ -817,7 +874,7 @@ const Actividades: React.FC = () => {
                         </div>
                         <div className="mt-4">
                             <h3 className="text-white font-bold">Contador</h3>
-                            <p className="text-gray-400 text-sm">
+                            <p className="text-gray-400 text-sm texto_justificado">
                                 La Dirección General de Ingresos requiere incluir quién es el contador que lleva los libros de la empresa.
                             </p>
                         </div>
@@ -920,14 +977,14 @@ const Actividades: React.FC = () => {
                         {formData.mantieneContador === 'No' && (
                             <>
                                 <div className="mt-4">
-                                    <p className="text-white font-bold">Le prestamos los servicios de inclusión de contador para la DGI. El costo es de US$200.00. El costo no incluye los servicios de documentación contable ni declaración de renta. Incluye el servicio anual de contador como contacto ante la Dirección General de Ingresos.</p>
+                                    <p className="text-white font-bold texto_justificado">Le prestamos los servicios de inclusión de contador para la DGI. El costo es de US$200.00. El costo no incluye los servicios de documentación contable ni declaración de renta. Incluye el servicio anual de contador como contacto ante la Dirección General de Ingresos.</p>
                                 </div>
                             </>
                         )}
 
                         <div className="mt-4">
                             <h3 className="text-white font-bold">Registro Único de Contribuyente</h3>
-                            <p className="text-gray-400 text-sm">
+                            <p className="text-gray-400 text-sm texto_justificado">
                                 * Adjuntar copia de factura de agua, luz o teléfono para los fines de confirmación del domicilio por parte de la Dirección General de Ingresos.
                                 Este requisito es obligatorio para las sociedades que van a obtener Aviso de Operación y ya tiene local. Para las demás, es opcional incluir la
                                 información de cuál sería la dirección de la empresa.
@@ -948,14 +1005,14 @@ const Actividades: React.FC = () => {
                         </div>
 
                         <div className="mt-4">
-                            <label className="text-white block mb-2">¿Dónde va a mantener los registros contables de la sociedad?</label>
+                            <label className="text-white block mb-2 texto_justificado">¿Dónde va a mantener los registros contables de la sociedad?</label>
                             <select
                                 name="registrosContables"
                                 value={formData.registrosContables}
                                 onChange={handleChange}
                                 className="w-full p-4 bg-gray-800 text-white rounded-lg"
                             >
-                                <option value="Oficina Agente Residente">En las Oficinas del Agente Residente de la Sociedad</option>
+                                <option value="Oficina Agente Residente texto_justificado">En las Oficinas del Agente Residente de la Sociedad</option>
                                 <option value="Otra">Otra</option>
                             </select>
                         </div>
@@ -972,7 +1029,7 @@ const Actividades: React.FC = () => {
                                     className="mr-3"
                                 />
                                 <label htmlFor="servicioDireccionComercial" className="text-white">
-                                    <span className="text-sm">
+                                    <span className="text-sm texto_justificado">
                                         Le brindamos servicio de dirección comercial en caso de que su sociedad lo requiera, sin embargo, no ejecutamos ni somos parte de la ejecución
                                         de sus actividades comerciales. Si desea este servicio, se le adicionará un costo anual de 250.00 dólares.
                                     </span>
@@ -1036,7 +1093,7 @@ const Actividades: React.FC = () => {
                                     </div>
 
                                     <div className="mt-4">
-                                        <label className="text-white block mb-2">Países principales donde ejecutará las actividades comerciales:</label>
+                                        <label className="text-white block mb-2 texto_justificado">Países principales donde ejecutará las actividades comerciales:</label>
                                         <textarea
                                             ref={formRefs.paisesActividadesOffshore}
                                             name="paisesActividadesOffshore"

@@ -7,6 +7,7 @@ import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import '@fortawesome/fontawesome-free/css/all.css';
 
 interface ProtectorData {
     nombre: React.ReactNode;
@@ -141,15 +142,76 @@ const ProtectorFundacion: React.FC = () => {
         }
     }, [store.request]);
 
+    const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
+
+    const toggleModal = () => {
+        setShowModal(!showModal); // Alterna el estado del modal
+    };
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold">Protector de la Fundación</h1>
-            <p className="text-white mt-4">
+            <h1 className="text-white text-4xl font-bold flex items-center">
+                Protector de la Fundación
+                <button
+                    className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+                    type="button"
+                    onClick={toggleModal}
+                >
+                    <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+                        <i className="fa-solid fa-info text-sm"></i>
+                    </span>
+                </button>
+            </h1>
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
+                        <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+                            <h2 className="text-white text-xl">Protector de la Fundación</h2>
+                            <button
+                                className="text-white"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                <i className="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                        <div className="p-4 text-white">
+                            <h5 className="text-lg">Información</h5>
+                            <p className="mt-2 texto_justificado">
+                                Descubre en este Clip cada detalle que te ayudará a entender el tipo de información que debes anexar en esta sección.
+                                <br />
+                                <br />
+                                ¡No dudes en explorar nuestros videos!
+                            </p>
+                            <h5 className="text-lg mt-4">Video</h5>
+                            <iframe
+                                width="100%"
+                                height="315"
+                                src="https://www.youtube.com/embed/6QSnoFsEljs"
+                                title="YouTube video player"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                        <div className="p-4 border-t border-gray-600 text-right">
+                            <button
+                                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <p className="text-white mt-4 texto_justificado">
                 El protector (persona jurídica o individual) tiene deberes de supervisión y puede ser designado por el fundador o el consejo de la fundación, y puede ser una persona distinta al Fundador, beneficiarios y el Consejo Fundacional.
             </p>
 
             <div className="mt-4">
-                <label className="text-white">¿Desea agregar la Figura de Protector de la Fundación?</label>
+                <label className="text-white texto_justificado">¿Desea agregar la Figura de Protector de la Fundación?</label>
                 <select
                     name='protector'
                     value={addProtector}

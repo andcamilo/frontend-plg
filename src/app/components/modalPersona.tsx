@@ -170,6 +170,8 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                     telefonoCodigo: beneficiario.telefonoCodigo || 'PA',
                     email: beneficiario.email || '',
                     esPoliticamenteExpuesta: beneficiario.esPoliticamenteExpuesta || 'No',
+                    personaExpuestaCargo: beneficiario.personaExpuestaCargo || '',
+                    personaExpuestaFecha: beneficiario.personaExpuestaFecha || '',
                     adjuntoCedulaPasaporteBeneficiarioURL: beneficiario.adjuntoCedulaPasaporteBeneficiarioURL || '',
                 }));
                 setBeneficiarios(mappedBeneficiarios);
@@ -214,6 +216,8 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
             telefonoCodigo: 'PA',
             email: '',
             esPoliticamenteExpuesta: 'No',
+            personaExpuestaCargo: '',
+            personaExpuestaFecha: '',
             adjuntoCedulaPasaporteBeneficiarioURL: '',
         },
     ]);
@@ -333,6 +337,9 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                 telefonoCodigo: 'PA',
                 email: '',
                 esPoliticamenteExpuesta: 'No',
+                personaExpuestaCargo: '',
+                personaExpuestaFecha: '',
+
                 adjuntoCedulaPasaporteBeneficiarioURL: '',
             }]);
 
@@ -345,6 +352,8 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                 profesion: false,
                 telefono: false,
                 email: false,
+                personaExpuestaCargo: false,
+                personaExpuestaFecha: false,
                 adjuntoCedulaPasaporteBeneficiarioURL: false,
             }]);
         }
@@ -549,6 +558,8 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
             profesion: false,
             telefono: false,
             email: false,
+            personaExpuestaCargo: false,
+            personaExpuestaFecha: false,
             adjuntoCedulaPasaporteBeneficiarioURL: false,
         }))
     );
@@ -1605,6 +1616,38 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                                             <option value="Si">Sí</option>
                                         </select>
                                     </div>
+                                    <p className="col-span-2">
+                                        * La persona expuesta políticamente son las personas nacionales o extranjeras que cumplen funciones públicas destacadas de alto nivel o con mando y jurisdicción en un Estado, como (pero sin limitarse) los jefes de Estado o de un gobierno, los políticos de alto perfil, los funcionarios gubernamentales, judiciales o militares de alta jerarquía, los ejecutivos de empresas o corporaciones estatales, los funcionarios públicos, que ocupen posiciones de elección popular, entre otros que ejerzan la toma de decisiones en las entidades públicas; personas que cumplen o a quienes se les han confiado funciones importantes por una organización institucional, como los miembros de la alta gerencia, es decir, directores, subdirectores y miembros de la junta directiva o funciones equivalentes.
+                                    </p>
+                                    {/* Mostrar campos adicionales si es Persona políticamente expuesta */}
+                                    {beneficiario.esPoliticamenteExpuesta === 'Si' && (
+                                        <>
+                                            <div className="col-span-1">
+                                                <label className="text-white">Indicar qué cargo ocupa u ocupó</label>
+                                                <input
+                                                    id={`beneficiario-${index}-personaExpuestaCargo`}
+                                                    type="text"
+                                                    name="personaExpuestaCargo"
+                                                    value={beneficiario.personaExpuestaCargo || ''}
+                                                    onChange={(e) => handleBeneficiarioChange(index, e)}
+                                                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                                                    placeholder="Nombre de la persona jurídica"
+                                                />
+                                            </div>
+
+                                            <div className="col-span-1">
+                                                <label className="text-white">En qué fecha</label>
+                                                <input
+                                                    id={`beneficiario-${index}-personaExpuestaFecha`}
+                                                    type="date"
+                                                    name="personaExpuestaFecha"
+                                                    value={beneficiario.personaExpuestaFecha}
+                                                    onChange={(e) => handleBeneficiarioChange(index, e)}
+                                                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                     {/* Adjuntar copia de pasaporte o cédula */}
                                     <div key={index} className="col-span-2">
                                         <label className="text-white">Adjuntar copia de pasaporte o cédula</label>
