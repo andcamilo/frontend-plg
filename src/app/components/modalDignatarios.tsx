@@ -214,27 +214,40 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose }) => {
                     </div>
 
                     {formData.servicio === 'Dignatario Propio' && (
-                        <div className="mb-4">
-                            <label className="text-white block mb-2">Seleccionar</label>
-                            <select
-                                name="seleccionar"
-                                value={formData.seleccionar}
-                                onChange={handleChange}
-                                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                            >
-                                <option value="">Seleccione una persona</option>
-                                {personas.map((persona: any) => (
-                                    <option key={persona.id} value={persona.id}>
-                                        {persona.tipoPersona === 'Persona Jurídica'
-                                            ? `${persona.personaJuridica.nombreJuridico} - ${persona.nombreApellido}`
-                                            : persona.nombreApellido}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <>
+                            <div className="mb-4">
+                                <label className="text-white block mb-2">Seleccionar</label>
+                                <select
+                                    name="seleccionar"
+                                    value={formData.seleccionar}
+                                    onChange={handleChange}
+                                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                                >
+                                    <option value="">Seleccione una persona</option>
+                                    {personas.map((persona: any) => (
+                                        <option key={persona.id} value={persona.id}>
+                                            {persona.tipoPersona === 'Persona Jurídica'
+                                                ? `${persona.personaJuridica.nombreJuridico} - ${persona.nombreApellido}`
+                                                : persona.nombreApellido}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <p className="text-gray-300 mt-4 texto_justificado">
+                                * Los Dignatarios son los que ocupan algún cargo dentro de la sociedad como Presidente, Secretario o Tesorero. Una sola persona puede ocupar varias posiciones de Dignatario, y puedes establecer otras posiciones, tal y como Vocales, Vice Presidentes, Sub Secretarios, y Sub Tesoreros. Si ha escogido Director Nominal, puede incluir de igual forma aquí “Dignatario Nominal”.
+                            </p>
+                        </>
                     )}
 
-                    <div className="mb-4">
+                    {formData.servicio !== 'Dignatario Propio' && (
+                        <>
+                            <p className="text-gray-300 mt-4 texto_justificado">
+                                El costo de servicio de Dignatario Nominal anual es de $US200.00. Le incorporaremos un servicio adicional de Dignatario Nominal.
+                            </p>
+                        </>
+                    )}
+
+                    <div className="mb-4 mt-4">
                         <label className="text-white block mb-2">Posición</label>
                         <div className="flex flex-col space-y-2">
                             <label className="text-white">

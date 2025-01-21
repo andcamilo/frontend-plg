@@ -6,6 +6,7 @@ import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
 import { getRequests } from '@api/request';
 import BusinessIcon from '@mui/icons-material/Business';
+import '@fortawesome/fontawesome-free/css/all.css';
 
 interface PoderData {
     nombre: React.ReactNode;
@@ -115,10 +116,71 @@ const SociedadEmpresaPoder: React.FC = () => {
         }
     };
 
+    const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
+
+    const toggleModal = () => {
+        setShowModal(!showModal); // Alterna el estado del modal
+    };
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold">Poder de la Sociedad</h1>
-            <p className="text-white mt-4">
+            <h1 className="text-white text-4xl font-bold flex items-center">
+                Poder de la Sociedad
+                <button
+                    className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+                    type="button"
+                    onClick={toggleModal}
+                >
+                    <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+                        <i className="fa-solid fa-info text-sm"></i>
+                    </span>
+                </button>
+            </h1>
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
+                        <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+                            <h2 className="text-white text-xl">Poder de la Sociedad</h2>
+                            <button
+                                className="text-white"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                <i className="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                        <div className="p-4 text-white">
+                            <h5 className="text-lg">Información</h5>
+                            <p className="mt-2 texto_justificado">
+                                Descubre en este Clip cada detalle que te ayudará a entender el tipo de información que debes anexar en esta sección.
+                                <br />
+                                <br />
+                                ¡No dudes en explorar nuestros videos!
+                            </p>
+                            <h5 className="text-lg mt-4">Video</h5>
+                            <iframe
+                                width="100%"
+                                height="315"
+                                src="https://www.youtube.com/embed/SYfbDTZwcE8"
+                                title="YouTube video player"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                        <div className="p-4 border-t border-gray-600 text-right">
+                            <button
+                                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <p className="text-white mt-4 texto_justificado">
                 ¿Va a asignar poder general a una tercera persona?
                 <br />
                 * Se utiliza para personas que no están como representante legal o en la junta directiva, y donde usted requiere que tengan poder de representar a la sociedad, firmar, comprometerte, etc. tal como un representante legal. Si usted ya asignó a esta persona como Representante legal, NO es necesario incluir poder general.

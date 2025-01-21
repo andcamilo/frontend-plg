@@ -86,7 +86,7 @@ const ConsultaPropuesta: React.FC = () => {
         const updatedDisponibilidad = [...disponibilidad];
         updatedDisponibilidad[index][field] = value;
         setDisponibilidad(updatedDisponibilidad);
-    
+
         // Eliminar errores al corregir los campos
         setErrorsDisponibilidad((prevErrors) => {
             const updatedErrors = [...prevErrors];
@@ -144,12 +144,13 @@ const ConsultaPropuesta: React.FC = () => {
                 cuenta: "",
                 userId: "",
             });
-            
-            setDisponibilidad(solicitudData.disponibilidad.map((item) => ({
-                fecha: item.fecha || "",
-                horaInicio: item.horaInicio || "",
-                horaFin: item.horaFin || "",
-            })));
+            if (solicitudData.tipo !== "propuesta-legal" && solicitudData.tipo !== "consulta-escrita") {
+                setDisponibilidad(solicitudData.disponibilidad.map((item) => ({
+                    fecha: item.fecha || "",
+                    horaInicio: item.horaInicio || "",
+                    horaFin: item.horaFin || "",
+                })));
+            }
         }
     }, [solicitudData]);
 
@@ -924,7 +925,7 @@ const ConsultaPropuesta: React.FC = () => {
                     solicitudId: solicitudId,
                     adjuntoDocumentoConsulta: archivoURL || '',
                 };
-    
+
                 const responseData = await axios.post('/api/update-request-all', updatePayload);
             }
 
@@ -1472,7 +1473,7 @@ const ConsultaPropuesta: React.FC = () => {
                 </div>
                 {formData.tipoConsulta === "Propuesta Legal" && (
                     <>
-                        {solicitudData && solicitudData.status < 10 && (
+                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && store.rol > 19)) && (
                             <>
                                 <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                                     {isLoading ? (
@@ -1535,7 +1536,7 @@ const ConsultaPropuesta: React.FC = () => {
                             </>
                         )}
 
-                        {solicitudData && solicitudData.status < 10 && (
+                        {((solicitudData && solicitudData.status < 10) || (solicitudData.status >= 10 && store.rol > 19)) && (
                             <>
                                 <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                                     {isLoading ? (

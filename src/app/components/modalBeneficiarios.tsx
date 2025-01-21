@@ -35,7 +35,7 @@ const ModalBeneficiario: React.FC<ModalBeneficiarioProps> = ({ onClose }) => {
             // Filtrar las personas que NO son beneficiarios ya asignados
             const { personas } = response.data;
             setPersonas(personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && (!persona.beneficiario)
+                persona.solicitudId === solicitudId && (!persona.beneficiariosFundacion)
             ));
         } catch (error) {
             console.error('Error fetching personas:', error);

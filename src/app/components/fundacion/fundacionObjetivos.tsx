@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import '@fortawesome/fontawesome-free/css/all.css';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
@@ -224,9 +225,9 @@ const FundacionObjetivos: React.FC = () => {
             Swal.fire({
                 position: "top-end",
                 icon: "warning",
-                title: "Es necesario adjuntar el Registro Único de Contribuyente.",
+                title: "Debe adjuntar la copia de una factura de pago de servicio donde se muestre la dirección para la creación del Ruc de la Fundación. ",
                 showConfirmButton: false,
-                timer: 2500,
+                timer: 4500,
                 timerProgressBar: true,
                 toast: true,
                 background: '#2c2c3e',
@@ -360,20 +361,76 @@ const FundacionObjetivos: React.FC = () => {
         }
     };
 
+    const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
+
+    const toggleModal = () => {
+        setShowModal(!showModal); // Alterna el estado del modal
+    };
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold">
-                Objetivos
-                <span className="ml-2">
-                    <i className="fa fa-info-circle"></i>
-                </span>
+            <h1 className="text-white text-4xl font-bold flex items-center">
+                Objetivos de la Fundación
+                <button
+                    className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+                    type="button"
+                    onClick={toggleModal}
+                >
+                    <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+                        <i className="fa-solid fa-info text-sm"></i>
+                    </span>
+                </button>
             </h1>
-            <p className="text-gray-300 mt-4">
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
+                        <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+                            <h2 className="text-white text-xl">Objetivos de la Fundación</h2>
+                            <button
+                                className="text-white"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                <i className="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                        <div className="p-4 text-white">
+                            <h5 className="text-lg">Información</h5>
+                            <p className="mt-2 texto_justificado">
+                                Descubre en este Clip cada detalle que te ayudará a entender el tipo de información que debes anexar en esta sección.
+                                <br />
+                                <br />
+                                ¡No dudes en explorar nuestros videos!
+                            </p>
+                            <h5 className="text-lg mt-4">Video</h5>
+                            <iframe
+                                width="100%"
+                                height="315"
+                                src="https://www.youtube.com/embed/BCewrIIMEuk"
+                                title="YouTube video player"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                        <div className="p-4 border-t border-gray-600 text-right">
+                            <button
+                                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                                onClick={toggleModal} // Cierra el modal
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <p className="text-gray-300 mt-4 texto_justificado">
                 Aquí podrás agregar la información sobre los objetivos de la nueva Fundación de Interés Privado.
             </p>
 
             <form className="mt-4" onSubmit={handleSubmit}>
-                <h2 className="text-gray-300 mb-2">Detalle los fines de la Fundación (objetivos):</h2>
+                <h2 className="text-gray-300 mb-2 texto_justificado">Detalle los fines de la Fundación (objetivos):</h2>
 
                 {/* Lista de objetivos */}
                 <div className="flex flex-col space-y-2">
@@ -420,7 +477,7 @@ const FundacionObjetivos: React.FC = () => {
                 {/* Campo para seleccionar si se mantiene contador */}
                 <div className="mt-4">
                     <h3 className="text-white font-bold">Contador</h3>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-400 text-sm texto_justificado">
                         La Dirección General de Ingresos requiere incluir quién es el contador que lleva los libros de la fundación.
                     </p>
 
@@ -440,7 +497,7 @@ const FundacionObjetivos: React.FC = () => {
                 {formData.mantieneContador === 'Si' && (
                     <>
                         <div className="mt-4">
-                            <p className="text-white font-bold">Favor indicar la información del contador:</p>
+                            <p className="text-white font-bold texto_justificado">Favor indicar la información del contador:</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 mt-4">
@@ -519,7 +576,7 @@ const FundacionObjetivos: React.FC = () => {
 
                 {formData.mantieneContador === 'No' && (
                     <div className="mt-4">
-                        <p className="text-white font-bold">
+                        <p className="text-white font-bold texto_justificado">
                             Le prestamos los servicios de inclusión de contador para la DGI. El costo es de US$200.00. El costo no incluye los servicios de documentación contable ni declaración de renta. Incluye el servicio anual de contador como contacto ante la Dirección General de Ingresos.
                         </p>
                     </div>
@@ -528,7 +585,7 @@ const FundacionObjetivos: React.FC = () => {
                 {/* Campo para subir el archivo de RUC */}
                 <div className="mt-4">
                     <label className="text-white block mb-2">Registro Único de Contribuyente:</label>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-400 text-sm texto_justificado">
                         Adjuntar copia de factura de agua, luz o teléfono para los fines de confirmación del domicilio por parte de la Dirección General de Ingresos.
                     </p>
                     <input
