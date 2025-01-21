@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import { backendBaseUrl } from '@utils/env';
+import { getServicePrice } from '@/src/app/utils/priceSelector';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const {
@@ -11,8 +12,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     archivosAdjuntos,
     firmaYEntrega,
     gastosPensionado,
+    pensionType,
     solicitudAdicional
   } = req.body;
+    console.log("🚀 ~ handler ~ pensionType:", pensionType)
 
   if (!solicitudId) {
     return res.status(400).json({ message: 'solicitudId is required' });
@@ -20,21 +23,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Find the first non-empty field to send
   const dataToSend =
-    solicitud
-      ? { solicitud }
-      : demandante
-      ? { demandante }
-      : demandado
-      ? { demandado }
-      : archivosAdjuntos
-      ? { archivosAdjuntos }
-      : firmaYEntrega
-      ? { firmaYEntrega }
-      : gastosPensionado
-      ? { gastosPensionado }
-      : solicitudAdicional
-      ? { solicitudAdicional }
-      : null;
+  solicitud
+    ? {
+        ...solicitud,
+        canasta: {
+          items: [
+            {
+              item: "Pensión alimenticia",
+              precio: getServicePrice(pensionType),
+            },
+          ],
+          subtotal: getServicePrice(pensionType), 
+          total: getServicePrice(pensionType),
+        },
+      }
+    : demandante
+    ? { demandante }
+    : demandado
+    ? { demandado }
+    : archivosAdjuntos
+    ? { archivosAdjuntos }
+    : firmaYEntrega
+    ? { firmaYEntrega }
+    : gastosPensionado
+    ? { gastosPensionado }
+    : solicitudAdicional
+    ? { solicitudAdicional }
+    : null;
+
+    // Log for debugging
+    console.log("Data to send:", dataToSend);
+
 
   // If none of the fields have data, return an error
   if (!dataToSend) {

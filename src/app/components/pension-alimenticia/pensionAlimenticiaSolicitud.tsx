@@ -122,6 +122,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
           ...solicitud, // Spread the solicitud data to overwrite corresponding fields in formData
         }));
       }
+      
     }
   }, [store.request]);
 
@@ -199,6 +200,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
         solicitud: {
           ...formData,
         },
+        pensionType: formData.pensionType
       };
 
       console.log("🚀 ~ handleSubmit ~ updatePayload:", updatePayload);
