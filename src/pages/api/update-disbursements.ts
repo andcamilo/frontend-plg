@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import { backendBaseUrl } from '@utils/env'; 
 
-const updateDisbursementUrl = `${backendBaseUrl}/chris/updateDisbursement`;
+const updateDisbursementUrl = `${backendBaseUrl}/dev/updateDisbursement`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PATCH') {
