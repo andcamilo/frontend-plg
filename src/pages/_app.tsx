@@ -5,9 +5,11 @@ import { SociedadesStateProvider } from '@context/sociedadesContext';
 import { FundacionStateProvider } from '@context/fundacionContext';
 import { ConsultaStateProvider } from '@context/consultaContext';
 import { MenoresStateProvider } from '@context/menoresContext';
+import { PaymentStateProvider } from '@context/paymentContext';
 import { DesembolsoStateProvider } from '../app/context/desembolsoContext';
 import { TramiteStateProvider } from '../app/context/tramiteContext';
 import { CorporativoStateProvider } from '../app/context/corporativoContext';
+
 import '../../src/app/globals.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -20,7 +22,9 @@ function MyApp({ Component, pageProps }: AppProps) {
               <DesembolsoStateProvider>
                 <TramiteStateProvider>
                   <CorporativoStateProvider>
-                    <Component {...pageProps} />
+                    <PaymentStateProvider>
+                      <Component {...pageProps} />
+                    </PaymentStateProvider>
                   </CorporativoStateProvider>
                 </TramiteStateProvider>
               </DesembolsoStateProvider>
