@@ -5,13 +5,14 @@ import DashboardLayout from "@components/dashboardLayout"
 import { checkAuthToken } from "@/src/app/utils/checkAuthToken"
 import axios from "axios"
 import ChangePasswordModal from "@components/ChangePasswordModal"
+import { getRoleName } from "@/src/app/utils/roleSelector"
 
 interface UserData {
   id: string
   nombre: string
   email: string
   telefono?: string
-  foto_perfil?: string
+  rol: string // Added "rol" property
 }
 
 const AccountPage: React.FC = () => {
@@ -19,9 +20,9 @@ const AccountPage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
-    profilePhoto: null as File | null,
+    phone: ""
   })
+  const [userRole, setUserRole] = useState("") // State for the role
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false) 
@@ -50,6 +51,7 @@ const AccountPage: React.FC = () => {
         const userData = response.data.user
 
         setUserId(userData.id)
+        setUserRole(userData.rol || "") // Set user role
 
         setFormData((prev) => ({
           ...prev,
@@ -167,6 +169,16 @@ const AccountPage: React.FC = () => {
                   className="w-full bg-[#2a2a3b] rounded p-2 text-white"
                 />
               </div>
+
+              <div>
+                <label className="block mb-2">Rol</label>
+                <input
+                  type="text"
+                  value={getRoleName(Number(userRole))}
+                  readOnly
+                  className="w-full bg-[#2a2a3b] rounded p-2 text-white cursor-not-allowed"
+                />
+              </div>
             </div>
 
             <button
@@ -202,4 +214,3 @@ const AccountPage: React.FC = () => {
 }
 
 export default AccountPage
-

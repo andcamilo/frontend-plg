@@ -1,15 +1,33 @@
 import React, { useEffect, useContext, useState } from 'react';
 import AppStateContext from '@context/context';
-import { Loader2 } from 'lucide-react';
+import AppStateContextFundacion from '@context/fundacionContext';
+import MenoresContext from '@context/menoresContext';
 import SociedadContext from '@context/sociedadesContext';
+import ConsultaContext from "@context/consultaContext";
+import PaymentContext from '@context/paymentContext';
+
+import { Loader2 } from 'lucide-react';
 
 const WidgetLoader: React.FC = () => {
   const pensionContext = useContext(AppStateContext)
   const sociedadContext = useContext(SociedadContext);
+  const fundacionContext = useContext(AppStateContextFundacion);
+  const menoresContext = useContext(MenoresContext);
+  const consultaContext = useContext(ConsultaContext);
+  const pagoContext = useContext(PaymentContext);
 
-  // Verificar si estamos trabajando con sociedad o fundación
-  // const context = pensionContext?.store.solicitudId ? pensionContext : sociedadContext;
-  const context = pensionContext
+ const context = pensionContext?.store.solicitudId
+    ? pensionContext
+    : fundacionContext?.store.solicitudId
+    ? fundacionContext
+    : sociedadContext?.store.solicitudId
+    ? sociedadContext
+    : menoresContext?.store.solicitudId
+    ? menoresContext
+    : consultaContext?.store.solicitudId
+    ? consultaContext
+    : pagoContext;
+
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {

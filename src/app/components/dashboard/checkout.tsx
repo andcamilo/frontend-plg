@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import WidgetLoader from '@/src/app/components/widgetLoader';
+import SaleComponent from '@/src/app/components/saleComponent';
+import get from 'lodash/get';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
@@ -12,6 +15,9 @@ import {
     firebaseMessagingSenderId,
     firebaseAppId
 } from '@utils/env';
+import PaymentContext from '@context/paymentContext';
+
+
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -26,6 +32,8 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
+
+
 const Checkout: React.FC = () => {
    
     
@@ -34,7 +42,26 @@ const Checkout: React.FC = () => {
     const { id } = router.query;
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const [statusName, setStatusName] = useState("");
+    const pagoContext = useContext(PaymentContext);
+
+    if (!pagoContext) {
+        throw new Error("PaymentContext must be used within a PaymentStateProvider");
+    }
     
+    const { store, setStore } = pagoContext;
+    console.log("🚀 ~ store:", store);
+
+    useEffect(() => {
+        if (id && typeof id === "string") {
+            setStore((prevState) => ({
+                ...prevState,
+                solicitudId: id,
+            }));
+        }
+    }, [id]);
+    
+    
+        
 
     const getStatusName = (status: number) => {
         switch (status) {
@@ -254,10 +281,19 @@ const Checkout: React.FC = () => {
         return "Fecha inválida";
     }
 
+    if (!solicitudData) {
+        return (
+            <div className="text-white text-center mt-16">
+                Cargando datos de la solicitud...
+            </div>
+        );
+    }
+
     return (
-        <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
-            <div className="flex flex-col gap-8 md:w-1/2">
-                {/*Información de la bitacora */}
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 p-8 w-full">
+            {/* Left Column */}
+            <div className="flex flex-col gap-8">
+                {/* Información de la bitacora */}
                 <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
                     <h3 className="text-lg font-bold text-white mb-4">Información de la bitacora</h3>
                     <table className="w-full text-gray-300">
@@ -270,11 +306,11 @@ const Checkout: React.FC = () => {
                         <tbody>
                             {solicitudData?.bitacora?.map((entry, index) => {
                                 let finalizacion = "Pendiente";
-
+    
                                 if (index < solicitudData?.bitacora.length - 1 && solicitudData.bitacora[index + 1].date) {
                                     finalizacion = mostrarDate(solicitudData.bitacora[index + 1].date);
                                 }
-
+    
                                 return (
                                     <tr key={index} className="border-b border-gray-600">
                                         <td className="p-4">
@@ -290,27 +326,27 @@ const Checkout: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
-
+    
                 {/* Sección de Actualizar */}
                 <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
                     <h3 className="text-lg font-bold text-white mb-4">Depósitos y transferencias bancarias</h3>
-
+    
                     <div className="text-gray-300 mb-6">
                         <p className="font-bold">Transferencia o Depósito Local:</p>
                         <p><span className="font-bold">Banco General</span></p>
                         <p><span className="font-bold">Beneficiario:</span> Panama Legal Group</p>
                         <p><span className="font-bold">Cuenta Corriente:</span> 03-10-01-112249-3</p>
-
+    
                         <p className="font-bold mt-4">Transferencia Internacional:</p>
                         <p><span className="font-bold">BANCO INTERMEDIARIO:</span> CITIBANK NEW YORK, N.Y. SWIFT CITIUS33, ABA 021000089</p>
                         <p><span className="font-bold">Banco Beneficiario:</span> BANK IN PANAMA</p>
                         <p><span className="font-bold">Banco General, S.A:</span> - Panama SWIFT BAGEPAPA</p>
                         <p><span className="font-bold">Beneficiario:</span> Panama Legal Group</p>
                         <p><span className="font-bold">Cuenta Corriente:</span> 03-10-01-112249-3</p>
-
+    
                         <p className="mt-4">* Puedes subir la transferencia o depósito aquí, nuestro equipo realizará la verificación y dará inicio a tu trámite en no más de 24 horas laborables.</p>
                     </div>
-
+    
                     <div className="mb-4">
                         <label className="block text-gray-300 mb-2">Adjuntar comprobante de pago <span className="text-red-500">*</span></label>
                         <input
@@ -321,69 +357,97 @@ const Checkout: React.FC = () => {
                         />
                         <p className="text-gray-400 mt-2">{archivoFile ? archivoFile.name : "Sin archivos seleccionados"}</p>
                     </div>
-
+    
                     <div className="flex space-x-4 mt-2">
                         <button className="bg-gray-500 text-white px-4 py-2 rounded mt-2" onClick={handleBack}>Volver</button>
                         <button className="bg-profile text-white px-4 py-2 rounded mt-2" onClick={handleUpdate}>Enviar</button>
                     </div>
                 </div>
             </div>
-            {/* Sección de Información del Solicitante */}
-            <div className="bg-gray-800 p-8 rounded-lg md:w-1/2">
-                <h3 className="text-lg font-bold text-white mb-4">Información del solicitante</h3>
-                <p className="text-gray-300">
-                    <strong>Nombre del solicitante:</strong> {solicitudData ? solicitudData.nombreSolicita : "Cargando..."}
-                </p>
-                <p className="text-gray-300">
-                    <strong>Teléfono:</strong> {solicitudData ? solicitudData.telefonoSolicita : "Cargando..."}
-                </p>
-                <p className="text-gray-300">
-                    <strong>Correo electrónico:</strong> {solicitudData ? solicitudData.emailSolicita : "Cargando..."}
-                </p>
-                <hr className='mt-2 mb-2' />
-                <p className="text-gray-300">
-                    <strong>Estatus Actual:</strong> {solicitudData ? statusName : "Cargando..."}
-                </p>
+    
+            {/* Right Column */}
+            <div className="flex flex-col gap-8">
+                <div className="bg-gray-800 p-8 rounded-lg">
+                    <h3 className="text-lg font-bold text-white mb-4">Información del solicitante</h3>
+                    <p className="text-gray-300">
+                        <strong>Nombre del solicitante:</strong> {solicitudData ? solicitudData.nombreSolicita : "Cargando..."}
+                    </p>
+                    <p className="text-gray-300">
+                        <strong>Teléfono:</strong> {solicitudData ? solicitudData.telefonoSolicita : "Cargando..."}
+                    </p>
+                    <p className="text-gray-300">
+                        <strong>Correo electrónico:</strong> {solicitudData ? solicitudData.emailSolicita : "Cargando..."}
+                    </p>
+                    <hr className='mt-2 mb-2' />
+                    <p className="text-gray-300">
+                        <strong>Estatus Actual:</strong> {solicitudData ? statusName : "Cargando..."}
+                    </p>
+    
+                    <h3 className="text-lg font-bold text-white mt-6">Costos</h3>
+                    <table className="w-full text-gray-300 mt-2">
+                        <thead>
+                            <tr className="border-b border-gray-600">
+                                <th className="text-left">#</th>
+                                <th className="text-left">Item</th>
+                                <th className="text-right">Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr className="border-b border-gray-600">
+                                <td>1</td>
+                                <td>{solicitudData ? solicitudData.canasta.items[0].item : "Cargando..."}</td>
+                                <td className="text-right">${solicitudData ? solicitudData.canasta.items[0].precio : "Cargando..."}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr className="border-b border-gray-600">
+                                <td colSpan={2} className="text-right">Subtotal</td>
+                                <td className="text-right">
+                                    ${solicitudData
+                                        ? solicitudData?.canasta?.subtotal.toFixed(2) ?? "Cargando..."
+                                        : solicitudData?.canasta?.items[0]?.subtotal.toFixed(2) ?? "Cargando..."}
+                                </td>
+                            </tr>
+                            <tr className="border-b border-gray-600">
+                                <td colSpan={2} className="text-right">Total</td>
+                                <td className="text-right">
+                                    ${solicitudData
+                                        ? solicitudData?.canasta?.total.toFixed(2) ?? "Cargando..."
+                                        : solicitudData?.canasta?.items[0]?.total.toFixed(2) ?? "Cargando..."}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div className="bg-gray-800 p-4 rounded-lg mt-6">
+                    <h4 className="text-white text-lg font-bold">Pagar solicitud</h4>
+                    {get(solicitudData, "status", 0) === 10 ? (
+                        <>
+                            <div className="mt-8">
+                                <WidgetLoader />
+                            </div>
 
-                <h3 className="text-lg font-bold text-white mt-6">Costos</h3>
-                <table className="w-full text-gray-300 mt-2">
-                    <thead>
-                        <tr className="border-b border-gray-600">
-                            <th className="text-left">#</th>
-                            <th className="text-left">Item</th>
-                            <th className="text-right">Precio</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr className="border-b border-gray-600">
-                            <td>1</td>
-                            <td>{solicitudData ? solicitudData.canasta.items[0].item : "Cargando..."}</td>
-                            <td className="text-right">${solicitudData ? solicitudData.canasta.items[0].precio : "Cargando..."}</td>
-                        </tr>
-
-                    </tbody>
-                    <tfoot>
-                        <tr className="border-b border-gray-600">
-                            <td colSpan={2} className="text-right">Subtotal</td>
-                            <td className="text-right">
-                                ${solicitudData
-                                    ? solicitudData?.canasta?.subtotal.toFixed(2) ?? "Cargando..."
-                                    : solicitudData?.canasta?.items[0]?.subtotal.toFixed(2) ?? "Cargando..."}
-                            </td>
-                        </tr>
-                        <tr className="border-b border-gray-600">
-                            <td colSpan={2} className="text-right">Total</td>
-                            <td className="text-right">
-                                ${solicitudData
-                                    ? solicitudData?.canasta?.total.toFixed(2) ?? "Cargando..."
-                                    : solicitudData?.canasta?.items[0]?.total.toFixed(2) ?? "Cargando..."}
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
+                            {store?.token ? (
+                                <div className="mt-8">
+                                    <SaleComponent saleAmount={100} />
+                                </div>
+                            ) : (
+                                <div className="mt-8 text-gray-400">
+                                    Por favor, complete el widget de pago para continuar.
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="text-gray-400 mt-8">
+                            Esta solicitud no está disponible para pago en este momento.
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
+    
+    
 };
 
 export default Checkout;

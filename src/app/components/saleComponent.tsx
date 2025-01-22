@@ -6,6 +6,7 @@ import SociedadContext from '@context/sociedadesContext';
 import AppStateContextFundacion from '@context/fundacionContext';
 import MenoresContext from '@context/menoresContext';
 import ConsultaContext from "@context/consultaContext";
+import PaymentContext from '@context/paymentContext';
 import { Loader2 } from 'lucide-react'
 import Swal from 'sweetalert2'
 import axios from 'axios'
@@ -21,20 +22,20 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
   const fundacionContext = useContext(AppStateContextFundacion);
   const menoresContext = useContext(MenoresContext);
   const consultaContext = useContext(ConsultaContext);
+  const pagoContext = useContext(PaymentContext);
 
   // Verificar con que solicitud estamos trabajando 
-  const context = pensionContext
-  // const context = pensionContext?.store.solicitudId
-  //   ? pensionContext
-  //   : fundacionContext?.store.solicitudId
-  //   ? fundacionContext
-  //   : sociedadContext?.store.solicitudId
-  //   ? sociedadContext
-  //   : menoresContext?.store.solicitudId
-  //   ? menoresContext
-  //   : consultaContext?.store.solicitudId
-  //   ? consultaContext
-  //   : pensionContext || fundacionContext || sociedadContext || menoresContext || consultaContext;
+  const context = pensionContext?.store.solicitudId
+    ? pensionContext
+    : fundacionContext?.store.solicitudId
+    ? fundacionContext
+    : sociedadContext?.store.solicitudId
+    ? sociedadContext
+    : menoresContext?.store.solicitudId
+    ? menoresContext
+    : consultaContext?.store.solicitudId
+    ? consultaContext
+    : pagoContext;
 
   const [cvv, setCvv] = useState('')
   const [transactionId, setTransactionId] = useState('')
@@ -114,7 +115,7 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
                 <Name>Test Product</Name>
                 <Description>Test Description</Description>
                 <Quantity>1</Quantity>
-                <UnitPrice>${saleAmount}</UnitPrice>
+                <UnitPrice>${precioTotal}</UnitPrice>
               </ItemDetails>
             </itemDetails>
             <systemTracking>TEST</systemTracking>
@@ -182,45 +183,6 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    const validateSale = async () => {
-      if (transactionId) {
-        try {
-          const validateResponse = await axios.post('/api/getTransactionResult', {
-            transactionId,
-            amount: saleAmount,
-          });
-
-          console.log("🚀 ~ validateSale ~ validateResponse:", validateResponse.data);
-
-          if (validateResponse.data?.data.includes('<Result>Success</Result>')) {
-            await Swal.fire({
-              icon: 'success',
-              title: 'Sale Successful',
-              html: `<p>The sale was processed and validated successfully!</p>Transaction ID: ${transactionId}`,
-              confirmButtonText: 'OK',
-            });
-
-            window.location.href = "/dashboard/requests";
-            setCvv('');
-          } else {
-            throw new Error('Validation failed');
-          }
-        } catch (error) {
-          console.error("Error validating the sale:", error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to validate the sale. Please try again.',
-          });
-        }
-      }
-    };
-
-    validateSale();
-  }, [transactionId, saleAmount]); // Depend on transactionId and saleAmount
-
 
   return (
     <div className="p-6 bg-[#13131A] text-white rounded-lg shadow-lg">
