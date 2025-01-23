@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ? { gastosPensionado }
     : solicitudAdicional
     ? { solicitudAdicional }
-    : null;
+    : { ...req.body }; ;
 
     // Log for debugging
     console.log("Data to send:", dataToSend);
