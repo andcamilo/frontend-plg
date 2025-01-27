@@ -3,6 +3,7 @@ import DesembolsoContext from '@context/desembolsoContext';
 import DisbursementGastosOficina from './disbursementGastosOficina';
 import DisbursementGastosCliente from './disbursementGastosCliente';
 import DisbursementCajaChica from './disbursementCajaChica';
+import { useRouter } from 'next/router';
 import DisbursementTransferOrPaymentDetails from './disbursementTransferOrPaymentDetails';
 import DisbursementPaidDisbursementDetails from './disbursementPaidDisbursementDetails';
 import Swal from 'sweetalert2';
@@ -15,6 +16,8 @@ interface DisbursementProps {
 const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
     const context = useContext(DesembolsoContext);
     const [isLoading, setIsLoading] = useState(false);
+
+    const router = useRouter();
 
     useEffect(() => {
         if (context) {
@@ -31,15 +34,14 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
     const handleSave = async () => {
         setIsLoading(true);
         try {
-            // Determine the endpoint and method based on whether `id` is null or not
             const endpoint = id
-                ? `/api/update-disbursement-id` // Use update endpoint
-                : `/api/create-disbursement`; // Use create endpoint for new disbursement
+                ? `/api/update-disbursement-id` 
+                : `/api/create-disbursement`; 
     
-            const method = id ? 'PATCH' : 'POST'; // PATCH for update, POST for create
+            const method = id ? 'PATCH' : 'POST';
     
             // Construct the request body
-            const requestBody = id ? { ...state, id } : state; // Include `id` in the body if updating
+            const requestBody = id ? { ...state, id } : state;
     
             // Make the API request
             const response = await fetch(endpoint, {
@@ -83,6 +85,7 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
             });
         } finally {
             setIsLoading(false);
+            router.push('/dashboard/see');
         }
     };
     

@@ -45,7 +45,7 @@ const ListInvoices: React.FC = () => {
 
   const handleEdit = (row: { [key: string]: any }) => {
     const id = row.invoice_id; // Use the invoice_id as the identifier
-    router.push(`/dashboard/see/${id}`); // Navigate to detail page
+    router.push(`/dashboard/see-invoices/${id}`); // Navigate to detail page
   };
 
   const handleGetSelectedIds = async (selectedIds: string[]) => {

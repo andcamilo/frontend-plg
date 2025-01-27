@@ -12,7 +12,7 @@ const See: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true; // Track whether the component is mounted
+    let isMounted = true; 
 
     const fetchDisbursement = async () => {
       if (typeof id === 'string' && context) {

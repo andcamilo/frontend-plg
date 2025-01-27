@@ -137,7 +137,6 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         </div>
       )}
 
-      {/* Opciones desplegables */}
       {dropdownOpen && (
         <div className="ml-6 transition-all">
           <Link href="/dashboard/tramite-general" className="block mb-4">
@@ -199,10 +198,10 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           <Link href="/dashboard/see" className={`block mb-2 ${isActive('/dashboard/see')}`} onClick={closeMenu}>
             Ver Desembolsos
           </Link>
-          <Link href="/dashboard/invoices" className={`block mb-2 ${isActive('/dashboard/invoices')}`} onClick={closeMenu}>
+          <Link href="/dashboard/see-invoices" className={`block mb-2 ${isActive('/dashboard/invoices')}`} onClick={closeMenu}>
             Ver Facturas
           </Link>
-          <Link href="/dashboard/expenses" className={`block mb-2 ${isActive('/dashboard/expenses')}`} onClick={closeMenu}>
+          <Link href="/dashboard/see-expenses" className={`block mb-2 ${isActive('/dashboard/expenses')}`} onClick={closeMenu}>
             Ver Gastos
           </Link>
 

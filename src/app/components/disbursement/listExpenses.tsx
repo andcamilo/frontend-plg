@@ -44,8 +44,10 @@ const ListExpenses: React.FC = () => {
   };
 
   const handleEdit = (row: { [key: string]: any }) => {
-    const id = row.invoice_id; // Use the invoice_id as the identifier
-    router.push(`/dashboard/see/${id}`); // Navigate to detail page
+    console.log("🚀 ~ handleEdit ~ row:", row)
+    const id = row.expense_id; // Use the invoice_id as the identifier
+    console.log("🚀 ~ handleEdit ~ id:", id)
+    router.push(`/dashboard/see-expenses/${id}`); // Navigate to detail page
   };
 
   const handleGetSelectedIds = async (selectedIds: string[]) => {
