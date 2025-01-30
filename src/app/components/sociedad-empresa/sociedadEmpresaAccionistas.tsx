@@ -7,6 +7,7 @@ import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 import '@fortawesome/fontawesome-free/css/all.css';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface AccionistaData {
     numero: number;
@@ -14,6 +15,48 @@ interface AccionistaData {
     porcentajeAcciones: string;
     acciones: string;
 }
+
+const Actions: React.FC<{ id: string, solicitudId: string; }> = ({ id, solicitudId }) => {
+    const handleDelete = async () => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Quiere eliminar este director?",
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#2c2c3e',
+            color: '#fff',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+        });
+
+        if (result.isConfirmed) {
+            try {
+                /* await axios.delete(`/api/delete-people`, { params: { peopleId: id } }); */
+                await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId, cargo: "accionistas" });
+                await axios.post('/api/update-people-cargo', { peopleId: id, cargo: "accionista" });
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: 'La persona ha sido eliminada.',
+                    icon: 'success',
+                    timer: 4000,
+                    showConfirmButton: false,
+                });
+                // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
+                window.location.reload();
+            } catch (error) {
+                console.error('Error al eliminar esta persona:', error);
+                Swal.fire('Error', 'No se pudo eliminar esta persona.', 'error');
+            }
+        }
+    };
+
+    return (
+        <div className="flex gap-2">
+            <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
+        </div>
+    );
+};
 
 const SociedadEmpresaAccionistas: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -126,7 +169,7 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                     )
                     : persona.nombreApellido || '---',
                 '% de Acciones': persona.accionista.porcentajeAcciones || '---',
-                Opciones: '...',
+                Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
             }));
 
             setData(formattedData);

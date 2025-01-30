@@ -79,6 +79,12 @@ const ModalDirectores: React.FC<ModalDirectoresProps> = ({ onClose }) => {
         }
 
         setIsLoading(true); // Activar el estado de carga
+        let personId = formData.seleccionar || null;
+
+        // Generar un nuevo `personId` si el servicio es "Dignatario Nominal" y no existe `personId`
+        if (formData.servicio === 'Director Nominal' && !personId) {
+            personId = crypto.randomUUID(); // Generar un UUID seguro y único
+        }
 
         try {
             let updatePayload;
@@ -87,6 +93,7 @@ const ModalDirectores: React.FC<ModalDirectoresProps> = ({ onClose }) => {
                 updatePayload = {
                     solicitudId: store.solicitudId,
                     directores: {
+                        personId: personId,
                         servicio: formData.servicio,
                     },
                 };

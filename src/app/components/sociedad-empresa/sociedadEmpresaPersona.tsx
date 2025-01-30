@@ -23,11 +23,12 @@ const Actions: React.FC<{ id: string, solicitudId: string; onEdit: (id: string, 
             cancelButtonColor: '#d33',
             confirmButtonText: 'Sí, eliminar',
         });
-
+        console.log("ID ", id)
+        console.log("ID Soli ", solicitudId)
         if (result.isConfirmed) {
             try {
                 await axios.delete(`/api/delete-people`, { params: { peopleId: id } });
-                await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId });
+                await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId, cargo: '' });
                 Swal.fire({
                     title: 'Eliminado',
                     text: 'La persona ha sido eliminada.',

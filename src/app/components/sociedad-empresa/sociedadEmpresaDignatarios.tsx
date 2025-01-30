@@ -5,9 +5,10 @@ import ModalDignatarios from '@components/modalDignatarios';
 import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
-import { getRequests } from '@api/request';
 import Swal from 'sweetalert2';
 import '@fortawesome/fontawesome-free/css/all.css';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface DignatarioNominalData {
     tipo: string;
@@ -16,6 +17,51 @@ interface DignatarioNominalData {
     posicion: string;
 }
 
+const Actions: React.FC<{ id: string, solicitudId: string; onEdit: (id: string, solicitudId: string) => void }> = ({ id, solicitudId, onEdit }) => {
+    const handleDelete = async () => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Quiere eliminar este dignatario?",
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#2c2c3e',
+            color: '#fff',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId, cargo: 'dignatarios' });
+                await axios.post('/api/update-people-cargo', { peopleId: id, cargo: "dignatario" });
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: 'El dignatario ha sido eliminada.',
+                    icon: 'success',
+                    timer: 4000,
+                    showConfirmButton: false,
+                });
+                // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
+                window.location.reload();
+            } catch (error) {
+                console.error('Error al eliminar este dignatario:', error);
+                Swal.fire('Error', 'No se pudo eliminar este dignatario.', 'error');
+            }
+        }
+    };
+
+    return (
+        <div className="flex gap-2">
+            <EditIcon
+                className="cursor-pointer"
+                titleAccess="Editar"
+                onClick={() => onEdit(id, solicitudId)} // Llamar a la función para abrir el modal
+            />
+            <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
+        </div>
+    );
+};
 
 const SociedadEmpresaDignatarios: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -31,6 +77,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
     const [hasPrevPage, setHasPrevPage] = useState(false);
     const [hasNextPage, setHasNextPage] = useState(false);
     const rowsPerPage = 3;
+    const [selectedId, setSelectedId] = useState<string | null>(null);
 
     const { store, setStore } = context;
     const solicitudId = store.solicitudId; // Aquí obtienes el `solicitudId` actual del store
@@ -89,9 +136,14 @@ const SociedadEmpresaDignatarios: React.FC = () => {
     };
 
 
-    const openModal = () => setIsModalOpen(true);
+    const openModal = (id?: string) => {
+        setSelectedId(id || null);
+        setIsModalOpen(true);
+    };
+
     const closeModal = () => {
         setIsModalOpen(false);
+        setSelectedId(null);
         fetchData();
     };
 
@@ -140,7 +192,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                     )
                     : persona.nombreApellido || '---',
                 posicion: persona.dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
-                Opciones: '...',
+                Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
             }));
 
             const solicitudes = await axios.get('/api/get-request-id', {
@@ -158,7 +210,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                     .map((dignatario: any) => ({
                         nombre: dignatario.servicio,
                         posicion: dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
-                        Opciones: '...',
+                        Opciones: <Actions id={dignatario.personId} solicitudId={store.solicitudId} onEdit={openModal} />,
                     }));
             }
 
@@ -265,7 +317,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                         <button
                             className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
                             type="button"
-                            onClick={openModal}
+                            onClick={() => openModal()}
                         >
                             {isLoading ? (
                                 <div className="flex items-center justify-center">
@@ -296,9 +348,12 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                 </button>
             </div>
 
-            {isModalOpen
-                && <ModalDignatarios onClose={closeModal} />
-            }
+            {isModalOpen && (
+                <ModalDignatarios
+                    onClose={closeModal}
+                    id={selectedId}
+                />
+            )}
         </div>
     );
 };

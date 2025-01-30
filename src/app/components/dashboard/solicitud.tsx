@@ -4,7 +4,9 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import get from 'lodash/get';
 import { backendBaseUrl } from '@utils/env';
+import { checkAuthToken } from "@utils/checkAuthToken";
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -15,6 +17,17 @@ import {
 } from '@utils/env';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+
+const roleMapping: { [key: number]: string } = {
+    99: "Super Admin",
+    90: "Administrador",
+    80: "Auditor",
+    50: "Caja Chica",
+    40: "Abogados",
+    35: "Asistente",
+    17: "Cliente Recurrente",
+    10: "Cliente",
+};
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -40,11 +53,23 @@ const Request: React.FC = () => {
     const [lawyers, setLawyers] = useState<any[]>([]);
     const [peopleData, setPeopleData] = useState<any[]>([]);
 
+    const [formData, setFormData] = useState<{
+        cuenta: string;
+        email: string;
+        rol: string;
+        userId: string;
+    }>({
+        cuenta: "",
+        email: "",
+        rol: "",
+        userId: "",
+    });
+
     const getStatusName = (status: number) => {
         switch (status) {
             case 0: return "Rechazada";
             case 1: return "Borrador";
-            case 10: return "Enviada";
+            case 10: return "Enviada, pendiente de pago";
             case 12: return "Aprobada";
             case 19: return "Confirmando pago";
             case 20: return "Pagada";
@@ -77,12 +102,46 @@ const Request: React.FC = () => {
                 const statusNumber = parseInt(solicitudResponse.data.status, 10);
                 setStatusName(getStatusName(statusNumber));
 
-                const peopleResponse = await axios.get('/api/get-people-id', {
-                    params: { solicitudId: id },
+                const userData = checkAuthToken();
+                if (!userData) {
+                    throw new Error("User is not authenticated.");
+                }
+                setFormData((prevData) => ({
+                    ...prevData,
+                    email: userData.email,
+                    cuenta: userData.user_id,
+                }));
+
+                // 2. Fetch User Data based on cuenta
+                console.log("Cuenta ", userData.user_id);
+                const userResponse = await axios.get('/api/get-user-cuenta', {
+                    params: { userCuenta: userData.user_id },
                 });
 
-                console.log('People Data:', peopleResponse.data);
-                setPeopleData(peopleResponse.data);
+                const user = userResponse.data;
+
+                const rawRole = get(user, 'solicitud.rol', null);
+                if (rawRole === null || rawRole === undefined) {
+                    console.warn('El rol no está definido en el objeto user:', user);
+                }
+
+                const stringRole =
+                    typeof rawRole === 'string'
+                        ? rawRole
+                        : roleMapping[rawRole] || "Rol inválido";
+                console.log('Rol recibido:', rawRole, 'Rol mapeado:', stringRole);
+                setFormData((prevData) => ({
+                    ...prevData,
+                    rol: stringRole, // Asignar rol en formato string
+                    userId: get(user, 'solicitud.id', ""),
+                }));
+
+                if (solicitudResponse.data.tipo === "new-fundacion" || solicitudResponse.data.tipo === "new-sociedad-empresa"){
+                    const peopleResponse = await axios.get('/api/get-people-id', {
+                        params: { solicitudId: id },
+                    });
+                    setPeopleData(peopleResponse.data);
+                }
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -407,9 +466,8 @@ const Request: React.FC = () => {
         try {
             let solicitudId = id;
             // Llamar a la API para obtener la URL del archivo
-            const response = await axios.post(`${backendBaseUrl}/dev/create-fundacion-file/${solicitudId}`);
-            console.log("URL ", response)
-            console.log("URL ", response.data)
+            const response = await axios.post(`${backendBaseUrl}/dev/create-pacto-social-file/${solicitudId}`);
+
             if (response.data && response.data.fileUrl) {
                 // Crear un enlace temporal para descargar el archivo
                 const url = response.data.fileUrl;
@@ -1062,81 +1120,90 @@ const Request: React.FC = () => {
         // Guardar el PDF
         doc.save('Información_Personas.pdf');
     };
-
+    
     return (
         <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
             <div className="flex flex-col gap-8 md:w-1/2">
                 {/* Sección de Actualizar */}
-                <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
-                    <h3 className="text-lg font-bold text-white mb-4">Actualizar:</h3>
-                    <div className="mb-4">
-                        <label className="block text-gray-300">Estatus</label>
-                        <select
-                            id="statusSelect"
-                            className="w-full p-2 rounded bg-gray-900 text-white"
-                            value={status}
-                            onChange={(e) => setStatus(Number(e.target.value))}
-                        >
-                            <option value="">Nueva Acción</option>
-                            <option value="0">Rechazada</option>
-                            <option value="1">Borrador</option>
-                            <option value="10">Enviada</option>
-                            <option value="12">Aprobada</option>
-                            <option value="19">Confirmando pago</option>
-                            <option value="20">Pagada</option>
-                            <option value="30">En proceso</option>
-                            <option value="70">Finalizada</option>
-                        </select>
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-300">Observación</label>
-                        <textarea
-                            id="observationTextarea"
-                            className="w-full p-2 rounded bg-gray-900 text-white"
-                            value={observation}
-                            onChange={(e) => setObservation(e.target.value)}
-                            placeholder="Escriba su observación aquí"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-300">Adjuntar archivo</label>
-                        <input
-                            type="file"
-                            name='adjuntoDocumentoBitacora'
-                            className="w-full p-2 rounded bg-gray-900 text-white"
-                            onChange={handleFileChange}
-                        />
-                        <p className="text-gray-400 mt-2">{archivoFile ? archivoFile.name : "Sin archivos seleccionados"}</p>
-                    </div>
-                    <div className="flex space-x-4 mt-2">
-                        <button className="bg-gray-500 text-white px-4 py-2 rounded mt-2" onClick={handleBack}>Volver</button>
-                        <button className="bg-profile text-white px-4 py-2 rounded mt-2" onClick={handleUpdate}>Actualizar</button>
-                    </div>
-                </div>
+                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") && (
+                    <>
+                        <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
+                            <h3 className="text-lg font-bold text-white mb-4">Actualizar:</h3>
+                            <div className="mb-4">
+                                <label className="block text-gray-300">Estatus</label>
+                                <select
+                                    id="statusSelect"
+                                    className="w-full p-2 rounded bg-gray-900 text-white"
+                                    value={status}
+                                    onChange={(e) => setStatus(Number(e.target.value))}
+                                >
+                                    <option value="">Nueva Acción</option>
+                                    <option value="0">Rechazada</option>
+                                    <option value="1">Borrador</option>
+                                    <option value="10">Enviada</option>
+                                    <option value="12">Aprobada</option>
+                                    <option value="19">Confirmando pago</option>
+                                    <option value="20">Pagada</option>
+                                    <option value="30">En proceso</option>
+                                    <option value="70">Finalizada</option>
+                                </select>
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-300">Observación</label>
+                                <textarea
+                                    id="observationTextarea"
+                                    className="w-full p-2 rounded bg-gray-900 text-white"
+                                    value={observation}
+                                    onChange={(e) => setObservation(e.target.value)}
+                                    placeholder="Escriba su observación aquí"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-300">Adjuntar archivo</label>
+                                <input
+                                    type="file"
+                                    name='adjuntoDocumentoBitacora'
+                                    className="w-full p-2 rounded bg-gray-900 text-white"
+                                    onChange={handleFileChange}
+                                />
+                                <p className="text-gray-400 mt-2">{archivoFile ? archivoFile.name : "Sin archivos seleccionados"}</p>
+                            </div>
+                            <div className="flex space-x-4 mt-2">
+                                <button className="bg-gray-500 text-white px-4 py-2 rounded mt-2" onClick={handleBack}>Volver</button>
+                                <button className="bg-profile text-white px-4 py-2 rounded mt-2" onClick={handleUpdate}>Actualizar</button>
+                            </div>
+                        </div>
+                    </>
+                )}
+
 
                 {/* Sección de Asignar abogado */}
-                <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
-                    <h3 className="text-lg font-bold text-white mb-4">Asignar abogado:</h3>
-                    <select
-                        className="w-full p-2 rounded bg-gray-900 text-white"
-                        value={selectedLawyer ? selectedLawyer.id : ""}
-                        onChange={(e) => {
-                            const lawyer = lawyers.find((l) => l.id === e.target.value);
-                            setSelectedLawyer(lawyer || null);
-                        }}
-                    >
-                        <option value="">Seleccionar abogado</option>
-                        {lawyers.map((lawyer) => (
-                            <option key={lawyer.id} value={lawyer.id}>
-                                {lawyer.nombre}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="flex space-x-4 mt-2">
-                        <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={handleBack}>Volver</button>
-                        <button className="bg-profile text-white px-4 py-2 rounded" onClick={handleAssignLawyer}>Asignar</button>
-                    </div>
-                </div>
+                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") && (
+                    <>
+                        <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
+                            <h3 className="text-lg font-bold text-white mb-4">Asignar abogado:</h3>
+                            <select
+                                className="w-full p-2 rounded bg-gray-900 text-white"
+                                value={selectedLawyer ? selectedLawyer.id : ""}
+                                onChange={(e) => {
+                                    const lawyer = lawyers.find((l) => l.id === e.target.value);
+                                    setSelectedLawyer(lawyer || null);
+                                }}
+                            >
+                                <option value="">Seleccionar abogado</option>
+                                {lawyers.map((lawyer) => (
+                                    <option key={lawyer.id} value={lawyer.id}>
+                                        {lawyer.nombre}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="flex space-x-4 mt-2">
+                                <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={handleBack}>Volver</button>
+                                <button className="bg-profile text-white px-4 py-2 rounded" onClick={handleAssignLawyer}>Asignar</button>
+                            </div>
+                        </div>
+                    </>
+                )}
 
                 {/*Información de la bitacora */}
                 <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
@@ -1235,24 +1302,32 @@ const Request: React.FC = () => {
                     >
                         Descargar Resumen PDF
                     </button>
-
-                    <button
-                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                        onClick={handleDownload}
-                    >
-                        Descargar Pacto Social
-                    </button>
+                    {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
+                        <>
+                            <button
+                                className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                onClick={handleDownload}
+                            >
+                                Descargar Pacto Social
+                            </button>
+                        </>
+                    )}
                 </div>
 
-                <div className="flex space-x-4 ">
-                    <button
-                        onClick={generatePDFPersonas}
-                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                    >
-                        Descargar información de las personas
-                    </button>
+                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData &&
+                    solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
+                        <>
+                            <div className="flex space-x-4 ">
+                                <button
+                                    onClick={generatePDFPersonas}
+                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                >
+                                    Descargar información de las personas
+                                </button>
 
-                </div>
+                            </div>
+                        </>
+                    )}
 
 
             </div>

@@ -67,7 +67,7 @@ const Checkout: React.FC = () => {
         switch (status) {
             case 0: return "Rechazada";
             case 1: return "Borrador";
-            case 10: return "Enviada";
+            case 10: return "Enviada, pendiente de pago";
             case 12: return "Aprobada";
             case 19: return "Confirmando pago";
             case 20: return "Pagada";
