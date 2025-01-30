@@ -1270,33 +1270,33 @@ const ConsultaPropuesta: React.FC = () => {
                                         <div key={index} className="mb-4">
                                             <div className="flex space-x-4">
                                                 <div>
-                                                    <label className="block text-white mb-2">Fecha {index + 1}:</label>
+                                                    <label className="block text-white">Fecha {index + 1}:</label>
                                                     <input
                                                         id={`fecha-${index}`}
                                                         type="date"
                                                         value={item.fecha}
                                                         onChange={(e) => handleDisponibilidadChange(index, "fecha", e.target.value)}
-                                                        className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errorsDisponibilidad[index]?.fecha ? 'border-2 border-red-500' : ''}`}
+                                                        className={`w-full mt-4 p-4 bg-gray-800 text-white rounded-lg ${errorsDisponibilidad[index]?.fecha ? 'border-2 border-red-500' : ''}`}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-white mb-2">Hora Inicio:</label>
+                                                    <label className="block text-white">Hora Inicio:</label>
                                                     <input
                                                         id={`horaInicio-${index}`}
                                                         type="time"
                                                         value={item.horaInicio}
                                                         onChange={(e) => handleDisponibilidadChange(index, "horaInicio", e.target.value)}
-                                                        className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errorsDisponibilidad[index]?.horaInicio ? 'border-2 border-red-500' : ''}`}
+                                                        className={`w-full mt-4 p-4 bg-gray-800 text-white rounded-lg ${errorsDisponibilidad[index]?.horaInicio ? 'border-2 border-red-500' : ''}`}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-white mb-2">Hora Fin:</label>
+                                                    <label className="block text-white">Hora Fin:</label>
                                                     <input
                                                         id={`horaFin-${index}`}
                                                         type="time"
                                                         value={item.horaFin}
                                                         onChange={(e) => handleDisponibilidadChange(index, "horaFin", e.target.value)}
-                                                        className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errorsDisponibilidad[index]?.horaFin ? 'border-2 border-red-500' : ''}`}
+                                                        className={`w-full mt-4 p-4 bg-gray-800 text-white rounded-lg ${errorsDisponibilidad[index]?.horaFin ? 'border-2 border-red-500' : ''}`}
                                                     />
                                                 </div>
                                             </div>
@@ -1536,7 +1536,7 @@ const ConsultaPropuesta: React.FC = () => {
                             </>
                         )}
 
-                        {((solicitudData && solicitudData.status < 10) || (solicitudData.status >= 10 && store.rol > 19)) && (
+                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && store.rol > 19)) && (
                             <>
                                 <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                                     {isLoading ? (
