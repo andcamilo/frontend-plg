@@ -97,7 +97,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   }, [store.request, setStore]);
 
-  // Fetch user data based on cuenta
   useEffect(() => {
     if (formData.cuenta) {
       const fetchUser = async () => {

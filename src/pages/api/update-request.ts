@@ -13,7 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     firmaYEntrega,
     gastosPensionado,
     pensionType,
-    solicitudAdicional
+    solicitudAdicional,
+    wantsInvestigation
   } = req.body;
     console.log("🚀 ~ handler ~ pensionType:", pensionType)
 
@@ -30,11 +31,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           items: [
             {
               item: "Pensión alimenticia",
-              precio: getServicePrice(pensionType),
+              precio: getServicePrice(pensionType, wantsInvestigation),
             },
           ],
-          subtotal: getServicePrice(pensionType), 
-          total: getServicePrice(pensionType),
+          subtotal: getServicePrice(pensionType, wantsInvestigation), 
+          total: getServicePrice(pensionType, wantsInvestigation),
         },
       }
     : demandante
