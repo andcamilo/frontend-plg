@@ -8,6 +8,7 @@ import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 import '@fortawesome/fontawesome-free/css/all.css';
+import CountrySelect from '@components/CountrySelect';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
@@ -66,6 +67,8 @@ const Actividades: React.FC = () => {
         telefonoContadorCodigo: string;
         correoContador: string;
         registrosContables: string;
+        paisRegistros: string;
+        direccionRegistros: string;
         servicioDireccionComercial: boolean;
         tipoActividades: string;
         actividadOffshore1: string;
@@ -100,6 +103,8 @@ const Actividades: React.FC = () => {
         telefonoContadorCodigo: 'PA',
         correoContador: '',
         registrosContables: 'Oficina Agente Residente',
+        paisRegistros: 'Panamá',
+        direccionRegistros: '',
         servicioDireccionComercial: false,
         tipoActividades: 'offshore',
         actividadOffshore1: '',
@@ -132,6 +137,7 @@ const Actividades: React.FC = () => {
         { field: 'idoneidadContador', errorMessage: 'Por favor, ingrese la idoneidad del contador.' },
         { field: 'telefonoContador', errorMessage: 'Por favor, ingrese el teléfono del contador.' },
         { field: 'correoContador', errorMessage: 'Por favor, ingrese el correo electrónico del contador.' },
+        { field: 'direccionRegistros', errorMessage: 'Por favor, ingrese la dirección comercial dónde va a mantener los registros contables de la sociedad.' },
         // Validaciones para las actividadOffshore
         { field: 'actividadOffshore1', errorMessage: 'Por favor, ingrese la actividad offshore 1.' },
         { field: 'actividadOffshore2', errorMessage: 'Por favor, ingrese la actividad offshore 2.' },
@@ -158,6 +164,7 @@ const Actividades: React.FC = () => {
         idoneidadContador: false,
         telefonoContador: false,
         correoContador: false,
+        direccionRegistros: false,
         actividadOffshore1: false,
         actividadOffshore2: false,
         paisesActividadesOffshore: false,
@@ -181,10 +188,18 @@ const Actividades: React.FC = () => {
         idoneidadContador: useRef<HTMLInputElement>(null),
         telefonoContador: useRef<HTMLInputElement>(null),
         correoContador: useRef<HTMLInputElement>(null),
+        direccionRegistros: useRef<HTMLTextAreaElement>(null),
         actividadOffshore1: useRef<HTMLInputElement>(null),
         actividadOffshore2: useRef<HTMLInputElement>(null),
         paisesActividadesOffshore: useRef<HTMLTextAreaElement>(null),
         adjuntoDocumentoContribuyente: useRef<HTMLInputElement>(null),
+    };
+
+    const handleCountryChange = (name: string, value: string) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
     };
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -207,7 +222,7 @@ const Actividades: React.FC = () => {
         });
     };
 
-    const [archivoContribuyente, setArchivoContribuyente] = useState<File | null>(null);
+    const [archivoFile, setArchivoFile] = useState<File | null>(null);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -221,6 +236,7 @@ const Actividades: React.FC = () => {
                     archivoContribuyenteURL: downloadURL,
                 }));
 
+                setArchivoFile(file);
                 // Quitar el error del campo de archivo si ya se subió un archivo
                 setFieldErrors((prevErrors) => ({
                     ...prevErrors,
@@ -313,9 +329,10 @@ const Actividades: React.FC = () => {
                 'nombreComercial', 'direccionComercial', 'comoLlegar', 'numeroLocal',
                 'nombreEdificio', 'inversionSucursal', 'cantidadTrabajadores',
                 'telefono', 'correoElectronico', 'actividad1', 'actividad2', 'actividad3',
+                'direccionRegistros',
             ];
         } else if (formData.actividadesDentroPanama === 'SiRequieroSociedadPrimero') {
-            fieldsToValidate = ['actividad1', 'actividad2', 'actividad3'];
+            fieldsToValidate = ['actividad1', 'actividad2', 'actividad3', 'direccionRegistros'];
         } else if (formData.actividadesDentroPanama === 'No') {
             if (formData.tipoActividades === 'offshore') {
                 fieldsToValidate = ['actividadOffshore1', 'actividadOffshore2', 'paisesActividadesOffshore'];
@@ -403,10 +420,10 @@ const Actividades: React.FC = () => {
 
         try {
 
-            let archivoURL = '';
+            let archivoURL = formData.archivoContribuyenteURL;
 
-            if (archivoContribuyente) {
-                archivoURL = await uploadFileToFirebase(archivoContribuyente, `uploads/${store.solicitudId}/adjuntoDocumentoContribuyente`);
+            if (archivoFile) {
+                archivoURL = await uploadFileToFirebase(archivoFile, `uploads/${store.solicitudId}/adjuntoDocumentoContribuyente`);
             }
 
             const updatePayload: any = {
@@ -445,6 +462,10 @@ const Actividades: React.FC = () => {
                             },
                         }),
                         registrosContables: formData.registrosContables,
+                        ...(formData.registrosContables === 'Dirección propia' && {
+                            paisRegistros: formData.paisRegistros,
+                            direccionRegistros: formData.direccionRegistros,
+                        }),
                         servicioDireccionComercial: formData.servicioDireccionComercial,
                         adjuntoDocumentoContribuyente: archivoURL || '',
                     }),
@@ -498,6 +519,35 @@ const Actividades: React.FC = () => {
 
     const toggleModal = () => {
         setShowModal(!showModal); // Alterna el estado del modal
+    };
+
+    const getCountries = () => {
+        return [
+            'Panama', 'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
+            'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus',
+            'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil',
+            'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada',
+            'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica',
+            'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic',
+            'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia',
+            'Fiji', 'Finland', 'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada',
+            'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India',
+            'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Ivory Coast', 'Jamaica', 'Japan',
+            'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon',
+            'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi',
+            'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico',
+            'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar',
+            'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea',
+            'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Papua New Guinea', 'Paraguay', 'Peru',
+            'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis',
+            'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia',
+            'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands',
+            'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden',
+            'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga',
+            'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates',
+            'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam',
+            'Yemen', 'Zambia', 'Zimbabwe'
+        ];
     };
 
     return (
@@ -785,16 +835,12 @@ const Actividades: React.FC = () => {
                             <div className="flex flex-col col-span-1">
                                 <label className="text-white block mb-2">Teléfono</label>
                                 <div className="flex gap-2">
-                                    <select
+                                    <CountrySelect
                                         name="telefonoCodigo"
                                         value={formData.telefonoCodigo}
-                                        onChange={handleChange}
-                                        className="p-4 bg-gray-800 text-white rounded-lg"
-                                    >
-                                        {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                            <option key={code} value={code}>{code}: {dialCode}</option>
-                                        ))}
-                                    </select>
+                                        onChange={(value) => handleCountryChange('telefonoCodigo', value)}
+                                        className="w-contain"
+                                    />
                                     <input
                                         ref={formRefs.telefono}
                                         type="text"
@@ -933,16 +979,12 @@ const Actividades: React.FC = () => {
                                     <div className="flex flex-col col-span-1">
                                         <label className="text-white block mb-2">Teléfono</label>
                                         <div className="flex gap-2">
-                                            <select
+                                            <CountrySelect
                                                 name="telefonoContadorCodigo"
                                                 value={formData.telefonoContadorCodigo}
-                                                onChange={handleChange}
-                                                className="p-4 bg-gray-800 text-white rounded-lg"
-                                            >
-                                                {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                                    <option key={code} value={code}>{code}: {dialCode}</option>
-                                                ))}
-                                            </select>
+                                                onChange={(value) => handleCountryChange('telefonoContadorCodigo', value)}
+                                                className="w-contain"
+                                            />
                                             <input
                                                 ref={formRefs.telefonoContador}
                                                 type="text"
@@ -1012,10 +1054,48 @@ const Actividades: React.FC = () => {
                                 onChange={handleChange}
                                 className="w-full p-4 bg-gray-800 text-white rounded-lg"
                             >
-                                <option value="Oficina Agente Residente texto_justificado">En las Oficinas del Agente Residente de la Sociedad</option>
-                                <option value="Otra">Otra</option>
+                                <option value="Oficina Agente Residente">En las Oficinas del Agente Residente de la Sociedad</option>
+                                <option value="Dirección propia">Dirección propia</option>
                             </select>
                         </div>
+
+                        {formData.registrosContables === 'Dirección propia' && (
+                            <>
+                                <div className="col-span-1 mt-4">
+                                    <label className="text-white">País:</label>
+                                    <select
+                                        name="paisRegistros"
+                                        value={formData.paisRegistros}
+                                        onChange={handleChange}
+                                        className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                                    >
+                                        {getCountries().map((country) => (
+                                            <option key={country} value={country}>
+                                                {country}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="mt-4">
+                                    <label className="text-white block mb-2 texto_justificado">Dirección:</label>
+                                    <textarea
+                                        ref={formRefs.direccionRegistros}
+                                        name="direccionRegistros"
+                                        value={formData.direccionRegistros}
+                                        onChange={handleChange}
+                                        className={`w-full p-4 bg-gray-800 text-white rounded-lg ${fieldErrors.direccionRegistros ? 'border-2 border-red-500' : ''}`}
+                                        placeholder="Ingrese la dirección dónde va a mantener los registros contables de la sociedad"
+                                        disabled={store.request.status >= 10 && store.rol < 20}
+                                    />
+                                    {error === 'Por favor, ingrese la dirección comercial dónde va a mantener los registros contables de la sociedad.' && <p className="text-red-500">{error}</p>}
+
+                                    <small className="text-gray-400 texto_justificado">
+                                        * Local comercial, oficina o apartamento. Incluir urbanización, calle.
+                                    </small>
+                                </div>
+                            </>
+                        )}
 
                         <div className="mt-4">
                             <label className="text-white block mb-2">¿Desea servicio de Dirección Comercial?</label>

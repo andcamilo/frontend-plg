@@ -17,7 +17,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const externalApiResponse = await axios.patch(
       `${backendBaseUrl}/dev/update-request-people/${peopleId}/${solicitudId}`,
-      { cargo }
+      { cargo }, // Aquí envías el cargo en el cuerpo
+      {
+        headers: {
+          'Content-Type': 'application/json', // Asegúrate de establecer el tipo de contenido
+        },
+      }
     );
 
     console.log('🚀 ~ handler ~ externalApiResponse:', externalApiResponse.data);

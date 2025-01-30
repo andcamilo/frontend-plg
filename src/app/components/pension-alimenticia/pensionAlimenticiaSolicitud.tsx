@@ -105,7 +105,32 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
     if (store.solicitudId) {
       fetchSolicitud();
     }
+    console.log("Store Request ", store.request)
   }, [store.solicitudId]);
+
+  useEffect(() => {
+    if (store.request) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        pensionType: get(store.request, 'pensionType', 'Primera vez'),
+        pensionAmount: get(store.request, 'pensionAmount', 0),
+        currentSupportAmount: get(store.request, 'currentSupportAmount', 0),
+        currentAmount: get(store.request, 'currentAmount', 0),
+        increaseAmount: get(store.request, 'increaseAmount', 0),
+        totalAmount: get(store.request, 'totalAmount', 0), 
+        agreesWithAmount: get(store.request, 'agreesWithAmount', 'No'),
+        disagreementReason: get(store.request, 'disagreementReason', ''),
+        desacatoDescription: get(store.request, 'desacatoDescription', ''),
+        paymentDay: get(store.request, 'paymentDay', ''),
+        lastPaymentDate: get(store.request, 'lastPaymentDate', ''),
+        courtName: get(store.request, 'courtName', ''),
+        caseNumber: get(store.request, 'caseNumber', ''),
+        emailSolicita: get(store.request, 'emailSolicita', ''),
+        expediente: get(store.request, 'expediente', ''),
+        knowsCaseLocation: get(store.request, 'knowsCaseLocation', 'No'),
+      }));
+    }
+  }, [store.request]);
 
   useEffect(() => {
     if (store.request) {
@@ -122,10 +147,8 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
           ...solicitud, // Spread the solicitud data to overwrite corresponding fields in formData
         }));
       }
-      
     }
   }, [store.request]);
-
 
   useEffect(() => {
     const fetchCustomerID = async () => {
@@ -156,29 +179,26 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
     fetchCustomerID();
   }, [email]);
 
-
-  
-
   const [isLoading, setIsLoading] = useState(false); // Add loading state
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-
+    const numericValue = name === 'currentAmount' || name === 'increaseAmount' ? Number(value) : value;
+  
     setFormData((prevData) => {
-
-      const numericValue = name === 'currentAmount' || name === 'increaseAmount' ? Number(value) : value;
-
-      // Calculate the new totalAmount by summing currentAmount and increaseAmount
-      const newTotalAmount = prevData.currentAmount + prevData.increaseAmount
-      return {
+      const updatedData = {
         ...prevData,
         [name]: numericValue,
-        totalAmount: newTotalAmount, // Always update totalAmount when currentAmount or increaseAmount changes
       };
+  
+      // Si el cambio afecta totalAmount, lo recalculamos
+      if (name === 'currentAmount' || name === 'increaseAmount') {
+        updatedData.totalAmount = updatedData.currentAmount + updatedData.increaseAmount;
+      }
+  
+      return updatedData;
     });
-  };
-
-
+  };  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,12 +250,12 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
         title: 'Error',
         text: 'Hubo un problema al actualizar la solicitud. Por favor, inténtelo de nuevo más tarde.',
       });
-    }  finally {
+    } finally {
       try {
         console.log("hola mundillo")
         if (customerID) {
-        console.log("🚀 ~ handleSubmit ~ customerID:", customerID)
- 
+          console.log("🚀 ~ handleSubmit ~ customerID:", customerID)
+
           const invoicePayload = {
             customer_id: customerID,
             pensionType: formData.pensionType,
@@ -258,12 +278,9 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
   };
 
-
-
-
-
   // Forms for each pension type
   const renderForm = () => {
+    console.log("AAAAAAAAA ", formData.pensionType)
     switch (formData.pensionType) {
       case 'Primera vez':
         return (
@@ -547,8 +564,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
 
         );
-      
-        
+
       case 'Rebaja o Suspensión':
         return (
           <>
@@ -856,8 +872,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
             </p>
           </div>
         );
-
-
 
       default:
         return null;

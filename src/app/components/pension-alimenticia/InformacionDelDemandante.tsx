@@ -2,7 +2,7 @@ import React from 'react';
 
 const InformacionDelDemandante: React.FC = () => {
   return (
-    <div className="text-white mt-8">
+    <div className="text-white mt-4">
       <h2 className="text-3xl font-bold">Información del Demandante</h2>
       <p className="mt-4">
         El demandante se refiere a la persona que ejerce o presenta el reclamo legal, en este apartado debes completar todos los datos solicitados, 

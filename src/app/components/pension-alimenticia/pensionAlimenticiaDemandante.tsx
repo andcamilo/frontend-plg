@@ -26,7 +26,6 @@ interface Menor {
   parentescoConDemandado: SelectOption;
 }
 
-
 const PensionAlimenticiaDemandante: React.FC = () => {
   const [formData, setFormData] = useState({
     nombreCompleto: '',
@@ -160,6 +159,29 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     }
   }, [store.request]);
 
+  /* useEffect(() => {
+    if (store.request) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        pensionType: get(store.request, 'pensionType', 'Primera vez'),
+        pensionAmount: get(store.request, 'pensionAmount', 0),
+        currentSupportAmount: get(store.request, 'currentSupportAmount', 0),
+        currentAmount: get(store.request, 'currentAmount', 0),
+        increaseAmount: get(store.request, 'increaseAmount', 0),
+        totalAmount: get(store.request, 'totalAmount', 0),
+        agreesWithAmount: get(store.request, 'agreesWithAmount', 'No'),
+        disagreementReason: get(store.request, 'disagreementReason', ''),
+        desacatoDescription: get(store.request, 'desacatoDescription', ''),
+        paymentDay: get(store.request, 'paymentDay', ''),
+        lastPaymentDate: get(store.request, 'lastPaymentDate', ''),
+        courtName: get(store.request, 'courtName', ''),
+        caseNumber: get(store.request, 'caseNumber', ''),
+        emailSolicita: get(store.request, 'emailSolicita', ''),
+        expediente: get(store.request, 'expediente', ''),
+        knowsCaseLocation: get(store.request, 'knowsCaseLocation', 'No'),
+      }));
+    }
+  }, [store.request]); */
 
   // Load countries on component mount
   useEffect(() => {
@@ -170,7 +192,6 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   useEffect(() => {
     console.log("🚀 ~ formData.menores:", formData.menores)
   }, [formData.menores]);
-
 
   useEffect(() => {
     if (formData.nacionalidad.value) {
@@ -359,7 +380,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-900 text-white p-8">
+    <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
       <InformacionDelDemandante />
       <form className="space-y-6 mt-5" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -7,12 +7,54 @@ import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 import '@fortawesome/fontawesome-free/css/all.css';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface BeneficiarioData {
     nombre: React.ReactNode;
     correo: string;
     accion: string;
 }
+
+const Actions: React.FC<{ id: string, solicitudId: string; }> = ({ id, solicitudId }) => {
+    const handleDelete = async () => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Quiere eliminar este beneficiario?",
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#2c2c3e',
+            color: '#fff',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId, cargo: "beneficiariosFundacion" });
+                await axios.post('/api/update-people-cargo', { peopleId: id, cargo: "beneficiariosFundacion" });
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: 'El beneficiario ha sido eliminado.',
+                    icon: 'success',
+                    timer: 4000,
+                    showConfirmButton: false,
+                });
+                // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
+                window.location.reload();
+            } catch (error) {
+                console.error('Error al eliminar este beneficiario:', error);
+                Swal.fire('Error', 'No se pudo eliminar este beneficiario.', 'error');
+            }
+        }
+    };
+
+    return (
+        <div className="flex gap-2">
+            <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
+        </div>
+    );
+};
 
 const FundacionBeneficiarios: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -125,7 +167,7 @@ const FundacionBeneficiarios: React.FC = () => {
                     )
                     : persona.nombreApellido || '---',
                 correo: persona.email || '---',
-                accion: '...',
+                Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
             }));
 
             setData(formattedData);

@@ -79,6 +79,12 @@ const ModalMiembros: React.FC<ModalMiembrosProps> = ({  onClose }) => {
         }
 
         setIsLoading(true); 
+        let personId = formData.seleccionar || null;
+
+        // Generar un nuevo `personId` si el servicio es "Dignatario Nominal" y no existe `personId`
+        if (formData.servicio === 'Miembro Nominal' && !personId) {
+            personId = crypto.randomUUID(); // Generar un UUID seguro y único
+        }
 
         try {
             let updatePayload;
@@ -87,6 +93,7 @@ const ModalMiembros: React.FC<ModalMiembrosProps> = ({  onClose }) => {
                 updatePayload = {
                     solicitudId: store.solicitudId,
                     miembros: {
+                        personId: personId,
                         servicio: formData.servicio,
                     },
                 };

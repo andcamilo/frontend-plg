@@ -19,7 +19,19 @@ const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): stri
     return `${day}/${month}/${year}`;
 };
 
-const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
+// Mapa para convertir roles numéricos a strings
+const roleMapping: { [key: number]: string } = {
+    99: "Super Admin",
+    90: "Administrador",
+    80: "Auditor",
+    50: "Caja Chica",
+    40: "Abogados",
+    35: "Asistente",
+    17: "Cliente Recurrente",
+    10: "Cliente",
+};
+
+const Actions: React.FC<{ tipo: string, id: string, status: number, rol: string }> = ({ tipo, id, status, rol }) => {
     const handleDelete = async () => {
         const result = await Swal.fire({
             title: '¿Estás seguro?',
@@ -40,8 +52,8 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
                     title: 'Eliminado',
                     text: 'La solicitud ha sido eliminada.',
                     icon: 'success',
-                    timer: 4000, 
-                    showConfirmButton: false, 
+                    timer: 4000,
+                    showConfirmButton: false,
                 });
                 // Remove the deleted solicitud from the state instead of reloading
                 // This requires lifting the state up or using a context/state management solution
@@ -74,6 +86,8 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
         }
     };
 
+    const canShowDelete = ((status === 1 && (rol === "Cliente Recurrente" || rol === "Cliente")) || (rol === "Cliente Recurrente" || rol !== "Cliente"));
+
     return (
         <div className="flex gap-2">
             <Link href={`/dashboard/request?id=${id}`}>
@@ -85,7 +99,13 @@ const Actions: React.FC<{ tipo: string, id: string }> = ({ tipo, id }) => {
             <Link href={`/dashboard/checkout?id=${id}`}>
                 <AttachMoneyIcon className="cursor-pointer" titleAccess="Pagar" />
             </Link>
-            <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
+            {canShowDelete && (
+                <DeleteIcon
+                    className="cursor-pointer"
+                    onClick={handleDelete}
+                    titleAccess="Eliminar"
+                />
+            )}
         </div>
     );
 };
@@ -95,12 +115,12 @@ const RequestsStatistics: React.FC = () => {
     const [formData, setFormData] = useState<{
         cuenta: string;
         email: string;
-        rol: number;
+        rol: string;
         userId: string;
     }>({
         cuenta: "",
         email: "",
-        rol: -1,
+        rol: "",
         userId: "",
     });
 
@@ -140,18 +160,24 @@ const RequestsStatistics: React.FC = () => {
                 });
 
                 const user = userResponse.data;
-                console.log("Usuario ", user);
+
+                const rawRole = get(user, 'solicitud.rol', 0);
+                const stringRole =
+                    typeof rawRole === 'string'
+                        ? rawRole // Si ya es un string, úsalo directamente
+                        : roleMapping[rawRole] || "Desconocido";
+                console.log('Rol recibido:', rawRole, 'Rol mapeado:', stringRole);
                 setFormData((prevData) => ({
                     ...prevData,
-                    rol: get(user, 'solicitud.rol', 0),
-                    userId: get(user, 'solicitud.id', "")
+                    rol: stringRole, // Asignar rol en formato string
+                    userId: get(user, 'solicitud.id', ""),
                 }));
 
                 // 3. Fetch Solicitudes
                 const { solicitudes: fetchedSolicitudes, pagination: fetchedPagination } = await getRequests(rowsPerPage, currentPage);
 
                 solicitudesEnProceso = fetchedSolicitudes.filter((solicitud: any) => {
-                    if (formData.rol > 17) {
+                    if (formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") {
                         return solicitud.status !== 70;
                     } else {
                         return solicitud.status !== 70 && solicitud.cuenta === get(user, 'solicitud.id', "");
@@ -163,7 +189,7 @@ const RequestsStatistics: React.FC = () => {
                 });
 
                 solicitudesFinalizadas = fetchedSolicitudes.filter((solicitud: any) => {
-                    if (formData.rol > 17) {
+                    if (formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") {
                         return solicitud.status === 70;
                     } else {
                         return solicitud.status === 70 && solicitud.cuenta === get(user, 'solicitud.id', "");
@@ -195,7 +221,7 @@ const RequestsStatistics: React.FC = () => {
     let solicitudesEnProceso: any[] = [];
     let solicitudesFinalizadas: any[] = [];
 
-    if (formData.rol > 17) {
+    if (formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") {
         // Filtered requests for roles > 17
         solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70 /* && solicitud.status !== 1 */);
         solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70);
@@ -213,7 +239,7 @@ const RequestsStatistics: React.FC = () => {
             const statusLabels: { [key: number]: string } = {
                 0: "Rechazada",
                 1: "Borrador",
-                10: "Enviada",
+                10: "Enviada, pendiente de pago",
                 12: "Aprobada",
                 19: "Confirmando pago",
                 20: "Pagada",
@@ -258,7 +284,7 @@ const RequestsStatistics: React.FC = () => {
                 ), // Renderiza el estado con su clase correspondiente
                 Expediente: expediente,
                 Abogado: abogados.map((abogado: any) => abogado.nombre).join(', '), // Concatenando nombres
-                Opciones: <Actions tipo={tipo} id={id} /> // Pasando el id como prop al componente de acciones
+                Opciones: <Actions tipo={tipo} id={id} status={status} rol={formData.rol} /> // Pasando el id como prop al componente de acciones
             };
         });
     };

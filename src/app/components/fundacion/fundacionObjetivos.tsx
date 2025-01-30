@@ -6,6 +6,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
+import CountrySelect from '@components/CountrySelect';
 import get from 'lodash/get';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -96,6 +97,13 @@ const FundacionObjetivos: React.FC = () => {
                     : prevData.selectedObjetivos.filter((item) => item !== value),
             }));
         }
+    };
+
+    const handleCountryChange = (name: string, value: string) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -534,16 +542,12 @@ const FundacionObjetivos: React.FC = () => {
                             <div className="flex flex-col col-span-1">
                                 <label className="text-white block mb-2">Teléfono</label>
                                 <div className="flex gap-2">
-                                    <select
+                                    <CountrySelect
                                         name="telefonoContadorCodigo"
                                         value={formData.telefonoContadorCodigo}
-                                        onChange={handleChange}
-                                        className="p-4 bg-gray-800 text-white rounded-lg"
-                                    >
-                                        {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                            <option key={code} value={code}>{code}: {dialCode}</option>
-                                        ))}
-                                    </select>
+                                        onChange={(value) => handleCountryChange('telefonoContadorCodigo', value)}
+                                        className="w-contain"
+                                    />
                                     <input
                                         ref={telefonoContadorRef}
                                         type="text"

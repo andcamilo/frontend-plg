@@ -34,11 +34,11 @@ const Actions: React.FC<{ id: string, solicitudId: string; }> = ({ id, solicitud
 
         if (result.isConfirmed) {
             try {
-                /* await axios.delete(`/api/delete-people`, { params: { peopleId: id } }); */
                 await axios.post(`/api/update-request-people`, { peopleId: id, solicitudId: solicitudId, cargo: "directores" });
+                await axios.post('/api/update-people-cargo', { peopleId: id, cargo: "director" });
                 Swal.fire({
                     title: 'Eliminado',
-                    text: 'La persona ha sido eliminada.',
+                    text: 'El director ha sido eliminado.',
                     icon: 'success',
                     timer: 4000,
                     showConfirmButton: false,
@@ -46,8 +46,8 @@ const Actions: React.FC<{ id: string, solicitudId: string; }> = ({ id, solicitud
                 // Opcionalmente, puedes recargar la lista de solicitudes después de eliminar
                 window.location.reload();
             } catch (error) {
-                console.error('Error al eliminar esta persona:', error);
-                Swal.fire('Error', 'No se pudo eliminar esta persona.', 'error');
+                console.error('Error al eliminar este director:', error);
+                Swal.fire('Error', 'No se pudo eliminar este director.', 'error');
             }
         }
     };
@@ -189,7 +189,7 @@ const SociedadEmpresaDirectores: React.FC = () => {
                     .map((director: any) => ({
                         tipo: director.servicio,
                         nombre: director.nombre || '---',
-                        Opciones: <Actions id={""} solicitudId={store.solicitudId} />,
+                        Opciones: <Actions id={director.id} solicitudId={store.solicitudId} />,
                     }));
             }
             console.log("AAWW ", formattedRequestData);

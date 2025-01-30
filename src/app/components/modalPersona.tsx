@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import countryCodes from '@utils/countryCode';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import CountrySelect from '@components/CountrySelect';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -299,6 +300,12 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
         }));
     };
 
+    const handleCountryChange = (name: string, value: string) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
 
     const handleBeneficiarioChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -814,6 +821,11 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Activar el estado de carga al inicio
+        if (isLoading) return; // Si ya está en estado de carga, no permitir que se ejecute de nuevo.
+        setIsLoading(true);
+
+        // Validar campos
         if (!validateFields()) {
             setIsLoading(false);
             return;
@@ -850,11 +862,12 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
             });
             document.getElementsByName('adjuntoDocumentoCedulaPasaporte')[0]?.focus();
 
+            setIsLoading(false); // Asegurarse de desactivar el estado de carga
             return; // Detener la ejecución si falta el archivo adjunto
         }
 
         try {
-            console.log("Usuario ID ", id)
+            console.log("Usuario ID ", id);
             // Crear el payload para enviar a la API
             const updatePayload = {
                 ...(!id && {
@@ -863,7 +876,6 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                 ...(id && {
                     peopleId: id,
                 }),
-
                 tipoPersona: formData.tipoPersona,
                 nombreApellido: formData.nombreApellido,
                 sexo: formData.sexo,
@@ -884,25 +896,21 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                 }),
                 adjuntoDocumentoCedulaPasaporteURL: formData.adjuntoDocumentoCedulaPasaporteURL,
                 adjuntoDocumentoCedulaPasaporte2URL: formData.adjuntoDocumentoCedulaPasaporte2URL,
-
                 personaJuridica: {
                     nombreJuridico: formData.nombreJuridico,
                     paisJuridico: formData.paisJuridico,
                     registroJuridico: formData.registroJuridico,
                 },
-
                 referenciasBancarias: {
                     bancoNombre: formData.bancoNombre,
                     bancoTelefono: `${countryCodes[formData.bancoTelefonoCodigo]}${formData.bancoTelefono}` || '',
                     bancoEmail: formData.bancoEmail,
                 },
-
                 referenciasComerciales: {
                     comercialNombre: formData.comercialNombre,
                     comercialTelefono: `${countryCodes[formData.comercialTelefonoCodigo]}${formData.comercialTelefono}` || '',
                     comercialEmail: formData.comercialEmail,
                 },
-
             };
 
             let response;
@@ -918,8 +926,8 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                     icon: 'success',
                     title: 'Persona',
                     text: 'Persona guardada correctamente.',
-                    timer: 2000,  // Cierra la alerta automáticamente después de 2 segundos
-                    showConfirmButton: false,  // Oculta el botón "OK"
+                    timer: 2000, // Cierra la alerta automáticamente después de 2 segundos
+                    showConfirmButton: false, // Oculta el botón "OK"
                 }).then(() => {
                     onClose();
                 });
@@ -1180,16 +1188,12 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                         <div className="flex flex-col col-span-1">
                             <label className="text-white">Teléfono</label>
                             <div className="flex gap-2">
-                                <select
+                                <CountrySelect
                                     name="telefonoCodigo"
                                     value={formData.telefonoCodigo}
-                                    onChange={handleChange}
-                                    className="p-2 bg-gray-800 text-white rounded-lg"
-                                >
-                                    {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                        <option key={code} value={code}>{code}: {dialCode}</option>
-                                    ))}
-                                </select>
+                                    onChange={(value) => handleCountryChange('telefonoCodigo', value)}
+                                    className="w-contain"
+                                />
                                 <input
                                     ref={telefonoRef}
                                     type="tel"
@@ -1704,12 +1708,23 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                         >
                             Cerrar
                         </button>
-                        <button
+                        {/* <button
                             className="bg-profile text-white py-2 px-4 rounded-lg"
                             type="submit"
                         >
                             Guardar
+                        </button> */}
+                        <button
+                            type="submit"
+                            className={`px-6 py-2 font-semibold rounded-lg transition ${isLoading
+                                    ? 'bg-profile text-gray-400 cursor-not-allowed'
+                                    : 'bg-profile text-white hover:bg-profile-dark'
+                                }`}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Cargando...' : 'Guardar'}
                         </button>
+
                     </div>
                 </form>
             </div>
