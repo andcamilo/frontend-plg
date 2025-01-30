@@ -466,7 +466,7 @@ const Request: React.FC = () => {
         try {
             let solicitudId = id;
             // Llamar a la API para obtener la URL del archivo
-            const response = await axios.post(`${backendBaseUrl}/chris/create-pacto-social-file/${solicitudId}`);
+            const response = await axios.post(`${backendBaseUrl}/dev/create-pacto-social-file/${solicitudId}`);
 
             if (response.data && response.data.fileUrl) {
                 // Crear un enlace temporal para descargar el archivo

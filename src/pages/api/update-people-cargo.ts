@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         const externalApiResponse = await axios.patch(
-            `${backendBaseUrl}/chris/update-people-cargo/${peopleId}`,
+            `${backendBaseUrl}/dev/update-people-cargo/${peopleId}`,
             { cargo }, // Envolver en un objeto JSON
             {
                 headers: {

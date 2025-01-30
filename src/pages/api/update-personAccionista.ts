@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Enviar solicitud a la API externa (por ejemplo, AWS Lambda o Firebase)
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/chris/update-personAccionista`,  // URL de la API para actualizar accionistas
+      `${backendBaseUrl}/dev/update-personAccionista`,  // URL de la API para actualizar accionistas
       updatePayload  // Enviar el cuerpo con solicitudId y accionista
     );
 

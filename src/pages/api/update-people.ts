@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/chris/update-people/${peopleId}`,
+      `${backendBaseUrl}/dev/update-people/${peopleId}`,
       dataToSend
     );
 
