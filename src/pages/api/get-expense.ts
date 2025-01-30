@@ -4,7 +4,7 @@ import axios from "axios"
 // It's better to use environment variables directly
 const backendBaseUrl = process.env.BACKEND_BASE_URL
 
-const getExpenseUrl = (id: string) => `${backendBaseUrl}/chris/getExpense/${id}`
+const getExpenseUrl = (id: string) => `${backendBaseUrl}/dev/getExpense/${id}`
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {

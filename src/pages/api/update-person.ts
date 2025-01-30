@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Enviar el payload directamente a la API externa sin modificar su estructura
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/chris/update-person`,  
+      `${backendBaseUrl}/dev/update-person`,  
       updatePayload  
     );
 

@@ -39,7 +39,7 @@ const AccountPage: React.FC = () => {
         console.log("🚀 ~ fetchUserData ~ user:", tokenChecked?.user_id)
 
         const response = await axios.get(
-          `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/chris/get-user-id/${tokenChecked?.user_id}`,
+          `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/get-user-id/${tokenChecked?.user_id}`,
         )
 
         console.log("🚀 ~ fetchUserData ~ response:", response)
@@ -85,7 +85,7 @@ const AccountPage: React.FC = () => {
       }
 
       const response = await axios.patch(
-        `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/chris/update-user/${userId}`,
+        `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/update-user/${userId}`,
         updateData,
         {
           headers: {

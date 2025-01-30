@@ -3,7 +3,7 @@ import axios from 'axios';
 import get from 'lodash/get';
 import { backendBaseUrl } from '@utils/env';
 
-const usersApiUrl = `${backendBaseUrl}/chris/get-users`;
+const usersApiUrl = `${backendBaseUrl}/dev/get-users`;
 
 const getUsers = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
