@@ -30,7 +30,7 @@ const Expense: React.FC<ExpenseProps> = ({ id }) => {
 
         // Call the given endpoint
         const response = await axios.get(
-          `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/getExpense/${id}`
+          `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/chris/getExpense/${id}`
         );
 
         // Map the response to match the structure

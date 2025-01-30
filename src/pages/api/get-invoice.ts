@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import { backendBaseUrl } from '@utils/env';
 
-const getInvoiceUrl = (id: string) => `${backendBaseUrl}/dev/getInvoice/${id}`;
+const getInvoiceUrl = (id: string) => `${backendBaseUrl}/chris/getInvoice/${id}`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

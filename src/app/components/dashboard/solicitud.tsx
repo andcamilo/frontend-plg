@@ -7,6 +7,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import get from 'lodash/get';
 import { backendBaseUrl } from '@utils/env';
 import { checkAuthToken } from "@utils/checkAuthToken";
+import Link from 'next/link';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -136,7 +137,7 @@ const Request: React.FC = () => {
                     userId: get(user, 'solicitud.id', ""),
                 }));
 
-                if (solicitudResponse.data.tipo === "new-fundacion" || solicitudResponse.data.tipo === "new-sociedad-empresa"){
+                if (solicitudResponse.data.tipo === "new-fundacion" || solicitudResponse.data.tipo === "new-sociedad-empresa") {
                     const peopleResponse = await axios.get('/api/get-people-id', {
                         params: { solicitudId: id },
                     });
@@ -466,7 +467,7 @@ const Request: React.FC = () => {
         try {
             let solicitudId = id;
             // Llamar a la API para obtener la URL del archivo
-            const response = await axios.post(`${backendBaseUrl}/dev/create-pacto-social-file/${solicitudId}`);
+            const response = await axios.post(`${backendBaseUrl}/chris/create-pacto-social-file/${solicitudId}`);
 
             if (response.data && response.data.fileUrl) {
                 // Crear un enlace temporal para descargar el archivo
@@ -1120,7 +1121,36 @@ const Request: React.FC = () => {
         // Guardar el PDF
         doc.save('Información_Personas.pdf');
     };
-    
+
+    const handleClick = () => {
+        const url = getEditUrl();
+        if (url && url !== "#") {
+            router.push(url);
+        }
+    };
+
+    const getEditUrl = () => {
+        if (solicitudData) {
+            switch (solicitudData.tipo) {
+                case "new-fundacion":
+                    return `/request/fundacion?id=${id}`;
+                case "new-sociedad-empresa":
+                    return `/request/sociedad-empresa?id=${id}`;
+                case "menores-al-extranjero":
+                    return `/request/menores-extranjero?id=${id}`;
+                case "pension":
+                    return `/request/pension-alimenticia?id=${id}`;
+                case "tramite-general":
+                    return `/dashboard/tramite-general?id=${id}`;
+                case "cliente-recurrente":
+                case "solicitud-cliente-recurrente":
+                    return `/request/corporativo?id=${id}`;
+                default:
+                    return `/request/consulta-propuesta?id=${id}`;
+            }
+        }
+    };
+
     return (
         <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
             <div className="flex flex-col gap-8 md:w-1/2">
@@ -1252,7 +1282,13 @@ const Request: React.FC = () => {
                     <strong>Correo electrónico:</strong> {solicitudData ? solicitudData.emailSolicita : "Cargando..."}
                 </p>
                 <hr className='mt-2 mb-2' />
-                <p className="text-purple-400 cursor-pointer mt-2">Ver detalles de solicitud</p>
+                <p
+                    className="text-purple-400 cursor-pointer mt-2 hover:underline"
+                    onClick={handleClick}
+                >
+                    Ver detalles de solicitud
+                </p>
+
                 <hr className='mt-2 mb-2' />
                 <p className="text-gray-300">
                     <strong>Estatus Actual:</strong> {solicitudData ? statusName : "Cargando..."}

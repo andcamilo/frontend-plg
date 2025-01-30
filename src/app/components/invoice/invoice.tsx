@@ -27,7 +27,7 @@ const Invoice: React.FC<InvoiceProps> = ({ id }) => {
 
         // Call the getInvoice endpoint
         const response = await axios.get(
-          `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/getInvoice/${id}`
+          `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/chris/getInvoice/${id}`
         );
 
         // Map the response to match the component's structure
