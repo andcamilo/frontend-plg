@@ -86,7 +86,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       setStore((prevState) => ({
         ...prevState,
         ...(store.request.nombreSolicita && { solicitud: true }),
-        ...(store.request.solicitud && { demandante: true }),
+        ...(store.request.pensionType && { demandante: true }),
         ...(store.request.demandante && { demandado: true }),
         ...(store.request.demandado && { gastosPensionado: true }),
         ...(store.request.gastosPensionado && { archivosAdjuntos: true }),

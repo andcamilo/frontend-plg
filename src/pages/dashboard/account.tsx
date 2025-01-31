@@ -200,7 +200,7 @@ const AccountPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 disabled:opacity-50"
+                className="bg-profile text-white px-6 py-2 rounded hover:bg-profile disabled:opacity-50"
               >
                 {isLoading ? "Guardando..." : "Guardar"}
               </button>

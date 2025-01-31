@@ -208,9 +208,9 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
   };
 
   return (
-    <div className="text-white bg-gray-900 p-8">
-      <h2 className="text-2xl font-bold mb-4">Información sobre los Archivos Adjuntos</h2>
-      <p className="text-sm mb-4">
+    <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
+      <h2 className="text-3xl font-bold mb-4">Información sobre los Archivos Adjuntos</h2>
+      <p className="mb-4">
         En esta sección debes adjuntar la siguiente información necesaria para tramitar tu solicitud.
       </p>
 
@@ -227,7 +227,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setCedulaFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -244,7 +244,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setNacimientoFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -261,7 +261,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setMatrimonioFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -278,7 +278,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaSupermercadoFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -295,7 +295,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaVestuarioFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -311,7 +311,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaAguaFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -328,7 +328,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaAguaFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -345,7 +345,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaTelefonoFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -362,7 +362,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaMatriculaFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -379,7 +379,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaUtilesFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -396,7 +396,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaCreditosAcademicosFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -413,7 +413,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setFacturaMatriculaUniversitariaFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -430,7 +430,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           <input
             type="file"
             onChange={(e) => handleFileChange(e, setSentenciaFile)}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -452,7 +452,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
                         return newDocs;
                       });
                     }}
-                    className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+                    className="w-full p-2 bg-gray-800 text-white rounded-lg"
                   />
                 </div>
                 <div className="flex justify-end">
@@ -475,7 +475,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
             <>
               <button
                 type="submit"
-                className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+                className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
                 disabled={isLoading}
               >
                 {isLoading ? (

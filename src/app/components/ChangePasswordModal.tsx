@@ -48,7 +48,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-[#1c1c2b] p-8 rounded-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4">Cambiar Contraseña</h2>
+        <h2 className="text-3xl font-bold mb-4">Cambiar Contraseña</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="newPassword" className="block mb-2">
@@ -88,7 +88,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
             <button
               type="submit"
               disabled={isLoading}
-              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-50"
+              className="bg-profile text-white px-4 py-2 rounded hover:bg-profile disabled:opacity-50"
             >
               {isLoading ? "Cambiando..." : "Cambiar Contraseña"}
             </button>

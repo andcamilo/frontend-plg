@@ -310,11 +310,11 @@ const FundacionResumen: React.FC = () => {
             <hr></hr>
 
             <div className="mt-4">
-                <h2 className="text-2xl font-bold mb-4">Información del Solicitante</h2>
+                <h2 className="text-3xl font-bold mb-4">Información del Solicitante</h2>
                 {renderField('Nombre del Solicitante', solicitudData.nombreSolicita)}
                 {renderField('Teléfono', solicitudData.telefonoSolicita)}
                 {renderField('Correo Electrónico', solicitudData.emailSolicita)}
-                <h2 className="text-2xl font-bold mb-4">Opciones para el nombre de la Fundación:</h2>
+                <h2 className="text-3xl font-bold mb-4">Opciones para el nombre de la Fundación:</h2>
                 <div className="ml-6">
                     {renderField('  1 ', solicitudData.fundacion.nombreFundacion1)}
                     {renderField('  2 ', solicitudData.fundacion.nombreFundacion2)}
@@ -323,7 +323,7 @@ const FundacionResumen: React.FC = () => {
                 <hr className='mt-4 mb-4'></hr>
 
                 {/* Fundadores de la fundación */}
-                <h2 className="text-2xl font-bold mb-4">Fundadores de la Sociedad</h2>
+                <h2 className="text-3xl font-bold mb-4">Fundadores de la Sociedad</h2>
                 {(peopleData.length > 0 || (solicitudData.fundadores && solicitudData.fundadores.length > 0)) ? (
                     // Mostrar primero los Fundadores propios y luego los nominales
                     [...peopleData.filter(person => person.fundador), ...solicitudData.fundadores.filter(fundador => fundador.servicio === 'Fundador Nominal')]
@@ -397,7 +397,7 @@ const FundacionResumen: React.FC = () => {
 
                 <hr className='mt-4 mb-4'></hr>
                 {/* Miembros de la Fundación */}
-                <h2 className="text-2xl font-bold mb-4">Miembros de la Fundación</h2>
+                <h2 className="text-3xl font-bold mb-4">Miembros de la Fundación</h2>
                 {(peopleData.length > 0 || (solicitudData.miembros && solicitudData.miembros.length > 0)) ? (
                     // Mostrar primero los Fundadores propios y luego los nominales
                     [...peopleData.filter(person => person.miembro), ...solicitudData.miembros.filter(miembro => miembro.servicio === 'Miembro Nominal')]
@@ -449,7 +449,7 @@ const FundacionResumen: React.FC = () => {
 
                 <hr className='mt-4 mb-4'></hr>
                 {/* Beneficiarios de la Fundación */}
-                <h2 className="text-2xl font-bold mb-4">Beneficiarios de la Fundación</h2>
+                <h2 className="text-3xl font-bold mb-4">Beneficiarios de la Fundación</h2>
                 {peopleData.length > 0 ? (
                     peopleData
                         .filter(person => person.beneficiariosFundacion)
