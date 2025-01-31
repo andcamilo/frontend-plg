@@ -19,7 +19,8 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     nombreCompleto: '',
     estadoCivil: { value: 'Soltero', label: 'Soltero' },
     cedula: '',
-    nacionalidad: { value: 'PA', label: 'Panamá' }, // Default value
+    nacionalidad: { value: 'PA', label: 'Panamá' }, // Default value 
+    paisDondeVive: { value: 'PA', label: 'Panamá' },
     direccionCasa: '',
     detalleDireccionCasa: '',
     telefono: '',
@@ -27,6 +28,8 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     pais: { value: 'PA', label: 'Panamá' }, // Default value
     provincia: { value: '', label: '' }, // Province
     corregimiento: { value: '', label: '' }, // City
+    provincia2: '',
+    corregimiento2: '',
     trabajando: { value: '', label: '' },
     ocupacion: '',
     ingresosTrabajo: '',
@@ -87,12 +90,20 @@ const PensionAlimenticiaDemandado: React.FC = () => {
       setProvincias(states.map(state => ({ value: state.isoCode, label: state.name })));
       setCorregimientos([]); // Clear cities when country changes
     }
-  }, [formData.nacionalidad]);
+  }, [formData.nacionalidad]); 
+
+  useEffect(() => {
+    if (formData.paisDondeVive.value) {
+      const states = State.getStatesOfCountry(formData.paisDondeVive.value);
+      setProvincias(states.map(state => ({ value: state.isoCode, label: state.name })));
+      setCorregimientos([]); // Clear cities when country changes
+    }
+  }, [formData.paisDondeVive]);
 
   // Fetch cities when province changes
   useEffect(() => {
     if (formData.provincia.value) {
-      const cities = City.getCitiesOfState(formData.nacionalidad.value, formData.provincia.value);
+      const cities = City.getCitiesOfState(formData.paisDondeVive.value, formData.provincia.value);
       setCorregimientos(cities.map(city => ({ value: city.name, label: city.name })));
     }
   }, [formData.provincia]);
@@ -142,13 +153,16 @@ const PensionAlimenticiaDemandado: React.FC = () => {
           nombreCompleto: formData.nombreCompleto,
           estadoCivil: formData.estadoCivil,
           cedula: formData.cedula,
-          nacionalidad: formData.nacionalidad,
+          nacionalidad: formData.nacionalidad, 
+          paisDondeVive: formData.paisDondeVive,
           direccionCasa: formData.direccionCasa,
           detalleDireccionCasa: formData.detalleDireccionCasa,
           pais: formData.pais,
           telefono: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
           provincia: formData.provincia,
           corregimiento: formData.corregimiento,
+          provincia2: formData.provincia2,
+          corregimiento2: formData.corregimiento2,
           trabajando: formData.trabajando,
           ocupacion: formData.ocupacion,
           ingresosTrabajo: formData.ingresosTrabajo,
@@ -189,10 +203,10 @@ const PensionAlimenticiaDemandado: React.FC = () => {
   };
 
   return (
-    <div className="text-white bg-gray-900 p-8">
+    <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
       <DemandadoInfo />
       {/* Form Section */}
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-6 mt-5" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block mb-2 text-sm">Nombre completo:</label>
@@ -274,42 +288,92 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             </select>
           </div>
 
-          {/* Country and State */}
           <div>
-            <label className="block mb-2 text-sm">Provincia:</label>
+            <label className="block mb-2 text-sm">País donde vive</label>
             <select
-              name="provincia"
-              value={formData.provincia.value}
-              onChange={(e) => handleSelectChange('provincia', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
+              name="paisDondeVive"
+              value={formData.paisDondeVive.value}
+              onChange={(e) => handleSelectChange('paisDondeVive', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              required
               disabled={store.request.status >= 10 && store.rol < 20}
             >
-              {provincias.map((provincia) => (
-                <option key={provincia.value} value={provincia.value}>
-                  {provincia.label}
+              {paises.map((pais) => (
+                <option key={pais.value} value={pais.value}>
+                  {pais.label}
                 </option>
               ))}
             </select>
           </div>
+          {formData.paisDondeVive.value === 'PA' && (
+            <>
+              <div>
+                <label className="block mb-2 text-sm">Provincia:</label>
+                <select
+                  name="provincia"
+                  value={formData.provincia.value}
+                  onChange={(e) => handleSelectChange('provincia', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  required
+                  disabled={store.request.status >= 10 && store.rol < 20}
+                >
+                  {provincias.map((provincia) => (
+                    <option key={provincia.value} value={provincia.value}>
+                      {provincia.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label className="block mb-2 text-sm">Corregimiento:</label>
-            <select
-              name="corregimiento"
-              value={formData.corregimiento.value}
-              onChange={(e) => handleSelectChange('corregimiento', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              /* required */
-              disabled={store.request.status >= 10 && store.rol < 20}
-            >
-              {corregimientos.map((corregimiento) => (
-                <option key={corregimiento.value} value={corregimiento.value}>
-                  {corregimiento.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div>
+                <label className="block mb-2 text-sm">Corregimiento:</label>
+                <select
+                  name="corregimiento"
+                  value={formData.corregimiento.value}
+                  onChange={(e) => handleSelectChange('corregimiento', { value: e.target.value, label: e.target.options[e.target.selectedIndex].text })}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  required
+                  disabled={store.request.status >= 10 && store.rol < 20}
+                >
+                  {corregimientos.map((corregimiento) => (
+                    <option key={corregimiento.value} value={corregimiento.value}>
+                      {corregimiento.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          {formData.paisDondeVive.value !== 'PA' && (
+            <>
+              <div>
+                <label className="block mb-2 text-sm">Provincia</label>
+                <input
+                  type="text"
+                  name="provincia2"
+                  value={formData.provincia2}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  disabled={store.request.status >= 10 && store.rol < 20}
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm">Corregimiento</label>
+                <input
+                  type="text"
+                  name="Corregimiento2"
+                  value={formData.corregimiento2}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  disabled={store.request.status >= 10 && store.rol < 20}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Country and State */}
+
 
           <div>
             <label className="block mb-2 text-sm">¿Mantiene un trabajo?</label>
@@ -379,27 +443,30 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             </>
           )}
 
-          <div>
-            <label className="block mb-2 text-xs">Teléfono:</label>
-            <select
-              name="telefonoCodigo"
-              value={formData.telefonoCodigo}
-              onChange={handleSelectCountryCodeChange}
-              className="p-3 bg-gray-800 text-white rounded-lg"
-              disabled={store.request.status >= 10 && store.rol < 20}
-            >
-              {Object.entries(countryCodes).map(([code, dialCode]) => (
-                <option key={code} value={code}>{code}: {dialCode}</option>
-              ))}
-            </select>
-            <input
-              type="text"
-              name="telefono"
-              value={removeCountryCode(formData.telefono)}
-              onChange={handleChange}
-              className="ml-1 p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              disabled={store.request.status >= 10 && store.rol < 20}
-            />
+          <div className="w-full">
+            <label className="block mb-2 text-sm">Número de teléfono</label>
+            <div className="flex w-full gap-x-2">
+              <select
+                name="telefonoCodigo"
+                value={formData.telefonoCodigo}
+                onChange={handleSelectCountryCodeChange}
+                className="p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              >
+                {Object.entries(countryCodes).map(([code, dialCode]) => (
+                  <option key={code} value={code}>{code}: {dialCode}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                name="telefono"
+                value={formData.telefono}
+                onChange={handleChange}
+                className="p-2 border border-gray-700 rounded bg-gray-800 text-white flex-grow"
+                placeholder="Número de teléfono"
+                required
+                disabled={store.request.status >= 10 && store.rol < 20}
+              />
+            </div>
           </div>
         </div>
 
@@ -409,7 +476,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             <>
               <button
                 type="submit"
-                className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+                className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
                 disabled={isLoading}
               >
                 {isLoading ? (

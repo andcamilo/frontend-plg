@@ -48,7 +48,6 @@ interface FormData {
   reason: string;               // Reason for reduction/suspension
 }
 
-
 const PensionAlimenticiaSolicitud: React.FC = () => {
   const context = useContext(AppStateContext);
 

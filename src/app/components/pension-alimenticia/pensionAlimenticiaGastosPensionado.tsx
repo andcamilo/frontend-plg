@@ -90,16 +90,33 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
   // Handle form input changes and automatically update sumaTotal
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const updatedFormData = {
-      ...formData,
-      [name]: Number(value),
-    };
+    const numericValue = value === "" ? 0 : Number(value); // Si el valor es vacío, poner 0
 
-    // Update form data and calculate total
-    setFormData({
-      ...updatedFormData,
-      sumaTotal: calculateTotal(updatedFormData),
+    setFormData((prevFormData) => {
+      const updatedFormData = { ...prevFormData, [name]: numericValue };
+
+      return {
+        ...updatedFormData,
+        sumaTotal: calculateTotal(updatedFormData), // Recalcular total automáticamente
+      };
     });
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value === "0") {
+      e.target.value = ""; // Borra el 0 cuando el usuario haga clic en el campo
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value === "") {
+      e.target.value = "0"; // Si el usuario deja el campo vacío, vuelve a poner 0
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [e.target.name]: 0, // Asegurar que el estado no quede vacío
+        sumaTotal: calculateTotal({ ...prevFormData, [e.target.name]: 0 }),
+      }));
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -166,9 +183,9 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
   };
 
   return (
-    <div className="text-white bg-gray-900 p-8">
-      <h2 className="text-2xl font-bold mb-4">Información sobre Gastos del Pensionado</h2>
-      <p className="text-sm mb-4">
+    <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
+      <h2 className="text-3xl font-bold mb-4">Información sobre Gastos del Pensionado</h2>
+      <p className="mb-4">
         En esta sección debes indicar los gastos mensuales aproximados que mantiene la persona que requiere la pensión. Si existe alguno que no se encuentre detallado, elige la opción otros y coloca el monto correspondiente a los gastos que no se encuentran en la descripción:
       </p>
 
@@ -181,6 +198,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="mensualidadEscolar"
               value={formData.mensualidadEscolar}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
@@ -192,6 +211,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="vestuario"
               value={formData.vestuario}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
@@ -203,6 +224,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="recreacion"
               value={formData.recreacion}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
@@ -217,6 +240,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="atencionMedica"
               value={formData.atencionMedica}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
@@ -228,6 +253,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="medicamentos"
               value={formData.medicamentos}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
@@ -239,10 +266,15 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="habitacion"
               value={formData.habitacion}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
+
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Factura Agua</label>
             <input
@@ -250,12 +282,12 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="agua"
               value={formData.agua}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Factura Luz</label>
             <input
@@ -263,6 +295,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="luz"
               value={formData.luz}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
@@ -274,10 +308,16 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="telefono"
               value={formData.telefono}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
+
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Matrícula</label>
             <input
@@ -285,13 +325,12 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="matricula"
               value={formData.matricula}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Cuota Padres Educación</label>
             <input
@@ -299,6 +338,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="cuotaPadres"
               value={formData.cuotaPadres}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
@@ -310,10 +351,16 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="uniformes"
               value={formData.uniformes}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
+
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Textos y Libros</label>
             <input
@@ -321,13 +368,12 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="textosLibros"
               value={formData.textosLibros}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Útiles </label>
             <input
@@ -335,6 +381,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="utiles"
               value={formData.utiles}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
@@ -346,10 +394,16 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="transporte"
               value={formData.transporte}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
+
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Meriendas</label>
             <input
@@ -357,13 +411,12 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="meriendas"
               value={formData.meriendas}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Supermercado</label>
             <input
@@ -371,6 +424,8 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="supermercado"
               value={formData.supermercado}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
@@ -382,10 +437,16 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
               name="otros"
               value={formData.otros}
               onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
+
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block mb-2 text-sm">Suma total</label>
             <input
@@ -405,7 +466,7 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
             <>
               <button
                 type="submit"
-                className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+                className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
                 disabled={isLoading} // Disable button while loading
               >
                 {isLoading ? (

@@ -39,8 +39,11 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     estadoCivil: { value: '', label: '' },
     relacionDemandado: { value: '', label: '' },
     nacionalidad: { value: '', label: '' },
+    paisDondeVive: { value: '', label: '' },
     provincia: { value: '', label: '' },
     corregimiento: { value: '', label: '' },
+    provincia2: '',
+    corregimiento2: '',
     mantieneIngresos: { value: '', label: '' },
     lugarTrabajo: '',
     ingresosMensuales: '',
@@ -159,30 +162,6 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     }
   }, [store.request]);
 
-  /* useEffect(() => {
-    if (store.request) {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        pensionType: get(store.request, 'pensionType', 'Primera vez'),
-        pensionAmount: get(store.request, 'pensionAmount', 0),
-        currentSupportAmount: get(store.request, 'currentSupportAmount', 0),
-        currentAmount: get(store.request, 'currentAmount', 0),
-        increaseAmount: get(store.request, 'increaseAmount', 0),
-        totalAmount: get(store.request, 'totalAmount', 0),
-        agreesWithAmount: get(store.request, 'agreesWithAmount', 'No'),
-        disagreementReason: get(store.request, 'disagreementReason', ''),
-        desacatoDescription: get(store.request, 'desacatoDescription', ''),
-        paymentDay: get(store.request, 'paymentDay', ''),
-        lastPaymentDate: get(store.request, 'lastPaymentDate', ''),
-        courtName: get(store.request, 'courtName', ''),
-        caseNumber: get(store.request, 'caseNumber', ''),
-        emailSolicita: get(store.request, 'emailSolicita', ''),
-        expediente: get(store.request, 'expediente', ''),
-        knowsCaseLocation: get(store.request, 'knowsCaseLocation', 'No'),
-      }));
-    }
-  }, [store.request]); */
-
   // Load countries on component mount
   useEffect(() => {
     const countries = Country.getAllCountries();
@@ -201,8 +180,15 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   }, [formData.nacionalidad]);
 
   useEffect(() => {
+    if (formData.paisDondeVive.value) {
+      const states = State.getStatesOfCountry(formData.paisDondeVive.value);
+      setProvincias(states.map(state => ({ value: state.isoCode, label: state.name })));
+    }
+  }, [formData.paisDondeVive]);
+
+  useEffect(() => {
     if (formData.provincia.value) {
-      const cities = City.getCitiesOfState(formData.nacionalidad.value, formData.provincia.value);
+      const cities = City.getCitiesOfState(formData.paisDondeVive.value, formData.provincia.value);
       setCorregimientos(cities.map(city => ({ value: city.name, label: city.name })));
     }
   }, [formData.provincia]);
@@ -293,6 +279,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
           cedula: formData.cedula,
           email: formData.email,
           nacionalidad: formData.nacionalidad,
+          paisDondeVive: formData.paisDondeVive,
           confirmEmail: formData.confirmEmail,
           direccion: formData.direccion,
           detalleDireccion: formData.detalleDireccion,
@@ -396,28 +383,30 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
-          <div>
+          <div className="w-full">
             <label className="block mb-2 text-sm">Número de teléfono</label>
-            <select
-              name="telefonoCodigo"
-              value={formData.telefonoCodigo}
-              onChange={handleChange}
-              className=" p-2 border mr-3 border-gray-700 rounded bg-gray-800 text-white"
-            >
-              {Object.entries(countryCodes).map(([code, dialCode]) => (
-                <option key={code} value={code}>{code}: {dialCode}</option>
-              ))}
-            </select>
-            <input
-              type="text"
-              name="telefonoSolicita"
-              value={formData.telefonoSolicita}
-              onChange={handleChange}
-              className=" p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              placeholder="Número de teléfono"
-              required
-              disabled={store.request.status >= 10 && store.rol < 20}
-            />
+            <div className="flex w-full gap-x-2">
+              <select
+                name="telefonoCodigo"
+                value={formData.telefonoCodigo}
+                onChange={handleChange}
+                className="p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              >
+                {Object.entries(countryCodes).map(([code, dialCode]) => (
+                  <option key={code} value={code}>{code}: {dialCode}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                name="telefonoSolicita"
+                value={formData.telefonoSolicita}
+                onChange={handleChange}
+                className="p-2 border border-gray-700 rounded bg-gray-800 text-white flex-grow"
+                placeholder="Número de teléfono"
+                required
+                disabled={store.request.status >= 10 && store.rol < 20}
+              />
+            </div>
           </div>
           <div>
             <label className="block mb-2 text-sm">Cédula o pasaporte</label>
@@ -478,25 +467,69 @@ const PensionAlimenticiaDemandante: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block mb-2 text-sm">Provincia</label>
+            <label className="block mb-2 text-sm">País donde vive</label>
             <Select
-              options={provincias}
-              value={provincias.find(p => p.value === formData.provincia.value)}
-              onChange={(option) => handleSelectChange('provincia', option)}
+              options={paises}
+              value={paises.find(p => p.value === formData.paisDondeVive.value)}
+              onChange={(option) => handleSelectChange('paisDondeVive', option)}
               styles={customSelectStyles}
               required
             />
           </div>
-          <div>
-            <label className="block mb-2 text-sm">Corregimiento</label>
-            <Select
-              options={corregimientos}
-              value={corregimientos.find(c => c.value === formData.corregimiento.value)}
-              onChange={(option) => handleSelectChange('corregimiento', option)}
-              styles={customSelectStyles}
-              required
-            />
-          </div>
+          {formData.paisDondeVive.value === 'PA' && (
+            <>
+              <div>
+                <label className="block mb-2 text-sm">Provincia</label>
+                <Select
+                  options={provincias}
+                  value={provincias.find(p => p.value === formData.provincia.value)}
+                  onChange={(option) => handleSelectChange('provincia', option)}
+                  styles={customSelectStyles}
+                /* isDisabled={formData.paisDondeVive.value !== 'PA'} */
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm">Corregimiento</label>
+                <Select
+                  options={corregimientos}
+                  value={corregimientos.find(c => c.value === formData.corregimiento.value)}
+                  onChange={(option) => handleSelectChange('corregimiento', option)}
+                  styles={customSelectStyles}
+                /* isDisabled={!formData.provincia.value} */
+                />
+              </div>
+            </>
+          )}
+
+          {formData.paisDondeVive.value !== 'PA' && (
+            <>
+              <div>
+                <label className="block mb-2 text-sm">Provincia</label>
+                <input
+                  type="text"
+                  name="provincia2"
+                  value={formData.provincia2}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  disabled={store.request.status >= 10 && store.rol < 20}
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 text-sm">Corregimiento</label>
+                <input
+                  type="text"
+                  name="Corregimiento2"
+                  value={formData.corregimiento2}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  disabled={store.request.status >= 10 && store.rol < 20}
+                />
+              </div>
+            </>
+          )}
+
           <div >
             <label className="block mb-2 text-sm">Detalle de la dirección</label>
             <textarea
@@ -751,7 +784,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
             <>
               <button
                 type="submit"
-                className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+                className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
                 disabled={isLoading}
               >
                 {isLoading ? (
