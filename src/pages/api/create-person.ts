@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 // Definir todos los campos que corresponden al formulario
 interface PersonData {
@@ -40,7 +40,7 @@ interface PersonData {
   adjuntoDocumentoCedulaPasaporte2URL: string;
 }
 
-const createPersontUrl = `${backendBaseUrl}/dev/create-person`;
+const createPersontUrl = `${backendBaseUrl}/${backendEnv}/create-person`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

@@ -2,7 +2,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-
+import { backendBaseUrl, backendEnv } from '@utils/env';
 interface InvoiceData {
   invoice_id: string; // Invoice ID
   invoice_number: string; // Invoice Number
@@ -27,7 +27,7 @@ const Invoice: React.FC<InvoiceProps> = ({ id }) => {
 
         // Call the getInvoice endpoint
         const response = await axios.get(
-          `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/getInvoice/${id}`
+          `${backendBaseUrl}/${backendEnv}/getInvoice/${id}`
         );
 
         // Map the response to match the component's structure

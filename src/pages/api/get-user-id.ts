@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-
+import { backendBaseUrl, backendEnv } from '@utils/env';
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -19,7 +19,7 @@ export default async function handler(
   try {
     // Use the userId from the query to build the request URL
     const response = await axios.get(
-      `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/get-user-id/${userId}`
+      `${backendBaseUrl}/${backendEnv}/get-user-id/${userId}`
     );
     console.log("🚀 ~ response:", response)
 

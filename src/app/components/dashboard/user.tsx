@@ -11,7 +11,8 @@ import {
     firebaseStorageBucket,
     firebaseMessagingSenderId,
     firebaseAppId,
-    backendBaseUrl
+    backendBaseUrl,
+    backendEnv
 } from '@utils/env';
 
 // Configuración de Firebase
@@ -212,7 +213,7 @@ const User: React.FC = () => {
                     },
                 }); */
                 const response = await axios.post(
-                    `${backendBaseUrl}/dev/create-users`,
+                    `${backendBaseUrl}/${backendEnv}/create-users`,
                     responseData,
                     { headers: { 'Content-Type': 'application/json' } }
                 );

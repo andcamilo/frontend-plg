@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env'; // Adjust the path to your environment variables as needed
+import { backendBaseUrl, backendEnv } from '@utils/env'; // Adjust the path to your environment variables as needed
 
-const listContactsUrl = `${backendBaseUrl}/dev/listContacts`; // The Lambda URL
+const listContactsUrl = `${backendBaseUrl}/${backendEnv}/listContacts`; // The Lambda URL
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

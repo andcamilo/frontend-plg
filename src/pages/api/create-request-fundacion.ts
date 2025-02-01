@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 // Definir la estructura de los datos de la solicitud
 interface RequestData {
@@ -18,7 +18,7 @@ interface RequestData {
 }
 
 // Cambiar la URL del endpoint para la solicitud de Fundación
-const createRequestUrl = `${backendBaseUrl}/dev/create-request-fundacion`;
+const createRequestUrl = `${backendBaseUrl}/${backendEnv}/create-request-fundacion`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Solo permitir el método POST

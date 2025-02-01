@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { solicitudId, solicitudAdicional } = req.body;  // Obtenemos solicitudId y solicitudAdicional del cuerpo de la solicitud
@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Enviar solicitud a la API externa (por ejemplo, AWS Lambda o Firebase)
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/dev/update-solicitud-adicional`,  // URL de la API para actualizar la solicitud adicional
+      `${backendBaseUrl}/${backendEnv}/update-solicitud-adicional`,  // URL de la API para actualizar la solicitud adicional
       updatePayload  // Enviar el cuerpo con solicitudId y solicitudAdicional
     );
 

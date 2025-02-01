@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 import get from 'lodash/get';
 
-const getRequestsUrl = `${backendBaseUrl}/dev/get-requests`;
+const getRequestsUrl = `${backendBaseUrl}/${backendEnv}/get-requests`;
 
 export const getRequests = async (limit = 10, page = 1) => {
   try {

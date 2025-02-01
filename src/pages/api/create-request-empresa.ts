@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 
 interface RequestData {
@@ -17,7 +17,7 @@ interface RequestData {
   tipo: string;
 }
 
-const createRequestUrl = `${backendBaseUrl}/dev/create-request-empresa`;
+const createRequestUrl = `${backendBaseUrl}/${backendEnv}/create-request-empresa`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

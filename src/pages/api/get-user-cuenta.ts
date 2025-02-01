@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 const getUserById = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
@@ -15,7 +15,7 @@ const getUserById = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     // Enviar solicitud al backend con el `userCuenta`
-    const response = await axios.get(`${backendBaseUrl}/dev/get-user-cuenta/${userCuenta}`);
+    const response = await axios.get(`${backendBaseUrl}/${backendEnv}/get-user-cuenta/${userCuenta}`);
 
     // Retornar la respuesta del backend
     res.status(200).json(response.data);

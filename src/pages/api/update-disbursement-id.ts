@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env'; 
+import { backendBaseUrl, backendEnv } from '@utils/env'; 
 
 // Define the base URL for the Lambda API
-const updateDisbursementByIdUrl = `${backendBaseUrl}/dev/updateDisbursementID`;
+const updateDisbursementByIdUrl = `${backendBaseUrl}/${backendEnv}/updateDisbursementID`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PATCH') {

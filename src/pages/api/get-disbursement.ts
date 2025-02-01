@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
-const getDisbursementUrl = (id: string) => `${backendBaseUrl}/dev/getDisbursement/${id}`;
+const getDisbursementUrl = (id: string) => `${backendBaseUrl}/${backendEnv}/getDisbursement/${id}`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
