@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import get from 'lodash/get';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
-const usersApiUrl = `${backendBaseUrl}/dev/get-users`;
+const usersApiUrl = `${backendBaseUrl}/${backendEnv}/get-users`;
 
 const getUsers = async (req: NextApiRequest, res: NextApiResponse) => {
   try {

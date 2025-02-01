@@ -286,11 +286,11 @@ const SociedadEmpresaResumen: React.FC = () => {
             <hr></hr>
 
             <div className="mt-4" >
-                <h2 className="text-2xl font-bold mb-4">Información del Solicitante</h2>
+                <h2 className="text-3xl font-bold mb-4">Información del Solicitante</h2>
                 {renderField('Nombre del Solicitante', solicitudData.nombreSolicita)}
                 {renderField('Teléfono', solicitudData.telefonoSolicita)}
                 {renderField('Correo Electrónico', solicitudData.emailSolicita)}
-                <h2 className="text-2xl font-bold mb-4">Opciones para el nombre de la sociedad:</h2>
+                <h2 className="text-3xl font-bold mb-4">Opciones para el nombre de la sociedad:</h2>
                 <div className="ml-6">
                     {renderField('  1 ', solicitudData.empresa.nombreSociedad1)}
                     {renderField('  2 ', solicitudData.empresa.nombreSociedad2)}
@@ -299,7 +299,7 @@ const SociedadEmpresaResumen: React.FC = () => {
                 <hr className='mt-4 mb-4'></hr>
 
                 {/* Directores de la Sociedad */}
-                <h2 className="text-2xl font-bold mb-4">Directores de la Sociedad</h2>
+                <h2 className="text-3xl font-bold mb-4">Directores de la Sociedad</h2>
                 {(peopleData.length > 0 || (solicitudData.directores && solicitudData.directores.length > 0)) ? (
                     // Mostrar primero los directores propios y luego los nominales
                     [...peopleData.filter(person => person.director), ...solicitudData.directores.filter(director => director.servicio === 'Director Nominal')]

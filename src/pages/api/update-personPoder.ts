@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { solicitudId, poder } = req.body;  // Obtenemos solicitudId y poder del cuerpo de la solicitud
@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Enviar solicitud a la API externa (por ejemplo, AWS Lambda o Firebase)
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/dev/update-personPoder`,  // URL de la API para actualizar poder
+      `${backendBaseUrl}/${backendEnv}/update-personPoder`,  // URL de la API para actualizar poder
       updatePayload  // Enviar el cuerpo con solicitudId y poder
     );
 

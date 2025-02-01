@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl,backendEnv } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { peopleId, ...dataToSend } = req.body;
@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/dev/update-people/${peopleId}`,
+      `${backendBaseUrl}/${backendEnv}/update-people/${peopleId}`,
       dataToSend
     );
 

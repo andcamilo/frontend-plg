@@ -100,10 +100,10 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
   };
 
   return (
-    <div className="text-white bg-gray-900 p-8">
+    <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
       {/* Header Section */}
-      <h2 className="text-2xl font-bold mb-4">Solicitud Adicional</h2>
-      <p className="text-sm mb-6">
+      <h2 className="text-3xl font-bold mb-4">Solicitud Adicional</h2>
+      <p className="mb-6">
         Si requiere algún otro proceso no incluido en esta solicitud, por favor detallar y nuestro equipo se contactará contigo en no más de 48 horas laborables.
       </p>
 
@@ -127,7 +127,7 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
           <input
             type="file"
             onChange={handleFileChange}
-            className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700"
+            className="w-full p-2 bg-gray-800 text-white rounded-lg"
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -138,7 +138,7 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
             <>
               <button
                 type="submit"
-                className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded"
+                className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
                 disabled={isLoading} // Disable button while loading
               >
                 {isLoading ? (

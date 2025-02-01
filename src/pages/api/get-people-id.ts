@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 import get from 'lodash/get';
 
 export default async function handler(req, res) {
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
   try {
     // URL de la función Lambda para obtener las personas por solicitudId
-    const lambdaUrl = `${backendBaseUrl}/dev/get-people-id/${solicitudId}`;
+    const lambdaUrl = `${backendBaseUrl}/${backendEnv}/get-people-id/${solicitudId}`;
 
     // Realizar la solicitud a tu función Lambda en AWS
     const response = await axios.get(lambdaUrl);

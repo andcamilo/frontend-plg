@@ -2,7 +2,7 @@ import React from 'react';
 
 const DemandadoInfo: React.FC = () => {
   return (
-    <div className="bg-black text-white p-6 rounded-lg">
+    <div className="text-white mt-4">
       <h2 className="text-3xl font-bold">Información del Demandado</h2>
       <p className="mt-4">
         Representa a la persona a la cual se le está solicitando la demanda, en este caso la persona que debe aportar la otra parte correspondiente a la Pensión Alimenticia.

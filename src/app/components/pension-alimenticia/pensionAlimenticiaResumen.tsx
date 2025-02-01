@@ -53,7 +53,7 @@ const PensionAlimenticiaResumen: React.FC = () => {
 
   return (
     <div className="text-white">
-      <h2 className="text-2xl font-bold mb-4">Resumen de la Solicitud</h2>
+      <h2 className="text-3xl font-bold mb-4">Resumen de la Solicitud</h2>
       <p>Revisa toda la información antes de enviar la solicitud.</p>
 
       {/* Display the fetched data */}

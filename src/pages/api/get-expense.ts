@@ -1,10 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import axios from "axios"
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
-// It's better to use environment variables directly
-const backendBaseUrl = process.env.BACKEND_BASE_URL
-
-const getExpenseUrl = (id: string) => `${backendBaseUrl}/dev/getExpense/${id}`
+const getExpenseUrl = (id: string) => `${backendBaseUrl}/${backendEnv}/getExpense/${id}`
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {

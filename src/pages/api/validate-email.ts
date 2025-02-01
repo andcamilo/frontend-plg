@@ -1,8 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import get from 'lodash/get';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
-const validateEmailUrl = `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/validate-email`;
+const validateEmailUrl = `${backendBaseUrl}/${backendEnv}/validate-email`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

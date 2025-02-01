@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { solicitudId, director } = req.body;  // Obtenemos solicitudId y director del cuerpo de la solicitud
@@ -50,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Enviar solicitud a la API externa (por ejemplo, AWS Lambda o Firebase)
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/dev/update-personDirector`,  // Solo usamos la URL sin personId
+      `${backendBaseUrl}/${backendEnv}/update-personDirector`,  // Solo usamos la URL sin personId
       updatePayload  // Enviar el cuerpo con solicitudId y director
     );
 

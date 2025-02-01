@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { peopleId } = req.query;
@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const externalApiResponse = await axios.delete(
-      `${backendBaseUrl}/dev/delete-people/${peopleId}`
+      `${backendBaseUrl}/${backendEnv}/delete-people/${peopleId}`
     );
 
     console.log('🚀 ~ handler ~ externalApiResponse:', externalApiResponse.data);

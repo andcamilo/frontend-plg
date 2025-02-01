@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import get from 'lodash/get';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import Link from 'next/link';
 import {
@@ -467,7 +467,7 @@ const Request: React.FC = () => {
         try {
             let solicitudId = id;
             // Llamar a la API para obtener la URL del archivo
-            const response = await axios.post(`${backendBaseUrl}/dev/create-pacto-social-file/${solicitudId}`);
+            const response = await axios.post(`${backendBaseUrl}/${backendEnv}/create-pacto-social-file/${solicitudId}`);
 
             if (response.data && response.data.fileUrl) {
                 // Crear un enlace temporal para descargar el archivo

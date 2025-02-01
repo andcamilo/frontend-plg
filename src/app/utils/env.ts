@@ -8,6 +8,7 @@ const firebaseAppId: string | undefined = process.env.NEXT_PUBLIC_FIREBASE_APP_A
 
 // Backend environment variable
 const backendBaseUrl: string | undefined = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+const backendEnv: string | undefined = process.env.NEXT_PUBLIC_BACKEND_ENV;
 
 export {
     firebaseApiKey,
@@ -17,4 +18,5 @@ export {
     firebaseMessagingSenderId,
     firebaseAppId,
     backendBaseUrl,
+    backendEnv
 };

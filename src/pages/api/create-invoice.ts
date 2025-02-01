@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export const getLineItem = (pensionType) => {
@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     
-    const lambdaUrl = `${backendBaseUrl}/dev/createInvoice`;
+    const lambdaUrl = `${backendBaseUrl}/${backendEnv}/createInvoice`;
 
     // Make a POST request to the Lambda function
     const response = await axios.post(lambdaUrl, payload, {

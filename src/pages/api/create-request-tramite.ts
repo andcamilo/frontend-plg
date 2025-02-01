@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
-const createTramiteUrl = `${backendBaseUrl}/dev/create-request-tramite`;
+const createTramiteUrl = `${backendBaseUrl}/${backendEnv}/create-request-tramite`;
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

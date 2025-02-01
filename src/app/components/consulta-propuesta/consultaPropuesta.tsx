@@ -1366,7 +1366,7 @@ const ConsultaPropuesta: React.FC = () => {
                                         )}
                                         {formData.consultaOficina === "No" && (
                                             <>
-                                                <p className="text-white text-sm mb-4"><strong className="text-red-500">NOTA:</strong> El traslado de nuestros abogados a un lugar especifico puede incurrir en gastos, tenga en cuenta que si debe movilizarse fuera de la ciudad se le anexaran gastos adicionales.</p>
+                                                <p className="text-white mb-4"><strong className="text-red-500">NOTA:</strong> El traslado de nuestros abogados a un lugar especifico puede incurrir en gastos, tenga en cuenta que si debe movilizarse fuera de la ciudad se le anexaran gastos adicionales.</p>
                                                 <div className="relative w-full">
                                                     <label className="block text-white mb-2">Indique la Dirección:</label>
                                                     <input

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'The email parameter is required and must be a string.' });
   }
 
-  const lambdaUrl = `${backendBaseUrl}/dev/users/contact/${email}`;
+  const lambdaUrl = `${backendBaseUrl}/${backendEnv}/users/contact/${email}`;
 
   console.log("🚀 ~ handler ~ lambdaUrl:", lambdaUrl);
 

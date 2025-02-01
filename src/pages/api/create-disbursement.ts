@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 interface DisbursementRequestData {
   disbursementType: string;
@@ -50,7 +50,7 @@ interface DisbursementRequestData {
   };
 }
 
-const createDisbursementUrl = `${backendBaseUrl}/dev/create-disbursement`;
+const createDisbursementUrl = `${backendBaseUrl}/${backendEnv}/create-disbursement`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

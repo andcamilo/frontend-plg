@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 import { getServicePrice } from '@/src/app/utils/priceSelector';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -13,7 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     firmaYEntrega,
     gastosPensionado,
     pensionType,
-    solicitudAdicional
+    solicitudAdicional,
+    wantsInvestigation
   } = req.body;
     console.log("🚀 ~ handler ~ pensionType:", pensionType)
 
@@ -30,11 +31,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           items: [
             {
               item: "Pensión alimenticia",
-              precio: getServicePrice(pensionType),
+              precio: getServicePrice(pensionType, wantsInvestigation),
             },
           ],
-          subtotal: getServicePrice(pensionType), 
-          total: getServicePrice(pensionType),
+          subtotal: getServicePrice(pensionType, wantsInvestigation), 
+          total: getServicePrice(pensionType, wantsInvestigation),
         },
       }
     : demandante
@@ -65,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/dev/update-request/${solicitudId}`,
+      `${backendBaseUrl}/${backendEnv}/update-request/${solicitudId}`,
       dataToSend
     );
 

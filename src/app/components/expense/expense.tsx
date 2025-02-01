@@ -2,6 +2,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 interface ExpenseData {
   expense_id: string; // ID of the expense
@@ -30,7 +31,7 @@ const Expense: React.FC<ExpenseProps> = ({ id }) => {
 
         // Call the given endpoint
         const response = await axios.get(
-          `https://7hzt4b9tck.execute-api.us-east-1.amazonaws.com/dev/getExpense/${id}`
+          `${backendBaseUrl}/${backendEnv}/getExpense/${id}`
         );
 
         // Map the response to match the structure

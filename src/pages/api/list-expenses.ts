@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
-const listExpensesUrl = `${backendBaseUrl}/dev/listExpenses`;
+const listExpensesUrl = `${backendBaseUrl}/${backendEnv}/listExpenses`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
