@@ -11,7 +11,7 @@ const ToggleTextComponent: React.FC = () => {
     <div className="mt-6">
       <button
         type="button" 
-        className="bg-purple-600 text-white py-2 px-4 rounded-md mb-4"
+        className="bg-profile text-white py-2 px-4 rounded-md mb-4"
         onClick={handleToggle}
       >
         ¿Cómo Funciona el Proceso? {isTextVisible ? '▲' : '▼'}
