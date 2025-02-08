@@ -977,11 +977,11 @@ const ConsultaPropuesta: React.FC = () => {
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
             <h1 className="text-white text-4xl font-bold mb-4">Solicitud de Propuesta o Consulta Legal</h1>
             <hr />
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 <strong>Sabemos que puedes tener muchas dudas antes de realizar un trámite, o sólo requieres información de alguna situación o alguna propuesta de los servicios que ofrecemos, por ello, este trámite te permite hacer alguna de las siguientes solicitudes:</strong>
             </p>
 
-            <ul className="text-white mt-4 list-disc list-inside space-y-4">
+            <ul className="text-white mt-4 list-disc list-inside space-y-4 texto_justificado">
                 <li>
                     <strong>Propuesta Legal:</strong> al escoger propuesta legal, nos podrás detallar tu necesidad y te estaríamos enviando una cotización con los requisitos. Podrás comentarnos dudas adicionales de la misma, y te estaríamos guiando sobre los próximos pasos una vez aprobada la propuesta. Solicitar una propuesta legal no tiene costo.
                 </li>
@@ -996,19 +996,19 @@ const ConsultaPropuesta: React.FC = () => {
                 </li>
             </ul>
 
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 <strong className="text-red-500">IMPORTANTE:</strong> Si elige la opción de Consultas (Escrita, Presencial o Virtual) debe tener en cuenta que la misma tiene una duración máxima de 1 hora y 30 minutos, en caso que se extienda por más tiempo esto incurrirá en aumento en su tarifa que deberán ser cancelados al momento de finalizar dicha consulta. Por lo tanto le pedimos que sea bien específico al momento de enviar el formulario para que sus dudas sean aclaradas en el tiempo propuesto y no incurrir en gastos adicionales.
             </p>
 
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 Si desea reprogramar una Consulta o Propuesta Virtual/Presencial, debe hacerlo con un lapso de tiempo mínimo de 5 horas antes de la fecha programada; de lo contrario, su solicitud no podrá ser reagendada y deberá esperar a ser contactado por uno de nuestros especialistas para reprogramar. Además, si incurre en esta falta, no se permitirá el reembolso de su dinero una vez que haya cancelado fuera del tiempo reglamentario. Tenga en cuenta que solo podrá hacer uso de esta opción una vez; asegúrese de que en las fechas seleccionadas podrá asistir a su consulta.
             </p>
 
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 texto_justificado">
                 Si tienes alguna duda de nuestros servicios, pueden contactarnos a: <a className='text-blue-500' href="mailto:info@panamalegalgroup.com">info@panamalegalgroup.com</a>
             </p>
 
-            <p className="text-white mt-4">
+            <p className="text-white mt-4 ">
                 <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                     <a
                         href="https://wa.me/50769853352"
@@ -1049,7 +1049,7 @@ const ConsultaPropuesta: React.FC = () => {
                     )}
                     {formData.tipoConsulta !== "Propuesta Legal" && (
                         <>
-                            <p className="text-white text-sm">* Indícanos la información de quien solicita la consulta para poder contactarnos en cualquier caso. Si estás representando a la persona que necesita asistir a la consulta virtual o presencial, puedes establecer en el detalle del caso la información de la misma.</p>
+                            <p className="text-white text-sm texto_justificado">* Indícanos la información de quien solicita la consulta para poder contactarnos en cualquier caso. Si estás representando a la persona que necesita asistir a la consulta virtual o presencial, puedes establecer en el detalle del caso la información de la misma.</p>
                         </>
                     )}
                 </div>
@@ -1259,9 +1259,9 @@ const ConsultaPropuesta: React.FC = () => {
                         {formData.tipoConsulta !== "Consulta Escrita" && (
                             <>
                                 <h2 className="text-white text-2xl font-semibold">Calendario y Disponibilidad</h2>
-                                <p className="text-white text-sm">* Escoge tres fechas y un rango de horas en las que estás disponible, y te confirmaremos dentro de las próximas 24 horas.</p>
+                                <p className="text-white text-sm texto_justificado">* Escoge tres fechas y un rango de horas en las que estás disponible, y te confirmaremos dentro de las próximas 24 horas.</p>
                                 <hr className='mt-2 mb-2' />
-                                <p className="text-white text-sm"><strong className="text-red-500">IMPORTANTE:</strong> Las consultas tienen una duración máxima de 1 hora 30 minutos, si la consulta requiere más tiempo ten en cuenta que puede incurrir en nuevos cargos.</p>
+                                <p className="text-white text-sm texto_justificado"><strong className="text-red-500">IMPORTANTE:</strong> Las consultas tienen una duración máxima de 1 hora 30 minutos, si la consulta requiere más tiempo ten en cuenta que puede incurrir en nuevos cargos.</p>
                                 <hr className='mt-2 mb-2' />
 
                                 <div className="mb-6">
@@ -1366,7 +1366,7 @@ const ConsultaPropuesta: React.FC = () => {
                                         )}
                                         {formData.consultaOficina === "No" && (
                                             <>
-                                                <p className="text-white mb-4"><strong className="text-red-500">NOTA:</strong> El traslado de nuestros abogados a un lugar especifico puede incurrir en gastos, tenga en cuenta que si debe movilizarse fuera de la ciudad se le anexaran gastos adicionales.</p>
+                                                <p className="text-white mb-4 texto_justificado"><strong className="text-red-500">NOTA:</strong> El traslado de nuestros abogados a un lugar especifico puede incurrir en gastos, tenga en cuenta que si debe movilizarse fuera de la ciudad se le anexaran gastos adicionales.</p>
                                                 <div className="relative w-full">
                                                     <label className="block text-white mb-2">Indique la Dirección:</label>
                                                     <input

@@ -43,6 +43,14 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
 
       if (firmaYEntrega && Object.keys(firmaYEntrega).length > 0) {
         setSelectedOption(firmaYEntrega.deliveryOption)
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          direccion: get(store.request, 'firmaYEntrega.direccion', ''),
+          dia: get(store.request, 'firmaYEntrega.dia',''),
+          hora: get(store.request, 'firmaYEntrega.hora', ''),
+          telefono: get(store.request, 'firmaYEntrega.telefonoSolicita', ''),
+          
+        }));
       }
     }
   }, [store.request]);
