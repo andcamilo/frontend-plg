@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import TableWithRequests from '@components/TableWithRequests';
-import { getRequests } from '@api/request';
+/* import { getRequests } from '@api/request'; */
 import axios from 'axios';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
@@ -117,11 +117,15 @@ const RequestsStatistics: React.FC = () => {
         email: string;
         rol: string;
         userId: string;
+        nombre: string;
+        user_id: string;
     }>({
         cuenta: "",
         email: "",
         rol: "",
         userId: "",
+        nombre: "",
+        user_id: "",
     });
 
     // Pagination state
@@ -143,18 +147,22 @@ const RequestsStatistics: React.FC = () => {
             setError(null);
             try {
                 // 1. Check Auth Token and set formData.cuenta and email
-                const userData = checkAuthToken();
+                const userData = await checkAuthToken();
                 if (!userData) {
                     throw new Error("User is not authenticated.");
                 }
-                setFormData((prevData) => ({
+                /* setFormData((prevData) => ({
                     ...prevData,
                     email: userData.email,
-                    cuenta: userData.user_id,
-                }));
+                    cuenta: userData.cuenta,
+                    nombre: userData.nombre,
+                    rol: userData.rol,
+                    status: userData.status,
+                    user_id: userData.user_id,
+                })); */
 
                 // 2. Fetch User Data based on cuenta
-                console.log("Cuenta ", userData.user_id);
+                /* console.log("Cuenta ", userData.user_id);
                 const userResponse = await axios.get('/api/get-user-cuenta', {
                     params: { userCuenta: userData.user_id },
                 });
@@ -172,15 +180,15 @@ const RequestsStatistics: React.FC = () => {
                     rol: stringRole, // Asignar rol en formato string
                     userId: get(user, 'solicitud.id', ""),
                 }));
-
+ */
                 // 3. Fetch Solicitudes
-                const { solicitudes: fetchedSolicitudes, pagination: fetchedPagination } = await getRequests(rowsPerPage, currentPage);
+                /* const { solicitudes: fetchedSolicitudes, pagination: fetchedPagination } = await getRequests(rowsPerPage, currentPage);
 
                 solicitudesEnProceso = fetchedSolicitudes.filter((solicitud: any) => {
                     if (formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") {
                         return solicitud.status !== 70;
                     } else {
-                        return solicitud.status !== 70 && solicitud.cuenta === get(user, 'solicitud.id', "");
+                        return solicitud.status !== 70 && solicitud.cuenta === formData.user_id;
                     }
                 }).sort((a: any, b: any) => {
                     const dateA = new Date(a.date._seconds * 1000); // Convert to Date
@@ -192,7 +200,7 @@ const RequestsStatistics: React.FC = () => {
                     if (formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") {
                         return solicitud.status === 70;
                     } else {
-                        return solicitud.status === 70 && solicitud.cuenta === get(user, 'solicitud.id', "");
+                        return solicitud.status === 70 && solicitud.cuenta === formData.user_id;
                     }
                 }).sort((a: any, b: any) => {
                     const dateA = new Date(a.date._seconds * 1000); // Convert to Date
@@ -205,7 +213,7 @@ const RequestsStatistics: React.FC = () => {
                     hasPrevPage: fetchedPagination.hasPrevPage,
                     hasNextPage: fetchedPagination.hasNextPage,
                     totalPages: fetchedPagination.totalPages,
-                });
+                }); */
             } catch (err: any) {
                 console.error('Error fetching data:', err);
                 setError(err.message || 'An error occurred while fetching data.');

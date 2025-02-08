@@ -4,7 +4,7 @@ import FormalitiesChart from '@components/formalitiesChart';
 import TableWithPagination from '@components/TableWithPagination';
 import DashboardCard from '@components/dashboardCard';
 import PivotTable from '@components/pivotTable';
-import { getRequests } from '@api/request';
+/* import { getRequests } from '@api/request'; */
 
 // Function to format date as dd/mm/yyyy
 const formatDate = (timestamp?: { _seconds: number; _nanoseconds: number }): string => {
@@ -42,7 +42,7 @@ const LegixStatistics: React.FC = () => {
 
   useEffect(() => {
     const fetchSolicitudes = async () => {
-      try {
+      /* try {
         const { solicitudes, pagination, tipoCounts, statusCounts, months } = await getRequests(rowsPerPage, currentPage);
         setSolicitudes(solicitudes);
         setTipoCounts(tipoCounts);
@@ -59,7 +59,7 @@ const LegixStatistics: React.FC = () => {
 
       } catch (error) {
         console.error('Failed to fetch solicitudes:', error);
-      }
+      } */
     };
 
     fetchSolicitudes();
