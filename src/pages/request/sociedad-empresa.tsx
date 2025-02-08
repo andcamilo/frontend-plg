@@ -222,7 +222,7 @@ const SociedadEmpresa: React.FC = () => {
                             * Para poder enviar o pagar la solicitud todos los campos deben estar llenos.
                         </p>
 
-                        {activeStep >= 12 && (
+                        {activeStep >= 12 || store.ingresos && (
                             <div className="mt-8">
                                 <WidgetLoader />
                             </div>

@@ -37,7 +37,16 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
   }, [store.solicitudId]);
 
 
+  useEffect(() => {
+    if (store.request) {
+      console.log("🚀 ~ Updated store.request:", store.request);
+      const solicitudAdicional = get(store.request, 'solicitudAdicional', {});
 
+      if (solicitudAdicional) {
+        setAdditionalRequest(solicitudAdicional.descripcion)
+      }
+    }
+  }, [store.request]);
 
   // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
