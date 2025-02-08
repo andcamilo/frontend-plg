@@ -465,7 +465,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
       if (formData.medidaPorElJuez === "No") {
 
         if (formData.servicioPLG === "Sí") {
-
           if (!formData.provinceDesacato) {
             showAlert('Debe seleccionar una provincia.', 'provinceDesacato');
             return;
