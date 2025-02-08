@@ -37,6 +37,14 @@ interface FormData {
   desacatoDescription: string;  // Description of desacato
   paymentDay: string;           // Day assigned for payment by the court
   lastPaymentDate: string;      // Last date when the pension was paid
+  medidaPorElJuez: string;
+  numeroExpediente: string;
+  numeroJuzgado: string;
+  provinceDesacato: string;
+  provinceExpediente: string;
+  fechaPago: string;
+  terminoPago: string;
+  servicioPLG: string;
 
   // For Desacato or Rebaja o Suspensión
   courtName: string;            // Name of the court
@@ -46,6 +54,8 @@ interface FormData {
 
   // General fields
   reason: string;               // Reason for reduction/suspension
+
+
 }
 
 const PensionAlimenticiaSolicitud: React.FC = () => {
@@ -87,6 +97,14 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
     desacatoDescription: '',
     paymentDay: '',
     lastPaymentDate: '',
+    medidaPorElJuez: "",
+    numeroExpediente: "",
+    numeroJuzgado: "",
+    provinceDesacato: "",
+    provinceExpediente: "",
+    fechaPago: "",
+    terminoPago: "",
+    servicioPLG: "No",
 
     // New fields for 'Desacato' or 'Rebaja o Suspensión'
     courtName: '',
@@ -96,6 +114,8 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
     // General fields
     reason: '',
+
+
   });
 
 
@@ -116,12 +136,22 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
         currentSupportAmount: get(store.request, 'currentSupportAmount', 0),
         currentAmount: get(store.request, 'currentAmount', 0),
         increaseAmount: get(store.request, 'increaseAmount', 0),
-        totalAmount: get(store.request, 'totalAmount', 0), 
+        totalAmount: get(store.request, 'totalAmount', 0),
         agreesWithAmount: get(store.request, 'agreesWithAmount', 'No'),
         disagreementReason: get(store.request, 'disagreementReason', ''),
         desacatoDescription: get(store.request, 'desacatoDescription', ''),
         paymentDay: get(store.request, 'paymentDay', ''),
         lastPaymentDate: get(store.request, 'lastPaymentDate', ''),
+
+        medidaPorElJuez: get(store.request, 'medidaPorElJuez', ''),
+        numeroExpediente: get(store.request, 'numeroExpediente', ''),
+        numeroJuzgado: get(store.request, 'numeroJuzgado', ''),
+        provinceDesacato: get(store.request, 'provinceDesacato', ''),
+        provinceExpediente: get(store.request, 'provinceExpediente', ''),
+        fechaPago: get(store.request, 'fechaPago', ''),
+        terminoPago: get(store.request, 'terminoPago', ''),
+        servicioPLG: get(store.request, 'servicioPLG', ''),
+
         courtName: get(store.request, 'courtName', ''),
         caseNumber: get(store.request, 'caseNumber', ''),
         emailSolicita: get(store.request, 'emailSolicita', ''),
@@ -182,25 +212,73 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    const numericValue = name === 'currentAmount' || name === 'increaseAmount' ? Number(value) : value;
-  
+    const numericValue = name === 'currentAmount' || name === 'increaseAmount' || name === 'totalAmount'
+      ? Number(value)
+      : value;
+
     setFormData((prevData) => {
       const updatedData = {
         ...prevData,
         [name]: numericValue,
       };
-  
+
       // Si el cambio afecta totalAmount, lo recalculamos
       if (name === 'currentAmount' || name === 'increaseAmount') {
         updatedData.totalAmount = updatedData.currentAmount + updatedData.increaseAmount;
       }
-  
+
+      // **🚀 Aquí se quita el error si el campo ya tiene un valor válido**
+      if (invalidFields[name] && value !== '') {
+        setInvalidFields(prev => {
+          const updatedInvalidFields = { ...prev };
+          delete updatedInvalidFields[name]; // Eliminar el campo de errores
+          return updatedInvalidFields;
+        });
+      }
+
       return updatedData;
     });
-  };  
+  };
+
+  const [invalidFields, setInvalidFields] = useState<{ [key: string]: boolean }>({});
+
+  // Función para resaltar en rojo y desplazarse al campo con error
+  const highlightField = (fieldName: string) => {
+    setInvalidFields(prev => ({ ...prev, [fieldName]: true }));
+
+    const field = document.querySelector(`[name="${fieldName}"]`) as HTMLElement;
+    if (field) {
+      field.scrollIntoView({ behavior: "smooth", block: "center" });
+      field.focus();
+    }
+  };
+
+  const showAlert = (message: string, fieldName: string) => {
+    if (!invalidFields[fieldName]) { // 🚀 Solo mostrar alerta si el campo aún no está marcado como inválido
+      Swal.fire({
+        icon: 'warning',
+        title: message,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff'
+      });
+
+      setInvalidFields(prev => ({ ...prev, [fieldName]: true })); // Marcar como inválido
+    }
+
+    const field = document.querySelector(`[name="${fieldName}"]`) as HTMLElement;
+    if (field) {
+      field.scrollIntoView({ behavior: "smooth", block: "center" });
+      field.focus();
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setInvalidFields({});
 
     if (!store.solicitudId) {
       Swal.fire({
@@ -209,6 +287,198 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
         text: 'No se ha encontrado el ID de la solicitud. Intente nuevamente.',
       });
       return;
+    }
+
+    if (formData.pensionType === 'Primera vez') {
+      if (!formData.pensionAmount || formData.pensionAmount <= 0) {
+        showAlert('Debe ingresar un monto válido para la pensión.', 'pensionAmount');
+        return;
+      }
+
+      if (formData.receiveSupport === 'Sí' && (!formData.currentSupportAmount || formData.currentSupportAmount <= 0)) {
+        showAlert('Debe ingresar el monto del apoyo recibido actualmente.', 'currentSupportAmount');
+        return;
+      }
+
+      if (!formData.pensionCategory) {
+        showAlert('Debe seleccionar una categoría de pensión.', 'pensionCategory');
+        return;
+      }
+    }
+
+    let newInvalidFields: { [key: string]: boolean } = {};
+    if (formData.pensionType === 'Aumento') {
+      // Validar monto actual de pensión
+      if (!formData.currentAmount || formData.currentAmount <= 0) {
+        newInvalidFields.currentAmount = true;
+        showAlert('Debe ingresar el monto actual de la pensión.', 'currentAmount');
+        return;
+      }
+
+      // Validar monto de aumento solicitado
+      if (!formData.increaseAmount || formData.increaseAmount <= 0) {
+        newInvalidFields.currentAmount = true;
+        showAlert('Debe ingresar un monto válido para el aumento.', 'increaseAmount');
+        return;
+      }
+
+      // Validar monto total calculado
+      if (!formData.totalAmount || formData.totalAmount <= 0) {
+        newInvalidFields.currentAmount = true;
+        showAlert('Debe asegurarse de que el monto total sea válido.', 'totalAmount');
+        return;
+      }
+
+      // Validar campo "disagreementReason" si el usuario NO está de acuerdo con el monto total
+      if (formData.agreesWithAmount === 'No' && !formData.disagreementReason.trim()) {
+        newInvalidFields.currentAmount = true;
+        showAlert('Debe explicar la razón por la que no está de acuerdo con el monto total.', 'disagreementReason');
+        return;
+      }
+
+      // Validaciones cuando NO sabe dónde está radicado el expediente
+      if (formData.knowsCaseLocation === 'No') {
+        if (!formData.wantsInvestigation) {
+          newInvalidFields.currentAmount = true;
+          showAlert('Debe indicar si desea que se investigue dónde está radicado el expediente.', 'wantsInvestigation');
+          return;
+        }
+
+        if (formData.wantsInvestigation === 'Si' && !formData.province) {
+          newInvalidFields.currentAmount = true;
+          showAlert('Debe seleccionar una provincia para la investigación.', 'province');
+          return;
+        }
+      }
+
+      // Validaciones cuando SÍ sabe dónde está radicado el expediente
+      if (formData.knowsCaseLocation === 'Si') {
+        if (!formData.court.trim()) {
+          newInvalidFields.currentAmount = true;
+          showAlert('Debe indicar el juzgado donde se encuentra el expediente.', 'court');
+          return;
+        }
+
+        if (!formData.caseNumber.trim()) {
+          newInvalidFields.currentAmount = true;
+          showAlert('Debe ingresar el número de expediente.', 'caseNumber');
+          return;
+        }
+
+        if (!formData.sentenceDate) {
+          newInvalidFields.currentAmount = true;
+          showAlert('Debe indicar la fecha de la última sentencia.', 'sentenceDate');
+          return;
+        }
+      }
+
+      if (Object.keys(newInvalidFields).length > 0) {
+        setInvalidFields(newInvalidFields); // 🚀 Actualizar estado con errores
+        return;
+      }
+    }
+
+    if (formData.pensionType === 'Rebaja o Suspensión') {
+      if (!formData.currentAmount || formData.currentAmount <= 0) {
+        showAlert('Debe ingresar el monto actual de la pensión.', 'currentAmount');
+        return;
+      }
+
+      if (formData.pensionSubType === 'Disminuir' && (!formData.reduceAmount || formData.reduceAmount <= 0)) {
+        showAlert('Debe ingresar un monto válido para la reducción.', 'reduceAmount');
+        return;
+      }
+
+      if (formData.pensionSubType === 'Suspender' && !formData.suspensionReason.trim()) {
+        showAlert('Debe indicar la razón de la suspensión.', 'suspensionReason');
+        return;
+      }
+
+      if (formData.knowsCaseLocation === 'Sí') {
+        if (!formData.courtName.trim()) {
+          showAlert('Debe indicar el juzgado donde está radicado el expediente.', 'courtName');
+          return;
+        }
+        if (!formData.caseNumber.trim()) {
+          showAlert('Debe ingresar el número de expediente.', 'caseNumber');
+          return;
+        }
+        if (!formData.sentenceDate) {
+          showAlert('Debe indicar la fecha de la última sentencia.', 'sentenceDate');
+          return;
+        }
+      }
+
+      if (formData.knowsCaseLocation === 'No') {
+        if (!formData.wantsInvestigation) {
+          showAlert('Debe indicar si desea que se investigue la ubicación del expediente.', 'wantsInvestigation');
+          return;
+        }
+        if (formData.wantsInvestigation === 'Sí' && !formData.province) {
+          showAlert('Debe seleccionar una provincia para la investigación.', 'province');
+          return;
+        }
+      }
+    }
+
+    if (formData.pensionType === 'Desacato' && desacatoMensaje === "Desacato Válido") {
+      if (!formData.paymentDay.trim()) {
+        showAlert('Debe indicar el día de pago asignado por el juez.', 'paymentDay');
+        return;
+      }
+
+      if (!formData.lastPaymentDate) {
+        showAlert('Debe indicar la fecha de la última mensualidad recibida.', 'lastPaymentDate');
+        return;
+      }
+
+      if (!formData.medidaPorElJuez) {
+        showAlert('Debe indicar si posee una sentencia o certificado de mediación.', 'medidaPorElJuez');
+        return;
+      }
+
+      if (formData.medidaPorElJuez === "Sí") {
+        if (!formData.numeroExpediente.trim()) {
+          showAlert('Debe ingresar el número de expediente.', 'numeroExpediente');
+          return;
+        }
+        if (!formData.numeroJuzgado.trim()) {
+          showAlert('Debe ingresar el número de juzgado.', 'numeroJuzgado');
+          return;
+        }
+        if (!formData.provinceDesacato) {
+          showAlert('Debe seleccionar una provincia.', 'provinceDesacato');
+          return;
+        }
+        if (!formData.fechaPago) {
+          showAlert('Debe indicar la fecha de pago.', 'fechaPago');
+          return;
+        }
+        if (!formData.terminoPago) {
+          showAlert('Debe indicar el término de pago.', 'terminoPago');
+          return;
+        }
+      }
+
+      if (formData.medidaPorElJuez === "No") {
+
+        if (formData.servicioPLG === "Sí") {
+          
+          if (!formData.provinceDesacato) {
+            showAlert('Debe seleccionar una provincia.', 'provinceDesacato');
+            return;
+          }
+          if (!formData.fechaPago) {
+            showAlert('Debe indicar la fecha de pago.', 'fechaPago');
+            return;
+          }
+          if (!formData.terminoPago) {
+            showAlert('Debe indicar el término de pago.', 'terminoPago');
+            return;
+          }
+        }
+      }
+
     }
 
     setIsLoading(true); // Set loading to true when the request starts
@@ -277,9 +547,79 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
   };
 
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value === "") {
+      e.target.value = "0";
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [e.target.name]: 0,
+      }));
+    }
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value === "0") {
+      e.target.value = "";
+    }
+  };
+
+  const [desacatoMensaje, setDesacatoMensaje] = useState<JSX.Element | string>("");
+
+  useEffect(() => {
+    if (formData.paymentDay && formData.lastPaymentDate) {
+      const today = new Date();
+
+      // Convertir lastPaymentDate correctamente evitando el desfase de zona horaria
+      const [year, month, day] = formData.lastPaymentDate.split("-").map(Number);
+      const lastPayment = new Date(year, month - 1, day); // Meses en JS van de 0 a 11
+
+      const paymentDay = parseInt(formData.paymentDay, 10);
+
+      if (!isNaN(paymentDay)) {
+        // Calcular la primera fecha de pago vencida (mes siguiente al último pago)
+        const firstMissedPayment = new Date(lastPayment);
+        firstMissedPayment.setMonth(firstMissedPayment.getMonth() + 1); // Avanza un mes correctamente
+        firstMissedPayment.setDate(1); // Evita desbordes de días
+        firstMissedPayment.setDate(paymentDay); // Ajusta el día de pago correctamente
+
+        console.log("Fecha 1 (último pago ingresado por el usuario):", lastPayment);
+        console.log("Fecha 1.1 (primer pago vencido):", firstMissedPayment);
+
+        // Calcular la segunda fecha de pago vencida (dos meses después del último pago)
+        const secondMissedPayment = new Date(firstMissedPayment);
+        secondMissedPayment.setMonth(secondMissedPayment.getMonth() + 1); // Avanza otro mes correctamente
+
+        console.log("Fecha 2 (segundo pago vencido):", secondMissedPayment);
+
+        // Verificar si el pago ya se venció
+        const isLate = today > firstMissedPayment; // Si la fecha actual ya pasó la primera fecha de pago
+        const isStillValid = today < secondMissedPayment; // Si aún no ha pasado la segunda fecha de pago
+
+        if (isLate && isStillValid) {
+          setDesacatoMensaje("Desacato Válido");
+        } else if (isLate && !isStillValid) {
+          // Guardamos JSX en el estado en lugar de texto plano
+          setDesacatoMensaje(
+            <span>
+              El lapso para solicitar Desacato de Pensión Alimenticia ha caducado, ya que se debe presentar antes de que se cumplan dos fechas de pago (
+              <strong>{firstMissedPayment.toLocaleDateString()}</strong> y <strong>{secondMissedPayment.toLocaleDateString()}</strong>).
+              <br />
+              Por lo tanto, le recomendamos solicitar una consulta con nuestros expertos que le darán una orientación más completa para proceder con su requerimiento.
+              <br />
+              <a href="/request/consulta-propuesta" className="text-blue-500 underline hover:text-blue-700">
+                Consulta y Propuesta
+              </a>
+            </span>
+          );
+        } else {
+          setDesacatoMensaje("Aún no llega su fecha de pago");
+        }
+      }
+    }
+  }, [formData.paymentDay, formData.lastPaymentDate]);
+
   // Forms for each pension type
   const renderForm = () => {
-    console.log("AAAAAAAAA ", formData.pensionType)
     switch (formData.pensionType) {
       case 'Primera vez':
         return (
@@ -294,7 +634,9 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 name="pensionAmount"
                 value={formData.pensionAmount}
                 onChange={handleChange}
-                className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                onBlur={handleBlur}
+                onFocus={handleFocus}
+                className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.pensionAmount ? 'border-red-500' : ''}`}
                 placeholder="Introduzca el monto"
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
@@ -324,7 +666,9 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   name="currentSupportAmount"
                   value={formData.currentSupportAmount}
                   onChange={handleChange}
-                  className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                  onBlur={handleBlur}
+                  onFocus={handleFocus}
+                  className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.currentSupportAmount ? 'border-red-500' : ''}`}
                   placeholder="Introduzca el monto"
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
@@ -358,15 +702,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
 
             <PensionCategoryMessage pensionCategory={formData.pensionCategory} />
-            <p className="mt-4">
-              Costo del trámite:
-            </p>
-            <p className="mt-4">
-              US$600.00 incluyendo gastos.
-            </p>
-            <p className="mt-4">
-              Método de pago: US$300.00 al momento de la solicitud y US$300.00 debe ser cancelado antes de la audiencia.
-            </p>
 
           </div>
         );
@@ -383,7 +718,9 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 name="currentAmount"
                 value={formData.currentAmount}
                 onChange={handleChange}
-                className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                onBlur={handleBlur}
+                onFocus={handleFocus}
+                className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.currentAmount ? 'border-red-500' : ''}`}
                 placeholder="Introduzca el monto actual"
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
@@ -396,7 +733,9 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 name="increaseAmount"
                 value={formData.increaseAmount}
                 onChange={handleChange}
-                className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                onBlur={handleBlur}
+                onFocus={handleFocus}
+                className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.increaseAmount ? 'border-red-500' : ''}`}
                 placeholder="Introduzca el monto de aumento"
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
@@ -437,7 +776,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   name="disagreementReason"
                   value={formData.disagreementReason}
                   onChange={handleChange}
-                  className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                  className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.disagreementReason ? 'border-red-500' : ''}`}
                   placeholder="Explique la razón por la cual no está de acuerdo"
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
@@ -486,7 +825,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   name="province"
                   value={formData.province}
                   onChange={handleChange}
-                  className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                  className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.province ? 'border-red-500' : ''}`}
                   disabled={store.request.status >= 10 && store.rol < 20}
                 >
                   <option value="">Seleccione una opción</option>
@@ -511,7 +850,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   name="court"
                   value={formData.court}
                   onChange={handleChange}
-                  className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                  className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.court ? 'border-red-500' : ''}`}
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
 
@@ -521,7 +860,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   name="caseNumber"
                   value={formData.caseNumber}
                   onChange={handleChange}
-                  className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                  className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.caseNumber ? 'border-red-500' : ''}`}
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
 
@@ -531,7 +870,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   name="sentenceDate"
                   value={formData.sentenceDate}
                   onChange={handleChange}
-                  className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                  className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.sentenceDate ? 'border-red-500' : ''}`}
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
 
@@ -548,16 +887,6 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 puede continuar con su solicitud pero recuerde que es importante que nos aporte dicha sentencia para continuar con el trámite correspondiente.
               </p>
             </div>
-
-            <p className="mt-4">
-              Costo del trámite:
-            </p>
-            <p className="mt-4">
-              US$600.00 incluyendo gastos.
-            </p>
-            <p className="mt-4">
-              Método de pago: US$300.00 al momento de la solicitud y US$300.00 debe ser cancelado antes de la audiencia.
-            </p>
 
           </div>
 
@@ -588,7 +917,9 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 name="currentAmount"
                 value={formData.currentAmount}
                 onChange={handleChange}
-                className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
+                onBlur={handleBlur}
+                onFocus={handleFocus}
+                className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.currentAmount ? 'border-red-500' : ''}`}
                 placeholder="Introduzca el monto"
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
@@ -602,7 +933,9 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   name="reduceAmount"
                   value={formData.reduceAmount}
                   onChange={handleChange}
-                  className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
+                  onBlur={handleBlur}
+                  onFocus={handleFocus}
+                  className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.reduceAmount ? 'border-red-500' : ''}`}
                   placeholder="Introduzca el monto"
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
@@ -616,7 +949,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   name="suspensionReason"
                   value={formData.suspensionReason}
                   onChange={handleChange}
-                  className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
+                  className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.suspensionReason ? 'border-red-500' : ''}`}
                   placeholder="Detalle el motivo"
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
@@ -661,7 +994,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   name="province"
                   value={formData.province}
                   onChange={handleChange}
-                  className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
+                  className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.province ? 'border-red-500' : ''}`}
                   disabled={store.request.status >= 10 && store.rol < 20}
                 >
                   <option value="">Seleccione una opción</option>
@@ -688,7 +1021,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                     name="courtName"
                     value={formData.courtName}
                     onChange={handleChange}
-                    className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
+                    className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.courtName ? 'border-red-500' : ''}`}
                     disabled={store.request.status >= 10 && store.rol < 20}
                   />
                 </div>
@@ -700,7 +1033,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                     name="caseNumber"
                     value={formData.caseNumber}
                     onChange={handleChange}
-                    className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
+                    className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.caseNumber ? 'border-red-500' : ''}`}
                     disabled={store.request.status >= 10 && store.rol < 20}
                   />
                 </div>
@@ -712,28 +1045,12 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                     name="sentenceDate"
                     value={formData.sentenceDate}
                     onChange={handleChange}
-                    className={"p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"}
+                    className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.sentenceDate ? 'border-red-500' : ''}`}
                     disabled={store.request.status >= 10 && store.rol < 20}
                   />
                 </div>
               </>
             )}
-
-            <div className="mt-6">
-              <p className="text-sm">
-                Es necesario que tenga copia de la última sentencia emitida por el juzgado de lo contrario no podemos atender la solicitud sin esta información. Puede continuar con su solicitud pero recuerde que es importante que nos aporte dicha sentencia para continuar con el trámite correspondiente.
-              </p>
-            </div>
-
-            <p className="mt-4">
-              Costo del trámite:
-            </p>
-            <p className="mt-4">
-              US$300.00 incluyendo gastos.
-            </p>
-            <p className="mt-4">
-              Método de pago: US$150.00 al momento de la solicitud y US$150.00 debe ser cancelado antes de la audiencia.
-            </p>
           </>
         );
 
@@ -748,15 +1065,22 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
               Ten en cuenta que para hacer uso de esta opción la solicitud debe presentarse al momento que incurra en el no pago de la pensión en los 30 días correspondientes. Por ejemplo, si no cancelaron la pensión correspondiente al mes de diciembre debes solicitar el desacato en el mes enero antes que se cumplan los 30 días luego del no pago, si ya pasó el plazo reglamentario debes solicitar otro proceso por lo tanto te recomendamos pautar una cita con nuestros expertos.
             </p>
 
+            <p className="mt-4">
+              Puedes solicitar tu Propuesta o Consulta Escrita, Virtual o Presencial{" "}
+              <a href="/request/consulta-propuesta" className="text-blue-500 underline hover:text-blue-700">
+                aquí
+              </a>
+            </p>
+
             {/* Día de pago asignado por el juez */}
             <div className="mt-6">
-              <label className="block font-bold">Indique el día de pago asignada por el juez</label>
+              <label className="block font-bold">Indique el día de pago asignado por el juez</label>
               <input
                 type="text"
                 name="paymentDay"
                 value={formData.paymentDay}
                 onChange={handleChange}
-                className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.paymentDay ? 'border-red-500' : ''}`}
                 placeholder="Introduzca el día"
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
@@ -770,34 +1094,19 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                 name="lastPaymentDate"
                 value={formData.lastPaymentDate}
                 onChange={handleChange}
-                className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.lastPaymentDate ? 'border-red-500' : ''}`}
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
 
-            {/* Saber si conoce dónde está radicado el expediente */}
-            <div className="mt-6">
-              <label className="block font-bold">¿Sabe dónde está radicado su expediente actualmente de pensión alimenticia?</label>
-              <select
-                name="knowsCaseLocation"
-                value={formData.knowsCaseLocation}
-                onChange={handleChange}
-                className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
-                disabled={store.request.status >= 10 && store.rol < 20}
-              >
-                <option value="No">No</option>
-                <option value="Sí">Sí</option>
-              </select>
-            </div>
-
-            {/* Si elige "No" mostrar los campos de la imagen sin cambios */}
-            {formData.knowsCaseLocation === 'No' && (
+            {/* Mostrar mensaje de validación */}
+            {desacatoMensaje && desacatoMensaje === "Desacato Válido" && (
               <>
                 <div className="mt-6">
-                  <label className="block font-bold">¿Desea que la firma se encargue de investigar dónde se encuentra adjudicado el expediente y la sentencia?</label>
+                  <label className="block font-bold">¿Posees una sentencia o certificado de mediación emitida por el juzgado?</label>
                   <select
-                    name="wantsInvestigation"
-                    value={formData.wantsInvestigation}
+                    name="medidaPorElJuez"
+                    value={formData.medidaPorElJuez}
                     onChange={handleChange}
                     className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
                     disabled={store.request.status >= 10 && store.rol < 20}
@@ -806,69 +1115,286 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                     <option value="Sí">Sí</option>
                   </select>
                 </div>
+                {formData.medidaPorElJuez === "Sí" && (
+                  <>
+                    <div className="mt-6">
+                      <label className="block font-bold">Indique el número de expediente:</label>
+                      <input
+                        type="text"
+                        name="numeroExpediente"
+                        value={formData.numeroExpediente}
+                        onChange={handleChange}
+                        className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.numeroExpediente ? 'border-red-500' : ''}`}
+                        placeholder="Número de expediente"
+                        disabled={store.request.status >= 10 && store.rol < 20}
+                      />
+                    </div>
+                    <div className="mt-6">
+                      <label className="block font-bold">Número de Juzgado donde se encuentra el expediente:</label>
+                      <input
+                        type="text"
+                        name="numeroJuzgado"
+                        value={formData.numeroJuzgado}
+                        onChange={handleChange}
+                        className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.numeroJuzgado ? 'border-red-500' : ''}`}
+                        placeholder="Número de Juzgado"
+                        disabled={store.request.status >= 10 && store.rol < 20}
+                      />
+                    </div>
+                    <label className="mt-6 block font-bold">Especifique la provincia.</label>
+                    <select
+                      name="provinceDesacato"
+                      value={formData.provinceDesacato}
+                      onChange={handleChange}
+                      className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.provinceDesacato ? 'border-red-500' : ''}`}
+                      disabled={store.request.status >= 10 && store.rol < 20}
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Bocas del Toro">Bocas del Toro</option>
+                      <option value="Chiriquí">Chiriquí</option>
+                      <option value="Coclé">Coclé</option>
+                      <option value="Colón">Colón</option>
+                      <option value="Darién">Darién</option>
+                      <option value="Herrera">Herrera</option>
+                      <option value="Los Santos">Los Santos</option>
+                      <option value="Panamá">Panamá</option>
+                      <option value="Panamá Oeste">Panamá Oeste</option>
+                      <option value="Veraguas">Veraguas</option>
+                    </select>
+                    <div className="mt-6">
+                      <label className="block font-bold">Indique las fechas de pago</label>
+                      <input
+                        type="date"
+                        name="fechaPago"
+                        value={formData.fechaPago}
+                        onChange={handleChange}
+                        className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.fechaPago ? 'border-red-500' : ''}`}
+                        disabled={store.request.status >= 10 && store.rol < 20}
+                      />
+                    </div>
+                    <div className="mt-6">
+                      <label className="block font-bold">Término de pago</label>
+                      <input
+                        type="date"
+                        name="terminoPago"
+                        value={formData.terminoPago}
+                        onChange={handleChange}
+                        className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.terminoPago ? 'border-red-500' : ''}`}
+                        disabled={store.request.status >= 10 && store.rol < 20}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {formData.medidaPorElJuez === "No" && (
+                  <>
+                    <div className="mt-6">
+                      <label className="block font-bold">¿Desea que la firma Panamá Legal Group le preste el servicio para solicitar la sentencia o certificación de mediación?</label>
+                      <select
+                        name="servicioPLG"
+                        value={formData.servicioPLG}
+                        onChange={handleChange}
+                        className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                        disabled={store.request.status >= 10 && store.rol < 20}
+                      >
+                        <option value="No">No</option>
+                        <option value="Sí">Sí</option>
+                      </select>
+                    </div>
+
+                    {formData.servicioPLG === "No" && (
+                      <>
+                        <p className="mt-4 texto_justificado">
+                          Es necesario tener copia de la sentencia o certificado de mediación para poder proceder con el trámite de desacato,le invitamos a conseguir la información correspondiente para continuar con la solicitud, en Panama Legal Groupsiempre estamos dispuestos a ayudarte con tus trámites.
+                        </p>
+                      </>
+                    )}
+                    {formData.servicioPLG === "Sí" && (
+                      <>
+                        <p className="mt-4 texto_justificado">
+                          Este servicio posee un costo adicional al trámite, se le anexará a su cuenta 200$ por la investigación y la búsqueda de la sentencia en los juzgados de familia, tenga en cuenta que este costo aplica para la Ciudad de Panamá en caso que el expediente se encuentre fuera de la ciudad puede incurrir en el aumento de la tarifa.
+                        </p>
+
+                        <label className="mt-6 block font-bold">Especifique la provincia.</label>
+                        <select
+                          name="provinceDesacato"
+                          value={formData.provinceDesacato}
+                          onChange={handleChange}
+                          className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.provinceDesacato ? 'border-red-500' : ''}`}
+                          disabled={store.request.status >= 10 && store.rol < 20}
+                        >
+                          <option value="">Seleccione una opción</option>
+                          <option value="Bocas del Toro">Bocas del Toro</option>
+                          <option value="Chiriquí">Chiriquí</option>
+                          <option value="Coclé">Coclé</option>
+                          <option value="Colón">Colón</option>
+                          <option value="Darién">Darién</option>
+                          <option value="Herrera">Herrera</option>
+                          <option value="Los Santos">Los Santos</option>
+                          <option value="Panamá">Panamá</option>
+                          <option value="Panamá Oeste">Panamá Oeste</option>
+                          <option value="Veraguas">Veraguas</option>
+                        </select>
+                        <div className="mt-6">
+                          <label className="block font-bold">Indique las fechas de pago</label>
+                          <input
+                            type="date"
+                            name="fechaPago"
+                            value={formData.fechaPago}
+                            onChange={handleChange}
+                            className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.fechaPago ? 'border-red-500' : ''}`}
+                            disabled={store.request.status >= 10 && store.rol < 20}
+                          />
+                        </div>
+                        <div className="mt-6">
+                          <label className="block font-bold">Término de pago</label>
+                          <input
+                            type="date"
+                            name="terminoPago"
+                            value={formData.terminoPago}
+                            onChange={handleChange}
+                            className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.terminoPago ? 'border-red-500' : ''}`}
+                            disabled={store.request.status >= 10 && store.rol < 20}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                  </>
+                )}
               </>
             )}
 
-            {/* Si elige "Sí" mostrar los campos adicionales */}
-            {formData.knowsCaseLocation === 'Sí' && (
+            {desacatoMensaje && desacatoMensaje === "Desacato Válido" && (
               <>
+                {/* Saber si conoce dónde está radicado el expediente */}
                 <div className="mt-6">
-                  <label className="block font-bold">Indique Juzgado:</label>
-                  <input
-                    type="text"
-                    name="courtName"
-                    value={formData.courtName}
-                    onChange={handleChange}
-                    className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
-                    placeholder="Indique Juzgado"
-                    disabled={store.request.status >= 10 && store.rol < 20}
-                  />
-                </div>
-
-                <div className="mt-6">
-                  <label className="block font-bold">Indique número de expediente si lo tiene:</label>
-                  <input
-                    type="text"
-                    name="caseNumber"
-                    value={formData.caseNumber}
-                    onChange={handleChange}
-                    className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
-                    placeholder="Número de expediente"
-                    disabled={store.request.status >= 10 && store.rol < 20}
-                  />
-                </div>
-
-                <div className="mt-6">
-                  <label className="block font-bold">Indique la fecha de la última sentencia:</label>
-                  <input
-                    type="date"
-                    name="sentenceDate"
-                    value={formData.sentenceDate}
+                  <label className="block font-bold">¿Sabe dónde está radicado su expediente actualmente de pensión alimenticia?</label>
+                  <select
+                    name="knowsCaseLocation"
+                    value={formData.knowsCaseLocation}
                     onChange={handleChange}
                     className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
                     disabled={store.request.status >= 10 && store.rol < 20}
-                  />
+                  >
+                    <option value="No">No</option>
+                    <option value="Sí">Sí</option>
+                  </select>
                 </div>
 
+                {/* Si elige "No" mostrar los campos de la imagen sin cambios */}
+                {formData.knowsCaseLocation === 'No' && (
+                  <>
+                    <div className="mt-6">
+                      <label className="block font-bold">¿Desea que la firma se encargue de investigar dónde se encuentra adjudicado el expediente y la sentencia?</label>
+                      <select
+                        name="wantsInvestigation"
+                        value={formData.wantsInvestigation}
+                        onChange={handleChange}
+                        className="p-4 mt-2 w-full bg-gray-800 text-white rounded-lg"
+                        disabled={store.request.status >= 10 && store.rol < 20}
+                      >
+                        <option value="No">No</option>
+                        <option value="Sí">Sí</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {/* Si elige "Sí" mostrar los campos adicionales */}
+                {formData.knowsCaseLocation === 'Sí' && (
+                  <>
+                    <div className="mt-6">
+                      <label className="block font-bold">Indique Juzgado:</label>
+                      <input
+                        type="text"
+                        name="courtName"
+                        value={formData.courtName}
+                        onChange={handleChange}
+                        className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.courtName ? 'border-red-500' : ''}`}
+                        placeholder="Indique Juzgado"
+                        disabled={store.request.status >= 10 && store.rol < 20}
+                      />
+                    </div>
+
+                    <div className="mt-6">
+                      <label className="block font-bold">Indique número de expediente si lo tiene:</label>
+                      <input
+                        type="text"
+                        name="caseNumber"
+                        value={formData.caseNumber}
+                        onChange={handleChange}
+                        className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.caseNumber ? 'border-red-500' : ''}`}
+                        placeholder="Número de expediente"
+                        disabled={store.request.status >= 10 && store.rol < 20}
+                      />
+                    </div>
+
+                    <div className="mt-6">
+                      <label className="block font-bold">Indique la fecha de la última sentencia:</label>
+                      <input
+                        type="date"
+                        name="sentenceDate"
+                        value={formData.sentenceDate}
+                        onChange={handleChange}
+                        className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.sentenceDate ? 'border-red-500' : ''}`}
+                        disabled={store.request.status >= 10 && store.rol < 20}
+                      />
+                    </div>
+
+                  </>
+                )}
+
+                {formData.wantsInvestigation === 'No' && (
+                  <>
+                    {/* Nota importante */}
+                    <div className="mt-6">
+                      <p className="text-sm">
+                        Es necesario que tenga copia de la última sentencia emitida por el juzgado de lo contrario no podemos atender la solicitud sin esta información. Puede continuar con su solicitud pero recuerde que es importante que nos aporte dicha sentencia para continuar con el trámite correspondiente.
+                      </p>
+                    </div>
+
+                  </>
+                )}
+                {formData.wantsInvestigation === 'Sí' && (
+                  <>
+                    {/* Nota importante */}
+                    <div className="mt-6">
+                      <p className="text-sm">
+                        Nuestros expertos se encargan de ubicar el juzgado junto con la última sentencia obtenida, ten en cuenta que esta investigación tiene un costo de 250$ si la sentencia fue emitida en la ciudad de panamá, si debemos movilizarnos a otras provincias incurre en un gasto adicional.
+                      </p>
+                    </div>
+
+                    <label className="mt-6 block font-bold">Especifique la provincia.</label>
+                    <select
+                      name="provinceExpediente"
+                      value={formData.provinceExpediente}
+                      onChange={handleChange}
+                      className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.provinceExpediente ? 'border-red-500' : ''}`}
+                      disabled={store.request.status >= 10 && store.rol < 20}
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="Bocas del Toro">Bocas del Toro</option>
+                      <option value="Chiriquí">Chiriquí</option>
+                      <option value="Coclé">Coclé</option>
+                      <option value="Colón">Colón</option>
+                      <option value="Darién">Darién</option>
+                      <option value="Herrera">Herrera</option>
+                      <option value="Los Santos">Los Santos</option>
+                      <option value="Panamá">Panamá</option>
+                      <option value="Panamá Oeste">Panamá Oeste</option>
+                      <option value="Veraguas">Veraguas</option>
+                    </select>
+
+                  </>
+                )}
               </>
             )}
 
-            {/* Nota importante */}
-            <div className="mt-6">
-              <p className="text-sm">
-                Es necesario que tenga copia de la última sentencia emitida por el juzgado de lo contrario no podemos atender la solicitud sin esta información. Puede continuar con su solicitud pero recuerde que es importante que nos aporte dicha sentencia para continuar con el trámite correspondiente.
-              </p>
-            </div>
+            {desacatoMensaje && desacatoMensaje !== "Desacato Válido" && (
+              <p className={`mt-2 font-bold text-red-500`}>{desacatoMensaje}</p>
+            )}
 
-            <p className="mt-4">
-              Costo del trámite:
-            </p>
-            <p className="mt-4">
-              US$300.00 incluyendo gastos.
-            </p>
-            <p className="mt-4">
-              Método de pago: US$150.00 al momento de la solicitud y US$150.00 debe ser cancelado antes de la audiencia.
-            </p>
           </div>
         );
 

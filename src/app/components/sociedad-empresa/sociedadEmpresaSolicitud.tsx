@@ -430,6 +430,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                     </div>
                 </div>
             )}
+            
             <p className="text-white mt-4 texto_justificado">
                 Aquí podrás agregar los datos de la persona que realizara la solicitud.
             </p>
