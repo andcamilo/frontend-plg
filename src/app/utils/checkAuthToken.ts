@@ -42,7 +42,7 @@ export async function checkAuthToken(): Promise<{ email: string; user_id: string
 
     return {
       email: decodedToken.email,
-      user_id: userData.id,
+      user_id: userData.id ,
       cuenta: userData.cuenta ?? null,
       nombre: userData.nombre ?? null,
       rol: userData.rol ?? null,
