@@ -30,7 +30,7 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false); // Add loading state
-
+  const [invalidFields, setInvalidFields] = useState<{ [key: string]: boolean }>({});
   const context = useContext(AppStateContext);
 
   if (!context) {
@@ -100,6 +100,7 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
         sumaTotal: calculateTotal(updatedFormData), // Recalcular total automáticamente
       };
     });
+    setInvalidFields((prev) => ({ ...prev, [name]: false }));
   };
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -122,6 +123,69 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    let errores: { campo: string; mensaje: string }[] = [];
+
+    // 🔹 Validación de campos en orden
+    if (formData.mensualidadEscolar < 0) {
+      errores.push({ campo: 'mensualidadEscolar', mensaje: 'Debe ingresar una mensualidad escolar válida.' });
+    } else if (formData.vestuario < 0) {
+      errores.push({ campo: 'vestuario', mensaje: 'Debe ingresar un monto válido para vestuario.' });
+    } else if (formData.recreacion < 0) {
+      errores.push({ campo: 'recreacion', mensaje: 'Debe ingresar un monto válido para recreación.' });
+    } else if (formData.atencionMedica < 0) {
+      errores.push({ campo: 'atencionMedica', mensaje: 'Debe ingresar un monto válido para atención médica.' });
+    } else if (formData.medicamentos < 0) {
+      errores.push({ campo: 'medicamentos', mensaje: 'Debe ingresar un monto válido para medicamentos.' });
+    } else if (formData.habitacion < 0) {
+      errores.push({ campo: 'habitacion', mensaje: 'Debe ingresar un monto válido para habitación (alquiler o hipoteca).' });
+    } else if (formData.agua < 0) {
+      errores.push({ campo: 'agua', mensaje: 'Debe ingresar un monto válido para la factura de agua.' });
+    } else if (formData.luz < 0) {
+      errores.push({ campo: 'luz', mensaje: 'Debe ingresar un monto válido para la factura de luz.' });
+    } else if (formData.telefono < 0) {
+      errores.push({ campo: 'telefono', mensaje: 'Debe ingresar un monto válido para la factura de teléfono.' });
+    } else if (formData.matricula < 0) {
+      errores.push({ campo: 'matricula', mensaje: 'Debe ingresar un monto válido para matrícula escolar.' });
+    } else if (formData.cuotaPadres < 0) {
+      errores.push({ campo: 'cuotaPadres', mensaje: 'Debe ingresar un monto válido para cuota de padres en educación.' });
+    } else if (formData.uniformes < 0) {
+      errores.push({ campo: 'uniformes', mensaje: 'Debe ingresar un monto válido para uniformes.' });
+    } else if (formData.textosLibros < 0) {
+      errores.push({ campo: 'textosLibros', mensaje: 'Debe ingresar un monto válido para textos y libros.' });
+    } else if (formData.utiles < 0) {
+      errores.push({ campo: 'utiles', mensaje: 'Debe ingresar un monto válido para útiles escolares.' });
+    } else if (formData.transporte < 0) {
+      errores.push({ campo: 'transporte', mensaje: 'Debe ingresar un monto válido para transporte.' });
+    } else if (formData.meriendas < 0) {
+      errores.push({ campo: 'meriendas', mensaje: 'Debe ingresar un monto válido para meriendas.' });
+    } else if (formData.supermercado < 0) {
+      errores.push({ campo: 'supermercado', mensaje: 'Debe ingresar un monto válido para supermercado.' });
+    } else if (formData.otros < 0) {
+      errores.push({ campo: 'otros', mensaje: 'Debe ingresar un monto válido para otros gastos.' });
+    }
+
+
+    if (errores.length > 0) {
+      const primerError = errores[0]; // 🚀 Tomamos solo el primer error 
+
+      setInvalidFields({ [primerError.campo]: true }); // Marcar solo el campo con error
+
+      Swal.fire({
+        icon: 'warning',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+        text: primerError.mensaje,
+      });
+
+      document.getElementsByName(primerError.campo)[0]?.focus();
+      return;
+    }
+
+    setInvalidFields({});
     setIsLoading(true); // Set loading state to true before making the API request
 
     try {

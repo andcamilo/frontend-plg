@@ -12,6 +12,7 @@ import countryCodes from '@utils/countryCode';
 const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>('office');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [invalidFields, setInvalidFields] = useState<{ [key: string]: boolean }>({});
 
   const context = useContext(AppStateContext);
 
@@ -58,6 +59,42 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    let errores: { campo: string; mensaje: string }[] = [];
+
+    // 🔹 Validación de campos en orden
+    if (selectedOption === 'home') {
+      if (!formData.direccion) {
+        errores.push({ campo: 'direccion', mensaje: 'Debe introducir la dirección.' });
+      } else if (!formData.dia) {
+        errores.push({ campo: 'dia', mensaje: 'Debe introducir el día.' });
+      } else if (!formData.telefono) {
+        errores.push({ campo: 'telefono', mensaje: 'Debe introducir su número de teléfono.' });
+      } else if (!formData.hora) {
+        errores.push({ campo: 'hora', mensaje: 'Debe introducir la hora.' });
+      }
+    }
+
+    if (errores.length > 0) {
+      const primerError = errores[0]; // 🚀 Tomamos solo el primer error 
+
+      setInvalidFields({ [primerError.campo]: true }); // Marcar solo el campo con error
+
+      Swal.fire({
+        icon: 'warning',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+        text: primerError.mensaje,
+      });
+
+      document.getElementsByName(primerError.campo)[0]?.focus();
+      return;
+    }
+
+    setInvalidFields({});
     setIsLoading(true);
 
     const firmaYEntregaData = {
@@ -126,6 +163,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
       ...prevData,
       [name]: value,
     }));
+    setInvalidFields((prev) => ({ ...prev, [name]: false }));
   };
 
   const handleCountryChange = (name: string, value: string) => {
@@ -232,7 +270,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
               name="direccion"
               value={formData.direccion}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              className={`w-full p-2 border ${invalidFields.direccion ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
               placeholder="Dirección"
             />
           </div>
@@ -247,7 +285,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
                   name="dia"
                   value={formData.dia}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  className={`w-full p-2 border ${invalidFields.dia ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
               </div>
@@ -259,8 +297,8 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
                   name="hora"
                   value={formData.hora}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                />
+                  className={`w-full p-2 border ${invalidFields.hora ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
+                  />
               </div>
             </div>
             <div >
@@ -278,7 +316,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
                   name="telefono"
                   value={formData.telefono}
                   onChange={handleChange}
-                  className="p-4 bg-gray-800 text-white rounded-lg w-full"
+                  className={`w-full p-2 border ${invalidFields.telefono ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                   placeholder="Número de teléfono"
                   required
                   disabled={store.request.status >= 10 && store.rol < 20}

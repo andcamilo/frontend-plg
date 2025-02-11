@@ -19,6 +19,7 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
   const [additionalRequest, setAdditionalRequest] = useState<string>(''); // Additional request text
   const [additionalFile, setAdditionalFile] = useState<File | null>(null); // File input state
   const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
+  const [invalidFields, setInvalidFields] = useState<{ [key: string]: boolean }>({});
 
   // Access the context
   const context = useContext(AppStateContext);
@@ -57,6 +58,35 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
   // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    let errores: { campo: string; mensaje: string }[] = [];
+
+    // 🔹 Validación de campos en orden
+    if (!additionalRequest) {
+      errores.push({ campo: 'additionalRequest', mensaje: 'Debe introducir una breve descripción de su caso.' });
+    }
+
+    if (errores.length > 0) {
+      const primerError = errores[0]; // 🚀 Tomamos solo el primer error 
+
+      setInvalidFields({ [primerError.campo]: true }); // Marcar solo el campo con error
+
+      Swal.fire({
+        icon: 'warning',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+        text: primerError.mensaje,
+      });
+
+      document.getElementsByName(primerError.campo)[0]?.focus();
+      return;
+    }
+
+    setInvalidFields({});
     setIsLoading(true); // Set loading state
 
     try {
@@ -135,9 +165,10 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
           <label className="block mb-2 text-sm font-semibold">Solicitud adicional:</label>
           <textarea
             rows={4}
+            name='additionalRequest'
             value={additionalRequest}
             onChange={(e) => setAdditionalRequest(e.target.value)}
-            className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+            className={`w-full p-2 border ${invalidFields.additionalRequest ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
             disabled={store.request.status >= 10 && store.rol < 20}
           ></textarea>
         </div>
@@ -154,42 +185,36 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
         </div>
 
         {/* Submit Button */}
-        <div className="mt-6">
+        <div className="mt-6 flex flex-col md:flex-row gap-4">
           {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
-            <>
-              <button
-                type="submit"
-                className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
-                disabled={isLoading} // Disable button while loading
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <ClipLoader size={24} color="#ffffff" />
-                    <span className="ml-2">Cargando...</span>
-                  </div>
-                ) : (
-                  'Guardar y Continuar'
-                )}
-              </button>
-            </>
+            <button
+              type="submit"
+              className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <ClipLoader size={24} color="#ffffff" />
+                  <span className="ml-2">Cargando...</span>
+                </div>
+              ) : (
+                'Guardar y Continuar'
+              )}
+            </button>
           )}
 
-          {store.request.status >= 10 && (
-            <>
-              <button
-                className="bg-profile text-white w-full py-3 rounded-lg mt-6"
-                type="button"
-                onClick={() => {
-                  setStore((prevState) => ({
-                    ...prevState,
-                    currentPosition: 9,
-                  }));
-                }}
-              >
-                Continuar
-              </button>
-            </>
-          )}
+          <button
+            className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
+            type="button"
+            onClick={() => {
+              setStore((prevState) => ({
+                ...prevState,
+                currentPosition: 9,
+              }));
+            }}
+          >
+            Continuar
+          </button>
         </div>
       </form>
     </div>

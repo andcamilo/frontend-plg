@@ -109,8 +109,8 @@ const SolicitudForm: React.FC = () => {
                     console.log("Usuario ", user)
                     setFormData((prevData) => ({
                         ...prevData,
-                        nombre: user.solicitud.nombre || "",
-                        telefono: user.solicitud.telefonoSolicita || "",
+                        nombre: user.solicitud?.nombre || "",
+                        telefono: user.solicitud?.telefonoSolicita || "",
                         rol: get(user, 'solicitud.rol', 0)
                     }));
                 } catch (error) {
