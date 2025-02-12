@@ -175,19 +175,17 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
   }, [formData.cuenta]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: checked,
-      }));
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
+    const { name, value } = e.target;
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: false,
+    }));
+
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
   const handleCountryChange = (name: string, value: string) => {
@@ -205,78 +203,42 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const confirmEmailRef = useRef<HTMLInputElement>(null);
 
-  const fieldValidations = [
-    { field: "nombreCompleto", ref: nombreCompletoRef, errorMessage: "Por favor, ingrese el nombre completo." },
-    { field: "telefono", ref: telefonoRef, errorMessage: "Por favor, ingrese el número de teléfono." },
-    { field: "cedulaPasaporte", ref: cedulaPasaporteRef, errorMessage: "Por favor, ingrese la cédula o pasaporte." },
-    { field: "email", ref: emailRef, errorMessage: "Por favor, ingrese el correo electrónico." },
-    { field: "confirmEmail", ref: confirmEmailRef, errorMessage: "Por favor, confirme el correo electrónico." },
-  ];
-
   const validateFields = () => {
+    const fieldValidations = [
+      { field: 'nombreCompleto', ref: nombreCompletoRef, errorMessage: 'Por favor, ingrese el nombre completo.' },
+      { field: 'telefono', ref: telefonoRef, errorMessage: 'Por favor, ingrese el número de teléfono.' },
+      { field: 'cedulaPasaporte', ref: cedulaPasaporteRef, errorMessage: 'Por favor, ingrese la cédula o pasaporte.' },
+      { field: 'email', ref: emailRef, errorMessage: 'Por favor, ingrese el correo electrónico.' },
+      { field: 'confirmEmail', ref: confirmEmailRef, errorMessage: 'Por favor, confirme el correo electrónico.' },
+    ];
+
     for (const { field, ref, errorMessage } of fieldValidations) {
-      // Verifica si el campo está vacío
       if (!formData[field]) {
         setErrors((prevErrors) => ({ ...prevErrors, [field]: true }));
 
+        // Mostrar solo la primera alerta detectada
         Swal.fire({
-          position: "top-end",
-          icon: "warning",
+          position: 'top-end',
+          icon: 'warning',
           title: errorMessage,
           showConfirmButton: false,
           timer: 2500,
-          timerProgressBar: true,
           toast: true,
           background: '#2c2c3e',
           color: '#fff',
-          customClass: {
-            popup: 'custom-swal-popup',
-            title: 'custom-swal-title',
-            icon: 'custom-swal-icon',
-            timerProgressBar: 'custom-swal-timer-bar'
-          }
         });
 
-        // Scroll al campo en error
+        // Hacer scroll y enfocar el primer campo con error
         if (ref.current) {
-          ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+          ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
           ref.current.focus();
         }
 
-        return false;
-      }
-
-      // Validación adicional para el nombre completo (mínimo 3 letras)
-      if (field === 'nombreCompleto' && formData.nombreCompleto.length < 3) {
-        setErrors((prevErrors) => ({ ...prevErrors, [field]: true }));
-
-        Swal.fire({
-          position: "top-end",
-          icon: "warning",
-          title: "El nombre debe tener al menos 3 caracteres.",
-          showConfirmButton: false,
-          timer: 2500,
-          timerProgressBar: true,
-          toast: true,
-          background: '#2c2c3e',
-          color: '#fff',
-          customClass: {
-            popup: 'custom-swal-popup',
-            title: 'custom-swal-title',
-            icon: 'custom-swal-icon',
-            timerProgressBar: 'custom-swal-timer-bar'
-          }
-        });
-
-        // Scroll al campo en error
-        if (ref.current) {
-          ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
-          ref.current.focus();
-        }
-        return false;
+        return false; // Detener la validación en el primer error
       }
     }
-    return true;
+
+    return true; // Devuelve `true` si todas las validaciones pasan
   };
 
   const handleSubmit = async (
@@ -285,6 +247,10 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     currentPosition: number
   ) => {
     e.preventDefault();
+
+    if (!validateFields()) {
+      return;
+    }
 
     if (!recaptchaToken) {
       alert('Please complete the reCAPTCHA');
@@ -457,9 +423,69 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     }
   };
 
+  const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
+
+  const toggleModal = () => {
+    setShowModal(!showModal); // Alterna el estado del modal
+  };
+
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-      <h1 className="text-white text-4xl font-bold">¡Bienvenido a la Solicitud de Pensión Alimenticia en Línea!</h1>
+      <h1 className="text-white text-4xl font-bold flex items-center">
+        ¡Bienvenido a la Solicitud de Pensión Alimenticia en Línea!
+        <button
+          className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+          type="button"
+          onClick={toggleModal}
+        >
+          <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+            <i className="fa-solid fa-info text-sm"></i>
+          </span>
+        </button>
+      </h1>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
+            <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+              <h2 className="text-white text-xl">¡Bienvenido a la Solicitud de Pensión Alimenticia en Línea!</h2>
+              <button
+                className="text-white"
+                onClick={toggleModal} // Cierra el modal
+              >
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <div className="p-4 text-white">
+              <h5 className="text-lg">Información</h5>
+              <p className="mt-2 texto_justificado">
+                Descubre en este Clip cada detalle que te ayudará a entender el tipo de información que debes anexar en esta sección.
+                <br />
+                <br />
+                ¡No dudes en explorar nuestros videos!
+              </p>
+              <h5 className="text-lg mt-4">Video</h5>
+              <iframe
+                width="100%"
+                height="315"
+                src="https://www.youtube.com/embed/bND1jqKk1p8"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              ></iframe>
+            </div>
+            <div className="p-4 border-t border-gray-600 text-right">
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                onClick={toggleModal} // Cierra el modal
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <p className="text-white mt-4">
         Estimado cliente, por favor asegúrese de leer la descripción a continuación antes de solicitar el trámite y para aclarar dudas.
       </p>
@@ -471,6 +497,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             name="nombreCompleto"
             value={formData.nombreCompleto}
             onChange={handleChange}
+            ref={nombreCompletoRef}
             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
             placeholder="Nombre completo"
             disabled={store.request.status >= 10 && store.rol < 20}
@@ -490,6 +517,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               name="telefono"
               value={formData.telefono}
               onChange={handleChange}
+              ref={telefonoRef}
               className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
               placeholder="Número de teléfono"
               disabled={store.request.status >= 10 && store.rol < 20}
@@ -520,6 +548,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             name="cedulaPasaporte"
             value={formData.cedulaPasaporte}
             onChange={handleChange}
+            ref={cedulaPasaporteRef}
             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
             placeholder="Cédula o ID"
             disabled={store.request.status >= 10 && store.rol < 20}
@@ -529,6 +558,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
+            ref={emailRef}
             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
             placeholder="Dirección de correo electrónico"
             disabled={store.request.status >= 10 && store.rol < 20}
@@ -538,6 +568,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             name="confirmEmail"
             value={formData.confirmEmail}
             onChange={handleChange}
+            ref={confirmEmailRef}
             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.confirmEmail ? 'border-2 border-red-500' : ''}`}
             placeholder="Confirmar correo electrónico"
             disabled={store.request.status >= 10 && store.rol < 20}

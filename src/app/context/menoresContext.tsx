@@ -1,28 +1,32 @@
 import React, { createContext, useState, ReactNode } from 'react';
 
 export interface MenoresState {
-    nombre: string;
-    email: string;
-    mensaje: string;
-    solicitudId: string;
-    token: string;
-    rol: number;
+  nombre: string;
+  email: string;
+  mensaje: string;
+  solicitudId: string;
+  token: string;
+  rol: number;
+  request: any;
+};
+
+// Estado inicial para el nuevo menú
+const initialState: MenoresState = {
+  nombre: '',
+  email: '',
+  mensaje: '',
+  solicitudId: '',
+  token: '',
+  rol: -1,
+  request: {
+    status: -1
+  },
 };
 
 export interface MenoresContextType {
   store: MenoresState;
   setStore: React.Dispatch<React.SetStateAction<MenoresState>>;
 }
-
-// Estado inicial para el nuevo menú
-const initialState: MenoresState = {
-    nombre: '',
-    email: '',
-    mensaje: '',
-    solicitudId: '',
-    token: '',
-    rol: -1,
-};
 
 const MenoresContext = createContext<MenoresContextType | undefined>(undefined);
 

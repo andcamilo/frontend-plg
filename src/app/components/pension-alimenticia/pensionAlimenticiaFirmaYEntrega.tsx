@@ -166,6 +166,12 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
     setInvalidFields((prev) => ({ ...prev, [name]: false }));
   };
 
+  const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
+
+  const toggleModal = () => {
+    setShowModal(!showModal); // Alterna el estado del modal
+  };
+
   const handleCountryChange = (name: string, value: string) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -176,7 +182,62 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
       {/* Header Section */}
-      <h2 className="text-3xl font-bold mb-4">Información sobre la Firma y Entrega</h2>
+      <h1 className="text-white text-4xl font-bold flex items-center">
+        Información sobre la Firma y Entrega
+        <button
+          className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+          type="button"
+          onClick={toggleModal}
+        >
+          <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+            <i className="fa-solid fa-info text-sm"></i>
+          </span>
+        </button>
+      </h1>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
+            <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+              <h2 className="text-white text-xl">Información sobre la Firma y Entrega</h2>
+              <button
+                className="text-white"
+                onClick={toggleModal} // Cierra el modal
+              >
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <div className="p-4 text-white">
+              <h5 className="text-lg">Información</h5>
+              <p className="mt-2 texto_justificado">
+                Descubre en este Clip cada detalle que te ayudará a entender el tipo de información que debes anexar en esta sección.
+                <br />
+                <br />
+                ¡No dudes en explorar nuestros videos!
+              </p>
+              <h5 className="text-lg mt-4">Video</h5>
+              <iframe
+                width="100%"
+                height="315"
+                src="https://www.youtube.com/embed/bND1jqKk1p8"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              ></iframe>
+            </div>
+            <div className="p-4 border-t border-gray-600 text-right">
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                onClick={toggleModal} // Cierra el modal
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <p className="mb-6">
         En esta sección debes elegir el lugar en donde deseas entregar las pruebas y gestionar la firma de Poder correspondiente para comenzar tu trámite.
       </p>
@@ -298,7 +359,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
                   value={formData.hora}
                   onChange={handleChange}
                   className={`w-full p-2 border ${invalidFields.hora ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
-                  />
+                />
               </div>
             </div>
             <div >

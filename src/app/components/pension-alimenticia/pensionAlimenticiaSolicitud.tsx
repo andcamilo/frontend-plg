@@ -375,7 +375,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
       }
 
       if (Object.keys(newInvalidFields).length > 0) {
-        setInvalidFields(newInvalidFields); // 🚀 Actualizar estado con errores
+        setInvalidFields(newInvalidFields);
         return;
       }
     }
@@ -581,52 +581,41 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
   useEffect(() => {
     if (formData.paymentDay && formData.lastPaymentDate) {
       const today = new Date();
-
-      // Convertir lastPaymentDate correctamente evitando el desfase de zona horaria
       const [year, month, day] = formData.lastPaymentDate.split("-").map(Number);
-      const lastPayment = new Date(year, month - 1, day); // Meses en JS van de 0 a 11
-
+      const lastPayment = new Date(year, month - 1, day);
       const paymentDay = parseInt(formData.paymentDay, 10);
 
       if (!isNaN(paymentDay)) {
-        // Calcular la primera fecha de pago vencida (mes siguiente al último pago)
         const firstMissedPayment = new Date(lastPayment);
-        firstMissedPayment.setMonth(firstMissedPayment.getMonth() + 1); // Avanza un mes correctamente
-        firstMissedPayment.setDate(1); // Evita desbordes de días
-        firstMissedPayment.setDate(paymentDay); // Ajusta el día de pago correctamente
+        firstMissedPayment.setMonth(firstMissedPayment.getMonth() + 1);
+        firstMissedPayment.setDate(paymentDay);
 
-        console.log("Fecha 1 (último pago ingresado por el usuario):", lastPayment);
-        console.log("Fecha 1.1 (primer pago vencido):", firstMissedPayment);
-
-        // Calcular la segunda fecha de pago vencida (dos meses después del último pago)
         const secondMissedPayment = new Date(firstMissedPayment);
-        secondMissedPayment.setMonth(secondMissedPayment.getMonth() + 1); // Avanza otro mes correctamente
+        secondMissedPayment.setMonth(secondMissedPayment.getMonth() + 1);
 
-        console.log("Fecha 2 (segundo pago vencido):", secondMissedPayment);
-
-        // Verificar si el pago ya se venció
-        const isLate = today > firstMissedPayment; // Si la fecha actual ya pasó la primera fecha de pago
-        const isStillValid = today < secondMissedPayment; // Si aún no ha pasado la segunda fecha de pago
+        const isLate = today > firstMissedPayment;
+        const isStillValid = today < secondMissedPayment;
 
         if (isLate && isStillValid) {
           setDesacatoMensaje("Desacato Válido");
         } else if (isLate && !isStillValid) {
-          // Guardamos JSX en el estado en lugar de texto plano
-          setDesacatoMensaje(
-            <span>
-              El lapso para solicitar Desacato de Pensión Alimenticia ha caducado, ya que se debe presentar antes de que se cumplan dos fechas de pago (
-              <strong>{firstMissedPayment.toLocaleDateString()}</strong> y <strong>{secondMissedPayment.toLocaleDateString()}</strong>).
-              <br />
+          Swal.fire({
+            title: "Desacato No Válido",
+            html: `
+              El lapso para solicitar Desacato de Pensión Alimenticia ha caducado, ya que se debe presentar antes de que se cumplan dos fechas de pago: 
+              <strong>${firstMissedPayment.toLocaleDateString()}</strong> y <strong>${secondMissedPayment.toLocaleDateString()}</strong>.
+              <br /><br />
               Por lo tanto, le recomendamos solicitar una consulta con nuestros expertos que le darán una orientación más completa para proceder con su requerimiento.
-              <br />
-              <Link
-                href="/request/consulta-propuesta"
-                className="text-blue-500 underline hover:text-blue-700"
-              >
-                Consulta y Propuesta
-              </Link>
-            </span>
-          );
+              <br /><br />
+              <a href="/request/consulta-propuesta" class="text-blue-500 underline hover:text-blue-700">Consulta y Propuesta</a>
+            `,
+            icon: "warning",
+            showConfirmButton: true,
+            confirmButtonText: "Entendido",
+            confirmButtonColor: "#3085d6",
+          });
+
+          setDesacatoMensaje("");
         } else {
           setDesacatoMensaje("Aún no llega su fecha de pago");
         }
