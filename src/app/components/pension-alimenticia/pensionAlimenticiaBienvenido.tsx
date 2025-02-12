@@ -12,7 +12,7 @@ import { useRouter } from 'next/router';
 import get from 'lodash/get';
 import ReCAPTCHA from 'react-google-recaptcha';
 import CountrySelect from '@components/CountrySelect'; // Adjust the path accordingly
-import { backendBaseUrl } from '@utils/env';
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -434,7 +434,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         status: 1,
       };
 
-      const response = await axios.post(`${backendBaseUrl}/chris/create-caso-resumen`, requestData);
+      const response = await axios.post(`${backendBaseUrl}/${backendEnv}/create-caso-resumen`, requestData);
       const { status } = response.data;
 
       if (status === 'success') {
