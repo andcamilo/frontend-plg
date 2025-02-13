@@ -8,6 +8,7 @@ import DemandadoInfo from './DemandadoInfo'
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 import countryCodes from '@utils/countryCode';
+import CountrySelect from '@components/CountrySelect';
 
 interface SelectOption {
   value: string;
@@ -90,7 +91,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
       setProvincias(states.map(state => ({ value: state.isoCode, label: state.name })));
       setCorregimientos([]); // Clear cities when country changes
     }
-  }, [formData.nacionalidad]); 
+  }, [formData.nacionalidad]);
 
   useEffect(() => {
     if (formData.paisDondeVive.value) {
@@ -141,6 +142,13 @@ const PensionAlimenticiaDemandado: React.FC = () => {
     return phone;
   };
 
+  const handleCountryChange = (name: string, value: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
   // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -153,7 +161,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
           nombreCompleto: formData.nombreCompleto,
           estadoCivil: formData.estadoCivil,
           cedula: formData.cedula,
-          nacionalidad: formData.nacionalidad, 
+          nacionalidad: formData.nacionalidad,
           paisDondeVive: formData.paisDondeVive,
           direccionCasa: formData.direccionCasa,
           detalleDireccionCasa: formData.detalleDireccionCasa,
@@ -445,23 +453,20 @@ const PensionAlimenticiaDemandado: React.FC = () => {
 
           <div className="w-full">
             <label className="block mb-2 text-sm">Número de teléfono</label>
-            <div className="flex w-full gap-x-2">
-              <select
+            <div className="flex gap-2">
+              <CountrySelect
                 name="telefonoCodigo"
                 value={formData.telefonoCodigo}
-                onChange={handleSelectCountryCodeChange}
-                className="p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              >
-                {Object.entries(countryCodes).map(([code, dialCode]) => (
-                  <option key={code} value={code}>{code}: {dialCode}</option>
-                ))}
-              </select>
+                onChange={(value) => handleCountryChange('telefonoCodigo', value)}
+                isDisabled={store.request.status >= 10 && store.rol < 20}
+                className="w-contain"
+              />
               <input
                 type="text"
                 name="telefono"
                 value={formData.telefono}
                 onChange={handleChange}
-                className="p-2 border border-gray-700 rounded bg-gray-800 text-white flex-grow"
+                className="p-4 bg-gray-800 text-white rounded-lg w-full"
                 placeholder="Número de teléfono"
                 required
                 disabled={store.request.status >= 10 && store.rol < 20}

@@ -11,6 +11,7 @@ import ToggleTextComponent from './ToggleTextComponen'
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
 import countryCodes from '@utils/countryCode';
+import CountrySelect from '@components/CountrySelect';
 
 // Define the type for the select options
 interface SelectOption {
@@ -239,6 +240,13 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     });
   };
 
+  const handleRemoveMenor = (index: number) => {
+    setFormData((prevData) => {
+      const updatedMenores = [...prevData.menores];
+      updatedMenores.splice(index, 1); // Elimina el menor en el índice específico
+      return { ...prevData, menores: updatedMenores };
+    });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -252,6 +260,13 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: selectedOption ? { value: selectedOption.value, label: selectedOption.label } : { value: '', label: '' },
+    }));
+  };
+
+  const handleCountryChange = (name: string, value: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
     }));
   };
 
@@ -274,8 +289,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
         solicitudId: store.solicitudId,
         demandante: {
           nombreCompleto: formData.nombreCompleto,
-          telefonoSolicita: formData.telefonoSolicita || '',
-          telefonoCodigo: formData.telefonoCodigo || '',
+          telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefonoSolicita}` || '',
           cedula: formData.cedula,
           email: formData.email,
           nacionalidad: formData.nacionalidad,
@@ -385,23 +399,21 @@ const PensionAlimenticiaDemandante: React.FC = () => {
           </div>
           <div className="w-full">
             <label className="block mb-2 text-sm">Número de teléfono</label>
-            <div className="flex w-full gap-x-2">
-              <select
+
+            <div className="flex gap-2">
+              <CountrySelect
                 name="telefonoCodigo"
                 value={formData.telefonoCodigo}
-                onChange={handleChange}
-                className="p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              >
-                {Object.entries(countryCodes).map(([code, dialCode]) => (
-                  <option key={code} value={code}>{code}: {dialCode}</option>
-                ))}
-              </select>
+                onChange={(value) => handleCountryChange('telefonoCodigo', value)}
+                isDisabled={store.request.status >= 10 && store.rol < 20}
+                className="w-contain"
+              />
               <input
                 type="text"
                 name="telefonoSolicita"
                 value={formData.telefonoSolicita}
                 onChange={handleChange}
-                className="p-2 border border-gray-700 rounded bg-gray-800 text-white flex-grow"
+                className="p-4 bg-gray-800 text-white rounded-lg w-full"
                 placeholder="Número de teléfono"
                 required
                 disabled={store.request.status >= 10 && store.rol < 20}
@@ -716,7 +728,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 <button
                   type="button"
                   onClick={addMenor}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mb-4"
+                  className="bg-profile text-white font-semibold py-2 px-4 rounded mb-4"
                 >
                   Adicionar Menor
                 </button>
@@ -724,53 +736,70 @@ const PensionAlimenticiaDemandante: React.FC = () => {
             )}
 
             {formData.menores.map((menor, index) => (
-              <div key={index} className="p-4 mb-4 bg-gray-800 rounded-md">
-                <h4 className="mb-2 font-semibold">Menor #{index + 1}</h4>
-                <div>
-                  <label className="block mb-2 text-sm">Tipo de Persona</label>
-                  <Select
-                    options={tipoPersonaOptions}
-                    value={tipoPersonaOptions.find(tipo => tipo.value === menor.tipoPersona.value)}
-                    onChange={(option) => handleMenorChange(index, 'tipoPersona', option)}
-                    styles={customSelectStyles}
-                  />
+              <div key={index} className="p-4 mb-4 rounded-md bg-gray-900 text-white">
+                <h4 className="mb-4 font-semibold text-lg">Menor #{index + 1}</h4>
+
+                {/* Contenedor grid para mostrar los campos de dos en dos */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-2 text-sm">Tipo de Persona</label>
+                    <Select
+                      options={tipoPersonaOptions}
+                      value={tipoPersonaOptions.find(tipo => tipo.value === menor.tipoPersona.value)}
+                      onChange={(option) => handleMenorChange(index, 'tipoPersona', option)}
+                      styles={customSelectStyles}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm">Nombre Completo</label>
+                    <input
+                      type="text"
+                      value={menor.nombreCompletoMenor}
+                      onChange={(e) => handleMenorChange(index, 'nombreCompletoMenor', e.target.value)}
+                      className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm">Fecha de Nacimiento</label>
+                    <input
+                      type="date"
+                      value={menor.fechaNacimientoMenor}
+                      onChange={(e) => handleMenorChange(index, 'fechaNacimientoMenor', e.target.value)}
+                      className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm">Edad</label>
+                    <input
+                      type="text"
+                      value={menor.edadMenor}
+                      onChange={(e) => handleMenorChange(index, 'edadMenor', e.target.value)}
+                      className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2"> {/* Ocupa las dos columnas en pantallas medianas */}
+                    <label className="block mb-2 text-sm">Parentesco con Demandado</label>
+                    <Select
+                      options={parentescoConDemandadoOptions}
+                      value={parentescoConDemandadoOptions.find(par => par.value === menor.parentescoConDemandado.value)}
+                      onChange={(option) => handleMenorChange(index, 'parentescoConDemandado', option)}
+                      styles={customSelectStyles}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block mb-2 text-sm">Nombre Completo</label>
-                  <input
-                    type="text"
-                    value={menor.nombreCompletoMenor}
-                    onChange={(e) => handleMenorChange(index, 'nombreCompletoMenor', e.target.value)}
-                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 text-sm">Fecha de Nacimiento</label>
-                  <input
-                    type="date"
-                    value={menor.fechaNacimientoMenor}
-                    onChange={(e) => handleMenorChange(index, 'fechaNacimientoMenor', e.target.value)}
-                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 text-sm">Edad</label>
-                  <input
-                    type="text"
-                    value={menor.edadMenor}
-                    onChange={(e) => handleMenorChange(index, 'edadMenor', e.target.value)}
-                    className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 text-sm">Parentesco con Demandado</label>
-                  <Select
-                    options={parentescoConDemandadoOptions}
-                    value={parentescoConDemandadoOptions.find(par => par.value === menor.parentescoConDemandado.value)}
-                    onChange={(option) => handleMenorChange(index, 'parentescoConDemandado', option)}
-                    styles={customSelectStyles}
-                  />
-                </div>
+
+                {/* Botón para eliminar menor */}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveMenor(index)}
+                  className="mt-4 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded w-full"
+                >
+                  Eliminar Menor
+                </button>
               </div>
             ))}
           </div>

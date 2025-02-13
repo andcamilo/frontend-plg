@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import get from 'lodash/get';
 import ReCAPTCHA from 'react-google-recaptcha';
 import CountrySelect from '@components/CountrySelect'; // Adjust the path accordingly
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -39,6 +40,14 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     resumenCaso: '',
     summaryEmail: '',
     cuenta: '',
+  });
+
+  const [errors, setErrors] = useState({
+    nombreCompleto: false,
+    telefono: false,
+    cedulaPasaporte: false,
+    email: false,
+    confirmEmail: false
   });
 
   const solicitudId = store.solicitudId || (Array.isArray(id) ? id[0] : id);
@@ -190,6 +199,86 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
   const validateEmails = () => formData.email === formData.confirmEmail;
 
+  const nombreCompletoRef = useRef<HTMLInputElement>(null);
+  const telefonoRef = useRef<HTMLInputElement>(null);
+  const cedulaPasaporteRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const confirmEmailRef = useRef<HTMLInputElement>(null);
+
+  const fieldValidations = [
+    { field: "nombreCompleto", ref: nombreCompletoRef, errorMessage: "Por favor, ingrese el nombre completo." },
+    { field: "telefono", ref: telefonoRef, errorMessage: "Por favor, ingrese el número de teléfono." },
+    { field: "cedulaPasaporte", ref: cedulaPasaporteRef, errorMessage: "Por favor, ingrese la cédula o pasaporte." },
+    { field: "email", ref: emailRef, errorMessage: "Por favor, ingrese el correo electrónico." },
+    { field: "confirmEmail", ref: confirmEmailRef, errorMessage: "Por favor, confirme el correo electrónico." },
+  ];
+
+  const validateFields = () => {
+    for (const { field, ref, errorMessage } of fieldValidations) {
+      // Verifica si el campo está vacío
+      if (!formData[field]) {
+        setErrors((prevErrors) => ({ ...prevErrors, [field]: true }));
+
+        Swal.fire({
+          position: "top-end",
+          icon: "warning",
+          title: errorMessage,
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+          toast: true,
+          background: '#2c2c3e',
+          color: '#fff',
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title',
+            icon: 'custom-swal-icon',
+            timerProgressBar: 'custom-swal-timer-bar'
+          }
+        });
+
+        // Scroll al campo en error
+        if (ref.current) {
+          ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+          ref.current.focus();
+        }
+
+        return false;
+      }
+
+      // Validación adicional para el nombre completo (mínimo 3 letras)
+      if (field === 'nombreCompleto' && formData.nombreCompleto.length < 3) {
+        setErrors((prevErrors) => ({ ...prevErrors, [field]: true }));
+
+        Swal.fire({
+          position: "top-end",
+          icon: "warning",
+          title: "El nombre debe tener al menos 3 caracteres.",
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+          toast: true,
+          background: '#2c2c3e',
+          color: '#fff',
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title',
+            icon: 'custom-swal-icon',
+            timerProgressBar: 'custom-swal-timer-bar'
+          }
+        });
+
+        // Scroll al campo en error
+        if (ref.current) {
+          ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+          ref.current.focus();
+        }
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (
     e: React.FormEvent,
     isSummary: boolean = false,
@@ -202,17 +291,47 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       return;
     }
 
-
     if (!validateEmails()) {
       Swal.fire({
+        position: "top-end",
         icon: 'error',
         title: 'Error',
         text: 'Los correos electrónicos no coinciden. Por favor, verifica e intenta de nuevo.',
+        showConfirmButton: false,
+        timer: 1500,
       });
       return;
     }
 
+    if (!formData.terminosAceptados) {
+      Swal.fire({
+        position: "top-end",
+        icon: "warning",
+        title: "Debes aceptar los términos y condiciones.",
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true,
+        toast: true,
+        background: '#2c2c3e',
+        color: '#fff',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          icon: 'custom-swal-icon',
+          timerProgressBar: 'custom-swal-timer-bar'
+        }
+      });
+
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
+
+    if (!validateFields()) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const emailResult = await axios.get('/api/validate-email', {
@@ -307,6 +426,37 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     setRecaptchaToken(token);
   };
 
+  const sendCasoResumen = async () => {
+    try {
+      const requestData = {
+        resumenCaso: formData.resumenCaso || '',
+        summaryEmail: formData.summaryEmail || '',
+        status: 1,
+      };
+
+      const response = await axios.post(`${backendBaseUrl}/${backendEnv}/create-caso-resumen`, requestData);
+      const { status } = response.data;
+
+      if (status === 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Resumen del Caso Enviado',
+          text: 'Resumen enviado correctamente.',
+        }).then(() => {
+          router.push('/home');
+        });
+      }
+
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un problema enviando el resumen. Por favor, inténtalo de nuevo más tarde.',
+      });
+      console.error('Error sending summary:', error);
+    }
+  };
+
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
       <h1 className="text-white text-4xl font-bold">¡Bienvenido a la Solicitud de Pensión Alimenticia en Línea!</h1>
@@ -321,9 +471,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             name="nombreCompleto"
             value={formData.nombreCompleto}
             onChange={handleChange}
-            className="p-4 bg-gray-800 text-white rounded-lg"
+            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
             placeholder="Nombre completo"
-            required
             disabled={store.request.status >= 10 && store.rol < 20}
           />
 
@@ -341,9 +490,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               name="telefono"
               value={formData.telefono}
               onChange={handleChange}
-              className="p-4 bg-gray-800 text-white rounded-lg w-full"
+              className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
               placeholder="Número de teléfono"
-              required
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
@@ -372,9 +520,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             name="cedulaPasaporte"
             value={formData.cedulaPasaporte}
             onChange={handleChange}
-            className="p-4 bg-gray-800 text-white rounded-lg"
+            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
             placeholder="Cédula o ID"
-            required
             disabled={store.request.status >= 10 && store.rol < 20}
           />
           <input
@@ -382,9 +529,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className="p-4 bg-gray-800 text-white rounded-lg"
+            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
             placeholder="Dirección de correo electrónico"
-            required
             disabled={store.request.status >= 10 && store.rol < 20}
           />
           <input
@@ -392,9 +538,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             name="confirmEmail"
             value={formData.confirmEmail}
             onChange={handleChange}
-            className="p-4 bg-gray-800 text-white rounded-lg"
+            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.confirmEmail ? 'border-2 border-red-500' : ''}`}
             placeholder="Confirmar correo electrónico"
-            required
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -438,7 +583,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               <button
                 className={`w-full py-3 rounded-lg mt-4 ${isLoading ? 'bg-gray-400' : 'bg-profile'} text-white`}
                 type="button"
-                onClick={(e) => handleSubmit(e as any, true, 1)}
+                onClick={sendCasoResumen}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -492,7 +637,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
               checked={formData.terminosAceptados}
               onChange={handleChange}
               className="form-checkbox"
-              required
             />
             <span className="ml-2 text-white">Acepto los términos y condiciones de este servicio.</span>
           </label>
