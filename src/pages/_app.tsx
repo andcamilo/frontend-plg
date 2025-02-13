@@ -1,5 +1,8 @@
-// _app.tsx
 import type { AppProps } from 'next/app';
+import { CssBaseline } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+// Context Providers
 import { AppStateProvider } from '@context/context';
 import { SociedadesStateProvider } from '@context/sociedadesContext';
 import { FundacionStateProvider } from '@context/fundacionContext';
@@ -11,33 +14,43 @@ import { ExpenseProvider } from '../app/context/expenseContext';
 import { TramiteStateProvider } from '../app/context/tramiteContext';
 import { CorporativoStateProvider } from '../app/context/corporativoContext';
 
+// Global styles
 import '../../src/app/globals.css';
+
+// 🔹 MUI Theme: Prevents auto-loading of Google Fonts
+const theme = createTheme({
+  typography: {
+    fontFamily: 'Arial, sans-serif', // Ensure no Google Fonts are used
+  },
+});
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <AppStateProvider>
-      <SociedadesStateProvider>
-        <FundacionStateProvider>
-          <ConsultaStateProvider>
-            <MenoresStateProvider>
-              <DesembolsoStateProvider>
-                <TramiteStateProvider>
-                  <CorporativoStateProvider>
-                    <PaymentStateProvider>
-                      <ExpenseProvider>
-                        <Component {...pageProps} />
-                      </ExpenseProvider>
-                    </PaymentStateProvider>
-                  </CorporativoStateProvider>
-                </TramiteStateProvider>
-              </DesembolsoStateProvider>
-            </MenoresStateProvider>
-          </ConsultaStateProvider>
-        </FundacionStateProvider>
-      </SociedadesStateProvider>
-    </AppStateProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AppStateProvider>
+        <SociedadesStateProvider>
+          <FundacionStateProvider>
+            <ConsultaStateProvider>
+              <MenoresStateProvider>
+                <DesembolsoStateProvider>
+                  <TramiteStateProvider>
+                    <CorporativoStateProvider>
+                      <PaymentStateProvider>
+                        <ExpenseProvider>
+                          <Component {...pageProps} />
+                        </ExpenseProvider>
+                      </PaymentStateProvider>
+                    </CorporativoStateProvider>
+                  </TramiteStateProvider>
+                </DesembolsoStateProvider>
+              </MenoresStateProvider>
+            </ConsultaStateProvider>
+          </FundacionStateProvider>
+        </SociedadesStateProvider>
+      </AppStateProvider>
+    </ThemeProvider>
   );
 }
 
 export default MyApp;
-
