@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import AppStateContext from '@context/context'; // Import the context
 import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
 import axios from 'axios';
+import Link from 'next/link';
 import PensionCategoryMessage from './PensionCategoryMessage'
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
@@ -606,9 +607,12 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
               <br />
               Por lo tanto, le recomendamos solicitar una consulta con nuestros expertos que le darán una orientación más completa para proceder con su requerimiento.
               <br />
-              <a href="/request/consulta-propuesta" className="text-blue-500 underline hover:text-blue-700">
+              <Link
+                href="/request/consulta-propuesta"
+                className="text-blue-500 underline hover:text-blue-700"
+              >
                 Consulta y Propuesta
-              </a>
+              </Link>
             </span>
           );
         } else {
@@ -1067,9 +1071,12 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
             <p className="mt-4">
               Puedes solicitar tu Propuesta o Consulta Escrita, Virtual o Presencial{" "}
-              <a href="/request/consulta-propuesta" className="text-blue-500 underline hover:text-blue-700">
+              <Link 
+                href="/request/consulta-propuesta" 
+                className="text-blue-500 underline hover:text-blue-700"
+              >
                 aquí
-              </a>
+              </Link>
             </p>
 
             {/* Día de pago asignado por el juez */}
