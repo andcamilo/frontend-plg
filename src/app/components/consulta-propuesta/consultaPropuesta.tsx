@@ -5,6 +5,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
 import countryCodes from '@utils/countryCode';
 import get from 'lodash/get';
+import Link from 'next/link';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useRouter } from 'next/router';
@@ -1010,15 +1011,20 @@ const ConsultaPropuesta: React.FC = () => {
 
             <p className="text-white mt-4 ">
                 <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                    <a
-                        href="https://wa.me/50769853352"
-                        target="_blank"
-                        rel="nofollow"
-                        style={{ display: 'flex', alignItems: 'center', color: 'green', textDecoration: 'none' }}
+                    <Link
+                    href="https://wa.me/50769853352"
+                    target="_blank"
+                    rel="nofollow"
+                    style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        color: 'green', 
+                        textDecoration: 'none' 
+                    }}
                     >
-                        <WhatsAppIcon style={{ color: '#25D366', fontSize: '24px', marginRight: '8px' }} />
-                        <span>WhatsApp</span>
-                    </a>
+                    <WhatsAppIcon style={{ color: '#25D366', fontSize: '24px', marginRight: '8px' }} />
+                    <span>WhatsApp</span>
+                    </Link>
                 </span>
             </p>
 
