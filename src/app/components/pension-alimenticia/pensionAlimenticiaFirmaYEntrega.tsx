@@ -46,10 +46,10 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
         setFormData((prevFormData) => ({
           ...prevFormData,
           direccion: get(store.request, 'firmaYEntrega.direccion', ''),
-          dia: get(store.request, 'firmaYEntrega.dia',''),
+          dia: get(store.request, 'firmaYEntrega.dia', ''),
           hora: get(store.request, 'firmaYEntrega.hora', ''),
           telefono: get(store.request, 'firmaYEntrega.telefonoSolicita', ''),
-          
+
         }));
       }
     }
@@ -88,9 +88,21 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
         }));
 
         Swal.fire({
-          icon: 'success',
-          title: 'Firma y Entrega',
-          text: 'Firma y entrega guardadas correctamente.',
+          position: "top-end",
+          icon: "success",
+          title: "Información de la firma y entrega actualizada correctamente.",
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+          toast: true,
+          background: '#2c2c3e',
+          color: '#fff',
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title',
+            icon: 'custom-swal-icon',
+            timerProgressBar: 'custom-swal-timer-bar',
+          },
         });
       } else {
         throw new Error('Error al actualizar la solicitud.');

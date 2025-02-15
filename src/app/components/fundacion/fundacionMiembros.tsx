@@ -201,7 +201,7 @@ const FundacionMiembros: React.FC = () => {
                     .map((miembro: any) => ({
                         tipo: miembro.servicio,
                         nombre: miembro.nombre || '---',
-                        Opciones: <Actions id={miembro.id} solicitudId={store.solicitudId} />,
+                        Opciones: <Actions id={miembro.personId} solicitudId={store.solicitudId} />,
                     }));
             }
 
