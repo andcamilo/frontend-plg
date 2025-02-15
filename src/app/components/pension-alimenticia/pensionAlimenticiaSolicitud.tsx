@@ -143,6 +143,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
         desacatoDescription: get(store.request, 'desacatoDescription', ''),
         paymentDay: get(store.request, 'paymentDay', ''),
         lastPaymentDate: get(store.request, 'lastPaymentDate', ''),
+        pensionCategory: get(store.request, 'pensionCategory', 'Hijos menores de edad'),
 
         medidaPorElJuez: get(store.request, 'medidaPorElJuez', ''),
         numeroExpediente: get(store.request, 'numeroExpediente', ''),
@@ -464,7 +465,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
       if (formData.medidaPorElJuez === "No") {
 
         if (formData.servicioPLG === "Sí") {
-          
+
           if (!formData.provinceDesacato) {
             showAlert('Debe seleccionar una provincia.', 'provinceDesacato');
             return;
@@ -505,9 +506,21 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
         }));
 
         Swal.fire({
-          icon: 'success',
-          title: 'Formulario Enviado',
-          text: 'Formulario enviado correctamente. Se habilitó la sección de Demandante.',
+          position: "top-end",
+          icon: "success",
+          title: "Información de la solicitud actualizada correctamente.",
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+          toast: true,
+          background: '#2c2c3e',
+          color: '#fff',
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title',
+            icon: 'custom-swal-icon',
+            timerProgressBar: 'custom-swal-timer-bar',
+          },
         });
       } else {
         throw new Error('Error al actualizar la solicitud.');
@@ -1071,8 +1084,8 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
 
             <p className="mt-4">
               Puedes solicitar tu Propuesta o Consulta Escrita, Virtual o Presencial{" "}
-              <Link 
-                href="/request/consulta-propuesta" 
+              <Link
+                href="/request/consulta-propuesta"
                 className="text-blue-500 underline hover:text-blue-700"
               >
                 aquí

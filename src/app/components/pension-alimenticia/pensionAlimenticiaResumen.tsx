@@ -318,6 +318,41 @@ const PensionAlimenticiaResumen: React.FC = () => {
           </>
         )}
 
+        <hr className='mt-4 mb-4'></hr>
+        <h2 className="text-3xl font-bold mb-4">Costos</h2>
+        <table className="w-full mt-4 text-white border border-gray-600">
+          <thead>
+            <tr className="border-b border-gray-600">
+              <th className="text-left p-2">#</th>
+              <th className="text-left p-2">Item</th>
+              <th className="text-right p-2">Precio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-gray-600">
+              <td className="p-2">1</td>
+              <td className="p-2">{get(solicitudData, 'canasta.items[0].item')}</td>
+              <td className="text-right p-2">${get(solicitudData, 'canasta.items[0].precio')}</td>
+            </tr>
+            {/* Mostrar Servicio Adicional si aplica */}
+            {/* {servicioAdicional && (
+              <tr className="border-b border-gray-600">
+                <td className="p-2">2</td>
+                <td className="p-2">Servicio Adicional</td>
+                <td className="text-right p-2">$5.00</td>
+              </tr>
+            )} */}
+            <tr className="border-b border-gray-600">
+              <td colSpan={2} className="text-right p-2">Subtotal</td>
+              <td className="text-right p-2">${get(solicitudData, 'canasta.subtotal').toFixed(2)}</td>
+            </tr>
+            <tr className="border-b border-gray-600">
+              <td colSpan={2} className="text-right p-2">Total</td>
+              <td className="text-right p-2">${get(solicitudData, 'canasta.total').toFixed(2)}</td>
+            </tr>
+          </tbody>
+        </table>
+
       </div>
     </div>
   );

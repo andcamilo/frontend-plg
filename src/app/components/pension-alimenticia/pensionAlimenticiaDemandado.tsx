@@ -192,9 +192,21 @@ const PensionAlimenticiaDemandado: React.FC = () => {
         }));
 
         Swal.fire({
-          icon: 'success',
-          title: 'Formulario Enviado',
-          text: 'Formulario del demandado enviado correctamente.',
+          position: "top-end",
+          icon: "success",
+          title: "Información del demandado actualizada correctamente.",
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+          toast: true,
+          background: '#2c2c3e',
+          color: '#fff',
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title',
+            icon: 'custom-swal-icon',
+            timerProgressBar: 'custom-swal-timer-bar',
+          },
         });
       } else {
         throw new Error('Error al actualizar la solicitud.');

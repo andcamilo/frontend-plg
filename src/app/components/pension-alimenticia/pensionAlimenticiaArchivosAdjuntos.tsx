@@ -35,16 +35,9 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
       cedula: null,
       certificadoNacimiento: null,
       certificadoMatrimonio: null,
-      facturaSupermercado: null,
-      facturaAgua: null,
-      facturaVestuario: null,
-      facturaLuz: null,
-      facturaTelefono: null,
-      facturaMatricula: null,
-      facturaUtiles: null,
-      facturaMatriculaUniversitaria: null,
-      facturaCreditosAcademicos: null,
       sentencia: null,
+      cedulaMenor: null,
+      cedulaMayor: null,
       additionalDocs: [],
     },
   });
@@ -52,16 +45,9 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
   const [cedulaFile, setCedulaFile] = useState<File | null>(null);
   const [nacimientoFile, setNacimientoFile] = useState<File | null>(null);
   const [matrimonioFile, setMatrimonioFile] = useState<File | null>(null);
-  const [facturaSupermercadoFile, setFacturaSupermercadoFile] = useState<File | null>(null);
-  const [facturaAguaFile, setFacturaAguaFile] = useState<File | null>(null);
-  const [facturaVestuarioFile, setFacturaVestuarioFile] = useState<File | null>(null);
-  const [facturaLuzFile, setFacturaLuzFile] = useState<File | null>(null);
-  const [facturaTelefonoFile, setFacturaTelefonoFile] = useState<File | null>(null);
-  const [facturaMatriculaFile, setFacturaMatriculaFile] = useState<File | null>(null);
-  const [facturaUtilesFile, setFacturaUtilesFile] = useState<File | null>(null);
-  const [facturaMatriculaUniversitariaFile, setFacturaMatriculaUniversitariaFile] = useState<File | null>(null);
-  const [facturaCreditosAcademicosFile, setFacturaCreditosAcademicosFile] = useState<File | null>(null);
   const [sentenciaFile, setSentenciaFile] = useState<File | null>(null);
+  const [cedulaMenorFile, setCedulaMenorFile] = useState<File | null>(null);
+  const [cedulaMayorFile, setCedulaMayorFile] = useState<File | null>(null);
   const [additionalDocs, setAdditionalDocs] = useState<(File | null)[]>([]);
   const [showAdditionalDocs, setShowAdditionalDocs] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,16 +65,20 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
   useEffect(() => {
     if (store.request) {
       const archivosAdjuntos = get(store.request, 'archivosAdjuntos', {});
+
       setFormData((prevFormData) => ({
         ...prevFormData,
         archivosAdjuntos: {
           ...prevFormData.archivosAdjuntos,
           ...archivosAdjuntos,
+          additionalDocs: archivosAdjuntos.additionalDocs && archivosAdjuntos.additionalDocs.length > 0
+            ? archivosAdjuntos.additionalDocs
+            : [],
         },
       }));
     }
   }, [store.request]);
-
+  console.log("SOLI ", store.request)
   // Helper function to upload file to Firebase and get URL
   const uploadFileToFirebase = (file: File, path: string): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -114,18 +104,38 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    setFile: React.Dispatch<React.SetStateAction<File | null>>
+    setFile?: React.Dispatch<React.SetStateAction<File | null>>,
+    index?: number
   ) => {
     const file = e.target.files?.[0] || null;
-    setFile(file);
+
+    if (setFile) {
+      // Manejo para archivos principales
+      setFile(file);
+    } else if (index !== undefined) {
+      // Manejo para archivos adicionales
+      setAdditionalDocs((prevDocs) => {
+        const newDocs = [...prevDocs];
+        newDocs[index] = file;
+        return newDocs;
+      });
+    }
   };
 
   const handleAddDocument = () => {
-    setAdditionalDocs([...additionalDocs, new File([], "")]);
+    setAdditionalDocs((prevDocs) => [...prevDocs, null]);
   };
 
   const handleRemoveDocument = (index: number) => {
-    setAdditionalDocs(additionalDocs.filter((_, i) => i !== index));
+    setAdditionalDocs((prevDocs) => prevDocs.filter((_, i) => i !== index));
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      archivosAdjuntos: {
+        ...prevFormData.archivosAdjuntos,
+        additionalDocs: prevFormData.archivosAdjuntos.additionalDocs.filter((_, i) => i !== index),
+      },
+    }));
   };
 
   const toggleAdditionalDocs = () => {
@@ -143,19 +153,13 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
       const cedulaURL = cedulaFile ? await uploadFileToFirebase(cedulaFile, generateFilePath('cedula')) : formData.archivosAdjuntos.cedula;
       const nacimientoURL = nacimientoFile ? await uploadFileToFirebase(nacimientoFile, generateFilePath('certificadoNacimiento')) : formData.archivosAdjuntos.certificadoNacimiento;
       const matrimonioURL = matrimonioFile ? await uploadFileToFirebase(matrimonioFile, generateFilePath('certificadoMatrimonio')) : formData.archivosAdjuntos.certificadoMatrimonio;
-      const facturaSupermercadoURL = facturaSupermercadoFile ? await uploadFileToFirebase(facturaSupermercadoFile, generateFilePath('facturaSupermercado')) : formData.archivosAdjuntos.facturaSupermercado;
-      const facturaAguaFileURL = facturaAguaFile ? await uploadFileToFirebase(facturaAguaFile, generateFilePath('facturaAgua')) : formData.archivosAdjuntos.facturaAgua;
-      const facturaVestuarioURL = facturaVestuarioFile ? await uploadFileToFirebase(facturaVestuarioFile, generateFilePath('facturaVestuario')) : formData.archivosAdjuntos.facturaVestuario;
-      const facturaLuzURL = facturaLuzFile ? await uploadFileToFirebase(facturaLuzFile, generateFilePath('facturaLuz')) : formData.archivosAdjuntos.facturaLuz;
-      const facturaTelefonoURL = facturaTelefonoFile ? await uploadFileToFirebase(facturaTelefonoFile, generateFilePath('facturaTelefono')) : formData.archivosAdjuntos.facturaTelefono;
-      const facturaMatriculaURL = facturaMatriculaFile ? await uploadFileToFirebase(facturaMatriculaFile, generateFilePath('facturaMatricula')) : formData.archivosAdjuntos.facturaMatricula;
-      const facturaUtilesURL = facturaUtilesFile ? await uploadFileToFirebase(facturaUtilesFile, generateFilePath('facturaUtiles')) : formData.archivosAdjuntos.facturaUtiles;
-      const facturaMatriculaUniversitariaURL = facturaMatriculaUniversitariaFile ? await uploadFileToFirebase(facturaMatriculaUniversitariaFile, generateFilePath('facturaMatriculaUniversitaria')) : formData.archivosAdjuntos.facturaMatriculaUniversitaria;
-      const facturaCreditosAcademicosURL = facturaCreditosAcademicosFile ? await uploadFileToFirebase(facturaCreditosAcademicosFile, generateFilePath('facturaCreditosAcademicos')) : formData.archivosAdjuntos.facturaCreditosAcademicos;
 
+      const cedulaMenorURL = cedulaMenorFile ? await uploadFileToFirebase(cedulaMenorFile, 'uploads/cedulaMenor') : formData.archivosAdjuntos.cedulaMenor;
+      const cedulaMayorURL = cedulaMayorFile ? await uploadFileToFirebase(cedulaMayorFile, 'uploads/cedulaMayor') : formData.archivosAdjuntos.cedulaMayor;
       const sentenciaURL = sentenciaFile ? await uploadFileToFirebase(sentenciaFile, 'uploads/sentencia') : formData.archivosAdjuntos.sentencia;
       const additionalDocsURLs = await Promise.all(
-        additionalDocs.map((file, index) => uploadFileToFirebase(file!, `uploads/additionalDocs_${index}`))
+        additionalDocs
+          .map((file, index) => (file ? uploadFileToFirebase(file, `uploads/additionalDocs_${index}`) : null))
       );
 
       const updatePayload = {
@@ -164,15 +168,8 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           cedula: cedulaURL,
           certificadoNacimiento: nacimientoURL,
           certificadoMatrimonio: matrimonioURL,
-          facturaSupermercado: facturaSupermercadoURL,
-          facturaAgua: facturaAguaFileURL,
-          facturaVestuario: facturaVestuarioURL,
-          facturaLuz: facturaLuzURL,
-          facturaTelefono: facturaTelefonoURL,
-          facturaMatricula: facturaMatriculaURL,
-          facturaUtiles: facturaUtilesURL,
-          facturaMatriculaUniversitaria: facturaMatriculaUniversitariaURL,
-          facturaCreditosAcademicos: facturaCreditosAcademicosURL,
+          cedulaMenor: cedulaMenorURL,
+          cedulaMayor: cedulaMayorURL,
           sentencia: sentenciaURL,
           additionalDocs: additionalDocsURLs.length ? additionalDocsURLs : formData.archivosAdjuntos.additionalDocs,
         },
@@ -188,9 +185,21 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
         }));
 
         Swal.fire({
-          icon: 'success',
-          title: 'Archivos Adjuntos',
-          text: 'Archivos adjuntados correctamente.',
+          position: "top-end",
+          icon: "success",
+          title: "Archivos adjuntados actualizados correctamente.",
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+          toast: true,
+          background: '#2c2c3e',
+          color: '#fff',
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title',
+            icon: 'custom-swal-icon',
+            timerProgressBar: 'custom-swal-timer-bar',
+          },
         });
       } else {
         throw new Error('Error al actualizar la solicitud.');
@@ -232,247 +241,150 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           />
         </div>
 
-        <div>
-          <label className="block mb-2 text-sm">Certificado de Nacimiento del pensionado.</label>
-          {formData.archivosAdjuntos.certificadoNacimiento && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.certificadoNacimiento} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setNacimientoFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Certificado de Matrimonio.</label>
-          {formData.archivosAdjuntos.certificadoMatrimonio && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.certificadoMatrimonio} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setMatrimonioFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Factura del supermercado.</label>
-          {formData.archivosAdjuntos.facturaSupermercado && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.facturaSupermercado} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setFacturaSupermercadoFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Factura de vestuario y calzado.</label>
-          {formData.archivosAdjuntos.facturaVestuario && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.facturaVestuario} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setFacturaVestuarioFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-        <div>
-          <label className="block mb-2 text-sm">Factura del servicio del Agua.</label>
-          {formData.archivosAdjuntos.facturaAgua && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.facturaAgua} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setFacturaAguaFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Factura del servicio de la luz.</label>
-          {formData.archivosAdjuntos.facturaLuz && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.facturaLuz} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setFacturaAguaFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Factura del teléfono.</label>
-          {formData.archivosAdjuntos.facturaTelefono && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.facturaTelefono} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setFacturaTelefonoFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Recibo de Matrícula.</label>
-          {formData.archivosAdjuntos.facturaMatricula && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.facturaMatricula} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setFacturaMatriculaFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Factura de útiles escolares.</label>
-          {formData.archivosAdjuntos.facturaUtiles && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.facturaUtiles} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setFacturaUtilesFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Créditos academicos.</label>
-          {formData.archivosAdjuntos.facturaCreditosAcademicos && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.facturaCreditosAcademicos} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setFacturaCreditosAcademicosFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Factura de Matrícula universitaria.</label>
-          {formData.archivosAdjuntos.facturaMatriculaUniversitaria && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.facturaMatriculaUniversitaria} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setFacturaMatriculaUniversitariaFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 text-sm">Copia de la Sentencia o Mediación en caso que la hubiere.</label>
-          {formData.archivosAdjuntos.sentencia && (
-            <p className="text-sm text-blue-500">
-              <a href={formData.archivosAdjuntos.sentencia} target="_blank" rel="noopener noreferrer">
-                Ver documento actual
-              </a>
-            </p>
-          )}
-          <input
-            type="file"
-            onChange={(e) => handleFileChange(e, setSentenciaFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            disabled={store.request.status >= 10 && store.rol < 20}
-          />
-        </div>
-
-        {/* Additional Documents Section */}
-        {showAdditionalDocs && (
+        {(store.request.pensionType === "Primera vez" && store.request.pensionCategory === "Hijos menores de edad") && (
           <>
-            {additionalDocs.map((doc, index) => (
-              <div key={index} className="space-y-4 mt-4">
-                <div>
-                  <label className="block mb-2 text-sm">- Documento adicional:</label>
-                  <input
-                    type="file"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      setAdditionalDocs((prevDocs) => {
-                        const newDocs = [...prevDocs];
-                        newDocs[index] = file; // Update with File or null
-                        return newDocs;
-                      });
-                    }}
-                    className="w-full p-2 bg-gray-800 text-white rounded-lg"
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveDocument(index)}
-                    className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            ))}
+            <div>
+              <label className="block mb-2 text-sm">Certificado de Nacimiento del pensionado.</label>
+              {formData.archivosAdjuntos.certificadoNacimiento && (
+                <p className="text-sm text-blue-500">
+                  <a href={formData.archivosAdjuntos.certificadoNacimiento} target="_blank" rel="noopener noreferrer">
+                    Ver documento actual
+                  </a>
+                </p>
+              )}
+              <input
+                type="file"
+                onChange={(e) => handleFileChange(e, setNacimientoFile)}
+                className="w-full p-2 bg-gray-800 text-white rounded-lg"
+                disabled={store.request.status >= 10 && store.rol < 20}
+              />
+            </div>
 
+            <div>
+              <label className="block mb-2 text-sm">Cédula del menor.</label>
+              {formData.archivosAdjuntos.cedulaMenor && (
+                <p className="text-sm text-blue-500">
+                  <a href={formData.archivosAdjuntos.cedulaMenor} target="_blank" rel="noopener noreferrer">
+                    Ver documento actual
+                  </a>
+                </p>
+              )}
+              <input
+                type="file"
+                onChange={(e) => handleFileChange(e, setCedulaMenorFile)}
+                className="w-full p-2 bg-gray-800 text-white rounded-lg"
+                disabled={store.request.status >= 10 && store.rol < 20}
+              />
+            </div>
           </>
         )}
 
+        {(store.request.pensionType === "Primera vez" && (store.request.pensionCategory === "Mujer embarazada (ayuda prenatal)"
+          || store.request.pensionCategory === "En condición de Cónyuge"
+        )) && (
+          <div>
+            <label className="block mb-2 text-sm">Certificado de Matrimonio.</label>
+            {formData.archivosAdjuntos.certificadoMatrimonio && (
+              <p className="text-sm text-blue-500">
+                <a href={formData.archivosAdjuntos.certificadoMatrimonio} target="_blank" rel="noopener noreferrer">
+                  Ver documento actual
+                </a>
+              </p>
+            )}
+            <input
+              type="file"
+              onChange={(e) => handleFileChange(e, setMatrimonioFile)}
+              className="w-full p-2 bg-gray-800 text-white rounded-lg"
+              disabled={store.request.status >= 10 && store.rol < 20}
+            />
+          </div>
+        )}
+
+        {(store.request.pensionType !== "Primera vez" && store.request.knowsCaseLocation !== "No") && (
+          <div>
+            <label className="block mb-2 text-sm">Copia de la Sentencia o Mediación en caso que la hubiere.</label>
+            {formData.archivosAdjuntos.sentencia && (
+              <p className="text-sm text-blue-500">
+                <a href={formData.archivosAdjuntos.sentencia} target="_blank" rel="noopener noreferrer">
+                  Ver documento actual
+                </a>
+              </p>
+            )}
+            <input
+              type="file"
+              onChange={(e) => handleFileChange(e, setSentenciaFile)}
+              className="w-full p-2 bg-gray-800 text-white rounded-lg"
+              disabled={store.request.status >= 10 && store.rol < 20}
+            />
+          </div>
+        )}
+
+        {(store.request.pensionType === "Primera vez" && store.request.pensionCategory === "Mayores de edad hasta 25 años con estudios en curso") && (
+          <div>
+            <label className="block mb-2 text-sm">Cédula del mayor.</label>
+            {formData.archivosAdjuntos.cedulaMayor && (
+              <p className="text-sm text-blue-500">
+                <a href={formData.archivosAdjuntos.cedulaMayor} target="_blank" rel="noopener noreferrer">
+                  Ver documento actual
+                </a>
+              </p>
+            )}
+            <input
+              type="file"
+              onChange={(e) => handleFileChange(e, setCedulaMayorFile)}
+              className="w-full p-2 bg-gray-800 text-white rounded-lg"
+              disabled={store.request.status >= 10 && store.rol < 20}
+            />
+          </div>
+        )}
+
+        {/* Additional Documents Section */}
+        {[...formData.archivosAdjuntos.additionalDocs, ...additionalDocs].map((doc, index) => (
+          <div key={index} className="mt-4">
+            <label className="block mb-2 text-sm">Adjunto Adicional #{index + 1}:</label>
+
+            {/* Verificar si doc es un string antes de mostrar el enlace */}
+            {doc && typeof doc === "string" && (
+              <p className="text-sm text-blue-500">
+                <a href={doc} target="_blank" rel="noopener noreferrer">
+                  Ver documento actual
+                </a>
+              </p>
+            )}
+
+            {/* Input para subir un nuevo archivo */}
+            <input
+              type="file"
+              onChange={(e) => handleFileChange(e, undefined, index)}
+              className="w-full p-2 bg-gray-800 text-white rounded-lg"
+            />
+
+            {/* Botón para eliminar el adjunto */}
+            <button
+              type="button"
+              onClick={() => handleRemoveDocument(index)}
+              className="bg-red-600 hover:bg-red-700 text-white mt-2 font-semibold py-2 px-4 rounded"
+            >
+              Eliminar
+            </button>
+          </div>
+        ))}
+
         <div className="mt-6">
-          {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
-            <>
+          {/* Botón "Agregar Adjunto Adicional" en una línea */}
+          <div className="flex justify-start">
+            <button
+              type="button"
+              onClick={handleAddDocument}
+              className="bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
+            >
+              Agregar Adjunto Adicional
+            </button>
+          </div>
+
+          {/* Botón "Guardar y Continuar" en una nueva línea */}
+          <div className="mt-4">
+            {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
               <button
                 type="submit"
                 className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
@@ -487,13 +399,14 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
                   'Guardar y continuar'
                 )}
               </button>
-            </>
-          )}
+            )}
+          </div>
 
+          {/* Botón "Continuar" si aplica */}
           {store.request.status >= 10 && (
-            <>
+            <div className="mt-6">
               <button
-                className="bg-profile text-white w-full py-3 rounded-lg mt-6"
+                className="bg-profile text-white w-full py-3 rounded-lg"
                 type="button"
                 onClick={() => {
                   setStore((prevState) => ({
@@ -504,9 +417,10 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
               >
                 Continuar
               </button>
-            </>
+            </div>
           )}
         </div>
+
       </form>
     </div>
   );
