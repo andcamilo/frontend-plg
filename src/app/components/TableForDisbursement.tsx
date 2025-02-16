@@ -7,11 +7,12 @@ interface TableForDisbursementProps {
   currentPage: number;
   totalPages: number;
   hasPrevPage: boolean;
-  showActionButtons: boolean;
   hasNextPage: boolean;
+  showActionButtons: boolean;
   onPageChange: (pageNumber: number) => void;
   onEdit: (row: { [key: string]: any }) => void;
   onGetSelectedIds: (selectedIds: string[]) => void; // Callback to pass selected IDs
+  buttonText?: string; // Make buttonText optional
 }
 
 const toCamelCase = (str: string) => {
@@ -32,6 +33,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   onPageChange,
   onEdit,
   onGetSelectedIds,
+  buttonText = "Editar", // Default to "Editar" if not provided
 }) => {
   const columns = data.length > 0 ? Object.keys(data[0]) : [];
   const [selectedRows, setSelectedRows] = useState<{ [key: number]: boolean }>({});
@@ -114,7 +116,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                       onClick={() => onEdit(row)}
                       className="bg-profile text-white px-3 py-1 rounded-lg hover:bg-blue-500"
                     >
-                      Editar
+                      {buttonText}
                     </button>
                   </td>
                 </tr>
@@ -126,8 +128,8 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
         )}
       </div>
 
-       {/* Conditionally Render Action Buttons */}
-       {showActionButtons && (
+      {/* Conditionally Render Action Buttons */}
+      {showActionButtons && (
         <div className="flex justify-end gap-4 mt-4">
           <button
             onClick={handleGetSelectedIds}
@@ -136,13 +138,14 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
             Pre-Aprobar
           </button>
           <button
-            onClick={() => console.log("Crear Gasto clicked")} // Placeholder function
+            onClick={() => console.log('Crear Gasto clicked')} // Placeholder function
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
           >
             Crear Gasto
           </button>
         </div>
       )}
+
       {/* Pagination Controls */}
       <div className="flex justify-between items-center mt-4">
         <button
