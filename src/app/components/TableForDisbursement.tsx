@@ -11,6 +11,7 @@ interface TableForDisbursementProps {
   hasNextPage: boolean;
   onPageChange: (pageNumber: number) => void;
   onEdit: (row: { [key: string]: any }) => void;
+  buttonText: string;
   onGetSelectedIds: (selectedIds: string[]) => void; // Callback to pass selected IDs
 }
 
@@ -31,6 +32,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   hasNextPage,
   onPageChange,
   onEdit,
+  buttonText = "Editar",
   onGetSelectedIds,
 }) => {
   const columns = data.length > 0 ? Object.keys(data[0]) : [];
@@ -114,7 +116,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                       onClick={() => onEdit(row)}
                       className="bg-profile text-white px-3 py-1 rounded-lg hover:bg-blue-500"
                     >
-                      Editar
+                      {buttonText}
                     </button>
                   </td>
                 </tr>

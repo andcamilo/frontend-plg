@@ -25,7 +25,6 @@ const ListInvoices: React.FC = () => {
       const invoices = response.data?.data || [];
 
       setData(invoices);
-      // Pagination handling
       setCurrentPage(page);
       setTotalPages(Math.ceil(invoices.length / rowsPerPage));
       setHasPrevPage(page > 1);
@@ -84,6 +83,7 @@ const ListInvoices: React.FC = () => {
         hasNextPage={hasNextPage}
         onPageChange={handlePageChange}
         onEdit={handleEdit}
+        buttonText='Ver'
         showActionButtons={true}
         onGetSelectedIds={handleGetSelectedIds}
       />
