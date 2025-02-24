@@ -8,31 +8,71 @@ const FaqComponent: React.FC = () => {
 
   const faqItems = [
     {
-      question: '¿Qué es LEGIX?',
-      answer:
-        'Es una plataforma de trámites legales digitales y el producto digital de Panama Legal Group, que permite a los usuarios realizar una variedad de trámites legales de manera electrónica, simplificando el proceso y eliminando la necesidad de visitar físicamente las oficinas gubernamentales o legales. Esto nos permite gestionar los procesos de manera más eficiente y transparente, sin perder la atención personalizada.',
+        question: '¿Qué es LEGIX?',
+        answer:
+            'Es una plataforma de trámites legales digitales y el producto digital de Panama Legal Group, que permite a los usuarios realizar una variedad de trámites legales de manera electrónica.',
     },
     {
-      question: '¿Cómo puedo rastrear el progreso de mi solicitud en tiempo real a través de su plataforma?',
-      answer:
-        'Nuestra plataforma en línea te permitirá seguir cada paso del proceso y recibir actualizaciones regulares garantizando así nuestro servicio. Una vez hayas realizado el ingreso de tus generales como solicitante, se te remitirá un correo electrónico con la contraseña para que ingreses con tu correo. Puedes ingresar a tu perfil en cualquier momento y dar seguimiento en línea de tu trámite. Nuestros abogados de igual forma se mantendrán en contacto contigo, manteniendo la atención personalizada que mereces. Puedes escoger también el envío de un correo por cada avance.',
+        question: '¿Cómo puedo rastrear el progreso de mi solicitud en tiempo real?',
+        answer:
+            'Nuestra plataforma en línea te permitirá seguir cada paso del proceso y recibir actualizaciones regulares garantizando así nuestro servicio.',
     },
     {
-      question: '¿Tienen algún tipo de política de devolución o garantía si mi solicitud no se gestiona?',
-      answer:
-        'En situaciones excepcionales donde una solicitud no puede ser aprobada por razones fuera de tu control, trabajaremos contigo para encontrar soluciones o ajustes necesarios, o la devolución de los fondos si es necesario. Comunica cualquier problema y trabajaremos juntos para resolverlo. Por supuesto, en aquellos casos que la firma por algún motivo no realice el proceso por alguna naturaleza, gestionamos una política de devolución.',
+        question: '¿Tienen algún tipo de política de devolución o garantía?',
+        answer:
+            'En situaciones excepcionales donde una solicitud no puede ser aprobada por razones fuera de tu control, trabajaremos contigo para encontrar soluciones o ajustes necesarios.',
     },
     {
-      question: '¿Qué pasa si necesito otros servicios no están en el formulario digital?',
-      answer:
-        '¡No pasa nada! Incluye al final del requerimiento cualquier otra asistencia que necesites, y nuestro personal idóneo se comunicará contigo para las gestiones correspondientes y así poder brindarte el apoyo que requieras. También puedes ir a nuestro trámite de Solicitud de Consultas.',
+        question: '¿Qué pasa si necesito otros servicios no están en el formulario digital?',
+        answer:
+            'Incluye cualquier asistencia que necesites al final del requerimiento y nuestro personal se comunicará contigo para brindarte el apoyo correspondiente.',
     },
     {
-      question: '¿Incluirán más trámites digitales?',
-      answer:
-        'Sí, vamos a estar incluyendo distintos trámites digitales paulatinamente para brindar un mejor servicio a nuestros clientes.',
+        question: '¿Incluirán más trámites digitales?',
+        answer:
+            'Sí, estaremos incluyendo nuevos trámites digitales para brindar un mejor servicio.',
     },
-  ];
+    {
+        question: '¿Cómo accedo a los trámites?',
+        answer:
+            'Escoge el proceso y llena la información general, recibirás un correo electrónico con la clave para dar seguimiento.',
+    },
+    {
+        question: '¿Qué información se introduce en los datos generales del solicitante?',
+        answer:
+            'Puede ser cualquier persona que tenga el acceso al formulario, y puede gestionarlo en nombre de terceros.',
+    },
+    {
+        question: '¿Es segura la plataforma en términos de privacidad y protección de datos?',
+        answer:
+            'Sí, utilizamos tecnologías de cifrado y seguimos las mejores prácticas de seguridad para proteger la información de nuestros usuarios.',
+    },
+    {
+        question: '¿Puedo obtener asesoramiento o solicitar propuestas legales en la plataforma?',
+        answer:
+            'Sí, ofrecemos servicios de asesoramiento legal a través del trámite Consulta – Propuesta Legal.',
+    },
+    {
+        question: '¿Cuáles son los costos asociados con el uso de la plataforma?',
+        answer:
+            'Los costos pueden variar según el tipo de trámite y los servicios adicionales que elijas.',
+    },
+    {
+        question: '¿Qué documentos necesito para realizar un trámite específico?',
+        answer:
+            'Cada trámite puede requerir documentos específicos, nuestra plataforma te guiará a través de los requisitos.',
+    },
+    {
+        question: '¿Cuánto tiempo se tarda en completar un trámite?',
+        answer:
+            'El tiempo necesario para completar un trámite puede variar según su complejidad y la velocidad de respuesta de las entidades gubernamentales involucradas.',
+    },
+    {
+        question: '¿Qué sucede si tengo problemas técnicos mientras utilizo la plataforma?',
+        answer:
+            'Si experimentas problemas técnicos, puedes contactarte con nuestro servicio de soporte técnico para resolver cualquier inconveniente.',
+    },
+];
 
   const handleChange = (panel: number) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
