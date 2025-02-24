@@ -16,6 +16,21 @@
   }
 }
 
+.styleUL {
+  margin-bottom: 16px;
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.saltoLineaP {
+  margin-bottom: 16px;
+}
+
+ul ul {
+  list-style-type: disc !important;
+  margin-left: 20px;
+}
+
 .table-bordered tbody tr:not(:last-child) {
   border-bottom: 1px solid #4B5563;
 }

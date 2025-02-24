@@ -12,6 +12,7 @@ import countryCodes from '@utils/countryCode';
 const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>('office');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [invalidFields, setInvalidFields] = useState<{ [key: string]: boolean }>({});
 
   const context = useContext(AppStateContext);
 
@@ -58,6 +59,42 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    let errores: { campo: string; mensaje: string }[] = [];
+
+    // 🔹 Validación de campos en orden
+    if (selectedOption === 'home') {
+      if (!formData.direccion) {
+        errores.push({ campo: 'direccion', mensaje: 'Debe introducir la dirección.' });
+      } else if (!formData.dia) {
+        errores.push({ campo: 'dia', mensaje: 'Debe introducir el día.' });
+      } else if (!formData.telefono) {
+        errores.push({ campo: 'telefono', mensaje: 'Debe introducir su número de teléfono.' });
+      } else if (!formData.hora) {
+        errores.push({ campo: 'hora', mensaje: 'Debe introducir la hora.' });
+      }
+    }
+
+    if (errores.length > 0) {
+      const primerError = errores[0]; // 🚀 Tomamos solo el primer error 
+
+      setInvalidFields({ [primerError.campo]: true }); // Marcar solo el campo con error
+
+      Swal.fire({
+        icon: 'warning',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+        text: primerError.mensaje,
+      });
+
+      document.getElementsByName(primerError.campo)[0]?.focus();
+      return;
+    }
+
+    setInvalidFields({});
     setIsLoading(true);
 
     const firmaYEntregaData = {
@@ -126,6 +163,13 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
       ...prevData,
       [name]: value,
     }));
+    setInvalidFields((prev) => ({ ...prev, [name]: false }));
+  };
+
+  const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
+
+  const toggleModal = () => {
+    setShowModal(!showModal); // Alterna el estado del modal
   };
 
   const handleCountryChange = (name: string, value: string) => {
@@ -138,7 +182,62 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
       {/* Header Section */}
-      <h2 className="text-3xl font-bold mb-4">Información sobre la Firma y Entrega</h2>
+      <h1 className="text-white text-4xl font-bold flex items-center">
+        Información sobre la Firma y Entrega
+        <button
+          className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+          type="button"
+          onClick={toggleModal}
+        >
+          <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+            <i className="fa-solid fa-info text-sm"></i>
+          </span>
+        </button>
+      </h1>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
+            <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+              <h2 className="text-white text-xl">Información sobre la Firma y Entrega</h2>
+              <button
+                className="text-white"
+                onClick={toggleModal} // Cierra el modal
+              >
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <div className="p-4 text-white">
+              <h5 className="text-lg">Información</h5>
+              <p className="mt-2 texto_justificado">
+                Descubre en este Clip cada detalle que te ayudará a entender el tipo de información que debes anexar en esta sección.
+                <br />
+                <br />
+                ¡No dudes en explorar nuestros videos!
+              </p>
+              <h5 className="text-lg mt-4">Video</h5>
+              <iframe
+                width="100%"
+                height="315"
+                src="https://www.youtube.com/embed/bND1jqKk1p8"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              ></iframe>
+            </div>
+            <div className="p-4 border-t border-gray-600 text-right">
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                onClick={toggleModal} // Cierra el modal
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <p className="mb-6">
         En esta sección debes elegir el lugar en donde deseas entregar las pruebas y gestionar la firma de Poder correspondiente para comenzar tu trámite.
       </p>
@@ -232,7 +331,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
               name="direccion"
               value={formData.direccion}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+              className={`w-full p-2 border ${invalidFields.direccion ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
               placeholder="Dirección"
             />
           </div>
@@ -247,7 +346,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
                   name="dia"
                   value={formData.dia}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  className={`w-full p-2 border ${invalidFields.dia ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
               </div>
@@ -259,7 +358,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
                   name="hora"
                   value={formData.hora}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  className={`w-full p-2 border ${invalidFields.hora ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                 />
               </div>
             </div>
@@ -278,7 +377,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
                   name="telefono"
                   value={formData.telefono}
                   onChange={handleChange}
-                  className="p-4 bg-gray-800 text-white rounded-lg w-full"
+                  className={`w-full p-2 border ${invalidFields.telefono ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                   placeholder="Número de teléfono"
                   required
                   disabled={store.request.status >= 10 && store.rol < 20}
