@@ -50,9 +50,10 @@ const TerminoCondiciones: React.FC = () => {
                     <strong>ACEPTACIÓN DE LOS TÉRMINOS DE USO</strong>
                 </p>
 
-                <p className='texto_justificado saltoLineaP'  >
-                    Al utilizar este sitio web ("Sitio") y registrarte para acceder a nuestros servicios, tú, como usuario ("Usuario"), aceptas y te comprometes a cumplir con nuestros Términos de Uso. Por lo tanto, antes de proceder con el registro y utilizar este Sitio o cualquiera de nuestros servicios, es importante que leas y comprendas completamente nuestros Términos de Uso y Políticas de Privacidad.
+                <p className='texto_justificado saltoLineaP'>
+                Al utilizar este sitio web (&quot;Sitio&quot;) y registrarte para acceder a nuestros servicios, tú, como usuario (&quot;Usuario&quot;), aceptas y te comprometes a cumplir con nuestros Términos de Uso. Por lo tanto, antes de proceder con el registro y utilizar este Sitio o cualquiera de nuestros servicios, es importante que leas y comprendas completamente nuestros Términos de Uso y Políticas de Privacidad.
                 </p>
+
 
                 <p className='texto_justificado saltoLineaP'  >
                     Nuestros servicios, disponibles a través del Sitio, te permiten acceder a una variedad de trámites que ofrecemos en esta plataforma, así como a otros servicios adicionales que podrían facilitarte aún más el proceso.
@@ -69,9 +70,10 @@ const TerminoCondiciones: React.FC = () => {
                 <p className='texto_justificado saltoLineaP'  >
                     Si usted no acepta los términos y condiciones, no podrá concluir con el registro en el sitio.
                 </p>
-                <p className='texto_justificado saltoLineaP'  >
-                    Al abrir una cuenta para utilizar el Servicio ("Cuenta"), Usted declara expresamente y garantiza que:
+                <p className='texto_justificado saltoLineaP'>
+                    Al abrir una cuenta para utilizar el Servicio (&quot;Cuenta&quot;), Usted declara expresamente y garantiza que:
                 </p>
+
 
                 <ul className='texto_justificado styleUL'  >
                     <li>Ha aceptado los Términos y Condiciones, y Políticas de Privacidad.</li>
@@ -260,9 +262,10 @@ const TerminoCondiciones: React.FC = () => {
                     <strong>Sitios Web Externos</strong>
                 </p>
 
-                <p className='texto_justificado saltoLineaP'  >
-                    Este sitio web puede incluir enlaces o referencias a otros sitios web externos (en adelante, "Sitios Web Externos"), pero es importante destacar que no tenemos ningún control sobre estos recursos. Es responsabilidad del usuario comprender que el sitio no se hace responsable de la disponibilidad ni del contenido de estos Sitios Web Externos.
+                <p className='texto_justificado saltoLineaP'>
+                    Este sitio web puede incluir enlaces o referencias a otros sitios web externos (en adelante, &quot;Sitios Web Externos&quot;), pero es importante destacar que no tenemos ningún control sobre estos recursos. Es responsabilidad del usuario comprender que el sitio no se hace responsable de la disponibilidad ni del contenido de estos Sitios Web Externos.
                 </p>
+
 
                 <p className='texto_justificado saltoLineaP'  >
                     El usuario debe comprometerse a revisar las políticas de uso que están publicadas por otros sitios en relación con temas como la privacidad antes de utilizarlos. El sitio no asume ninguna responsabilidad por el contenido de los Sitios Web Externos, incluyendo opiniones, consejos, declaraciones, precios, actividades y anuncios que puedan encontrarse en ellos.
