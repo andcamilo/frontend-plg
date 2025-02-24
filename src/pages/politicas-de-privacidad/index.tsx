@@ -19,7 +19,10 @@ const PrivacyPolicy: React.FC = () => {
 
                 <p className='texto_justificado saltoLineaP'  >Este documento tiene como objetivo principal salvaguardar el derecho a la protección de los datos de las personas físicas que se relacionan con LEGIX o Panama Legal Group, directa o indirectamente, y de la cual esta realiza cualquier tipo de recopilación de datos, indistintamente de la fuente, para ejercer los fines de la sociedad. Para LEGIX o Panama Legal Group, la privacidad y la protección de datos son fundamentales en sus operaciones, y su principal compromiso es proteger los derechos de los titulares y garantizar que puedan ejercer en todo momento sus derechos.</p>
 
-                <p className='texto_justificado saltoLineaP'  >A fin de proporcionar un contexto más amplio, el Tratamiento de Datos Personales se define como "cualquier operación o conjunto de operaciones o procedimientos técnicos, ya sea automatizados o no, que permita recolectar, almacenar, grabar, organizar, elaborar, seleccionar, extraer, confrontar, interconectar, asociar, disociar, comunicar, ceder, intercambiar, transferir, transmitir o cancelar datos, o utilizarlos de cualquier otra forma".</p>
+                <p className='texto_justificado saltoLineaP'>
+                A fin de proporcionar un contexto más amplio, el Tratamiento de Datos Personales se define como &quot;cualquier operación o conjunto de operaciones o procedimientos técnicos, ya sea automatizados o no, que permita recolectar, almacenar, grabar, organizar, elaborar, seleccionar, extraer, confrontar, interconectar, asociar, disociar, comunicar, ceder, intercambiar, transferir, transmitir o cancelar datos, o utilizarlos de cualquier otra forma&quot;.
+                </p>
+
 
                 <p className='texto_justificado saltoLineaP'  ><strong>Ámbito de Aplicación</strong></p>
                 <p className='texto_justificado saltoLineaP'  >Esta política se aplica a las operaciones internas de LEGIX o Panama Legal Group, a sus colaboradores y a su relación con clientes y socios comerciales.</p>
@@ -69,7 +72,10 @@ const PrivacyPolicy: React.FC = () => {
 
                 <p className='texto_justificado saltoLineaP'  >Los datos personales que LEGIX o Panama Legal Group trata son proporcionados por los clientes y socios comerciales que contratan sus servicios. Esto implica que la base legal para el tratamiento de los datos proviene de una relación contractual y garantiza la confidencialidad y la protección de la privacidad de los datos. Los datos personales que trata LEGIX o Panama Legal Group son necesarios para llevar a cabo la actividad comercial y se tratan con ese fin específico.</p>
 
-                <p className='texto_justificado saltoLineaP'  >De acuerdo con la Ley N° 81 de 2019 y su Reglamento, los datos personales se entienden como "cualquier información relacionada con personas naturales que las identifica o las hace identificables". Estos datos personales incluyen, entre otros:</p>
+                <p className='texto_justificado saltoLineaP'>
+                    De acuerdo con la Ley N° 81 de 2019 y su Reglamento, los datos personales se entienden como &quot;cualquier información relacionada con personas naturales que las identifica o las hace identificables&quot;. Estos datos personales incluyen, entre otros:
+                </p>
+
 
                 <ul className='texto_justificado styleUL'  >
                     <li>Nombre completo.</li>
