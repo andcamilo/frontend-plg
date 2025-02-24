@@ -10,12 +10,10 @@ const HomeFooter: React.FC = () => {
   return (
     <footer className="bg-component text-white py-8">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 px-4">
-
         <div>
           <Image src={Logo} alt="Logo" width={210} height={82} className="mr-8" />
           <p className='text-gray-200'>Trámites Legales en Línea de Panama Legal Group.</p>
         </div>
-
 
         <div>
           <h4 className="font-bold text-xl mb-4">Solicitudes</h4>
@@ -43,18 +41,19 @@ const HomeFooter: React.FC = () => {
           </ul>
         </div>
 
-
-
         <div>
           <h4 className="font-bold  text-xl mb-4">Mi Cuenta</h4>
           <ul>
+            <li>
               <Link href="/login" className="hover:underline block">
                 Ingresar
               </Link>
+            </li>
+            <li>
               <Link href="/request/corporativo" className="hover:underline block">
                 Corporativo
               </Link>
-
+            </li>
           </ul>
         </div>
 
@@ -62,24 +61,43 @@ const HomeFooter: React.FC = () => {
           <h4 className="font-bold  text-xl mb-4">Nosotros</h4>
           <ul>
             <li>
-              <a
-                href="https://panamalegalgroup.com/" className="hover:underline" target="_blank" rel="noopener noreferrer"
+              <Link
+                href="https://panamalegalgroup.com/"
+                className="hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 Sobre nosotros
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="https://wa.me/50769853352" className="hover:underline" target="_blank" rel="noopener noreferrer"
+              <Link
+                href="https://wa.me/50769853352"
+                className="hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 Ayuda
-              </a>
+              </Link>
             </li>
-            <li><a href="mailto:info@panamalegalgroup.com" className="hover:underline">Contacto</a></li>
+            <li>
+              <Link href="mailto:info@panamalegalgroup.com" className="hover:underline">
+                Contacto
+              </Link>
+            </li>
             <Link href="/faqs" className="hover:underline block">
-                 FAQs
+              FAQs
             </Link>
-            <li><a href="/politicas-de-privacidad" className="hover:underline">Políticas de privacidad</a></li>
-            <li><a href="/termino-condiciones" className="hover:underline">Términos y condiciones</a></li>
+            <li>
+              <Link href="/politicas-de-privacidad" className="hover:underline">
+                Políticas de privacidad
+              </Link>
+            </li>
+            <li>
+              <Link href="/termino-condiciones" className="hover:underline">
+                Términos y condiciones
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
