@@ -9,6 +9,7 @@ export interface ConsultaState {
     solicitudId: string;
     token: string;
     rol: number;
+    request: any;
 };
 
 export interface ConsultaContextType {
@@ -23,6 +24,7 @@ const initialState: ConsultaState = {
     solicitudId: '',
     token: '',
     rol: -1,
+    request: {},
 };
 
 const ConsultaContext = createContext<ConsultaContextType | undefined>(undefined);

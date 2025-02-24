@@ -30,7 +30,7 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false); // Add loading state
-
+  const [invalidFields, setInvalidFields] = useState<{ [key: string]: boolean }>({});
   const context = useContext(AppStateContext);
 
   if (!context) {
@@ -100,6 +100,7 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
         sumaTotal: calculateTotal(updatedFormData), // Recalcular total automáticamente
       };
     });
+    setInvalidFields((prev) => ({ ...prev, [name]: false }));
   };
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -122,6 +123,69 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    let errores: { campo: string; mensaje: string }[] = [];
+
+    // 🔹 Validación de campos en orden
+    if (formData.mensualidadEscolar < 0) {
+      errores.push({ campo: 'mensualidadEscolar', mensaje: 'Debe ingresar una mensualidad escolar válida.' });
+    } else if (formData.vestuario < 0) {
+      errores.push({ campo: 'vestuario', mensaje: 'Debe ingresar un monto válido para vestuario.' });
+    } else if (formData.recreacion < 0) {
+      errores.push({ campo: 'recreacion', mensaje: 'Debe ingresar un monto válido para recreación.' });
+    } else if (formData.atencionMedica < 0) {
+      errores.push({ campo: 'atencionMedica', mensaje: 'Debe ingresar un monto válido para atención médica.' });
+    } else if (formData.medicamentos < 0) {
+      errores.push({ campo: 'medicamentos', mensaje: 'Debe ingresar un monto válido para medicamentos.' });
+    } else if (formData.habitacion < 0) {
+      errores.push({ campo: 'habitacion', mensaje: 'Debe ingresar un monto válido para habitación (alquiler o hipoteca).' });
+    } else if (formData.agua < 0) {
+      errores.push({ campo: 'agua', mensaje: 'Debe ingresar un monto válido para la factura de agua.' });
+    } else if (formData.luz < 0) {
+      errores.push({ campo: 'luz', mensaje: 'Debe ingresar un monto válido para la factura de luz.' });
+    } else if (formData.telefono < 0) {
+      errores.push({ campo: 'telefono', mensaje: 'Debe ingresar un monto válido para la factura de teléfono.' });
+    } else if (formData.matricula < 0) {
+      errores.push({ campo: 'matricula', mensaje: 'Debe ingresar un monto válido para matrícula escolar.' });
+    } else if (formData.cuotaPadres < 0) {
+      errores.push({ campo: 'cuotaPadres', mensaje: 'Debe ingresar un monto válido para cuota de padres en educación.' });
+    } else if (formData.uniformes < 0) {
+      errores.push({ campo: 'uniformes', mensaje: 'Debe ingresar un monto válido para uniformes.' });
+    } else if (formData.textosLibros < 0) {
+      errores.push({ campo: 'textosLibros', mensaje: 'Debe ingresar un monto válido para textos y libros.' });
+    } else if (formData.utiles < 0) {
+      errores.push({ campo: 'utiles', mensaje: 'Debe ingresar un monto válido para útiles escolares.' });
+    } else if (formData.transporte < 0) {
+      errores.push({ campo: 'transporte', mensaje: 'Debe ingresar un monto válido para transporte.' });
+    } else if (formData.meriendas < 0) {
+      errores.push({ campo: 'meriendas', mensaje: 'Debe ingresar un monto válido para meriendas.' });
+    } else if (formData.supermercado < 0) {
+      errores.push({ campo: 'supermercado', mensaje: 'Debe ingresar un monto válido para supermercado.' });
+    } else if (formData.otros < 0) {
+      errores.push({ campo: 'otros', mensaje: 'Debe ingresar un monto válido para otros gastos.' });
+    }
+
+
+    if (errores.length > 0) {
+      const primerError = errores[0]; // 🚀 Tomamos solo el primer error 
+
+      setInvalidFields({ [primerError.campo]: true }); // Marcar solo el campo con error
+
+      Swal.fire({
+        icon: 'warning',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+        text: primerError.mensaje,
+      });
+
+      document.getElementsByName(primerError.campo)[0]?.focus();
+      return;
+    }
+
+    setInvalidFields({});
     setIsLoading(true); // Set loading state to true before making the API request
 
     try {
@@ -194,9 +258,69 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
     }
   };
 
+  const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
+
+  const toggleModal = () => {
+    setShowModal(!showModal); // Alterna el estado del modal
+  };
+
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
-      <h2 className="text-3xl font-bold mb-4">Información sobre Gastos del Pensionado</h2>
+      <h1 className="text-white text-4xl font-bold flex items-center">
+        Información sobre Gastos del Pensionado
+        <button
+          className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
+          type="button"
+          onClick={toggleModal}
+        >
+          <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
+            <i className="fa-solid fa-info text-sm"></i>
+          </span>
+        </button>
+      </h1>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
+            <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+              <h2 className="text-white text-xl">Información sobre Gastos del Pensionado</h2>
+              <button
+                className="text-white"
+                onClick={toggleModal} // Cierra el modal
+              >
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <div className="p-4 text-white">
+              <h5 className="text-lg">Información</h5>
+              <p className="mt-2 texto_justificado">
+                Descubre en este Clip cada detalle que te ayudará a entender el tipo de información que debes anexar en esta sección.
+                <br />
+                <br />
+                ¡No dudes en explorar nuestros videos!
+              </p>
+              <h5 className="text-lg mt-4">Video</h5>
+              <iframe
+                width="100%"
+                height="315"
+                src="https://www.youtube.com/embed/bND1jqKk1p8"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              ></iframe>
+            </div>
+            <div className="p-4 border-t border-gray-600 text-right">
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md"
+                onClick={toggleModal} // Cierra el modal
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <p className="mb-4">
         En esta sección debes indicar los gastos mensuales aproximados que mantiene la persona que requiere la pensión. Si existe alguno que no se encuentre detallado, elige la opción otros y coloca el monto correspondiente a los gastos que no se encuentran en la descripción:
       </p>

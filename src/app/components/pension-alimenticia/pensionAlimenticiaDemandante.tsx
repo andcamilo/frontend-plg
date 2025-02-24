@@ -133,6 +133,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
   const [provincias, setProvincias] = useState<SelectOption[]>([]);
   const [corregimientos, setCorregimientos] = useState<SelectOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [invalidFields, setInvalidFields] = useState<{ [key: string]: boolean }>({});
 
   const context = useContext(AppStateContext);
 
@@ -248,12 +249,10 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setInvalidFields((prev) => ({ ...prev, [name]: false }));
   };
 
   const handleSelectChange = (name: string, selectedOption: SelectOption | null) => {
@@ -261,6 +260,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
       ...prevData,
       [name]: selectedOption ? { value: selectedOption.value, label: selectedOption.label } : { value: '', label: '' },
     }));
+    setInvalidFields((prev) => ({ ...prev, [name]: false }));
   };
 
   const handleCountryChange = (name: string, value: string) => {
@@ -270,17 +270,106 @@ const PensionAlimenticiaDemandante: React.FC = () => {
     }));
   };
 
+  // Función para validar emails
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  // Función para validar números
+  const validateNumber = (value: string) => {
+    return /^[0-9]+$/.test(value);
+  };
+
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (formData.email !== formData.confirmEmail) {
+    let errores: { campo: string; mensaje: string }[] = [];
+
+    // 🔹 Validación de campos en orden
+    if (!formData.nombreCompleto.trim()) {
+      errores.push({ campo: 'nombreCompleto', mensaje: 'Debe introducir su nombre completo.' });
+    } else if (!formData.telefonoSolicita) {
+      errores.push({ campo: 'telefonoSolicita', mensaje: 'Debe introducir el número de teléfono.' });
+    } else if (!formData.cedula.trim()) {
+      errores.push({ campo: 'cedula', mensaje: 'Debe ingresar su cédula.' });
+    } else if (!validateEmail(formData.email.trim())) {
+      errores.push({ campo: 'email', mensaje: 'Debe ingresar un correo electrónico válido.' });
+    } else if (formData.email !== formData.confirmEmail) {
+      errores.push({ campo: 'confirmEmail', mensaje: 'Los correos electrónicos no coinciden.' });
+    } else if (!formData.nacionalidad.value) {
+      errores.push({ campo: 'nacionalidad', mensaje: 'Debe seleccionar su nacionalidad.' });
+    } else if (!formData.paisDondeVive.value) {
+      errores.push({ campo: 'paisDondeVive', mensaje: 'Debe seleccionar el país donde vive.' });
+    } else if (!formData.direccion.trim()) {
+      errores.push({ campo: 'direccion', mensaje: 'Debe ingresar su dirección.' });
+    } else if (!formData.detalleDireccion.trim()) {
+      errores.push({ campo: 'detalleDireccion', mensaje: 'Debe ingresar detalles de su dirección.' });
+    } else if (!formData.estadoCivil.value) {
+      errores.push({ campo: 'estadoCivil', mensaje: 'Debe seleccionar su estado civil.' });
+    } else if (!formData.relacionDemandado.value) {
+      errores.push({ campo: 'relacionDemandado', mensaje: 'Debe seleccionar su relación con el demandado.' });
+    } else if (formData.mantieneIngresos.value === "si") {
+      if (!formData.lugarTrabajo) {
+        errores.push({ campo: 'lugarTrabajo', mensaje: 'Debe introducir el lugar de trabajo.' });
+      } else if (!formData.ingresosMensuales) {
+        errores.push({ campo: 'ingresosMensuales', mensaje: 'Debe introducir los ingresos mensuales.' });
+      } else if (!formData.ocupacion) {
+        errores.push({ campo: 'ocupacion', mensaje: 'Debe introducir la ocupación.' });
+      }
+    }
+
+    // 🔹 Si hay errores, mostrar solo el primero
+    if (errores.length > 0) {
+      const primerError = errores[0]; // 🚀 Tomamos solo el primer error
+
+      setInvalidFields({ [primerError.campo]: true }); // Marcar solo el campo con error
+
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Los correos electrónicos no coinciden. Por favor, verifica e intenta de nuevo.',
+        icon: 'warning',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+        text: primerError.mensaje,
       });
+
+      document.getElementsByName(primerError.campo)[0]?.focus();
       return;
     }
+
+    if (formData.estudia.value === "si") {
+      if (!formData.lugarEstudio) {
+        errores.push({ campo: 'lugarEstudio', mensaje: 'Debe introducir el lugar de estudio.' });
+      } else if (!formData.anoCursando) {
+        errores.push({ campo: 'anoCursando', mensaje: 'Debe introducir el año que está cursando..' });
+      }
+    }
+
+    if (errores.length > 0) {
+      const primerError = errores[0]; // 🚀 Tomamos solo el primer error
+
+      setInvalidFields({ [primerError.campo]: true }); // Marcar solo el campo con error
+
+      Swal.fire({
+        icon: 'warning',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+        text: primerError.mensaje,
+      });
+
+      document.getElementsByName(primerError.campo)[0]?.focus();
+      return;
+    }
+
+    // 🔹 Si no hay errores, asegurarse de resetear el estado de errores
+    setInvalidFields({});
 
     setIsLoading(true);
 
@@ -398,15 +487,13 @@ const PensionAlimenticiaDemandante: React.FC = () => {
       <form className="space-y-6 mt-5" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block mb-2 text-sm">Nombre completo</label>
+            <label>Nombre Completo</label>
             <input
               type="text"
               name="nombreCompleto"
               value={formData.nombreCompleto}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              required
-              disabled={store.request.status >= 10 && store.rol < 20}
+              className={`w-full p-2 border ${invalidFields.nombreCompleto ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
             />
           </div>
           <div className="w-full">
@@ -425,9 +512,8 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 name="telefonoSolicita"
                 value={formData.telefonoSolicita}
                 onChange={handleChange}
-                className="p-4 bg-gray-800 text-white rounded-lg w-full"
+                className={`w-full p-2 border ${invalidFields.telefonoSolicita ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                 placeholder="Número de teléfono"
-                required
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
@@ -439,8 +525,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               name="cedula"
               value={formData.cedula}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              required
+              className={`w-full p-2 border ${invalidFields.cedula ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
@@ -451,8 +536,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               name="direccion"
               value={formData.direccion}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              required
+              className={`w-full p-2 border ${invalidFields.direccion ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
@@ -463,8 +547,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              required
+              className={`w-full p-2 border ${invalidFields.email ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
@@ -475,8 +558,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               name="confirmEmail"
               value={formData.confirmEmail}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              required
+              className={`w-full p-2 border ${invalidFields.confirmEmail ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
@@ -487,7 +569,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               value={paises.find(p => p.value === formData.nacionalidad.value)}
               onChange={(option) => handleSelectChange('nacionalidad', option)}
               styles={customSelectStyles}
-              required
+              className={invalidFields.nacionalidad ? 'border-red-500' : ''}
             />
           </div>
           <div>
@@ -497,7 +579,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               value={paises.find(p => p.value === formData.paisDondeVive.value)}
               onChange={(option) => handleSelectChange('paisDondeVive', option)}
               styles={customSelectStyles}
-              required
+              className={invalidFields.paisDondeVive ? 'border-red-500' : ''}
             />
           </div>
           {formData.paisDondeVive.value === 'PA' && (
@@ -509,7 +591,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                   value={provincias.find(p => p.value === formData.provincia.value)}
                   onChange={(option) => handleSelectChange('provincia', option)}
                   styles={customSelectStyles}
-                /* isDisabled={formData.paisDondeVive.value !== 'PA'} */
+                  className={invalidFields.provincia ? 'border-red-500' : ''}
                 />
               </div>
 
@@ -520,7 +602,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                   value={corregimientos.find(c => c.value === formData.corregimiento.value)}
                   onChange={(option) => handleSelectChange('corregimiento', option)}
                   styles={customSelectStyles}
-                /* isDisabled={!formData.provincia.value} */
+                  className={invalidFields.corregimiento ? 'border-red-500' : ''}
                 />
               </div>
             </>
@@ -535,7 +617,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                   name="provincia2"
                   value={formData.provincia2}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  className={`w-full p-2 border ${invalidFields.Provincia2 ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
               </div>
@@ -547,7 +629,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                   name="Corregimiento2"
                   value={formData.corregimiento2}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                  className={`w-full p-2 border ${invalidFields.corregimiento2 ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                   disabled={store.request.status >= 10 && store.rol < 20}
                 />
               </div>
@@ -560,8 +642,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               name="detalleDireccion"
               value={formData.detalleDireccion}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
-              required
+              className={`w-full p-2 border ${invalidFields.detalleDireccion ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
               disabled={store.request.status >= 10 && store.rol < 20}
             />
           </div>
@@ -572,7 +653,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               value={estadoCivilOptions.find(ec => ec.value === formData.estadoCivil.value)}
               onChange={(option) => handleSelectChange('estadoCivil', option)}
               styles={customSelectStyles}
-              required
+              className={invalidFields.estadoCivil ? 'border-red-500' : ''}
             />
           </div>
           <div>
@@ -582,7 +663,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               value={relacionDemandadoOptions.find(rd => rd.value === formData.relacionDemandado.value)}
               onChange={(option) => handleSelectChange('relacionDemandado', option)}
               styles={customSelectStyles}
-              required
+              className={invalidFields.relacionDemandado ? 'border-red-500' : ''}
             />
           </div>
         </div>
@@ -595,7 +676,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               value={mantieneIngresosOptions.find(mi => mi.value === formData.mantieneIngresos.value)}
               onChange={(option) => handleSelectChange('mantieneIngresos', option)}
               styles={customSelectStyles}
-              required
+              className={invalidFields.mantieneIngresos ? 'border-red-500' : ''}
             />
           </div>
         </div>
@@ -609,7 +690,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 name="lugarTrabajo"
                 value={formData.lugarTrabajo}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                className={`w-full p-2 border ${invalidFields.lugarTrabajo ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
@@ -620,18 +701,18 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 name="ingresosMensuales"
                 value={formData.ingresosMensuales}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                className={`w-full p-2 border ${invalidFields.ingresosMensuales ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
             <div>
-              <label className="block mb-2 text-sm">Ocupacion</label>
+              <label className="block mb-2 text-sm">Ocupación</label>
               <input
                 type="text"
                 name="ocupacion"
                 value={formData.ocupacion}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                className={`w-full p-2 border ${invalidFields.ocupacion ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
@@ -642,6 +723,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 value={viveEnOptions.find(vive => vive.value === formData.viveEn.value)}
                 onChange={(option) => handleSelectChange('viveEn', option)}
                 styles={customSelectStyles}
+                className={invalidFields.viveEn ? 'border-red-500' : ''}
               />
             </div>
           </div>
@@ -656,7 +738,6 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               value={estudiaOptions.find(est => est.value === formData.estudia.value)}
               onChange={(option) => handleSelectChange('estudia', option)}
               styles={customSelectStyles}
-              required
             />
           </div>
         </div>
@@ -671,7 +752,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 name="lugarEstudio"
                 value={formData.lugarEstudio}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                className={`w-full p-2 border ${invalidFields.lugarEstudio ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
@@ -682,7 +763,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 name="anoCursando"
                 value={formData.anoCursando}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-700 rounded bg-gray-800 text-white"
+                className={`w-full p-2 border ${invalidFields.anoCursando ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
                 disabled={store.request.status >= 10 && store.rol < 20}
               />
             </div>
@@ -693,6 +774,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 value={tipoEstudioOptions.find(tipo => tipo.value === formData.tipoEstudio.value)}
                 onChange={(option) => handleSelectChange('tipoEstudio', option)}
                 styles={customSelectStyles}
+                className={invalidFields.tipoEstudio ? 'border-red-500' : ''}
               />
             </div>
             <div>
@@ -702,6 +784,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 value={tiempoCompletoOptions.find(tc => tc.value === formData.tiempoCompleto.value)}
                 onChange={(option) => handleSelectChange('tiempoCompleto', option)}
                 styles={customSelectStyles}
+                className={invalidFields.tiempoCompleto ? 'border-red-500' : ''}
               />
             </div>
             <div>
@@ -711,6 +794,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
                 value={parentescoPensionOptions.find(par => par.value === formData.parentescoPension.value)}
                 onChange={(option) => handleSelectChange('parentescoPension', option)}
                 styles={customSelectStyles}
+                className={invalidFields.parentescoPension ? 'border-red-500' : ''}
               />
             </div>
           </div>
@@ -725,7 +809,6 @@ const PensionAlimenticiaDemandante: React.FC = () => {
               value={representaMenorOptions.find(repr => repr.value === formData.representaMenor.value)}
               onChange={(option) => handleSelectChange('representaMenor', option)}
               styles={customSelectStyles}
-              required
             />
           </div>
         </div>

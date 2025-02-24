@@ -21,7 +21,9 @@ const initialFundacionState: FundacionState = {
   resumen: true,
   solicitudId: "",
   currentPosition: 1,
-  request: "",
+  request: {
+    status: -1,
+  },
   token: "",
   rol: -1,
 };

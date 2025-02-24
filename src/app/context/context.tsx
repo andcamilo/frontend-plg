@@ -71,7 +71,9 @@ const initialState: AppState = {
   resumen: true,
   solicitudId: "",
   currentPosition: 1,
-  request: "",
+  request: {
+    status: -1,
+  },
   solicitud: false,
   token: '',
   rol: -1,

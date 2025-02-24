@@ -17,7 +17,7 @@ export interface AppState {
   solicitudAdicional: boolean;
   solicitudId: string;
   currentPosition: number;
-  request: any,
+  request: any;
   token: string;
   rol: number;
 }
@@ -44,7 +44,9 @@ const initialState: AppState = {
   solicitudAdicional: false,
   solicitudId: "",
   currentPosition: 1,
-  request: "",
+  request: {
+    status: -1,
+  },
   token: '',
   rol: -1,
 };
