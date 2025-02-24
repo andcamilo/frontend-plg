@@ -48,8 +48,13 @@ const HomeFooter: React.FC = () => {
         <div>
           <h4 className="font-bold  text-xl mb-4">Mi Cuenta</h4>
           <ul>
-            <li><a href="/login" className="hover:underline">Ingresar</a></li>
-            <li><a href="/request/corporativo" className="hover:underline">Corporativo</a></li>
+              <Link href="/login" className="hover:underline block">
+                Ingresar
+              </Link>
+              <Link href="/request/corporativo" className="hover:underline block">
+                Corporativo
+              </Link>
+
           </ul>
         </div>
 
@@ -70,7 +75,9 @@ const HomeFooter: React.FC = () => {
               </a>
             </li>
             <li><a href="mailto:info@panamalegalgroup.com" className="hover:underline">Contacto</a></li>
-            <li><a href="/faqs" className="hover:underline">FAQs</a></li>
+            <Link href="/faqs" className="hover:underline block">
+                 FAQs
+            </Link>
             <li><a href="/politicas-de-privacidad" className="hover:underline">Políticas de privacidad</a></li>
             <li><a href="/termino-condiciones" className="hover:underline">Términos y condiciones</a></li>
           </ul>
