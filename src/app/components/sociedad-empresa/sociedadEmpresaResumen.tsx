@@ -3,6 +3,7 @@ import axios from 'axios';
 import AppStateContext from '@context/sociedadesContext';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import get from 'lodash/get';
 
 const SociedadEmpresaResumen: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -291,42 +292,47 @@ const SociedadEmpresaResumen: React.FC = () => {
                 {renderField('Teléfono', solicitudData.telefonoSolicita)}
                 {renderField('Correo Electrónico', solicitudData.emailSolicita)}
                 <h2 className="text-3xl font-bold mb-4">Opciones para el nombre de la sociedad:</h2>
-                <div className="ml-6">
-                    {renderField('  1 ', solicitudData.empresa.nombreSociedad1)}
-                    {renderField('  2 ', solicitudData.empresa.nombreSociedad2)}
-                    {renderField('  3 ', solicitudData.empresa.nombreSociedad3)}
-                </div>
+                {solicitudData.empresa ? (
+                    <>
+                        <div className="ml-6">
+                            {renderField('  1 ', solicitudData.empresa.nombreSociedad1)}
+                            {renderField('  2 ', solicitudData.empresa.nombreSociedad2)}
+                            {renderField('  3 ', solicitudData.empresa.nombreSociedad3)}
+                        </div>
+                    </>
+                ) : (
+                    <p>No hay opciones para el nombre de la sociedad.</p>
+                )}
                 <hr className='mt-4 mb-4'></hr>
 
                 {/* Directores de la Sociedad */}
                 <h2 className="text-3xl font-bold mb-4">Directores de la Sociedad</h2>
-                {(peopleData.length > 0 || (solicitudData.directores && solicitudData.directores.length > 0)) ? (
+                {((solicitudData.directores && peopleData.length > 0) || (solicitudData.directores?.length ?? 0) > 0) ? (
                     // Mostrar primero los directores propios y luego los nominales
-                    [...peopleData.filter(person => person.director), ...solicitudData.directores.filter(director => director.servicio === 'Director Nominal')]
-                        .map((director, index) => {
-                            // Verificar si el director es nominal
-                            if (director.servicio === 'Director Nominal') {
-                                return (
-                                    <div key={index}>
-                                        {renderField(`Director #${index + 1}`, 'Director Nominal')}
-                                    </div>
-                                );
-                            }
+                    [...peopleData.filter(person => person.director), ...(solicitudData.directores ?? []).filter(director => director.servicio === 'Director Nominal')].map((director, index) => {
+                        // Verificar si el director es nominal
+                        if (director.servicio === 'Director Nominal') {
                             return (
                                 <div key={index}>
-                                    {renderField(`Director #${index + 1}`, renderPersonName(director))}
+                                    {renderField(`Director #${index + 1}`, 'Director Nominal')}
                                 </div>
                             );
-                        })
+                        }
+                        return (
+                            <div key={index}>
+                                {renderField(`Director #${index + 1}`, renderPersonName(director))}
+                            </div>
+                        );
+                    })
                 ) : (
                     <p>No hay directores registrados.</p>
                 )}
 
                 {/* Dignatarios de la Sociedad */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Dignatarios de la Sociedad</h2>
-                {(peopleData.length > 0 || (solicitudData.dignatarios && solicitudData.dignatarios.length > 0)) ? (
+                {((solicitudData.dignatarios && peopleData.length > 0) || (solicitudData.dignatarios?.length ?? 0) > 0) ? (
                     // Mostrar primero los dignatarios propios y luego los nominales
-                    [...peopleData.filter(person => person.dignatario), ...solicitudData.dignatarios.filter(dignatario => dignatario.servicio === 'Dignatario Nominal')]
+                    [...peopleData.filter(person => person.dignatario), ...(solicitudData.dignatarios ?? []).filter(dignatario => dignatario.servicio === 'Dignatario Nominal')]
                         .map((dignatario, index) => {
                             // Verificar si el dignatario es nominal
                             if (dignatario.servicio === 'Dignatario Nominal') {
@@ -375,7 +381,7 @@ const SociedadEmpresaResumen: React.FC = () => {
 
                 {/* Accionistas de la Sociedad */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Accionistas de la Sociedad</h2>
-                {peopleData.length > 0 ? (
+                {(solicitudData.accionistas && peopleData.length > 0) ? (
                     peopleData
                         .filter(person => person.accionista)  // Filtrar solo las personas que tienen el campo accionista
                         .map((person, index) => {
@@ -403,15 +409,21 @@ const SociedadEmpresaResumen: React.FC = () => {
                 <hr className='mt-4 mb-4'></hr>
                 {/* Capital y división de Acciones */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Capital y división de Acciones</h2>
-                {renderField('Capital social en dólares', solicitudData.capital.capital)}
-                {renderField('Cantidad de Acciones', solicitudData.capital.cantidadAcciones)}
-                {renderField('Acciones sin Valor Nominal', solicitudData.capital.accionesSinValorNominal)}
-                {renderField('Valor de cada acción (debe totalizar el capital social)', solicitudData.capital.valorPorAccion)}
+                {solicitudData.capital ? (
+                    <>
+                        {renderField('Capital social en dólares', solicitudData.capital.capital)}
+                        {renderField('Cantidad de Acciones', solicitudData.capital.cantidadAcciones)}
+                        {renderField('Acciones sin Valor Nominal', solicitudData.capital.accionesSinValorNominal)}
+                        {renderField('Valor de cada acción (debe totalizar el capital social)', solicitudData.capital.valorPorAccion)}
+                    </>
+                ) : (
+                    <p>No hay capital registradas.</p>
+                )}
 
                 <hr className='mt-4 mb-4'></hr>
                 {/* Poder de la Sociedad */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Poder de la Sociedad</h2>
-                {peopleData.length > 0 ? (
+                {(solicitudData.poder && peopleData.length > 0) ? (
                     peopleData
                         .filter(person => person.poder)
                         .map((person, index) => (
@@ -576,6 +588,35 @@ const SociedadEmpresaResumen: React.FC = () => {
                         {renderField('Solicitud Adicional', solicitudData.solicitudAdicional.solicitudAdicional)}
                     </>
                 )}
+
+                <hr className='mt-4 mb-4'></hr>
+                <h2 className="text-3xl font-bold mb-4">Costos</h2>
+                <table className="w-full mt-4 text-white border border-gray-600">
+                    <thead>
+                        <tr className="border-b border-gray-600">
+                            <th className="text-left p-2">#</th>
+                            <th className="text-left p-2">Item</th>
+                            <th className="text-right p-2">Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {get(solicitudData, 'canasta.items', []).map((item, index) => (
+                            <tr key={index} className="border-b border-gray-600">
+                                <td className="p-2">{index + 1}</td>
+                                <td className="p-2">{item.item}</td>
+                                <td className="text-right p-2">${item.precio}</td>
+                            </tr>
+                        ))}
+                        <tr className="border-b border-gray-600">
+                            <td colSpan={2} className="text-right p-2">Subtotal</td>
+                            <td className="text-right p-2">${get(solicitudData, 'canasta.subtotal', 0).toFixed(2)}</td>
+                        </tr>
+                        <tr className="border-b border-gray-600">
+                            <td colSpan={2} className="text-right p-2">Total</td>
+                            <td className="text-right p-2">${get(solicitudData, 'canasta.total', 0).toFixed(2)}</td>
+                        </tr>
+                    </tbody>
+                </table>
 
                 <button
                     onClick={generatePDF}

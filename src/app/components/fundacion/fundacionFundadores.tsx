@@ -87,11 +87,11 @@ const FundacionFundadores: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false); // Controla la visibilidad del modal
 
     const handleContinue = () => {
-        if (data.length === 0) { // Verifica si no hay beneficiarios en la lista
+        if (data.length === 0) { // Verifica si no hay fundadores en la lista
             Swal.fire({
                 position: "top-end",
                 icon: "warning",
-                title: "Debe agregar al menos (1) beneficiario.",
+                title: "Debe agregar al menos (1) fundador.",
                 showConfirmButton: false,
                 timer: 2500,
                 timerProgressBar: true,
@@ -105,10 +105,9 @@ const FundacionFundadores: React.FC = () => {
                     timerProgressBar: 'custom-swal-timer-bar',
                 },
             });
-            return; // Detiene la ejecución si no hay beneficiarios
+            return; 
         }
 
-        // Si ya hay al menos un beneficiario, procede con la lógica de continuar
         setIsLoading(true);
         setStore((prevState) => ({
             ...prevState,

@@ -177,7 +177,7 @@ const FundacionDignatarios: React.FC = () => {
             );
 
             const formattedData = paginatedData.map((persona: any) => ({
-                tipo: 'Dignatario',
+                tipo: persona?.dignatario?.dignatarioTipo,
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
                         <>

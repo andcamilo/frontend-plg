@@ -42,7 +42,7 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
     
             // Construct the request body
             const requestBody = id ? { ...state, id } : state;
-    
+            console.log("🚀🚀🚀🚀 requestBody ", requestBody);
             // Make the API request
             const response = await fetch(endpoint, {
                 method,

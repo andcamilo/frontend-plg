@@ -68,7 +68,7 @@ const initialState: AppState = {
   archivosAdjuntos: false,
   firmaYEntrega: false,
   solicitudAdicional: false,
-  resumen: false,
+  resumen: true,
   solicitudId: "",
   currentPosition: 1,
   request: "",
