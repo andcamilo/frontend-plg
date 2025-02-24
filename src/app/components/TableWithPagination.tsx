@@ -43,10 +43,15 @@ const TableWithPagination: React.FC<TableWithPaginationProps> = ({
                 <tr key={rowIndex} className="border-t border-gray-700">
                   {columns.map((column, colIndex) => (
                     <td key={colIndex} className="py-2">
-                      {typeof row[column] === 'object' && row[column] !== null
-                        ? JSON.stringify(row[column]) // Convert objects to string
-                        : row[column]}
+                      {React.isValidElement(row[column]) ? (
+                        row[column] // Si es un elemento React, lo renderizamos directamente
+                      ) : typeof row[column] === 'object' && row[column] !== null ? (
+                        JSON.stringify(row[column]) // Convertimos objetos normales a string
+                      ) : (
+                        row[column] // Renderizamos directamente otros valores
+                      )}
                     </td>
+
                   ))}
                 </tr>
               ))}

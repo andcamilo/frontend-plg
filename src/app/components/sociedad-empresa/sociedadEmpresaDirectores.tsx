@@ -189,7 +189,7 @@ const SociedadEmpresaDirectores: React.FC = () => {
                     .map((director: any) => ({
                         tipo: director.servicio,
                         nombre: director.nombre || '---',
-                        Opciones: <Actions id={director.id} solicitudId={store.solicitudId} />,
+                        Opciones: <Actions id={director.personId} solicitudId={store.solicitudId} />,
                     }));
             }
             console.log("AAWW ", formattedRequestData);

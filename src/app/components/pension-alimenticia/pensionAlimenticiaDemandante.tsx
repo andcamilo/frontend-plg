@@ -329,9 +329,21 @@ const PensionAlimenticiaDemandante: React.FC = () => {
         }));
 
         Swal.fire({
-          icon: 'success',
-          title: 'Formulario Enviado',
-          text: 'Formulario enviado correctamente.',
+          position: "top-end",
+          icon: "success",
+          title: "Información del demandade actualizada correctamente.",
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+          toast: true,
+          background: '#2c2c3e',
+          color: '#fff',
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title',
+            icon: 'custom-swal-icon',
+            timerProgressBar: 'custom-swal-timer-bar',
+          },
         });
       } else {
         console.error('Unexpected response from server:', response.data);

@@ -3,6 +3,7 @@ import axios from 'axios';
 import AppStateContext from '@context/fundacionContext';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import get from 'lodash/get';
 
 const FundacionResumen: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -22,14 +23,14 @@ const FundacionResumen: React.FC = () => {
                     params: { solicitudId: store.solicitudId },
                 });
 
+                console.log('Solicitud Data:', solicitudResponse.data);
+                setSolicitudData(solicitudResponse.data);
+
                 const peopleResponse = await axios.get('/api/get-people-id', {
                     params: { solicitudId: store.solicitudId },
                 });
 
-                console.log('Solicitud Data:', solicitudResponse.data);
                 console.log('People Data:', peopleResponse.data);
-
-                setSolicitudData(solicitudResponse.data);
                 setPeopleData(peopleResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -102,7 +103,7 @@ const FundacionResumen: React.FC = () => {
         }
 
         // Fundadores de la Fundación
-        if (peopleData.length > 0 || (solicitudData.fundadores && solicitudData.fundadores.length > 0)) {
+        if ((solicitudData.fundadores && peopleData.length > 0) || (solicitudData.fundadores && solicitudData.fundadores.length > 0)) {
             doc.setFontSize(16);
             addLine('Fundadores de la Fundación:');
             doc.setFontSize(12);
@@ -125,7 +126,7 @@ const FundacionResumen: React.FC = () => {
         }
 
         // Dignatarios
-        if (peopleData.length > 0 || (solicitudData.dignatarios && solicitudData.dignatarios.length > 0)) {
+        if ((solicitudData.dignatarios && peopleData.length > 0) || (solicitudData.dignatarios && solicitudData.dignatarios.length > 0)) {
             doc.setFontSize(16);
             addLine('Dignatarios de la Fundación:');
             doc.setFontSize(12);
@@ -159,7 +160,7 @@ const FundacionResumen: React.FC = () => {
         }
 
         // Miembros de la Fundación
-        if (peopleData.length > 0 || (solicitudData.miembros && solicitudData.miembros.length > 0)) {
+        if ((solicitudData.miembros && peopleData.length > 0) || (solicitudData.miembros && solicitudData.miembros.length > 0)) {
             doc.setFontSize(16);
             addLine('Miembros de la Fundación:');
             doc.setFontSize(12);
@@ -227,7 +228,7 @@ const FundacionResumen: React.FC = () => {
         }
 
         // Poder de la Fundación
-        if (peopleData.length > 0 && peopleData.some(person => person.poder)) {
+        if ((solicitudData.poder && peopleData.length > 0) && peopleData.some(person => person.poder)) {
             doc.setFontSize(16);
             addLine('Poder de la Fundación:');
             doc.setFontSize(12);
@@ -297,8 +298,6 @@ const FundacionResumen: React.FC = () => {
         doc.save('Resumen_Fundacion.pdf');
     };
 
-
-
     if (!solicitudData) {
         return <p className="text-white">Cargando los detalles de la solicitud...</p>;
     }
@@ -315,82 +314,86 @@ const FundacionResumen: React.FC = () => {
                 {renderField('Teléfono', solicitudData.telefonoSolicita)}
                 {renderField('Correo Electrónico', solicitudData.emailSolicita)}
                 <h2 className="text-3xl font-bold mb-4">Opciones para el nombre de la Fundación:</h2>
-                <div className="ml-6">
-                    {renderField('  1 ', solicitudData.fundacion.nombreFundacion1)}
-                    {renderField('  2 ', solicitudData.fundacion.nombreFundacion2)}
-                    {renderField('  3 ', solicitudData.fundacion.nombreFundacion3)}
-                </div>
+                {solicitudData.fundacion ? (
+                    <>
+                        <div className="ml-6">
+                            {renderField('  1 ', solicitudData.fundacion.nombreFundacion1)}
+                            {renderField('  2 ', solicitudData.fundacion.nombreFundacion2)}
+                            {renderField('  3 ', solicitudData.fundacion.nombreFundacion3)}
+                        </div>
+                    </>
+                ) : (
+                    <p>No hay opciones para el nombre de la fundación registrados.</p>
+                )}
                 <hr className='mt-4 mb-4'></hr>
 
                 {/* Fundadores de la fundación */}
                 <h2 className="text-3xl font-bold mb-4">Fundadores de la Sociedad</h2>
-                {(peopleData.length > 0 || (solicitudData.fundadores && solicitudData.fundadores.length > 0)) ? (
+                {((solicitudData.fundadores && peopleData.length > 0) || (solicitudData.fundadores && solicitudData.fundadores.length > 0)) ? (
                     // Mostrar primero los Fundadores propios y luego los nominales
-                    [...peopleData.filter(person => person.fundador), ...solicitudData.fundadores.filter(fundador => fundador.servicio === 'Fundador Nominal')]
-                        .map((fundador, index) => {
-                            // Verificar si el Fundador es nominal
-                            if (fundador.servicio === 'Fundador Nominal') {
-                                return (
-                                    <div key={index}>
-                                        {renderField(`Fundador #${index + 1}`, 'Fundador Nominal')}
-                                    </div>
-                                );
-                            }
+                    [...peopleData.filter(person => person.fundador), ...(solicitudData.fundadores ?? []).filter(fundador => fundador.servicio === 'Fundador Nominal')].map((fundador, index) => {
+                        // Verificar si el Fundador es nominal
+                        if (fundador.servicio === 'Fundador Nominal') {
                             return (
                                 <div key={index}>
-                                    {renderField(`Fundador #${index + 1}`, renderPersonName(fundador))}
+                                    {renderField(`Fundador #${index + 1}`, 'Fundador Nominal')}
                                 </div>
                             );
-                        })
+                        }
+                        return (
+                            <div key={index}>
+                                {renderField(`Fundador #${index + 1}`, renderPersonName(fundador))}
+                            </div>
+                        );
+                    })
                 ) : (
                     <p>No hay fundadores registrados.</p>
                 )}
 
                 {/* Dignatarios de la Fundación */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Dignatarios de la Fundación</h2>
-                {(peopleData.length > 0 || (solicitudData.dignatarios && solicitudData.dignatarios.length > 0)) ? (
+                {((solicitudData.dignatarios && peopleData.length > 0) || (solicitudData.dignatarios && solicitudData.dignatarios.length > 0)) ? (
                     // Mostrar primero los dignatarios propios y luego los nominales
-                    [...peopleData.filter(person => person.dignatario), ...solicitudData.dignatarios.filter(dignatario => dignatario.servicio === 'Dignatario Nominal')]
-                        .map((dignatario, index) => {
-                            // Verificar si el dignatario es nominal
-                            if (dignatario.servicio === 'Dignatario Nominal') {
-                                // Obtener las posiciones del dignatario nominal
-                                const posicionesNominales = dignatario.posiciones || [];
-                                const posicionesConcatenadasNominal = posicionesNominales.map((posicion: any) => posicion.nombre).join(', ');
-
-                                return (
-                                    <div key={index} className="mb-4">
-                                        {renderField(`Dignatario Nominal #${index + 1}`, 'Dignatario Nominal')}
-
-                                        {/* Mostrar posiciones concatenadas si hay */}
-                                        {posicionesNominales.length > 0 && (
-                                            <div className="ml-6">
-                                                <strong>Posiciones: </strong>
-                                                <span>{posicionesConcatenadasNominal}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            }
-
-                            // Obtener las posiciones del dignatario propio
-                            const posiciones = dignatario.dignatario?.posiciones || [];
-                            const posicionesConcatenadas = posiciones.map((posicion: any) => posicion.nombre).join(', ');
+                    [...peopleData.filter(person => person.dignatario), ...(solicitudData.dignatarios ?? []).filter(dignatario => dignatario.servicio === 'Dignatario Nominal')].map((dignatario, index) => {
+                        // Verificar si el dignatario es nominal
+                        if (dignatario.servicio === 'Dignatario Nominal') {
+                            // Obtener las posiciones del dignatario nominal
+                            const posicionesNominales = dignatario.posiciones || [];
+                            const posicionesConcatenadasNominal = posicionesNominales.map((posicion: any) => posicion.nombre).join(', ');
 
                             return (
                                 <div key={index} className="mb-4">
-                                    {renderField(`Dignatario #${index + 1}`, renderPersonName(dignatario))}
+                                    {renderField(`Dignatario Nominal #${index + 1}`, 'Dignatario Nominal')}
 
                                     {/* Mostrar posiciones concatenadas si hay */}
-                                    {posiciones.length > 0 && (
+                                    {posicionesNominales.length > 0 && (
                                         <div className="ml-6">
                                             <strong>Posiciones: </strong>
-                                            <span>{posicionesConcatenadas}</span>
+                                            <span>{posicionesConcatenadasNominal}</span>
                                         </div>
                                     )}
                                 </div>
                             );
-                        })
+                        }
+
+                        // Obtener las posiciones del dignatario propio
+                        const posiciones = dignatario.dignatario?.posiciones || [];
+                        const posicionesConcatenadas = posiciones.map((posicion: any) => posicion.nombre).join(', ');
+
+                        return (
+                            <div key={index} className="mb-4">
+                                {renderField(`Dignatario #${index + 1}`, renderPersonName(dignatario))}
+
+                                {/* Mostrar posiciones concatenadas si hay */}
+                                {posiciones.length > 0 && (
+                                    <div className="ml-6">
+                                        <strong>Posiciones: </strong>
+                                        <span>{posicionesConcatenadas}</span>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })
                 ) : (
                     <p>No hay dignatarios registrados.</p>
                 )}
@@ -398,7 +401,7 @@ const FundacionResumen: React.FC = () => {
                 <hr className='mt-4 mb-4'></hr>
                 {/* Miembros de la Fundación */}
                 <h2 className="text-3xl font-bold mb-4">Miembros de la Fundación</h2>
-                {(peopleData.length > 0 || (solicitudData.miembros && solicitudData.miembros.length > 0)) ? (
+                {((solicitudData.miembros && peopleData.length > 0) || (solicitudData.miembros && solicitudData.miembros.length > 0)) ? (
                     // Mostrar primero los Fundadores propios y luego los nominales
                     [...peopleData.filter(person => person.miembro), ...solicitudData.miembros.filter(miembro => miembro.servicio === 'Miembro Nominal')]
                         .map((miembro, index) => {
@@ -423,7 +426,7 @@ const FundacionResumen: React.FC = () => {
                 <hr className='mt-4 mb-4'></hr>
                 {/* Protectores de la Fundación */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Protectores de la Fundación</h2>
-                {peopleData.length > 0 ? (
+                {(solicitudData.protectores && peopleData.length > 0) ? (
                     peopleData
                         .filter(person => person.protector)
                         .map((person, index) => {
@@ -450,7 +453,7 @@ const FundacionResumen: React.FC = () => {
                 <hr className='mt-4 mb-4'></hr>
                 {/* Beneficiarios de la Fundación */}
                 <h2 className="text-3xl font-bold mb-4">Beneficiarios de la Fundación</h2>
-                {peopleData.length > 0 ? (
+                {(solicitudData.beneficiariosFundacion && peopleData.length > 0) ? (
                     peopleData
                         .filter(person => person.beneficiariosFundacion)
                         .map((person, index) => (
@@ -470,7 +473,7 @@ const FundacionResumen: React.FC = () => {
                 <hr className='mt-4 mb-4'></hr>
                 {/* Poder de la Fundación */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Poder de la Fundación</h2>
-                {peopleData.length > 0 ? (
+                {(solicitudData.poder && peopleData.length > 0) ? (
                     peopleData
                         .filter(person => person.poder)
                         .map((person, index) => (
@@ -485,34 +488,41 @@ const FundacionResumen: React.FC = () => {
                 <hr className='mt-4 mb-4'></hr>
                 {/* Objetivos de la Fundación */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Objetivos de la Fundación</h2>
-                {
-                    Array.isArray(solicitudData.objetivos.objetivos) && (
-                        <>
-                            <div className="ml-6">
-                                {/* Definir el diccionario fuera del JSX */}
-                                {(() => {
-                                    const objetivosNombres = {
-                                        propiedad: 'Dueña de Propiedad / Owner of Property',
-                                        vehiculoInversion: 'Vehículo de inversión / Investment vehicle',
-                                        naveAeronave: 'Dueño de nave o aeronave / Ownership of a vessel or aircraft',
-                                        portafolioBienesRaices: 'Portafolio Bienes y Raices / Real Estate Investment',
-                                        tenedoraActivos: 'Tenedora de activos / Holding Asset',
-                                        parteEstructura: 'Parte de una estructura / Part of a structure',
-                                        tenedoraCuentasBancarias: 'Tenedora de Cuentas bancarias / Holding of Bank Account',
-                                    };
+                {solicitudData.objetivos ? (
+                    <>
+                        {
+                            Array.isArray(solicitudData.objetivos.objetivos) && (
+                                <>
+                                    <div className="ml-6">
+                                        {/* Definir el diccionario fuera del JSX */}
+                                        {(() => {
+                                            const objetivosNombres = {
+                                                propiedad: 'Dueña de Propiedad / Owner of Property',
+                                                vehiculoInversion: 'Vehículo de inversión / Investment vehicle',
+                                                naveAeronave: 'Dueño de nave o aeronave / Ownership of a vessel or aircraft',
+                                                portafolioBienesRaices: 'Portafolio Bienes y Raices / Real Estate Investment',
+                                                tenedoraActivos: 'Tenedora de activos / Holding Asset',
+                                                parteEstructura: 'Parte de una estructura / Part of a structure',
+                                                tenedoraCuentasBancarias: 'Tenedora de Cuentas bancarias / Holding of Bank Account',
+                                            };
 
-                                    {/* Iterar sobre el array actividadTenedora y renderizar cada elemento */ }
-                                    return solicitudData.objetivos.objetivos.map((objetivo, index) => (
-                                        <div key={index}>
-                                            {renderField(`Objetivo #${index + 1}`, objetivosNombres[objetivo] || objetivo)}
-                                        </div>
-                                    ));
-                                })()}
-                            </div>
-                        </>
-                    )
-                }
-                {(solicitudData.objetivos.mantieneContador && solicitudData.objetivos.mantieneContador === 'Si') && (
+                                            {/* Iterar sobre el array actividadTenedora y renderizar cada elemento */ }
+                                            return solicitudData.objetivos.objetivos.map((objetivo, index) => (
+                                                <div key={index}>
+                                                    {renderField(`Objetivo #${index + 1}`, objetivosNombres[objetivo] || objetivo)}
+                                                </div>
+                                            ));
+                                        })()}
+                                    </div>
+                                </>
+                            )
+                        }
+                    </>
+                ) : (
+                    <p>No hay objetivos de la fundación registrados.</p>
+                )}
+
+                {(solicitudData.objetivos && solicitudData.objetivos.mantieneContador && solicitudData.objetivos.mantieneContador === 'Si') && (
                     <>
                         <h5 className="text-xl font-bold mt-2 mb-4">Información del contador</h5>
                         <div className="ml-6">
@@ -582,6 +592,35 @@ const FundacionResumen: React.FC = () => {
                         {renderField('Solicitud Adicional', solicitudData.solicitudAdicional.solicitudAdicional)}
                     </>
                 )}
+
+                <hr className='mt-4 mb-4'></hr>
+                <h2 className="text-3xl font-bold mb-4">Costos</h2>
+                <table className="w-full mt-4 text-white border border-gray-600">
+                    <thead>
+                        <tr className="border-b border-gray-600">
+                            <th className="text-left p-2">#</th>
+                            <th className="text-left p-2">Item</th>
+                            <th className="text-right p-2">Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {get(solicitudData, 'canasta.items', []).map((item, index) => (
+                            <tr key={index} className="border-b border-gray-600">
+                                <td className="p-2">{index + 1}</td>
+                                <td className="p-2">{item.item}</td>
+                                <td className="text-right p-2">${item.precio}</td>
+                            </tr>
+                        ))}
+                        <tr className="border-b border-gray-600">
+                            <td colSpan={2} className="text-right p-2">Subtotal</td>
+                            <td className="text-right p-2">${get(solicitudData, 'canasta.subtotal', 0).toFixed(2)}</td>
+                        </tr>
+                        <tr className="border-b border-gray-600">
+                            <td colSpan={2} className="text-right p-2">Total</td>
+                            <td className="text-right p-2">${get(solicitudData, 'canasta.total', 0).toFixed(2)}</td>
+                        </tr>
+                    </tbody>
+                </table>
 
                 <button
                     onClick={generatePDF}

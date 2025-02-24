@@ -2,16 +2,29 @@ import axios from 'axios';
 import { backendBaseUrl, backendEnv } from '@utils/env';
 import get from 'lodash/get';
 
-const getRequestsUrl = `${backendBaseUrl}/${backendEnv}/get-requests`;
+const getRequestsUrl = `${backendBaseUrl}/${backendEnv}/get-requests-cuenta`;
 
-export const getRequests = async (limit = 10, page = 1) => {
+/**
+ * Obtiene las solicitudes de cuenta con paginación por cursor.
+ * @param limit Número de registros por página.
+ * @param cuenta La cuenta del usuario.
+ * @param lastVisibleCursor Cursor para la paginación.
+ */
+export const getRequestsCuenta = async (
+  limit = 10,
+  cuenta: string,
+  lastVisibleCursor: string | null = null
+) => {
   try {
     const response = await axios.get(getRequestsUrl, {
       params: {
         limit,
-        page,
+        cuenta,
+        lastVisible: lastVisibleCursor, // Envía el cursor si existe
       },
     });
+
+    console.log("Respuesta desde getRequestsCuenta():", response.data);
     const data = response.data;
 
     const solicitudes = get(data, 'solicitudes', []);
@@ -25,7 +38,7 @@ export const getRequests = async (limit = 10, page = 1) => {
       pagination,
       tipoCounts,
       statusCounts,
-      months
+      months,
     };
   } catch (error) {
     console.error('Error fetching requests:', error);
