@@ -285,7 +285,7 @@ const User: React.FC = () => {
     };
 
     const handleBack = () => {
-        router.push('/dashboard/clients');
+        router.push('/dashboard/users');
     };
 
     return (

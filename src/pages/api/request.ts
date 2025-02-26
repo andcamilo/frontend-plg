@@ -15,6 +15,7 @@ export const getRequests = async (limit = 10, page = 1) => {
     const data = response.data;
 
     const solicitudes = get(data, 'solicitudes', []);
+    const allSolicitudes = get(data, 'allSolicitudes', []);
     const pagination = get(data, 'pagination', {});
     const tipoCounts = get(data, 'tipo', {});
     const statusCounts = get(data, 'status', {});
@@ -22,6 +23,7 @@ export const getRequests = async (limit = 10, page = 1) => {
 
     return {
       solicitudes,
+      allSolicitudes,
       pagination,
       tipoCounts,
       statusCounts,

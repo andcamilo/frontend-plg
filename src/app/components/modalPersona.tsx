@@ -116,8 +116,8 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
             }
 
             setFormData({
-                tipoPersona: userData.tipoPersona || 'Persona Natural',
-                nombreApellido: userData.nombreApellido || '',
+                tipoPersona: userData.tipoPersona || userData.tipo || 'Persona Natural',
+                nombreApellido: userData.nombreApellido || userData.nombre || '',
                 sexo: userData.sexo || 'Femenino',
                 nacionalidad: userData.nacionalidad || 'Panamá',
                 cedulaPasaporte: userData.cedulaPasaporte || '',
@@ -134,24 +134,24 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                 personaExpuestaCargo: userData.personaExpuestaCargo || '',
 
                 // Persona Jurídica  
-                nombreJuridico: userData.personaJuridica.nombreJuridico || '',
-                paisJuridico: userData.personaJuridica.paisJuridico || 'Panamá',
-                registroJuridico: userData.personaJuridica.registroJuridico || '',
+                nombreJuridico: userData.personaJuridica?.nombreJuridico || userData.nombre_PersonaJuridica || '', 
+                paisJuridico: userData.personaJuridica?.paisJuridico || userData.pais_PersonaJuridica || 'Panamá',
+                registroJuridico: userData.personaJuridica?.registroJuridico || userData.registro_PersonaJuridica || '', 
 
                 // Referencias bancarias
-                bancoNombre: userData.referenciasBancarias.bancoNombre || '',
-                bancoTelefono: userData.referenciasBancarias.bancoTelefono || '',
+                bancoNombre: userData.referenciasBancarias?.bancoNombre || userData.nombre_banco || '',
+                bancoTelefono: userData.referenciasBancarias?.bancoTelefono || userData.telefono_banco || '',
                 bancoTelefonoCodigo: 'PA',
-                bancoEmail: userData.referenciasBancarias.bancoEmail || '',
+                bancoEmail: userData.referenciasBancarias?.bancoEmail || userData.email_banco || '',
 
                 // Referencias comerciales
-                comercialNombre: userData.referenciasComerciales.comercialNombre || '',
-                comercialTelefono: userData.referenciasComerciales.comercialTelefono || '',
-                comercialTelefonoCodigo: userData.referenciasComerciales.comercialTelefonoCodigo || 'PA',
-                comercialEmail: userData.referenciasComerciales.comercialEmail || '',
+                comercialNombre: userData.referenciasComerciales?.comercialNombre || userData.nombre_comercial || '',
+                comercialTelefono: userData.referenciasComerciales?.comercialTelefono || userData.telefono_comercial || '',
+                comercialTelefonoCodigo: userData.referenciasComerciales?.comercialTelefonoCodigo || 'PA',
+                comercialEmail: userData.referenciasComerciales?.comercialEmail || userData.email_comercial || '',
 
-                adjuntoDocumentoCedulaPasaporteURL: userData.adjuntoDocumentoCedulaPasaporteURL || '',
-                adjuntoDocumentoCedulaPasaporte2URL: userData.adjuntoDocumentoCedulaPasaporte2URL || '',
+                adjuntoDocumentoCedulaPasaporteURL: userData?.adjuntoDocumentoCedulaPasaporteURL || userData.adjunto_documento || '', 
+                adjuntoDocumentoCedulaPasaporte2URL: userData?.adjuntoDocumentoCedulaPasaporte2URL || userData.adjunto_documento2 || '',
 
             });
 
