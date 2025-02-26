@@ -5,9 +5,7 @@ import ModalDirectores from '@components/modalDirectores';
 import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
-import { getRequests } from '@api/request';
 import Swal from 'sweetalert2';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import '@fortawesome/fontawesome-free/css/all.css';
 
