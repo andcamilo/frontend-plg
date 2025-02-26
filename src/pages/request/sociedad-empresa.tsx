@@ -76,7 +76,7 @@ const SociedadEmpresa: React.FC = () => {
         setLoading(true);
         setShowPaymentWidget(true);
     };
-    
+
     return (
         <HomeLayout>
             <div className="relative w-full h-screen flex overflow-hidden">
@@ -109,20 +109,24 @@ const SociedadEmpresa: React.FC = () => {
 
                             {/* Empresa button */}
                             <button
-                                className={`p-4 rounded-lg ${store.empresa ? (activeStep === 3 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-4 rounded-lg ${store.empresa || store.request?.nombreSociedad_1
+                                    ? (activeStep === 3 ? 'bg-profile text-white' : 'bg-gray-800 text-white')
+                                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
-                                onClick={() => store.empresa && setActiveStep(3)}
-                                disabled={!store.empresa}
+                                onClick={() => (store.empresa || store.request?.nombreSociedad_1) && setActiveStep(3)}
+                                disabled={!(store.empresa || store.request?.nombreSociedad_1)}
                             >
                                 Empresa
                             </button>
 
                             {/* Personas button */}
                             <button
-                                className={`p-4 rounded-lg ${store.personas ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-4 rounded-lg ${store.personas || store.request?.nombreSociedad_1
+                                    ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white')
+                                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
-                                onClick={() => store.personas && setActiveStep(4)}
-                                disabled={!store.personas}
+                                onClick={() => (store.personas || store.request?.nombreSociedad_1) && setActiveStep(4)}
+                                disabled={!(store.personas || store.request?.nombreSociedad_1)}
                             >
                                 Personas
                             </button>

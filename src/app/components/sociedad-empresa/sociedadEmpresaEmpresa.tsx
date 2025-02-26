@@ -57,11 +57,20 @@ const SociedadEmpresaEmpresa: React.FC = () => {
 
     useEffect(() => {
         if (store.request) {
-            const empresaData = get(store.request, 'empresa', {});
-            if (empresaData && Object.keys(empresaData).length > 0) {
+            if (store.request.empresa) {
+                const empresaData = get(store.request, 'empresa', {});
+                if (empresaData && Object.keys(empresaData).length > 0) {
+                    setFormData((prevFormData) => ({
+                        ...prevFormData,
+                        ...empresaData,
+                    }));
+                }
+            } else if (store.request.nombreSociedad_1) {
                 setFormData((prevFormData) => ({
                     ...prevFormData,
-                    ...empresaData,
+                    nombreSociedad1: get(store.request, 'nombreSociedad_1', ''),
+                    nombreSociedad2: get(store.request, 'nombreSociedad_2', ''),
+                    nombreSociedad3: get(store.request, 'nombreSociedad_3', ''),
                 }));
             }
         }

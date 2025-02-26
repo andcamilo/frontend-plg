@@ -159,19 +159,19 @@ const SociedadEmpresaPersona: React.FC = () => {
 
             // Formatear los datos con la lógica para mostrar el nombre
             const formattedData = paginatedData.map((persona: any) => ({
-                tipo: persona.tipoPersona,
-                nombre: persona.tipoPersona === 'Persona Jurídica'
+                tipo: persona.tipoPersona || persona.tipo,
+                nombre: (persona.tipoPersona === 'Persona Jurídica' || persona.tipo === 'Persona Jurídica')
                     ? (
                         <>
-                            {persona.nombreApellido}
+                            {persona.nombreApellido || persona.nombre} 
                             <br />
                             <span className="text-gray-400 text-sm">
                                 <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
-                                {persona.personaJuridica.nombreJuridico}
+                                {persona.personaJuridica?.nombreJuridico || persona?.nombre_PersonaJuridica}
                             </span>
                         </>
                     )
-                    : persona.nombreApellido, // Mostrar solo el nombre si no es Persona Jurídica
+                    : persona.nombreApellido || persona.nombre, // Mostrar solo el nombre si no es Persona Jurídica
                 Correo: persona.email,
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
             }));

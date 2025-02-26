@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import TableWithRequests from '@components/TableWithRequests';
 import { getRequests } from '@api/request';
 import axios from 'axios';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Swal from 'sweetalert2';
+import Link from 'next/link';
 import get from 'lodash/get';
 import { checkAuthToken } from "@utils/checkAuthToken";
 
@@ -11,6 +17,88 @@ const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): stri
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+};
+
+const Actions: React.FC<{ tipo: string, id: string, status: number, rol: string }> = ({ tipo, id, status, rol }) => {
+    const handleDelete = async () => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Quiere eliminar esta solicitud?",
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#2c2c3e',
+            color: '#fff',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete('/api/delete-request', { params: { solicitudId: id } });
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: 'La solicitud ha sido eliminada.',
+                    icon: 'success',
+                    timer: 4000,
+                    showConfirmButton: false,
+                });
+                // Remove the deleted solicitud from the state instead of reloading
+                // This requires lifting the state up or using a context/state management solution
+                // For simplicity, we'll reload the page
+                window.location.reload();
+            } catch (error) {
+                console.error('Error al eliminar la solicitud:', error);
+                Swal.fire('Error', 'No se pudo eliminar la solicitud.', 'error');
+            }
+        }
+    };
+
+    const getEditUrl = () => {
+        switch (tipo) {
+            case "new-fundacion":
+                return `/request/fundacion?id=${id}`;
+            case "new-sociedad-empresa":
+                return `/request/sociedad-empresa?id=${id}`;
+            case "menores-al-extranjero":
+                return `/request/menores-extranjero?id=${id}`;
+            case "pension":
+                return `/request/pension-alimenticia?id=${id}`;
+            case "tramite-general":
+                return `/dashboard/tramite-general?id=${id}`;
+            case "cliente-recurrente":
+            case "solicitud-cliente-recurrente":
+                return `/request/corporativo?id=${id}`;
+            default:
+                return `/request/consulta-propuesta?id=${id}`;
+        }
+    };
+
+    const canShowDelete = ((status === 1 && (rol === "Cliente Recurrente" || rol === "Cliente")) || (rol === "Cliente Recurrente" || rol !== "Cliente"));
+    const canShowPagar = ((status !== 19 && (rol === "Cliente Recurrente" || rol === "Cliente")) || (rol === "Cliente Recurrente" || rol !== "Cliente"));
+
+    return (
+        <div className="flex gap-2">
+            <Link href={`/dashboard/request?id=${id}`}>
+                <VisibilityIcon className="cursor-pointer" titleAccess="Ver" />
+            </Link>
+            <Link href={getEditUrl()}>
+                <EditIcon className="cursor-pointer" titleAccess="Editar" />
+            </Link>
+            {canShowPagar && (
+                <Link href={`/dashboard/checkout?id=${id}`}>
+                    <AttachMoneyIcon className="cursor-pointer" titleAccess="Pagar" />
+                </Link>
+            )}
+            {canShowDelete && (
+                <DeleteIcon
+                    className="cursor-pointer"
+                    onClick={handleDelete}
+                    titleAccess="Eliminar"
+                />
+            )}
+        </div>
+    );
 };
 
 const RequestsStatistics: React.FC = () => {
@@ -121,11 +209,17 @@ const RequestsStatistics: React.FC = () => {
 
     // Aplicar paginación
     const paginatedSolicitudesEnProceso = solicitudes
-        .filter(solicitud => solicitud.status !== 70)
+        .filter(solicitud =>
+            solicitud.status !== 70 &&
+            (!(formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente') || solicitud.cuenta === formData.cuenta)
+        )
         .slice((currentPageEnProceso - 1) * rowsPerPage, currentPageEnProceso * rowsPerPage);
 
     const paginatedSolicitudesFinalizadas = solicitudes
-        .filter(solicitud => solicitud.status === 70)
+        .filter(solicitud =>
+            solicitud.status === 70 &&
+            (!(formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente') || solicitud.cuenta === formData.cuenta)
+        )
         .slice((currentPageFinalizadas - 1) * rowsPerPage, currentPageFinalizadas * rowsPerPage);
 
     // Transformar datos para la tabla
@@ -179,6 +273,7 @@ const RequestsStatistics: React.FC = () => {
                 ),
                 Expediente: expediente,
                 Abogado: abogados.map((abogado: any) => abogado.nombre).join(', '),
+                Opciones: <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />
             };
         });
     };
