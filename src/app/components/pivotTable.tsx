@@ -13,21 +13,39 @@ interface PivotTableProps {
 }
 
 const PivotTable: React.FC<PivotTableProps> = ({ months }) => {
-  // Transform the months data into an array suitable for Recharts
-  const data = Object.keys(months).map((month) => ({
-    name: month.charAt(0).toUpperCase() + month.slice(1),
-    solicitudes: months[month],
-  }));
+  const monthOrder = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ];
+
+  // Transformar los datos a un formato adecuado
+  const data = Object.keys(months).map((key) => {
+    const [year, monthIndex] = key.split('-'); // Ejemplo de key: "2024-03"
+    const monthName = monthOrder[parseInt(monthIndex) - 1]; // Convertir índice a nombre de mes en español
+    return {
+      year: parseInt(year),
+      month: monthName,
+      monthIndex: parseInt(monthIndex),
+      name: `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`,
+      solicitudes: months[key],
+    };
+  });
+
+  // Ordenar por año y mes
+  const sortedData = data.sort((a, b) => {
+    if (a.year !== b.year) return a.year - b.year;
+    return a.monthIndex - b.monthIndex;
+  });
 
   return (
     <div className="p-4 w-full">
-      <h2 className="text-xl font-bold mb-4">Solicitudes Recibidas por Mes</h2>
+      <h2 className="text-xl font-bold mb-4">Solicitudes Recibidas por Mes y Año</h2>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data}>
+        <BarChart data={sortedData}>
           <XAxis dataKey="name" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="solicitudes" fill="#8884d8" barSize={30} />
+          <Bar dataKey="solicitudes" fill="#9b1b77" barSize={30} />
         </BarChart>
       </ResponsiveContainer>
     </div>
