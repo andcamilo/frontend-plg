@@ -55,7 +55,7 @@ const LegixStatistics: React.FC = () => {
     hasNextPage: false,
     totalPages: 1,
   });
-  
+
   // Cambiar página de las solicitudes en proceso
   const handlePageChangeEnProceso = (newPage: number) => {
     if (newPage > 0 && newPage <= paginationEnProceso.totalPages) {
@@ -129,19 +129,36 @@ const LegixStatistics: React.FC = () => {
 
   const fetchAllSolicitudes = async () => {
     try {
-      const solicitudesData = await getRequests(1000, 1); // Limite grande para obtener todos los registros
 
-      const {
-        allSolicitudes = [],
-        tipoCounts,
-        statusCounts,
-        months
-      } = solicitudesData;
+      if ((typeof formData.rol === 'number' && formData.rol < 20) ||
+        (typeof formData.rol === 'string' && (formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente'))) {
 
-      setAllSolicitudes(allSolicitudes);
-      setTipoCounts(tipoCounts);
-      setStatusCounts(statusCounts);
-      setMonths(months);
+        const solicitudesData = await getRequestsCuenta(rowsPerPage, formData.cuenta, lastVisibleCursor);
+
+        const {
+          solicitudes = [],
+          tipoCounts,
+        } = solicitudesData;
+
+        setAllSolicitudes(solicitudes);
+        setTipoCounts(tipoCounts);
+        
+      } else {
+
+        const solicitudesData = await getRequests(rowsPerPage, currentPage);
+
+        const {
+          allSolicitudes = [],
+          tipoCounts,
+          statusCounts,
+          months
+        } = solicitudesData;
+
+        setAllSolicitudes(allSolicitudes);
+        setTipoCounts(tipoCounts);
+        setStatusCounts(statusCounts);
+        setMonths(months);
+      }
 
     } catch (error) {
       console.error('Failed to fetch all solicitudes:', error);
@@ -255,7 +272,7 @@ const LegixStatistics: React.FC = () => {
         </span>
       ),
     }));
-    
+
   // Paginación de solicitudes finalizadas
   const paginatedSolicitudesEnProceso = solicitudesEnProceso.slice(
     (currentPageEnProceso - 1) * rowsPerPage,
