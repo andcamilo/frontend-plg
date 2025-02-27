@@ -121,7 +121,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
             const nombreCompleto = get(store.request, 'nombreSolicita', '');
             const telefono = get(store.request, 'telefonoSolicita', '');
             const emailSolicitante = get(store.request, 'emailSolicita', '');
-            const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
+            const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '') || get(store.request, 'documentoSolicita', '');
 
             setFormData((prevFormData) => ({
                 ...prevFormData,
