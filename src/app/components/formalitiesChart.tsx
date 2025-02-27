@@ -4,13 +4,18 @@ import { Chart, ArcElement, Tooltip, Legend } from 'chart.js';
 
 Chart.register(ArcElement, Tooltip, Legend);
 
-const FormalitiesChart: React.FC = () => {
+interface FormalitiesChartProps {
+  solicitudFinalizada: number;
+  solicitudEnProceso: number;
+}
+
+const FormalitiesChart: React.FC<FormalitiesChartProps> = ({ solicitudFinalizada, solicitudEnProceso }) => {
   const data = {
-    labels: ['En proceso', 'Completados'],
+    labels: ['En proceso', 'Finalizadas'],
     datasets: [
       {
-        data: [0, 100],
-        backgroundColor: ['#8a2be2', '#57caeb'],
+        data: [solicitudEnProceso, solicitudFinalizada], // Actualización de los datos
+        backgroundColor: [' #9b1b77', '#57caeb'],
         borderColor: ['#FFFFFF', '#FFFFFF'],
         borderWidth: 3,
       },
@@ -24,7 +29,7 @@ const FormalitiesChart: React.FC = () => {
     plugins: {
       legend: {
         display: true,
-        position: 'bottom' as const,  // Ensure the type is correctly inferred
+        position: 'bottom' as const, // Correct type inference
         labels: {
           usePointStyle: true,
           pointStyle: 'circle',
@@ -39,7 +44,7 @@ const FormalitiesChart: React.FC = () => {
           label: function (context) {
             const label = context.label || '';
             const value = context.raw || 0;
-            return `${label}: ${value}%`;
+            return `${label}: ${value} solicitudes`; // Mostrar la cantidad real
           },
         },
       },

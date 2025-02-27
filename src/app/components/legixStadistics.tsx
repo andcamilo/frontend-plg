@@ -28,6 +28,7 @@ const formatDate = (timestamp?: { _seconds: number; _nanoseconds: number }): str
 
 const LegixStatistics: React.FC = () => {
   const [solicitudes, setSolicitudes] = useState<any[]>([]);
+  const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
   const [tipoCounts, setTipoCounts] = useState<{ [key: string]: number }>({});
   const [statusCounts, setStatusCounts] = useState<{ status10: number; status20: number }>({
     status10: 0,
@@ -37,12 +38,37 @@ const LegixStatistics: React.FC = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage] = useState(3);
-  const [pagination, setPagination] = useState({
+  const [rowsPerPage] = useState(10);
+
+  // Paginación de solicitudes en proceso
+  const [currentPageEnProceso, setCurrentPageEnProceso] = useState(1);
+  const [paginationEnProceso, setPaginationEnProceso] = useState({
     hasPrevPage: false,
     hasNextPage: false,
     totalPages: 1,
   });
+
+  // Paginación de solicitudes finalizadas
+  const [currentPageFinalizadas, setCurrentPageFinalizadas] = useState(1);
+  const [paginationFinalizadas, setPaginationFinalizadas] = useState({
+    hasPrevPage: false,
+    hasNextPage: false,
+    totalPages: 1,
+  });
+
+  // Cambiar página de las solicitudes en proceso
+  const handlePageChangeEnProceso = (newPage: number) => {
+    if (newPage > 0 && newPage <= paginationEnProceso.totalPages) {
+      setCurrentPageEnProceso(newPage);
+    }
+  };
+
+  // Cambiar página de las solicitudes finalizadas
+  const handlePageChangeFinalizadas = (newPage: number) => {
+    if (newPage > 0 && newPage <= paginationFinalizadas.totalPages) {
+      setCurrentPageFinalizadas(newPage);
+    }
+  };
 
   interface FormData {
     email: string;
@@ -73,38 +99,93 @@ const LegixStatistics: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (formData.cuenta) {
+      const fetchUser = async () => {
+        try {
+          console.log("Cuenta ", formData.cuenta)
+          const response = await axios.get('/api/get-user-cuenta', {
+            params: { userCuenta: formData.cuenta },
+          });
+
+          const user = response.data;
+          console.log("Usuario ", user)
+          setFormData((prevData) => ({
+            ...prevData,
+            rol: get(user, 'solicitud.rol', 0)
+          }));
+
+        } catch (error) {
+          console.error('Failed to fetch solicitudes:', error);
+        }
+      };
+
+      fetchUser();
+    }
+  }, [formData.cuenta]);
+
   const [lastVisibleCursor, setLastVisibleCursor] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(false);
 
-  const fetchSolicitudes = async (reset = false) => {
+  const fetchAllSolicitudes = async () => {
+    try {
+
+      if ((typeof formData.rol === 'number' && formData.rol < 20) ||
+        (typeof formData.rol === 'string' && (formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente'))) {
+
+        const solicitudesData = await getRequestsCuenta(rowsPerPage, formData.cuenta, lastVisibleCursor);
+
+        const {
+          solicitudes = [],
+          tipoCounts,
+        } = solicitudesData;
+
+        setAllSolicitudes(solicitudes);
+        setTipoCounts(tipoCounts);
+        
+      } else {
+
+        const solicitudesData = await getRequests(rowsPerPage, currentPage);
+
+        const {
+          allSolicitudes = [],
+          tipoCounts,
+          statusCounts,
+          months
+        } = solicitudesData;
+
+        setAllSolicitudes(allSolicitudes);
+        setTipoCounts(tipoCounts);
+        setStatusCounts(statusCounts);
+        setMonths(months);
+      }
+
+    } catch (error) {
+      console.error('Failed to fetch all solicitudes:', error);
+    }
+  };
+
+  const fetchPaginatedSolicitudes = async (reset = false) => {
     try {
       let solicitudesData;
 
       if (
         (typeof formData.rol === 'number' && formData.rol < 20) ||
-        (typeof formData.rol === 'string' && formData.rol === 'Cliente') ||
-        (typeof formData.rol === 'string' && formData.rol === 'Cliente recurrente')
+        (typeof formData.rol === 'string' && (formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente'))
       ) {
-        // Llamada específica si el rol es restringido
         solicitudesData = await getRequestsCuenta(rowsPerPage, formData.cuenta, lastVisibleCursor);
       } else {
-        // Llamada general para otros roles
         solicitudesData = await getRequests(rowsPerPage, currentPage);
       }
 
-      const { solicitudes, pagination, tipoCounts, statusCounts, months } = solicitudesData;
+      const { solicitudes, pagination } = solicitudesData;
 
-      // 🔄 Si es un reinicio de la paginación, reemplaza las solicitudes
-      setSolicitudes((prev) => (reset ? solicitudes : [...prev, ...solicitudes]));
-      setTipoCounts(tipoCounts);
-      setStatusCounts(statusCounts);
-      setMonths(months);
-
-      // 🔄 Actualiza el cursor para la próxima página
+      setSolicitudes(solicitudes);
       setLastVisibleCursor(pagination.nextCursor || null);
       setHasNextPage(pagination.hasNextPage);
+
     } catch (error) {
-      console.error('Failed to fetch solicitudes:', error);
+      console.error('Failed to fetch paginated solicitudes:', error);
     }
   };
 
@@ -112,21 +193,23 @@ const LegixStatistics: React.FC = () => {
     if (formData.cuenta) {
       console.log("✔️ Cuenta actualizada correctamente:", formData.cuenta);
 
-      // Reinicia los datos de la paginación
-      setLastVisibleCursor(null);
-      setSolicitudes([]);
-      fetchSolicitudes(true);
+      // Cargar todas las solicitudes solo una vez
+      fetchAllSolicitudes();
+
+      // Cargar los datos paginados para la tabla
+      fetchPaginatedSolicitudes(true);
     }
   }, [formData.cuenta, formData.rol]);
 
   useEffect(() => {
     if (currentPage > 1 && hasNextPage) {
-      fetchSolicitudes();
+      fetchPaginatedSolicitudes();
     }
   }, [currentPage]);
 
   const tipoMapping: { [key: string]: string } = {
     "propuesta-legal": "Propuesta Legal",
+    "consulta-legal": "Propuesta Legal",
     "consulta-escrita": "Consulta Escrita",
     "consulta-virtual": "Consulta Virtual",
     "consulta-presencial": "Consulta Presencial",
@@ -136,6 +219,7 @@ const LegixStatistics: React.FC = () => {
     "pension-alimenticia": "Pensión Alimenticia",
     "tramite-general": "Trámite General",
     "pension-desacato": "Pensión Desacato",
+    "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
   };
 
   const statusMapping: { [key: number]: string } = {
@@ -160,55 +244,135 @@ const LegixStatistics: React.FC = () => {
     70: "status-finalizada",
   };
 
-  // Transform data to include only the required attributes and format the date
-  const transformedSolicitudes = solicitudes.map(({ tipo, emailSolicita, date, status }) => ({
-    Tipo: tipoMapping[tipo] || tipo,
-    Fecha: formatDate(date),
-    Email: emailSolicita,
-    Estatus: (
-      <span className={`status-badge ${statusClasses[status]}`}>
-        {statusMapping[status]}
-      </span>
-    ),
-  }));
+  // Calcula las solicitudes con status igual a 70 y diferente de 70
+  const solicitudFinalizada = (allSolicitudes || []).filter((solicitud) => parseInt(solicitud.status) === 70).length;
+  const solicitudEnProceso = (allSolicitudes || []).filter((solicitud) => parseInt(solicitud.status) !== 70).length;
+
+  const solicitudesFinalizadas = allSolicitudes
+    .filter((solicitud) => parseInt(solicitud.status) === 70)
+    .map(({ tipo, emailSolicita, date, status }) => ({
+      Tipo: tipoMapping[tipo] || tipo,
+      Fecha: formatDate(date),
+      Email: emailSolicita,
+      Estatus: (
+        <span className={`status-badge ${statusClasses[status]}`}>
+          {statusMapping[status]}
+        </span>
+      ),
+    }));
+  const solicitudesEnProceso = allSolicitudes
+    .filter((solicitud) => parseInt(solicitud.status) !== 70)
+    .map(({ tipo, emailSolicita, date, status }) => ({
+      Tipo: tipoMapping[tipo] || tipo,
+      Fecha: formatDate(date),
+      Email: emailSolicita,
+      Estatus: (
+        <span className={`status-badge ${statusClasses[status]}`}>
+          {statusMapping[status]}
+        </span>
+      ),
+    }));
+
+  // Paginación de solicitudes finalizadas
+  const paginatedSolicitudesEnProceso = solicitudesEnProceso.slice(
+    (currentPageEnProceso - 1) * rowsPerPage,
+    currentPageEnProceso * rowsPerPage
+  );
+
+  // Paginación de solicitudes finalizadas
+  const paginatedSolicitudesFinalizadas = solicitudesFinalizadas.slice(
+    (currentPageFinalizadas - 1) * rowsPerPage,
+    currentPageFinalizadas * rowsPerPage
+  );
+
+  // Calcular el número de páginas
+  useEffect(() => {
+    setPaginationEnProceso({
+      hasPrevPage: currentPageEnProceso > 1,
+      hasNextPage: currentPageEnProceso < Math.ceil(solicitudesEnProceso.length / rowsPerPage),
+      totalPages: Math.ceil(solicitudesEnProceso.length / rowsPerPage),
+    });
+
+    setPaginationFinalizadas({
+      hasPrevPage: currentPageFinalizadas > 1,
+      hasNextPage: currentPageFinalizadas < Math.ceil(solicitudesFinalizadas.length / rowsPerPage),
+      totalPages: Math.ceil(solicitudesFinalizadas.length / rowsPerPage),
+    });
+  }, [solicitudesFinalizadas, currentPageEnProceso, currentPageFinalizadas]);
+
+
+  useEffect(() => {
+    if (formData.cuenta) {
+      fetchPaginatedSolicitudes(true);
+    }
+  }, [currentPage]);
 
   return (
     <div className="flex flex-col gap-4 p-8 w-full">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 w-[80%]">
         <HomeBox title="Sociedades" number={tipoCounts['new-sociedad-empresa'] || 0} color="bg-[#9694FF]" />
         <HomeBox title="Fundaciones" number={tipoCounts['new-fundacion-interes-privado'] || 0} color="bg-[#57caeb]" />
-        <HomeBox title="Propuesta Legal" number={tipoCounts['Propuesta-Legal'] || 0} color="bg-[#5ddab4]" />
+        <HomeBox
+          title="Propuesta Legal"
+          number={(tipoCounts['Propuesta-Legal'] || 0) + (tipoCounts['consulta-legal'] || 0)}
+          color="bg-[#5ddab4]"
+        />
         <HomeBox title="Consulta Escrita" number={tipoCounts['Consulta-Escrita'] || 0} color="bg-[#ff7976]" />
         <HomeBox title="Consulta Virtual" number={tipoCounts['Consulta-Virtual'] || 0} color="bg-black" />
         <HomeBox title="Consulta Presencial" number={tipoCounts['Consulta-Presencial'] || 0} color="bg-[#f4a261]" />
-        <HomeBox title="Tramite General" number={tipoCounts['Tramite General'] || 0} color="bg-[#e76f51]" />
+        <HomeBox title="Tramite General" number={tipoCounts['tramite-general'] || 0} color="bg-[#e76f51]" />
         <HomeBox title="Pensiones" number={tipoCounts['pension-alimenticia'] || 0} color="bg-[#2a9d8f]" />
         <HomeBox title="Pension Desacato" number={tipoCounts['pension-desacato'] || 0} color="bg-[#264653]" />
         <HomeBox title="Salida de Menores al Extranjero" number={tipoCounts['salida-menores-al-extranjero'] || 0} color="bg-[#e9c46a]" />
+        <HomeBox title="Cliente Recurrente" number={tipoCounts['solicitud-cliente-recurrente'] || 0} color="bg-[#264653]" />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
         <div className="lg:col-span-2">
           <TableWithPagination
-            data={transformedSolicitudes}
+            data={paginatedSolicitudesEnProceso}
             rowsPerPage={rowsPerPage}
             title="Últimas solicitudes"
-            currentPage={currentPage}
-            totalPages={pagination.totalPages}
-            hasPrevPage={pagination.hasPrevPage}
-            hasNextPage={hasNextPage}
-            onPageChange={() => {
-              if (hasNextPage) {
-                setCurrentPage((prevPage) => prevPage + 1);
-              }
-            }}
+            currentPage={currentPageEnProceso}
+            totalPages={paginationEnProceso.totalPages}
+            hasPrevPage={paginationEnProceso.hasPrevPage}
+            hasNextPage={paginationEnProceso.hasNextPage}
+            onPageChange={handlePageChangeEnProceso}
           />
-          <PivotTable months={months} />
+
+          <TableWithPagination
+            data={paginatedSolicitudesFinalizadas}
+            rowsPerPage={rowsPerPage}
+            title="Solicitudes finalizadas"
+            currentPage={currentPageFinalizadas}
+            totalPages={paginationFinalizadas.totalPages}
+            hasPrevPage={paginationFinalizadas.hasPrevPage}
+            hasNextPage={paginationFinalizadas.hasNextPage}
+            onPageChange={handlePageChangeFinalizadas}
+          />
+
+          {!(
+            (typeof formData.rol === 'number' && formData.rol < 20) ||
+            (typeof formData.rol === 'string' && formData.rol === 'Cliente') ||
+            (typeof formData.rol === 'string' && formData.rol === 'Cliente recurrente')
+          ) && <PivotTable months={months} />}
+
         </div>
         <div className="lg:col-span-1">
-          <DashboardCard title={"Solicitudes pendientes de pago"} value={statusCounts.status10} />
-          <DashboardCard title={"Solicitudes pagadas"} value={statusCounts.status20} />
-          <DashboardCard title={"Balance de ingresos"} value={0.0} />
-          <FormalitiesChart />
+          {!(
+            (typeof formData.rol === 'number' && formData.rol < 20) ||
+            (typeof formData.rol === 'string' && formData.rol === 'Cliente') ||
+            (typeof formData.rol === 'string' && formData.rol === 'Cliente recurrente')
+          ) &&
+            <>
+              <DashboardCard title={"Solicitudes pendientes de pago"} value={statusCounts.status10} />
+              <DashboardCard title={"Solicitudes pagadas"} value={statusCounts.status20} />
+              <DashboardCard title={"Balance de ingresos"} value={0.0} />
+            </>
+          }
+          <FormalitiesChart
+            solicitudFinalizada={solicitudFinalizada}
+            solicitudEnProceso={solicitudEnProceso}
+          />
         </div>
       </div>
     </div>

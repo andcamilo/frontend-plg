@@ -4,7 +4,6 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import ModalPoder from '@components/modalPoder'; // Cambiar el modal por el de poderes
 import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
-import { getRequests } from '@api/request';
 import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 import '@fortawesome/fontawesome-free/css/all.css';

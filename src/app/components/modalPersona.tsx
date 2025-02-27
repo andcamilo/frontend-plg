@@ -106,7 +106,7 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
 
     useEffect(() => {
         if (userData) {
-            let fechaNacimiento = userData.fechaNacimiento;
+            let fechaNacimiento = userData?.fechaNacimiento;
 
             // Verificar si userData.fechaNacimiento tiene el formato esperado de Firebase
             if (userData.fechaNacimiento?._seconds) {
@@ -115,65 +115,70 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                 fechaNacimiento = new Date(timestamp).toISOString().split('T')[0]; // Convertir a YYYY-MM-DD
             }
 
+            console.log(" Fechas xxxxx ", fechaNacimiento, " xx ", userData.fecha_nacimiento)
+            console.log("📂 adjuntoDocumentoCedulaPasaporteURL:", userData.adjuntoDocumentoCedulaPasaporteURL);
+            console.log("📂 adjunto_documento:", userData.adjunto_documento);
             setFormData({
-                tipoPersona: userData.tipoPersona || 'Persona Natural',
-                nombreApellido: userData.nombreApellido || '',
-                sexo: userData.sexo || 'Femenino',
+                tipoPersona: userData.tipoPersona || userData.tipo || 'Persona Natural',
+                nombreApellido: userData.nombreApellido || userData.nombre || '',
+                sexo: userData.sexo === "F" ? "Femenino" : userData.sexo === "M" ? "Masculino" : userData.sexo || 'Femenino',
                 nacionalidad: userData.nacionalidad || 'Panamá',
-                cedulaPasaporte: userData.cedulaPasaporte || '',
-                paisNacimiento: userData.paisNacimiento || 'Panamá',
-                fechaNacimiento: fechaNacimiento,
+                cedulaPasaporte: userData?.cedulaPasaporte || userData.documento || '',
+                paisNacimiento: userData?.paisNacimiento || userData.pais_nacimiento || 'Panamá',
+                fechaNacimiento: fechaNacimiento || userData.fecha_nacimiento,
                 direccion: userData.direccion || '',
-                paisResidencia: userData.paisResidencia || 'Panamá',
+                paisResidencia: userData.paisResidencia || userData.pais_residencia || 'Panamá',
                 profesion: userData.profesion || '',
                 telefono: userData.telefono || '',
                 telefonoCodigo: 'PA',
                 email: userData.email || '',
-                esPoliticamenteExpuesta: userData.esPoliticamenteExpuesta || 'No',
-                personaExpuestaFecha: userData.personaExpuestaFecha || '',
-                personaExpuestaCargo: userData.personaExpuestaCargo || '',
+                esPoliticamenteExpuesta: userData.esPoliticamenteExpuesta || userData.politicamente_expuesta || 'No',
+                personaExpuestaFecha: userData.personaExpuestaFecha || userData.fecha_politicamente_expuesta || '',
+                personaExpuestaCargo: userData.personaExpuestaCargo || userData.cargo_politicamente_expuesta || '',
 
                 // Persona Jurídica  
-                nombreJuridico: userData.personaJuridica.nombreJuridico || '',
-                paisJuridico: userData.personaJuridica.paisJuridico || 'Panamá',
-                registroJuridico: userData.personaJuridica.registroJuridico || '',
+                nombreJuridico: userData.personaJuridica?.nombreJuridico || userData.nombre_PersonaJuridica || '',
+                paisJuridico: userData.personaJuridica?.paisJuridico || userData.pais_PersonaJuridica || 'Panamá',
+                registroJuridico: userData.personaJuridica?.registroJuridico || userData.registro_PersonaJuridica || '',
 
                 // Referencias bancarias
-                bancoNombre: userData.referenciasBancarias.bancoNombre || '',
-                bancoTelefono: userData.referenciasBancarias.bancoTelefono || '',
+                bancoNombre: userData.referenciasBancarias?.bancoNombre || userData.nombre_banco || '',
+                bancoTelefono: userData.referenciasBancarias?.bancoTelefono || userData.telefono_banco || '',
                 bancoTelefonoCodigo: 'PA',
-                bancoEmail: userData.referenciasBancarias.bancoEmail || '',
+                bancoEmail: userData.referenciasBancarias?.bancoEmail || userData.email_banco || '',
 
                 // Referencias comerciales
-                comercialNombre: userData.referenciasComerciales.comercialNombre || '',
-                comercialTelefono: userData.referenciasComerciales.comercialTelefono || '',
-                comercialTelefonoCodigo: userData.referenciasComerciales.comercialTelefonoCodigo || 'PA',
-                comercialEmail: userData.referenciasComerciales.comercialEmail || '',
+                comercialNombre: userData.referenciasComerciales?.comercialNombre || userData.nombre_comercial || '',
+                comercialTelefono: userData.referenciasComerciales?.comercialTelefono || userData.telefono_comercial || '',
+                comercialTelefonoCodigo: userData.referenciasComerciales?.comercialTelefonoCodigo || 'PA',
+                comercialEmail: userData.referenciasComerciales?.comercialEmail || userData.email_comercial || '',
 
-                adjuntoDocumentoCedulaPasaporteURL: userData.adjuntoDocumentoCedulaPasaporteURL || '',
-                adjuntoDocumentoCedulaPasaporte2URL: userData.adjuntoDocumentoCedulaPasaporte2URL || '',
+                adjuntoDocumentoCedulaPasaporteURL: userData?.adjuntoDocumentoCedulaPasaporteURL || userData.adjunto_documento || '',
+                adjuntoDocumentoCedulaPasaporte2URL: userData?.adjuntoDocumentoCedulaPasaporte2URL || userData.adjunto_documento2 || '',
 
             });
+
+            console.log("📂📂📂 adjunto_documento:", formData.adjuntoDocumentoCedulaPasaporteURL);
 
             // Inicializar los beneficiarios si existen
             if (userData.beneficiarios?.length) {
                 const mappedBeneficiarios = userData.beneficiarios.map((beneficiario: any) => ({
-                    nombreApellido: beneficiario.nombreApellido || '',
-                    sexo: beneficiario.sexo || 'Femenino',
-                    cedulaPasaporte: beneficiario.cedulaPasaporte || '',
-                    nacionalidad: beneficiario.nacionalidad || 'Panamá',
-                    paisNacimiento: beneficiario.paisNacimiento || 'Panamá',
-                    fechaNacimiento: beneficiario.fechaNacimiento || '',
-                    direccion: beneficiario.direccion || '',
-                    paisResidencia: beneficiario.paisResidencia || 'Panamá',
-                    profesion: beneficiario.profesion || '',
-                    telefono: beneficiario.telefono || '',
+                    nombreApellido: beneficiario.nombreApellido || beneficiario.nombreBeneficiario || '',
+                    sexo: beneficiario.sexoBeneficiario === "F" ? "Femenino" : beneficiario.sexoBeneficiario === "M" ? "Masculino" : beneficiario.sexo || 'Femenino',
+                    cedulaPasaporte: beneficiario.cedulaPasaporte || beneficiario.documentoBeneficiario || '',
+                    nacionalidad: beneficiario.nacionalidad || beneficiario.nacionalidadBeneficiario || 'Panamá',
+                    paisNacimiento: beneficiario.paisNacimiento || beneficiario.pais_nacimientoBeneficiario || 'Panamá',
+                    fechaNacimiento: beneficiario.fechaNacimiento || beneficiario.fecha_nacimientoBeneficiario || '',
+                    direccion: beneficiario.direccion || beneficiario.direccionBeneficiario || '',
+                    paisResidencia: beneficiario.paisResidencia || beneficiario.pais_residenciaBeneficiario || 'Panamá',
+                    profesion: beneficiario.profesion || beneficiario.profesionBeneficiario || '',
+                    telefono: beneficiario.telefono || beneficiario.telefonoBeneficiario || '',
                     telefonoCodigo: beneficiario.telefonoCodigo || 'PA',
-                    email: beneficiario.email || '',
-                    esPoliticamenteExpuesta: beneficiario.esPoliticamenteExpuesta || 'No',
-                    personaExpuestaCargo: beneficiario.personaExpuestaCargo || '',
-                    personaExpuestaFecha: beneficiario.personaExpuestaFecha || '',
-                    adjuntoCedulaPasaporteBeneficiarioURL: beneficiario.adjuntoCedulaPasaporteBeneficiarioURL || '',
+                    email: beneficiario.email || beneficiario.emailBeneficiario || '',
+                    esPoliticamenteExpuesta: beneficiario.esPoliticamenteExpuesta || beneficiario.politicamente_expuestaBeneficiario || 'No',
+                    personaExpuestaCargo: beneficiario.personaExpuestaCargo || beneficiario.cargo_politicamente_expuestaBeneficiario || '',
+                    personaExpuestaFecha: beneficiario.personaExpuestaFecha || beneficiario.fecha_politicamente_expuestaBeneficiario || '',
+                    adjuntoCedulaPasaporteBeneficiarioURL: beneficiario.adjuntoCedulaPasaporteBeneficiarioURL || beneficiario.adjunto_documentoBeneficiario || '',
                 }));
                 setBeneficiarios(mappedBeneficiarios);
                 setMostrarBeneficiarios(true);
@@ -1717,8 +1722,8 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                         <button
                             type="submit"
                             className={`px-6 py-2 font-semibold rounded-lg transition ${isLoading
-                                    ? 'bg-profile text-gray-400 cursor-not-allowed'
-                                    : 'bg-profile text-white hover:bg-profile-dark'
+                                ? 'bg-profile text-gray-400 cursor-not-allowed'
+                                : 'bg-profile text-white hover:bg-profile-dark'
                                 }`}
                             disabled={isLoading}
                         >
