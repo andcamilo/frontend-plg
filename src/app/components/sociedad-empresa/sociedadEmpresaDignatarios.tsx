@@ -149,15 +149,14 @@ const SociedadEmpresaDignatarios: React.FC = () => {
 
     const fetchData = async () => {
         try {
+            // Obtener personas de la API
             const response = await axios.get(`/api/get-people-id`, {
-                params: {
-                    solicitudId: solicitudId
-                }
+                params: { solicitudId }
             });
 
-            const people = response.data;
+            const people = response.data || [];
 
-            if (!people || people.length === 0) {
+            if (people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
                 setTotalPages(1);
@@ -169,7 +168,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
             // Filtrar solo las personas que tienen el campo `dignatario`
             const dignatarios = people.filter((persona: any) => persona.dignatario);
 
-            // Calcular paginación solo con los registros filtrados
+            // Obtener paginación
             const totalRecords = dignatarios.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
 
@@ -195,27 +194,70 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
             }));
 
+            // Obtener datos de la solicitud
             const solicitudes = await axios.get('/api/get-request-id', {
-                params: {
-                    solicitudId
-                },
+                params: { solicitudId }
             });
 
             const requestData = solicitudes.data;
 
-            let formattedRequestData = [];
-            if (requestData && requestData.dignatarios) {
-                formattedRequestData = requestData.dignatarios
-                    .filter((dignatario: any) => dignatario.servicio.trim().toLowerCase() === "dignatario nominal")
-                    .map((dignatario: any) => ({
-                        nombre: dignatario.servicio,
-                        posicion: dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
-                        Opciones: <Actions id={dignatario.personId} solicitudId={store.solicitudId} onEdit={openModal} />,
-                    }));
-            }
+            const getPositions = (dignatario: any) => {
+                if (dignatario?.positions?.length) {
+                    return dignatario.positions.join(', ');
+                } else if (dignatario?.posiciones?.length) {
+                    return dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', ');
+                }
+                return '---'; // Valor por defecto si no hay posiciones
+            };
 
-            const combinedData: DignatarioNominalData[] = [...formattedData, ...formattedRequestData];
+            const formattedRequestData = requestData?.dignatarios
+                ?.filter((dignatario: any) => dignatario.servicio.trim().toLowerCase() === "dignatario nominal")
+                .map((dignatario: any) => ({
+                    nombre: dignatario.servicio,
+                    posicion: getPositions(dignatario),
+                    Opciones: <Actions id={dignatario.personId} solicitudId={store.solicitudId} onEdit={openModal} />,
+                }));
 
+            // Extraer id_persona y positions de requestData
+            let dignatariosPropiosMap = new Map();
+
+            requestData?.dignatarios
+                ?.filter((dignatario: any) => dignatario.servicio.trim().toLowerCase() === "dignatario propio")
+                .forEach((dignatario: any) => {
+                    dignatariosPropiosMap.set(dignatario.id_persona, getPositions(dignatario));
+                });
+
+            // Filtrar en `people` los dignatarios propios
+            const dignatariosPropios = people.filter((persona: any) =>
+                dignatariosPropiosMap.has(persona.id)
+            );
+
+            // Formatear los datos
+            let formattedDignatariosPropios = dignatariosPropios.map((persona: any) => ({
+                nombre: persona.tipo === 'Persona Jurídica'
+                    ? (
+                        <>
+                            {persona.nombre}
+                            <br />
+                            <span className="text-gray-400 text-sm">
+                                <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
+                                {persona.nombre_PersonaJuridica || '---'}
+                            </span>
+                        </>
+                    )
+                    : persona.nombre || '---',
+                posicion: dignatariosPropiosMap.get(persona.id) || '---',  // Obtener posiciones desde el mapa
+                Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
+            }));
+
+            // 🔹 Combinar datos
+            const combinedData: DignatarioNominalData[] = [
+                ...formattedData,             // Dignatarios de `people`
+                ...formattedRequestData,      // Dignatarios nominales
+                ...formattedDignatariosPropios // Dignatarios propios
+            ];
+
+            // 🔹 Actualizar estados
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(totalPages);
