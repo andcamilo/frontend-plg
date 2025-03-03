@@ -318,6 +318,55 @@ const Actividades: React.FC = () => {
                     archivoContribuyenteURL,
                 }));
             }
+
+            if (store.request.dentroPanama && !store.request.actividades) {
+                const actividadesDentroPanama =
+                    store.request.dentroPanama === "Si, ya tengo la local"
+                        ? "SiYaTengoLocal"
+                        : store.request.dentroPanama === "Si, pero requiero la sociedad"
+                            ? "SiRequieroSociedadPrimero"
+                            : store.request.dentroPanama;
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    actividadesDentroPanama,
+                    ...(actividadesDentroPanama === 'SiYaTengoLocal' && {
+                        nombreComercial: store.request.avisOperacion.aO_nombreComercial,
+                        direccionComercial: store.request.avisOperacion.aO_direccion,
+                        comoLlegar: store.request.avisOperacion.aO_comoLlegar,
+                        provincia: store.request.avisOperacion.aO_provincia,
+                        corregimiento: store.request.avisOperacion.aO_corregimiento,
+                        numeroLocal: store.request.avisOperacion.aO_local,
+                        nombreEdificio: store.request.avisOperacion.aO_edificio,
+                        inversionSucursal: store.request.avisOperacion.aO_inversion,
+                        cantidadTrabajadores: store.request.avisOperacion.aO_trabajadores,
+                        mantenerRotulo: store.request.avisOperacion.aO_rotulo,
+                        telefono: store.request.avisOperacion.aO_telefono,
+                        telefonoCodigo: 'PA',
+                        correoElectronico: store.request.avisOperacion.aO_email,
+                    }),
+
+                    ...(store.request.dentroPanama !== 'No' && {
+                        actividad1: store.request.actividadComercial.aC_1,
+                        actividad2: store.request.actividadComercial.aC_2,
+                        actividad3: store.request.actividadComercial.aC_3,
+
+                        ...(store.request.contador && store.request.selectContador !== 'No' && {
+                            mantieneContador: store.request.contador.selectContador,
+                            nombreContador: store.request.contador.contador_nombre,
+                            idoneidadContador: store.request.contador.contador_idoneidad,
+                            telefonoContador: store.request.contador.contador_telefono,
+                            telefonoContadorCodigo: 'PA',
+                            correoContador: store.request.contador.contador_email,
+                        }),
+                    }),
+
+                    ...(store.request.dentroPanama === 'No' && store.request.fueraPanama && {
+                        actividadOffshore1: store.request.fueraPanama.aCF_1,
+                        actividadOffshore2: store.request.fueraPanama.aCF_2,
+                        paisesActividadesOffshore: store.request.fueraPanama.aCF_paises,
+                    }),
+                }));
+            }
         }
     }, [store.request]);
 
@@ -329,10 +378,9 @@ const Actividades: React.FC = () => {
                 'nombreComercial', 'direccionComercial', 'comoLlegar', 'numeroLocal',
                 'nombreEdificio', 'inversionSucursal', 'cantidadTrabajadores',
                 'telefono', 'correoElectronico', 'actividad1', 'actividad2', 'actividad3',
-                'direccionRegistros',
             ];
         } else if (formData.actividadesDentroPanama === 'SiRequieroSociedadPrimero') {
-            fieldsToValidate = ['actividad1', 'actividad2', 'actividad3', 'direccionRegistros'];
+            fieldsToValidate = ['actividad1', 'actividad2', 'actividad3'];
         } else if (formData.actividadesDentroPanama === 'No') {
             if (formData.tipoActividades === 'offshore') {
                 fieldsToValidate = ['actividadOffshore1', 'actividadOffshore2', 'paisesActividadesOffshore'];
@@ -340,9 +388,13 @@ const Actividades: React.FC = () => {
                 fieldsToValidate = ['actividadTenedora'];
             }
         }
+        console.log("XXXXX ", formData.registrosContables)
+        if (formData.registrosContables === 'Dirección propia') {
+            fieldsToValidate.push('direccionRegistros');
+        }
 
         // Validar el campo adjuntoDocumentoContribuyente
-        if (['SiYaTengoLocal', 'SiRequieroSociedadPrimero'].includes(formData.actividadesDentroPanama) &&
+        /* if (['SiYaTengoLocal', 'SiRequieroSociedadPrimero'].includes(formData.actividadesDentroPanama) &&
             !formData.archivoContribuyenteURL) {
             setFieldErrors((prevErrors) => ({
                 ...prevErrors,
@@ -371,7 +423,7 @@ const Actividades: React.FC = () => {
             formRefs.adjuntoDocumentoContribuyente.current?.focus();
 
             return false;
-        }
+        } */
 
         // Validar los campos requeridos
         for (const { field, errorMessage } of fieldValidations.filter(({ field }) => fieldsToValidate.includes(field))) {

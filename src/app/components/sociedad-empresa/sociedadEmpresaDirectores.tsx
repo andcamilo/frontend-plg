@@ -74,7 +74,7 @@ const SociedadEmpresaDirectores: React.FC = () => {
 
     const { store, setStore } = context;
     const solicitudId = store.solicitudId; // Aquí obtienes el `solicitudId` actual del store
-
+    console.log("Store.request ", store.request)
     useEffect(() => {
         fetchData();
     }, [currentPage, solicitudId]); // Se agrega solicitudId como dependencia para actualizar si cambia
@@ -126,23 +126,66 @@ const SociedadEmpresaDirectores: React.FC = () => {
     const fetchData = async () => {
         try {
             let formattedData: any[] = [];
+            let formattedRequestData: any[] = [];
 
-            // Llamada a la API para obtener datos de personas
+            // 1. Llamada a la API para obtener datos de personas
             const response = await axios.get(`/api/get-people-id`, {
                 params: { solicitudId }
             }).catch((error) => {
-                // Manejar errores específicos
                 if (axios.isAxiosError(error) && error.response?.status === 404) {
                     console.warn('No se encontraron registros para la solicitud.');
-                    return { data: [] }; // Continuar con un arreglo vacío
+                    return { data: [] };
                 }
-                throw error; // Lanza otros errores
+                throw error;
             });
 
-            const people = response?.data || []; // Asegurar que siempre sea un arreglo
+            const people = response?.data || [];
+            const requestData = store.request;
 
+            // 3. Obtener los directores nominales de requestData y almacenar sus id_persona
+            let idPersonasDirectoresPropios: string[] = [];
+            if (requestData && requestData.directores) {
+                idPersonasDirectoresPropios = requestData.directores
+                    .filter((director: any) => director.servicio.trim().toLowerCase() === "director propio")
+                    .map((director: any) => director.id_persona); // Extraemos solo los id_persona
+            }
+
+            // 4. Filtrar los registros de `people` que coincidan con los id_persona de los directores propios
+            const directoresPropios = people.filter((persona: any) =>
+                idPersonasDirectoresPropios.includes(persona.id)
+            );
+
+            // 5. Formatear la información de los directores propios para mostrar en la tabla
+            const formattedDirectoresPropios = directoresPropios.map((persona: any) => ({
+                tipo: "Director Propio",
+                nombre: persona.tipo === 'Persona Jurídica'
+                    ? (
+                        <>
+                            {persona.nombre}
+                            <br />
+                            <span className="text-gray-400 text-sm">
+                                <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
+                                {persona.nombre_PersonaJuridica || '---'}
+                            </span>
+                        </>
+                    )
+                    : persona.nombre || '---',
+                Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
+            }));
+
+            // 6. Obtener los directores nominales de requestData para mostrar en la tabla
+            if (requestData && requestData.directores) {
+                formattedRequestData = requestData.directores
+                    .filter((director: any) => director.servicio.trim().toLowerCase() === "director nominal")
+                    .map((director: any) => ({
+                        tipo: director.servicio,
+                        nombre: director.nombre || '---',
+                        Opciones: <Actions id={director.personId} solicitudId={store.solicitudId} />,
+                    }));
+            }
+
+            // 7. Filtrar y formatear la información de los directores ya existentes en `people`
             if (Array.isArray(people) && people.length > 0) {
-                // Filtrar y procesar los datos si existen
                 const directores = people.filter((persona: any) => persona.director);
 
                 // Calcular paginación
@@ -170,39 +213,23 @@ const SociedadEmpresaDirectores: React.FC = () => {
                         : persona.nombreApellido || '---',
                     Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
                 }));
+
+                // 8. Combinar todos los datos
+                const combinedData: DirectorNominalData[] = [
+                    ...formattedData,          // Directores ya registrados en `people`
+                    ...formattedRequestData,   // Directores nominales de `requestData`
+                    ...formattedDirectoresPropios, // Directores propios extraídos de `requestData`
+                ];
+
+                // 9. Establecer los datos combinados en el estado
+                setData(combinedData);
+                setTotalRecords(combinedData.length);
+                setTotalPages(totalPages);
+                setHasPrevPage(currentPage > 1);
+                setHasNextPage(currentPage < totalPages);
             }
-
-            // Llamada a la API para obtener datos de solicitudes
-            const solicitudes = await axios.get('/api/get-request-id', {
-                params: { solicitudId },
-            });
-
-            const requestData = solicitudes.data;
-            console.log("AA ", requestData);
-
-            let formattedRequestData = [];
-            if (requestData && requestData.directores) {
-                formattedRequestData = requestData.directores
-                    .filter((director: any) => director.servicio.trim().toLowerCase() === "director nominal")
-                    .map((director: any) => ({
-                        tipo: director.servicio,
-                        nombre: director.nombre || '---',
-                        Opciones: <Actions id={director.personId} solicitudId={store.solicitudId} />,
-                    }));
-            }
-            console.log("AAWW ", formattedRequestData);
-
-            // Combinar los datos
-            const combinedData: DirectorNominalData[] = [...formattedData, ...formattedRequestData];
-
-            // Establecer los datos combinados en el estado
-            setData(combinedData);
-            setTotalRecords(combinedData.length);
-            setTotalPages(totalPages);
-            setHasPrevPage(currentPage > 1);
-            setHasNextPage(currentPage < totalPages);
         } catch (error) {
-            console.error('Error fetching people:', error);
+            console.error('Error fetching data:', error);
         }
     };
 

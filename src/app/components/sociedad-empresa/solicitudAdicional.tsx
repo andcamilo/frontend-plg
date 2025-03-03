@@ -74,11 +74,12 @@ const SolicitudAdicional: React.FC = () => {
 
   useEffect(() => {
     if (store.request) {
-      const solicitudAdicional = get(store.request, 'solicitudAdicional.solicitudAdicional', '');
+      const solicitudAdicional = get(store.request, 'solicitudAdicional.solicitudAdicional', ''); 
+      const solicitudAdicional2 = get(store.request, 'solicitudAdicional', '');
       const archivoURL = get(store.request, 'solicitudAdicional.archivoURL', '');
       setFormData((prevFormData) => ({
         ...prevFormData,
-        solicitudAdicional,
+        solicitudAdicional: solicitudAdicional || solicitudAdicional2,
         archivoURL,
       }));
     }

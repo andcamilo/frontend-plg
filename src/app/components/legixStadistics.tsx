@@ -55,7 +55,6 @@ const LegixStatistics: React.FC = () => {
     hasNextPage: false,
     totalPages: 1,
   });
-
   // Cambiar página de las solicitudes en proceso
   const handlePageChangeEnProceso = (newPage: number) => {
     if (newPage > 0 && newPage <= paginationEnProceso.totalPages) {
@@ -272,7 +271,6 @@ const LegixStatistics: React.FC = () => {
         </span>
       ),
     }));
-
   // Paginación de solicitudes finalizadas
   const paginatedSolicitudesEnProceso = solicitudesEnProceso.slice(
     (currentPageEnProceso - 1) * rowsPerPage,
