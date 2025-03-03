@@ -140,13 +140,7 @@ const SociedadEmpresaDirectores: React.FC = () => {
             });
 
             const people = response?.data || [];
-
-            // 2. Llamada a la API para obtener datos de solicitudes
-            const solicitudes = await axios.get('/api/get-request-id', {
-                params: { solicitudId },
-            });
-
-            const requestData = solicitudes.data;
+            const requestData = store.request;
 
             // 3. Obtener los directores nominales de requestData y almacenar sus id_persona
             let idPersonasDirectoresPropios: string[] = [];

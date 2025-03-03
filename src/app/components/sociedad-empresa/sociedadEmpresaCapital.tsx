@@ -80,6 +80,14 @@ const CapitalDivisionAcciones: React.FC = () => {
                     ...prevFormData,
                     ...capitalData,
                 }));
+            } else if (store.request.capitalSocial) {
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    capital: store.request.capitalSocial,
+                    cantidadAcciones: store.request.cantidadAcciones,
+                    accionesSinValorNominal: store.request.acciones_SinvalorNominal, 
+                    valorPorAccion: store.request.valorAccion,
+                }));
             }
         }
     }, [store.request]);

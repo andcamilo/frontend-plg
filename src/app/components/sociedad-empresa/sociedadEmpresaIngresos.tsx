@@ -68,20 +68,48 @@ const FuentesDeIngresos: React.FC = () => {
     useEffect(() => {
         if (store.request) {
             const ingresosData = get(store.request, 'fuentesIngresos', {});
+            const ingresoArrayData = get(store.request, 'fuenteIngreso', []);
 
-            // Actualizar el estado de formData con los valores obtenidos de la base de datos
-            setFormData((prevFormData) => ({
-                ...prevFormData,
+            // Objeto de mapeo para validar los nombres en el array
+            const fuenteIngresoMapping: Record<string, string> = {
+                "Ingreso de Negocios": "ingresoNegocios",
+                "Herencia": "herencia",
+                "Ahorros Personales": "ahorrosPersonales",
+                "Venta de activos": "ventaActivos",
+                "Ingreso por alquiler de inmueble": "ingresoInmueble",
+                "Otro": "otroFuente",
+            };
+
+            // Inicializar formData con valores desde fuentesIngresos si existen
+            let updatedFormData = {
                 ingresoNegocios: ingresosData.ingresoNegocios || false,
                 herencia: ingresosData.herencia || false,
                 ahorrosPersonales: ingresosData.ahorrosPersonales || false,
                 ventaActivos: ingresosData.ventaActivos || false,
                 ingresoInmueble: ingresosData.ingresoInmueble || false,
-                otroFuente: ingresosData.otro || '', // Asigna el valor de "otro" a otroFuente
-            }));
+                otroFuente: ingresosData.otro || '',
+            };
 
-            // Mostrar el campo "Otro" si tiene algún valor en la base de datos
-            if (ingresosData.otro) {
+            // Si los datos están en formato de array (fuenteIngreso), actualizar formData
+            if (Array.isArray(ingresoArrayData) && ingresoArrayData.length > 0) {
+                ingresoArrayData.forEach((ingreso) => {
+                    const key = fuenteIngresoMapping[ingreso];
+                    if (key) {
+                        if (key === "otroFuente") {
+                            updatedFormData.otroFuente = get(store.request, 'otro_FuenteIngreso', '');
+                            setMostrarOtro(true);
+                        } else {
+                            updatedFormData[key] = true;
+                        }
+                    }
+                });
+            }
+
+            // Actualizar el estado con los datos obtenidos
+            setFormData(updatedFormData);
+
+            // Mostrar el campo "Otro" si tiene algún valor
+            if (updatedFormData.otroFuente) {
                 setMostrarOtro(true);
             }
         }

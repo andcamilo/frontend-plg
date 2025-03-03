@@ -102,14 +102,53 @@ const SociedadEmpresaPoder: React.FC = () => {
 
     const fetchData = async () => {
         try {
+            let formattedData: any[] = [];
+            let formattedRequestData: any[] = [];
+
+            // 1. Llamada a la API para obtener datos de personas
             const response = await axios.get(`/api/get-people-id`, {
-                params: {
-                    solicitudId: solicitudId
+                params: { solicitudId }
+            }).catch((error) => {
+                if (axios.isAxiosError(error) && error.response?.status === 404) {
+                    console.warn('No se encontraron registros para la solicitud.');
+                    return { data: [] };
                 }
+                throw error;
             });
 
-            const people = response.data;
+            const people = response?.data || [];
+            const requestData = store.request;
 
+            // 2. Obtener los poderes de requestData y almacenar sus id_persona
+            let idPersonasPoder: string[] = [];
+            if (requestData && requestData.poder) {
+                idPersonasPoder = requestData.poder.map((poder: any) => poder.id_persona);
+            }
+
+            // 3. Filtrar los registros de `people` que coincidan con los id_persona de los poderes
+            const poderesData = people.filter((persona: any) =>
+                idPersonasPoder.includes(persona.id)
+            );
+
+            // 4. Formatear la información de los poderes extraídos de `requestData`
+            const formattedPoderesRequest = poderesData.map((persona: any) => ({
+                nombre: persona.tipo === 'Persona Jurídica'
+                    ? (
+                        <>
+                            {persona.nombre}
+                            <br />
+                            <span className="text-gray-400 text-sm">
+                                <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
+                                {persona.nombre_PersonaJuridica || '---'}
+                            </span>
+                        </>
+                    )
+                    : persona.nombre || '---',
+                correo: persona.email || '---',
+                Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
+            }));
+
+            // 5. Verificar si no hay personas registradas
             if (!people || people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
@@ -119,10 +158,10 @@ const SociedadEmpresaPoder: React.FC = () => {
                 return;
             }
 
-            // Filtrar solo las personas que tienen el campo `poder`
+            // 6. Filtrar las personas que ya tienen un poder registrado en `people`
             const personasConPoder = people.filter((persona: any) => persona.poder);
 
-            // Calcular paginación solo con los registros filtrados
+            // 7. Calcular paginación solo con los registros filtrados
             const totalRecords = personasConPoder.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
 
@@ -131,7 +170,8 @@ const SociedadEmpresaPoder: React.FC = () => {
                 currentPage * rowsPerPage
             );
 
-            const formattedData = paginatedData.map((persona: any) => ({
+            // 8. Formatear los datos de los poderes ya existentes en `people`
+            const formattedDataPoderes = paginatedData.map((persona: any) => ({
                 nombre: persona.tipoPersona === 'Persona Jurídica'
                     ? (
                         <>
@@ -148,11 +188,19 @@ const SociedadEmpresaPoder: React.FC = () => {
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
             }));
 
-            setData(formattedData); // Asigna los registros filtrados y formateados
-            setTotalRecords(totalRecords); // Total de registros filtrados
-            setTotalPages(totalPages); // Páginas totales después del filtro
-            setHasPrevPage(currentPage > 1); // Verifica si hay página anterior
-            setHasNextPage(currentPage < totalPages); // Verifica si hay página siguiente
+            // 9. Combinar los datos de `requestData.poderes` con `people`
+            const combinedData: PoderData[] = [
+                ...formattedDataPoderes,   // Poderes ya registrados en `people`
+                ...formattedPoderesRequest // Poderes extraídos de `requestData`
+            ];
+
+            // 10. Establecer los datos combinados en el estado
+            setData(combinedData);
+            setTotalRecords(combinedData.length);
+            setTotalPages(totalPages);
+            setHasPrevPage(currentPage > 1);
+            setHasNextPage(currentPage < totalPages);
+
         } catch (error) {
             console.error('Error fetching people:', error);
         }
