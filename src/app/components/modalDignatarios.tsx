@@ -32,7 +32,7 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
     const [isLoading, setIsLoading] = useState(false); // Estado de carga
     const [userData, setUserData] = useState<any>(null);
     const [formData, setFormData] = useState({
-        servicio: 'Dignatario Propio', 
+        servicio: 'Dignatario Propio',
         seleccionar: '', // Campo vacío por defecto
     });
     const [selectedPositions, setSelectedPositions] = useState<string[]>([]); // Estado para las posiciones seleccionadas
@@ -50,8 +50,13 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
             // Extraemos las posiciones ya asignadas de los dignatarios existentes
             const dignatarios = solicitudData.dignatarios || [];
             const posicionesAsignadas = dignatarios.flatMap((dignatario: any) =>
-                dignatario.posiciones.map((posicion: any) => posicion.nombre)
+                dignatario.posiciones
+                    ? dignatario.posiciones.map((posicion: any) => posicion.nombre)
+                    : dignatario.positions || [] // Si `positions` existe, usarlo directamente
             );
+
+            console.log("Posiciones asignadas:", posicionesAsignadas);
+
             setSolicitudData(solicitudData);
             setAssignedPositions(posicionesAsignadas);
         } catch (error) {
@@ -74,27 +79,34 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
     }, [id]);
 
     useEffect(() => {
-        if (solicitudData.dignatarios && id) {
-            const dignatario = solicitudData.dignatarios.find(
-                (dignatario: any) => dignatario.personId === id
-            );
+        console.log("Dignatarios actuales:", solicitudData.dignatarios);
 
-            if (dignatario) {
-                // Actualizar `formData.servicio` con el valor de `servicio` del dignatario
-                setFormData((prevData) => ({
-                    ...prevData,
-                    servicio: dignatario.servicio,
-                }));
-
-                // Extraer las posiciones y actualizar `selectedPositions`
-                const posiciones = dignatario.posiciones.map((posicion: any) => posicion.nombre);
-                setSelectedPositions(posiciones);
-            }
-
-            // Marcar que los datos de solicitud han sido procesados
-            setIsSolicitudDataProcessed(true);
+        if (!solicitudData.dignatarios || solicitudData.dignatarios.length === 0) {
+            console.log("No hay dignatarios en solicitudData");
+            return;
         }
-    }, [solicitudData, id]);
+
+        const dignatario = solicitudData.dignatarios.find(
+            (dignatario: any) => dignatario.personId === id || dignatario.id_persona === id
+        );
+
+        if (!dignatario) {
+            console.log("No se encontró un dignatario con ID:", id);
+            return;
+        }
+
+        console.log("Dignatario encontrado:", dignatario);
+
+        // Extraer posiciones
+        const posiciones = dignatario.posiciones
+            ? dignatario.posiciones.map((posicion: any) => posicion.nombre)
+            : dignatario.positions || [];
+
+        console.log("Posiciones extraídas:", posiciones);
+        setSelectedPositions(posiciones);
+
+        setIsSolicitudDataProcessed(true);
+    }, [solicitudData, id, solicitudId]);
 
     useEffect(() => {
         if (!id || !isSolicitudDataProcessed) {
@@ -127,31 +139,34 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
     // Función para obtener personas desde la base de datos
     const fetchPersonas = async () => {
         try {
-            const response = await axios.get('/api/client', {
-                params: {
-                    solicitudId, // Pasamos el ID de la solicitud como filtro
-                },
+            const response = await axios.get(`/api/get-people-id`, {
+                params: { solicitudId }
             });
 
-            const { personas } = response.data;
-            setPersonas(personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && (!persona.dignatario)
-            ));
+            const { personas } = response.data || [];
+
+            // Filtramos solo las personas con solicitudId o id_solicitud igual a solicitudId y que no sean dignatarios
+            const personasFiltradas = personas.filter((persona: any) =>
+                (persona.solicitudId === solicitudId || persona.id_solicitud === solicitudId) && !persona.dignatario
+            );
+
+            setPersonas(personasFiltradas);
+            console.log("PERSONAS ", personas); 
+            console.log("PERSONAS FILTRADAS ", personasFiltradas); 
+
         } catch (error) {
             console.error('Error fetching personas:', error);
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
-        const { name, value } = e.target;
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
 
-        if (e.target.type === 'checkbox') {
+        if (type === 'checkbox') {
             const { checked } = e.target as HTMLInputElement;
-            if (checked) {
-                setSelectedPositions((prev) => [...prev, value]); // Agregar posición seleccionada
-            } else {
-                setSelectedPositions((prev) => prev.filter((pos) => pos !== value)); // Remover posición deseleccionada
-            }
+            setSelectedPositions((prev) =>
+                checked ? [...prev, value] : prev.filter((pos) => pos !== value)
+            );
         } else {
             setFormData((prevData) => ({
                 ...prevData,
@@ -305,17 +320,17 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
                                             .filter((persona: any) => persona.id === id) // Solo permite la opción con el id actual
                                             .map((persona: any) => (
                                                 <option key={persona.id} value={persona.id}>
-                                                    {persona.tipoPersona === 'Persona Jurídica'
-                                                        ? `${persona.personaJuridica.nombreJuridico} - ${persona.nombreApellido}`
-                                                        : persona.nombreApellido}
+                                                    {(persona.tipoPersona === 'Persona Jurídica' || persona.tipo === 'Persona Jurídica')
+                                                        ? `${(persona.personaJuridica.nombreJuridico || persona.nombre_PersonaJuridica)} - ${persona.nombreApellido || persona.nombre}`
+                                                        : persona.nombreApellido || persona.nombre}
                                                 </option>
                                             ))
                                     ) : (
                                         personas.map((persona: any) => (
                                             <option key={persona.id} value={persona.id}>
-                                                {persona.tipoPersona === 'Persona Jurídica'
-                                                    ? `${persona.personaJuridica.nombreJuridico} - ${persona.nombreApellido}`
-                                                    : persona.nombreApellido}
+                                                {(persona.tipoPersona === 'Persona Jurídica' || persona.tipo === 'Persona Jurídica')
+                                                    ? `${(persona.personaJuridica.nombreJuridico || persona.nombre_PersonaJuridica)} - ${persona.nombreApellido || persona.nombre}`
+                                                    : persona.nombreApellido || persona.nombre}
                                             </option>
                                         ))
                                     )}
