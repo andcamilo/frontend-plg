@@ -190,9 +190,10 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                         </>
                     )
                     : persona.nombreApellido || '---',
-                posicion: persona.dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
+                posicion: persona.dignatario?.posiciones?.map((posicion: any) => posicion.nombre).join(', ') || 
+                          persona.dignatario?.positions?.join(', ') || '---', // Agregar soporte para ambos formatos
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
-            }));
+            }));            
 
             // Obtener datos de la solicitud
             const solicitudes = await axios.get('/api/get-request-id', {

@@ -30,17 +30,23 @@ const ModalPoder: React.FC<ModalPoderProps> = ({ onClose }) => {
     // Función para obtener personas desde la base de datos
     const fetchPersonas = async () => {
         try {
-            const response = await axios.get('/api/client', {
-                params: {
-                    solicitudId, // Pasamos el ID de la solicitud como filtro
-                },
+            const response = await axios.get(`/api/get-people-id`, {
+                params: { solicitudId }
             });
 
             // Filtrar las personas que NO tienen el campo `poder` como `true` o que no lo tienen definido
-            const { personas } = response.data;
-            setPersonas(personas.filter((persona: any) =>
-                persona.solicitudId === solicitudId && (!persona.poder)
-            ));
+            const personas = response.data || [];
+
+            // Extraer los id_persona de los directores actuales
+            const idsPoder = new Set(store.request.poder.map((d: any) => d.id_persona));
+
+            const personasFiltradas = personas.filter((persona: any) =>
+                (persona.solicitudId === solicitudId || persona.id_solicitud === solicitudId) &&
+                !persona.poder &&
+                !idsPoder.has(persona.id)
+            );
+
+            setPersonas(personasFiltradas);
         } catch (error) {
             console.error('Error fetching personas:', error);
         }
@@ -116,9 +122,9 @@ const ModalPoder: React.FC<ModalPoderProps> = ({ onClose }) => {
                             <option value="">Seleccione una persona</option>
                             {personas.map((persona: any) => (
                                 <option key={persona.id} value={persona.id}>
-                                    {persona.tipoPersona === 'Persona Jurídica'
-                                        ? `${persona.personaJuridica.nombreJuridico} - ${persona.nombreApellido}`
-                                        : persona.nombreApellido}
+                                    {(persona.tipoPersona === 'Persona Jurídica' || persona.tipo === 'Persona Jurídica')
+                                        ? `${(persona?.personaJuridica?.nombreJuridico || persona?.nombre_PersonaJuridica)} - ${persona?.nombreApellido || persona?.nombre}`
+                                        : persona?.nombreApellido || persona?.nombre}
                                 </option>
                             ))}
                         </select>

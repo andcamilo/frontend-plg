@@ -199,18 +199,18 @@ const SociedadEmpresaDirectores: React.FC = () => {
 
                 formattedData = paginatedData.map((persona: any) => ({
                     tipo: persona.director?.servicio || '---',
-                    nombre: persona.tipoPersona === 'Persona Jurídica'
+                    nombre: persona?.tipoPersona === 'Persona Jurídica' || persona?.tipo === 'Persona Jurídica'
                         ? (
                             <>
-                                {persona.nombreApellido}
+                                {persona?.nombreApellido || persona?.nombre}
                                 <br />
                                 <span className="text-gray-400 text-sm">
                                     <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
-                                    {persona.personaJuridica?.nombreJuridico || '---'}
+                                    {persona.personaJuridica?.nombreJuridico || persona?.nombre_PersonaJuridica || '---'}
                                 </span>
                             </>
                         )
-                        : persona.nombreApellido || '---',
+                        : persona?.nombreApellido || persona?.nombre || '---',
                     Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
                 }));
 

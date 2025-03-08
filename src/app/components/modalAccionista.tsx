@@ -28,19 +28,25 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
     // Función para obtener personas y accionistas actuales desde la base de datos
     const fetchPersonas = async () => {
         try {
-            const response = await axios.get('/api/get-people-id', {
-                params: {
-                    solicitudId: solicitudId, 
-                },
+            const response = await axios.get(`/api/get-people-id`, {
+                params: { solicitudId }
             });
 
             // Guardar accionistas existentes para calcular el porcentaje de acciones
-            const accionistas = response.data.filter((persona: any) => persona.accionista);
+            const accionistas = store.request.accionistas;
+            const personas = response.data || [];
 
-            setPersonas(response.data.filter((persona: any) =>
-                persona.solicitudId === solicitudId && (!persona.accionista)
-            ));
-            
+            // Extraer los id_persona de los directores actuales
+            const idsAccionistas = new Set(store.request.accionistas.map((d: any) => d.id_persona));
+
+            const personasFiltradas = personas.filter((persona: any) =>
+                (persona.solicitudId === solicitudId || persona.id_solicitud === solicitudId) &&
+                !persona.accionista &&
+                !idsAccionistas.has(persona.id) 
+            );
+
+            setPersonas(personasFiltradas);
+
             // Guardar los accionistas actuales con su porcentaje de acciones
             setAccionistasExistentes(accionistas);
         } catch (error) {
@@ -91,14 +97,14 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
 
         // Calcular el porcentaje total de los accionistas existentes
         const totalPorcentajeExistente = accionistasExistentes.reduce((total, accionista: any) => {
-            return total + parseFloat(accionista.accionista.porcentajeAcciones);
+            return total + parseFloat(accionista.porcentajeAcciones || accionista.porcentaje);
         }, 0);
 
         // Sumar el porcentaje del nuevo accionista
         const porcentajeTotalConNuevo = totalPorcentajeExistente + porcentajeAccionesNuevo;
-        console.log("% nuevo  ",porcentajeAccionesNuevo)
-        console.log("% existente  ",totalPorcentajeExistente)
-        console.log("% ",porcentajeTotalConNuevo)
+        console.log("% nuevo  ", porcentajeAccionesNuevo)
+        console.log("% existente  ", totalPorcentajeExistente)
+        console.log("% ", porcentajeTotalConNuevo)
         // Validar que el porcentaje total no exceda el 100%
         if (porcentajeTotalConNuevo > 100) {
             Swal.fire({
@@ -169,9 +175,9 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
                             <option value="">Seleccione una persona</option>
                             {personas.map((persona: any) => (
                                 <option key={persona.id} value={persona.id}>
-                                    {persona.tipoPersona === 'Persona Jurídica'
-                                        ? `${persona.personaJuridica.nombreJuridico} - ${persona.nombreApellido}`
-                                        : persona.nombreApellido}
+                                    {(persona.tipoPersona === 'Persona Jurídica' || persona.tipo === 'Persona Jurídica')
+                                        ? `${(persona?.personaJuridica?.nombreJuridico || persona?.nombre_PersonaJuridica)} - ${persona?.nombreApellido || persona?.nombre}`
+                                        : persona?.nombreApellido || persona?.nombre}
                                 </option>
                             ))}
                         </select>

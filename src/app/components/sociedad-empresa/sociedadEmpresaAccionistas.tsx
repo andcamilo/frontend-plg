@@ -129,10 +129,10 @@ const SociedadEmpresaAccionistas: React.FC = () => {
             const response = await axios.get(`/api/get-people-id`, {
                 params: { solicitudId }
             });
-    
+
             const people = response.data;
             const requestData = store.request;
-    
+
             // 1. Obtener los accionistas desde requestData y mapear su id_persona con su porcentajeAcciones
             let accionistasMap: Record<string, number> = {};
             if (requestData && requestData.accionistas) {
@@ -141,12 +141,12 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                     return acc;
                 }, {});
             }
-    
+
             // 2. Filtrar los registros de `people` que coincidan con los id_persona de los accionistas
             const accionistasData = people.filter((persona: any) =>
                 accionistasMap.hasOwnProperty(persona.id)
             );
-    
+
             // 3. Formatear la información de los accionistas extraídos de `requestData`
             const formattedAccionistas = accionistasData.map((persona: any) => ({
                 nombre: persona.tipo === 'Persona Jurídica'
@@ -164,7 +164,7 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                 '% de Acciones': accionistasMap[persona.id] || '---',  // Se toma del map
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
             }));
-    
+
             if (!people || people.length === 0) {
                 setData([]);
                 setTotalRecords(0);
@@ -173,54 +173,54 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                 setHasNextPage(false);
                 return;
             }
-    
+
             // 4. Filtrar las personas que ya tienen información de accionistas en `people`
             const accionistas = people.filter((persona: any) => persona.accionista);
-    
+
             // 5. Calcular paginación solo con los registros filtrados
             const totalRecords = accionistas.length;
             const totalPages = Math.ceil(totalRecords / rowsPerPage);
-    
+
             const paginatedData = accionistas.slice(
                 (currentPage - 1) * rowsPerPage,
                 currentPage * rowsPerPage
             );
-    
+
             // 6. Formatear los datos de los accionistas ya existentes en `people`
             const formattedData = paginatedData.map((persona: any) => ({
-                nombre: persona.tipoPersona === 'Persona Jurídica'
+                nombre: persona?.tipoPersona === 'Persona Jurídica' || persona?.tipo === 'Persona Jurídica'
                     ? (
                         <>
-                            {persona.nombreApellido}
+                            {persona?.nombreApellido || persona?.nombre}
                             <br />
                             <span className="text-gray-400 text-sm">
                                 <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
-                                {persona.personaJuridica?.nombreJuridico || '---'}
+                                {persona.personaJuridica?.nombreJuridico || persona?.nombre_PersonaJuridica || '---'}
                             </span>
                         </>
                     )
-                    : persona.nombreApellido || '---',
+                    : persona?.nombreApellido || persona?.nombre || '---',
                 '% de Acciones': persona.accionista.porcentajeAcciones || '---',
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
             }));
-    
+
             // 7. Combinar los datos de `formattedData` (accionistas en `people`) con `formattedAccionistas`
             const combinedData: AccionistaData[] = [
                 ...formattedData,
                 ...formattedAccionistas,
             ];
-    
+
             // 8. Actualizar los estados con los datos combinados
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(totalPages);
             setHasPrevPage(currentPage > 1);
             setHasNextPage(currentPage < totalPages);
-    
+
         } catch (error) {
             console.error('Error fetching people:', error);
         }
-    };    
+    };
 
     const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
 

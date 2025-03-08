@@ -24,9 +24,7 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
     const solicitudId = store.solicitudId; // Obtenemos el `solicitudId` del contexto 
 
     const [personas, setPersonas] = useState([]); // Estado para guardar las personas de la base de datos
-    const [solicitudData, setSolicitudData] = useState<{ dignatarios: any[] }>({
-        dignatarios: [],
-    });
+    const [solicitudData, setSolicitudData] = useState<any>(null);
     const [isSolicitudDataProcessed, setIsSolicitudDataProcessed] = useState(false);
     const [assignedPositions, setAssignedPositions] = useState<string[]>([]); // Guardar las posiciones asignadas de los dignatarios
     const [isLoading, setIsLoading] = useState(false); // Estado de carga
@@ -40,11 +38,11 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
     // Función para obtener la solicitud con los dignatarios
     const fetchSolicitudData = async () => {
         try {
-            const response = await axios.get('/api/get-request-id', {
+            /* const response = await axios.get('/api/get-request-id', {
                 params: { solicitudId }, // Pasamos el ID de la solicitud como filtro
-            });
+            }); */
 
-            const solicitudData = response.data;
+            const solicitudData = store.request;
             console.log('Datos de solicitud:', solicitudData);
 
             // Extraemos las posiciones ya asignadas de los dignatarios existentes
@@ -66,7 +64,6 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
 
     useEffect(() => {
         fetchSolicitudData(); // Cargar datos de la solicitud (incluyendo dignatarios y sus posiciones)
-        fetchPersonas(); // Cargar las personas
     }, [solicitudId]);
 
     useEffect(() => {
@@ -79,34 +76,45 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
     }, [id]);
 
     useEffect(() => {
+        if (!solicitudData) {
+            console.log("solicitudData es null o undefined");
+            return; // Evita continuar si solicitudData no está definido
+        }
+    
         console.log("Dignatarios actuales:", solicitudData.dignatarios);
-
+    
         if (!solicitudData.dignatarios || solicitudData.dignatarios.length === 0) {
             console.log("No hay dignatarios en solicitudData");
+            setIsSolicitudDataProcessed(true); // Permitir que el segundo useEffect se ejecute
             return;
         }
-
+    
         const dignatario = solicitudData.dignatarios.find(
             (dignatario: any) => dignatario.personId === id || dignatario.id_persona === id
         );
-
+    
         if (!dignatario) {
             console.log("No se encontró un dignatario con ID:", id);
+            setIsSolicitudDataProcessed(true); // Permitir que el segundo useEffect se ejecute
             return;
         }
-
+    
         console.log("Dignatario encontrado:", dignatario);
-
+    
         // Extraer posiciones
         const posiciones = dignatario.posiciones
             ? dignatario.posiciones.map((posicion: any) => posicion.nombre)
             : dignatario.positions || [];
-
+    
         console.log("Posiciones extraídas:", posiciones);
         setSelectedPositions(posiciones);
-
-        setIsSolicitudDataProcessed(true);
+        setIsSolicitudDataProcessed(true); // Marcar que el primer useEffect terminó
     }, [solicitudData, id, solicitudId]);
+
+    useEffect(() => {
+        if (!isSolicitudDataProcessed) return; // Esperar a que el primer useEffect termine
+        fetchPersonas(); // Cargar las personas
+    }, [isSolicitudDataProcessed]);
 
     useEffect(() => {
         if (!id || !isSolicitudDataProcessed) {
@@ -143,17 +151,21 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
                 params: { solicitudId }
             });
 
-            const { personas } = response.data || [];
+            // Asegurar que personas sea un array vacío si no existe
+            const personas = response.data || [];
+            
+            // Extraer los id_persona de los dignatarios actuales
+            const idsDignatarios = new Set(solicitudData.dignatarios.map((d: any) => d.id_persona));
 
-            // Filtramos solo las personas con solicitudId o id_solicitud igual a solicitudId y que no sean dignatarios
+            // Filtrar personas que tengan solicitudId igual a solicitudId
+            // y que no sean dignatarios ni estén en la lista de dignatarios actuales
             const personasFiltradas = personas.filter((persona: any) =>
-                (persona.solicitudId === solicitudId || persona.id_solicitud === solicitudId) && !persona.dignatario
+                (persona.solicitudId === solicitudId || persona.id_solicitud === solicitudId) &&
+                !persona.dignatario &&
+                !idsDignatarios.has(persona.id) // Excluir si está en dignatariosActuales
             );
 
             setPersonas(personasFiltradas);
-            console.log("PERSONAS ", personas); 
-            console.log("PERSONAS FILTRADAS ", personasFiltradas); 
-
         } catch (error) {
             console.error('Error fetching personas:', error);
         }
@@ -260,9 +272,16 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
                 dignatario: {
                     personId: personId,
                     servicio: formData.servicio,
-                    posiciones: selectedPositions.map((pos) => ({ nombre: pos })), // Guardar cada posición seleccionada como un objeto
+                    ...(solicitudData?.nombreSociedad_1 && {
+                        positions: selectedPositions.map((pos) => pos),
+                    }),
+                    ...(!solicitudData?.nombreSociedad_1 && {
+                        posiciones: selectedPositions.map((pos) => ({ nombre: pos })),
+                    }),
                 },
             };
+
+            console.log("DATA FRONT updatePayload ", updatePayload)
 
             // Enviar solicitud a la API para actualizar la persona seleccionada o agregar el dignatario
             const response = await axios.patch('/api/update-personDignatario', updatePayload);
@@ -321,16 +340,16 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
                                             .map((persona: any) => (
                                                 <option key={persona.id} value={persona.id}>
                                                     {(persona.tipoPersona === 'Persona Jurídica' || persona.tipo === 'Persona Jurídica')
-                                                        ? `${(persona.personaJuridica.nombreJuridico || persona.nombre_PersonaJuridica)} - ${persona.nombreApellido || persona.nombre}`
-                                                        : persona.nombreApellido || persona.nombre}
+                                                        ? `${(persona?.personaJuridica?.nombreJuridico || persona?.nombre_PersonaJuridica)} - ${persona?.nombreApellido || persona?.nombre}`
+                                                        : persona?.nombreApellido || persona?.nombre}
                                                 </option>
                                             ))
                                     ) : (
                                         personas.map((persona: any) => (
                                             <option key={persona.id} value={persona.id}>
                                                 {(persona.tipoPersona === 'Persona Jurídica' || persona.tipo === 'Persona Jurídica')
-                                                    ? `${(persona.personaJuridica.nombreJuridico || persona.nombre_PersonaJuridica)} - ${persona.nombreApellido || persona.nombre}`
-                                                    : persona.nombreApellido || persona.nombre}
+                                                    ? `${(persona?.personaJuridica?.nombreJuridico || persona?.nombre_PersonaJuridica)} - ${persona?.nombreApellido || persona?.nombre}`
+                                                    : persona?.nombreApellido || persona?.nombre}
                                             </option>
                                         ))
                                     )}
