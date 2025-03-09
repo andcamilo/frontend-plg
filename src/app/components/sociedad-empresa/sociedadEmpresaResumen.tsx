@@ -19,18 +19,18 @@ const SociedadEmpresaResumen: React.FC = () => {
     useEffect(() => {
         const fetchSolicitudAndPeople = async () => {
             try {
-                const solicitudResponse = await axios.get('/api/get-request-id', {
+                /* const solicitudResponse = await axios.get('/api/get-request-id', {
                     params: { solicitudId: store.solicitudId },
-                });
+                }); */
 
                 const peopleResponse = await axios.get('/api/get-people-id', {
                     params: { solicitudId: store.solicitudId },
                 });
 
-                console.log('Solicitud Data:', solicitudResponse.data);
+                console.log('Solicitud Data:', store.request);
                 console.log('People Data:', peopleResponse.data);
 
-                setSolicitudData(solicitudResponse.data);
+                setSolicitudData(store.request);
                 setPeopleData(peopleResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -54,8 +54,9 @@ const SociedadEmpresaResumen: React.FC = () => {
 
     const renderPersonName = (person: any) => {
         // Si es persona jurídica, mostrar nombreJuridico - nombreApellido
-        if (person.personaJuridica && person.personaJuridica.nombreJuridico) {
-            return `${person.personaJuridica.nombreJuridico} - ${person.nombreApellido}`;
+        if ((person?.personaJuridica || person.nombre_PersonaJuridica) &&
+            (person?.personaJuridica?.nombreJuridico || person.nombre_PersonaJuridica)) {
+            return `${person?.personaJuridica?.nombreJuridico || person.nombre_PersonaJuridica} - ${person?.nombreApellido || person.nombre}`;
         }
         // Si no es persona jurídica, mostrar solo el nombreApellido
         return person.nombreApellido;
@@ -292,12 +293,12 @@ const SociedadEmpresaResumen: React.FC = () => {
                 {renderField('Teléfono', solicitudData.telefonoSolicita)}
                 {renderField('Correo Electrónico', solicitudData.emailSolicita)}
                 <h2 className="text-3xl font-bold mb-4">Opciones para el nombre de la sociedad:</h2>
-                {solicitudData.empresa ? (
+                {solicitudData.empresa || solicitudData.nombreSociedad_1 ? (
                     <>
                         <div className="ml-6">
-                            {renderField('  1 ', solicitudData.empresa.nombreSociedad1)}
-                            {renderField('  2 ', solicitudData.empresa.nombreSociedad2)}
-                            {renderField('  3 ', solicitudData.empresa.nombreSociedad3)}
+                            {renderField('  1 ', solicitudData?.empresa?.nombreSociedad1 || solicitudData.nombreSociedad_1)}
+                            {renderField('  2 ', solicitudData?.empresa?.nombreSociedad2 || solicitudData.nombreSociedad_2)}
+                            {renderField('  3 ', solicitudData?.empresa?.nombreSociedad3 || solicitudData.nombreSociedad_3)}
                         </div>
                     </>
                 ) : (
@@ -327,6 +328,21 @@ const SociedadEmpresaResumen: React.FC = () => {
                 ) : (
                     <p>No hay directores registrados.</p>
                 )}
+                {solicitudData.directores && (() => {
+                    const directoresPropios = solicitudData.directores
+                        .filter(director => director.servicio !== 'Director Nominal') // Excluir directores nominales
+                        .map((director, index) => {
+                            const person = peopleData.find(person => person.id === director.id_persona); // Buscar persona en peopleData
+                            return person ? (
+                                <div key={index}>
+                                    {renderField(`Director #${index + 1}`, renderPersonName(person))}
+                                </div>
+                            ) : null;
+                        })
+                        .filter(Boolean); // Remover elementos nulos
+
+                    return directoresPropios.length > 0 ? directoresPropios : null;
+                })()}
 
                 {/* Dignatarios de la Sociedad */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Dignatarios de la Sociedad</h2>
@@ -377,6 +393,55 @@ const SociedadEmpresaResumen: React.FC = () => {
                     <p>No hay dignatarios registrados.</p>
                 )}
 
+                {solicitudData.dignatarios && (() => {
+                    const dignatariosList = solicitudData.dignatarios
+                        .map((dignatario, index) => {
+                            if (dignatario.servicio === 'Dignatario Nominal') {
+                                // 🔹 Dignatario Nominal: No necesita buscar en `peopleData`
+                                const posicionesNominales = dignatario.positions || [];
+                                const posicionesConcatenadasNominal = posicionesNominales.join(', '); // Concatenar posiciones directamente
+
+                                return (
+                                    <div key={index} className="mb-4">
+                                        {renderField(`Dignatario #${index + 1}`, 'Dignatario Nominal')}
+
+                                        {/* Mostrar posiciones concatenadas si existen */}
+                                        {posicionesNominales.length > 0 && (
+                                            <div className="ml-6">
+                                                <strong>Posiciones: </strong>
+                                                <span>{posicionesConcatenadasNominal}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            } else {
+                                // 🔹 Dignatario Propio: Buscar en `peopleData`
+                                const person = peopleData.find(person => person.id === dignatario.id_persona);
+                                if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                                const posiciones = dignatario.positions || [];
+                                const posicionesConcatenadas = posiciones.join(', '); // Concatenar posiciones directamente
+
+                                return (
+                                    <div key={index} className="mb-4">
+                                        {renderField(`Dignatario #${index + 1}`, renderPersonName(person))}
+
+                                        {/* Mostrar posiciones concatenadas si existen */}
+                                        {posiciones.length > 0 && (
+                                            <div className="ml-6">
+                                                <strong>Posiciones: </strong>
+                                                <span>{posicionesConcatenadas}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                        })
+                        .filter(Boolean); // Remover elementos nulos
+
+                    return dignatariosList.length > 0 ? dignatariosList : null;
+                })()}
+
                 <hr className='mt-4 mb-4'></hr>
 
                 {/* Accionistas de la Sociedad */}
@@ -406,6 +471,33 @@ const SociedadEmpresaResumen: React.FC = () => {
                     <p>No hay accionistas registrados.</p>
                 )}
 
+                {solicitudData.accionistas && peopleData.length > 0 && (() => {
+                    const accionistasList = solicitudData.accionistas
+                        .map((accionista, index) => {
+                            const person = peopleData.find(person => person.id === accionista.id_persona);
+                            if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                            const porcentajeAcciones = accionista.porcentajeAcciones || 0; // Tomar el porcentaje de acciones
+
+                            return (
+                                <div key={index} className="mb-4">
+                                    {renderField(`Accionista #${index + 1}`, renderPersonName(person))}
+
+                                    {/* Mostrar porcentaje de acciones si está disponible */}
+                                    {porcentajeAcciones > 0 && (
+                                        <div className="ml-6">
+                                            <strong>Porcentaje de acciones: </strong>
+                                            <span>{porcentajeAcciones}%</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })
+                        .filter(Boolean); // Remover elementos nulos
+
+                    return accionistasList.length > 0 ? accionistasList : null;
+                })()}
+
                 <hr className='mt-4 mb-4'></hr>
                 {/* Capital y división de Acciones */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Capital y división de Acciones</h2>
@@ -434,6 +526,24 @@ const SociedadEmpresaResumen: React.FC = () => {
                 ) : (
                     <p>No hay poder registrados.</p>
                 )}
+
+                {solicitudData.poder && peopleData.length > 0 && (() => {
+                    const apoderadosList = solicitudData.poder
+                        .map((poder, index) => {
+                            const person = peopleData.find(person => person.id === poder.id_persona);
+                            if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                            return (
+                                <div key={index}>
+                                    {renderField(`Poder #${index + 1}`, renderPersonName(person))}
+                                </div>
+                            );
+                        })
+                        .filter(Boolean); // Remover elementos nulos
+
+                    return apoderadosList.length > 0 ? apoderadosList : null;
+                })()}
+
                 <hr className='mt-4 mb-4'></hr>
                 {/* Actividades de la Sociedad */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Actividades de la Sociedad</h2>
@@ -585,9 +695,11 @@ const SociedadEmpresaResumen: React.FC = () => {
                 <h2 className="text-2xl font-bold mt-2 mb-4">Solicitud Adicional</h2>
                 {solicitudData.solicitudAdicional && (
                     <>
-                        {renderField('Solicitud Adicional', solicitudData.solicitudAdicional.solicitudAdicional)}
+                        {renderField('Solicitud Adicional', solicitudData?.solicitudAdicional?.solicitudAdicional || solicitudData.solicitudAdicional)}
                     </>
                 )}
+
+
 
                 <hr className='mt-4 mb-4'></hr>
                 <h2 className="text-3xl font-bold mb-4">Costos</h2>
