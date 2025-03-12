@@ -77,6 +77,8 @@ const SociedadEmpresa: React.FC = () => {
         setShowPaymentWidget(true);
     };
 
+    const dentroPanama = Boolean(store.request?.dentroPanama && store.request?.dentroPanama !== "false");
+
     return (
         <HomeLayout>
             <div className="relative w-full h-screen flex overflow-hidden">
@@ -193,10 +195,12 @@ const SociedadEmpresa: React.FC = () => {
 
                             {/* Ingresos button */}
                             <button
-                                className={`p-4 rounded-lg ${store.ingresos ? (activeStep === 11 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-4 rounded-lg ${store.ingresos || Boolean(store.request?.dentroPanama)
+                                        ? (activeStep === 11 ? 'bg-profile text-white' : 'bg-gray-800 text-white')
+                                        : 'bg-gray-800 text-gray-500'
                                     }`}
-                                onClick={() => store.ingresos && setActiveStep(11)}
-                                disabled={!store.ingresos}
+                                onClick={() => (store.ingresos || Boolean(store.request?.dentroPanama)) && setActiveStep(11)}
+                                disabled={!(store.ingresos || Boolean(store.request?.dentroPanama))}
                             >
                                 Ingresos
                             </button>

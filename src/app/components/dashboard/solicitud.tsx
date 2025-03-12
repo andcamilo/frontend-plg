@@ -1303,15 +1303,22 @@ const Request: React.FC = () => {
                             <th className="text-right">Precio</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    {/* <tbody>
                         <tr className="border-b border-gray-600">
                             <td>1</td>
                             <td>{solicitudData ? solicitudData.canasta.items[0].item : "Cargando..."}</td>
                             <td className="text-right">${solicitudData ? solicitudData.canasta.items[0].precio : "Cargando..."}</td>
                         </tr>
 
-                    </tbody>
+                    </tbody> */}
                     <tfoot>
+                        {get(solicitudData, 'canasta.items', []).map((item, index) => (
+                            <tr key={index} className="border-b border-gray-600">
+                                <td className="p-2">{index + 1}</td>
+                                <td className="p-2">{item.item}</td>
+                                <td className="text-right p-2">${item.precio}</td>
+                            </tr>
+                        ))}
                         <tr className="border-b border-gray-600">
                             <td colSpan={2} className="text-right">Subtotal</td>
                             <td className="text-right">
