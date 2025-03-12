@@ -6,7 +6,6 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
 import CountrySelect from '@components/CountrySelect';
-import countryCodes from '@utils/countryCode';
 
 
 const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
@@ -110,7 +109,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
             direccion: formData.direccion,
             dia: formData.dia,
             hora: formData.hora,
-            telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
+            telefonoSolicita: `${formData.telefonoCodigo} ${formData.telefono}` || '',
           }),
         },
       };

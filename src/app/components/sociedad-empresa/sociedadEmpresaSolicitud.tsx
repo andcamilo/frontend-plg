@@ -5,7 +5,6 @@ import AppStateContext from "@context/sociedadesContext";
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
-import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -311,7 +310,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
         try {
             const requestData = {
                 nombreSolicita: formData.nombreCompleto,
-                telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
+                telefonoSolicita: `${formData.telefonoCodigo}${formData.telefono}` || '',
                 cedulaPasaporte: formData.cedulaPasaporte,
                 emailSolicita: formData.email,
                 actualizarPorCorreo: formData.notificaciones === "yes",

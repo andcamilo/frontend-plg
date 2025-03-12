@@ -80,26 +80,25 @@ const SociedadEmpresa: React.FC = () => {
     return (
         <HomeLayout>
             <div className="relative w-full h-screen flex overflow-hidden">
-                <div className="w-3/5 h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
-                    {renderActiveForm()} {/* Render the active form component */}
+                <div className="w-[75%] h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
+                    {renderActiveForm()}
                 </div>
-                <div className="w-2/5 h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
+                <div className="w-[25%] h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
                     <div className="text-white">
                         <h2 className="text-3xl text-center font-bold mb-4">Nueva Sociedad / Empresa</h2>
                         <p className="mb-8 text-center">Complete cada uno de los siguientes apartados:</p>
                         <div className="grid grid-cols-3 gap-4">
-                            {/* Bienvenido button */}
+        
                             <button
-                                className={`p-4 rounded-lg text-white ${activeStep === 1 ? 'bg-profile' : 'bg-gray-800'}`}
+                                className={`p-2 text-xs rounded-lg text-white ${activeStep === 1 ? 'bg-profile' : 'bg-gray-800'}`}
                                 onClick={() => store.bienvenido && setActiveStep(1)}
                                 disabled={!store.bienvenido}
                             >
                                 ¡Bienvenido!
                             </button>
 
-                            {/* Solicitante button */}
                             <button
-                                className={`p-4 rounded-lg ${store.solicitante ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs  rounded-lg ${store.solicitante ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.solicitante && setActiveStep(2)}
                                 disabled={!store.solicitante}
@@ -107,9 +106,8 @@ const SociedadEmpresa: React.FC = () => {
                                 Solicitante
                             </button>
 
-                            {/* Empresa button */}
                             <button
-                                className={`p-4 rounded-lg ${store.empresa || store.request?.nombreSociedad_1
+                                className={`p-2 text-xs rounded-lg ${store.empresa || store.request?.nombreSociedad_1
                                     ? (activeStep === 3 ? 'bg-profile text-white' : 'bg-gray-800 text-white')
                                     : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
@@ -119,9 +117,9 @@ const SociedadEmpresa: React.FC = () => {
                                 Empresa
                             </button>
 
-                            {/* Personas button */}
+            
                             <button
-                                className={`p-4 rounded-lg ${store.personas || store.request?.nombreSociedad_1
+                                className={`p-2 text-xs rounded-lg ${store.personas || store.request?.nombreSociedad_1
                                     ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white')
                                     : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
@@ -131,9 +129,9 @@ const SociedadEmpresa: React.FC = () => {
                                 Personas
                             </button>
 
-                            {/* Directores button */}
+      
                             <button
-                                className={`p-4 rounded-lg ${store.directores ? (activeStep === 5 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs  rounded-lg ${store.directores ? (activeStep === 5 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.directores && setActiveStep(5)}
                                 disabled={!store.directores}
@@ -141,9 +139,8 @@ const SociedadEmpresa: React.FC = () => {
                                 Directores
                             </button>
 
-                            {/* Dignatarios button */}
                             <button
-                                className={`p-4 rounded-lg ${store.dignatarios ? (activeStep === 6 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs rounded-lg ${store.dignatarios ? (activeStep === 6 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.dignatarios && setActiveStep(6)}
                                 disabled={!store.dignatarios}
@@ -151,9 +148,8 @@ const SociedadEmpresa: React.FC = () => {
                                 Dignatarios
                             </button>
 
-                            {/* Accionistas button */}
                             <button
-                                className={`p-4 rounded-lg ${store.accionistas ? (activeStep === 7 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs rounded-lg ${store.accionistas ? (activeStep === 7 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.accionistas && setActiveStep(7)}
                                 disabled={!store.accionistas}
@@ -161,9 +157,8 @@ const SociedadEmpresa: React.FC = () => {
                                 Accionistas
                             </button>
 
-                            {/* Capital button */}
                             <button
-                                className={`p-4 rounded-lg ${store.capital ? (activeStep === 8 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs rounded-lg ${store.capital ? (activeStep === 8 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.capital && setActiveStep(8)}
                                 disabled={!store.capital}
@@ -171,9 +166,8 @@ const SociedadEmpresa: React.FC = () => {
                                 Capital
                             </button>
 
-                            {/* Poder button */}
                             <button
-                                className={`p-4 rounded-lg ${store.poder ? (activeStep === 9 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs rounded-lg ${store.poder ? (activeStep === 9 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.poder && setActiveStep(9)}
                                 disabled={!store.poder}
@@ -181,9 +175,8 @@ const SociedadEmpresa: React.FC = () => {
                                 Poder
                             </button>
 
-                            {/* Actividades button */}
                             <button
-                                className={`p-4 rounded-lg ${store.actividades ? (activeStep === 10 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs rounded-lg ${store.actividades ? (activeStep === 10 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.actividades && setActiveStep(10)}
                                 disabled={!store.actividades}
@@ -191,9 +184,8 @@ const SociedadEmpresa: React.FC = () => {
                                 Actividades
                             </button>
 
-                            {/* Ingresos button */}
                             <button
-                                className={`p-4 rounded-lg ${store.ingresos ? (activeStep === 11 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs rounded-lg ${store.ingresos ? (activeStep === 11 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.ingresos && setActiveStep(11)}
                                 disabled={!store.ingresos}
@@ -201,9 +193,8 @@ const SociedadEmpresa: React.FC = () => {
                                 Ingresos
                             </button>
 
-                            {/* Solicitud adicional button */}
                             <button
-                                className={`p-4 rounded-lg ${store.solicitudAdicional ? (activeStep === 12 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs  rounded-lg ${store.solicitudAdicional ? (activeStep === 12 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.solicitudAdicional && setActiveStep(12)}
                                 disabled={!store.solicitudAdicional}
@@ -211,9 +202,8 @@ const SociedadEmpresa: React.FC = () => {
                                 Solicitud adicional
                             </button>
 
-                            {/* Resumen button */}
                             <button
-                                className={`p-4 rounded-lg ${store.resumen ? (activeStep === 13 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                className={`p-2 text-xs rounded-lg ${store.resumen ? (activeStep === 13 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
                                 onClick={() => store.resumen && setActiveStep(13)}
                                 disabled={!store.resumen}

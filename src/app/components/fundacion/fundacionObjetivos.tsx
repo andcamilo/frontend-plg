@@ -4,7 +4,6 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import AppStateContext from '@context/fundacionContext';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import CountrySelect from '@components/CountrySelect';
 import get from 'lodash/get';
@@ -325,7 +324,7 @@ const FundacionObjetivos: React.FC = () => {
                     ...(formData.mantieneContador === 'Si' && {
                         nombreContador: formData.nombreContador,
                         idoneidadContador: formData.idoneidadContador,
-                        telefonoContador: `${countryCodes[formData.telefonoContadorCodigo]}${formData.telefonoContador}` || '',
+                        telefonoContador: `${formData.telefonoContadorCodigo}${formData.telefonoContador}`.trim(),
                         correoContador: formData.correoContador,
                     }),
                     adjuntoDocumentoContribuyenteURL: adjuntoDocumentoContribuyenteURLFinal, // Guardar la URL del archivo en el payload

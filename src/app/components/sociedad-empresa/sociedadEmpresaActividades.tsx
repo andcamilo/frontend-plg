@@ -4,7 +4,6 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import AppStateContext from '@context/sociedadesContext';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 import '@fortawesome/fontawesome-free/css/all.css';
@@ -496,7 +495,7 @@ const Actividades: React.FC = () => {
                                 inversionSucursal: formData.inversionSucursal,
                                 cantidadTrabajadores: formData.cantidadTrabajadores,
                                 mantenerRotulo: formData.mantenerRotulo,
-                                telefono: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
+                                telefono: `${formData.telefonoCodigo}${formData.telefono}` || '',
                                 correoElectronico: formData.correoElectronico,
                             },
                         }),
@@ -509,7 +508,7 @@ const Actividades: React.FC = () => {
                             contador: {
                                 nombreContador: formData.nombreContador,
                                 idoneidadContador: formData.idoneidadContador,
-                                telefonoContador: `${countryCodes[formData.telefonoContadorCodigo]}${formData.telefonoContador}` || '',
+                                telefonoContador: `${formData.telefonoContadorCodigo}${formData.telefonoContador}` || '',
                                 correoContador: formData.correoContador,
                             },
                         }),

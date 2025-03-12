@@ -10,7 +10,6 @@ import InformacionGeneralAdicional from './InformacionGeneralAdicional'
 import ToggleTextComponent from './ToggleTextComponen'
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
-import countryCodes from '@utils/countryCode';
 import CountrySelect from '@components/CountrySelect';
 
 // Define the type for the select options
@@ -378,7 +377,7 @@ const PensionAlimenticiaDemandante: React.FC = () => {
         solicitudId: store.solicitudId,
         demandante: {
           nombreCompleto: formData.nombreCompleto,
-          telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefonoSolicita}` || '',
+          telefonoSolicita: `${formData.telefonoCodigo}${formData.telefonoSolicita}` || '',
           cedula: formData.cedula,
           email: formData.email,
           nacionalidad: formData.nacionalidad,
