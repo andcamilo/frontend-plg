@@ -6,7 +6,6 @@ import AppStateContext from '@context/context';
 import { checkAuthToken } from '@utils/checkAuthToken';
 import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader';
-import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import { useRouter } from 'next/router';
 import get from 'lodash/get';
@@ -65,7 +64,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     if (solicitudId) {
       fetchSolicitud();
     }
-  }, [id, solicitudId, store.solicitudId, /* setStore, fetchSolicitud */]);
+  }, [id, solicitudId, store.solicitudId]);
 
   // Populate formData from store.request
   useEffect(() => {
@@ -338,8 +337,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       const authToken = checkAuthToken ? await checkAuthToken() : null;
       const requestData = {
         nombreSolicita: formData.nombreCompleto || '',
-        telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
-        telefonoSolicita2: `${countryCodes[formData.telefonoAlternativoCodigo]}${formData.telefonoAlternativo}` || '',
+        telefonoSolicita: `${formData.telefonoCodigo} ${formData.telefono}` || '',
+        telefonoSolicita2: `${formData.telefonoAlternativoCodigo}${formData.telefonoAlternativo}` || '',
         cedulaPasaporte: formData.cedulaPasaporte || '',
         emailSolicita: formData.email || formData.summaryEmail,
         actualizarPorCorreo: formData.notificaciones === 'yes',

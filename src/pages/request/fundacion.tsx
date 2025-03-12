@@ -41,7 +41,7 @@ const Fundacion: React.FC = () => {
 
     const renderActiveForm = () => {
         switch (activeStep) {
-            case 1:
+            case 9:
                 return <FundacionBienvenido />;
             case 2:
                 return <FundacionSolicitante />;
@@ -57,7 +57,7 @@ const Fundacion: React.FC = () => {
                 return <FundacionMiembros />; 
             case 8:
                 return <FundacionProtector />; 
-            case 9:
+            case 1:
                 return <FundacionBeneficiarios />; 
             case 10:
                 return <FundacionPatrimonio />; 
@@ -81,152 +81,139 @@ const Fundacion: React.FC = () => {
     return (
         <HomeLayout>
             <div className="relative w-full h-screen flex overflow-hidden">
-                <div className="w-3/5 h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
-                    {renderActiveForm()} {/* Render the active form component */}
+                <div className="w-[75%] h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
+                    {renderActiveForm()}
                 </div>
-                <div className="w-2/5 h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
+                <div className="w-[25%] h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
                     <div className="text-white">
                         <h2 className="text-3xl text-center font-bold mb-4">Nueva Fundación</h2>
                         <p className="mb-8 text-center">Complete cada uno de los siguientes apartados:</p>
                         <div className="grid grid-cols-3 gap-4">
-                            {/* Bienvenido button */}
                             <button
-                                className={`p-4 rounded-lg text-white ${activeStep === 1 ? 'bg-profile' : 'bg-gray-800'}`}
+                                className={`p-2 text-xs rounded-lg text-white ${activeStep === 1 ? 'bg-profile' : 'bg-gray-800'}`}
                                 onClick={() => store.bienvenido && setActiveStep(1)}
                                 disabled={!store.bienvenido}
                             >
                                 ¡Bienvenido!
                             </button>
 
-                            {/* Solicitante button */}
                             <button
-                                className={`p-4 rounded-lg ${store.solicitante ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.solicitante ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.solicitante && setActiveStep(2)}
                                 disabled={!store.solicitante}
                             >
                                 Solicitante
                             </button>
 
-                            {/* Fundacion button */}
                             <button
-                                className={`p-4 rounded-lg ${store.fundacion ? (activeStep === 3 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.fundacion ? (activeStep === 3 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.fundacion && setActiveStep(3)}
                                 disabled={!store.fundacion}
                             >
                                 Fundación
                             </button>
 
-                            {/* Personas button */}
                             <button
-                                className={`p-4 rounded-lg ${store.personas ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.personas ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.personas && setActiveStep(4)}
                                 disabled={!store.personas}
                             >
                                 Personas
                             </button>
 
-                            {/* Fundadores button */}
                             <button
-                                className={`p-4 rounded-lg ${store.fundadores ? (activeStep === 5 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.fundadores ? (activeStep === 5 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.fundadores && setActiveStep(5)}
                                 disabled={!store.fundadores}
                             >
                                 Fundadores
                             </button>
 
-                            {/* Dignatarios button */}
                             <button
-                                className={`p-4 rounded-lg ${store.dignatarios ? (activeStep === 6 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.dignatarios ? (activeStep === 6 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.dignatarios && setActiveStep(6)}
                                 disabled={!store.dignatarios}
                             >
                                 Dignatarios
                             </button>
 
-                            {/* Miembros button */}
                             <button
-                                className={`p-4 rounded-lg ${store.miembros ? (activeStep === 7 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.miembros ? (activeStep === 7 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.miembros && setActiveStep(7)}
                                 disabled={!store.miembros}
                             >
                                 Miembros
                             </button>
 
-                            {/* Protector button */}
                             <button
-                                className={`p-4 rounded-lg ${store.protector ? (activeStep === 8 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.protector ? (activeStep === 8 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.protector && setActiveStep(8)}
                                 disabled={!store.protector}
                             >
                                 Protector
                             </button>
 
-                            {/* Beneficiarios button */}
+
                             <button
-                                className={`p-4 rounded-lg ${store.beneficiarios ? (activeStep === 9 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.beneficiarios ? (activeStep === 9 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.beneficiarios && setActiveStep(9)}
                                 disabled={!store.beneficiarios}
                             >
                                 Beneficiarios
                             </button>
 
-                            {/* Patrimonio button */}
                             <button
-                                className={`p-4 rounded-lg ${store.patrimonio ? (activeStep === 10 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.patrimonio ? (activeStep === 10 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.patrimonio && setActiveStep(10)}
                                 disabled={!store.patrimonio}
                             >
                                 Patrimonio
                             </button>
 
-                            {/* Poder button */}
                             <button
-                                className={`p-4 rounded-lg ${store.poder ? (activeStep === 11 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.poder ? (activeStep === 11 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.poder && setActiveStep(11)}
                                 disabled={!store.poder}
                             >
                                 Poder
                             </button>
 
-                            {/* Objetivos button */}
                             <button
-                                className={`p-4 rounded-lg ${store.objetivos ? (activeStep === 12 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.objetivos ? (activeStep === 12 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.objetivos && setActiveStep(12)}
                                 disabled={!store.objetivos}
                             >
                                 Objetivos
                             </button>
 
-                            {/* Ingresos button */}
+
                             <button
-                                className={`p-4 rounded-lg ${store.ingresos ? (activeStep === 13 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.ingresos ? (activeStep === 13 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.ingresos && setActiveStep(13)}
                                 disabled={!store.ingresos}
                             >
                                 Ingresos
                             </button>
 
-                            {/* Activos button */}
                             <button
-                                className={`p-4 rounded-lg ${store.activos ? (activeStep === 14 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.activos ? (activeStep === 14 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.activos && setActiveStep(14)}
                                 disabled={!store.activos}
                             >
                                 Activos
                             </button>
 
-                            {/* Solicitud adicional button */}
+            
                             <button
-                                className={`p-4 rounded-lg ${store.solicitudAdicional ? (activeStep === 15 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.solicitudAdicional ? (activeStep === 15 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.solicitudAdicional && setActiveStep(15)}
                                 disabled={!store.solicitudAdicional}
                             >
                                 Solicitud adicional
                             </button>
 
-                            {/* Resumen button */}
                             <button
-                                className={`p-4 rounded-lg ${store.resumen ? (activeStep === 16 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                                className={`p-2 text-xs rounded-lg ${store.resumen ? (activeStep === 16 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
                                 onClick={() => store.resumen && setActiveStep(16)}
                                 disabled={!store.resumen}
                             >

@@ -7,7 +7,6 @@ import { Country, State, City } from 'country-state-city';
 import DemandadoInfo from './DemandadoInfo'
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
-import countryCodes from '@utils/countryCode';
 import CountrySelect from '@components/CountrySelect';
 
 interface SelectOption {
@@ -266,7 +265,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
           direccionCasa: formData.direccionCasa,
           detalleDireccionCasa: formData.detalleDireccionCasa,
           pais: formData.pais,
-          telefono: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
+          telefono: `${formData.telefonoCodigo}${formData.telefono}` || '',
           provincia: formData.provincia,
           corregimiento: formData.corregimiento,
           provincia2: formData.provincia2,

@@ -1,13 +1,14 @@
-// @components/CountrySelect.tsx
-import React from 'react';
-import Select, { SingleValue } from 'react-select';
-import ReactCountryFlag from 'react-country-flag';
-import countryCodes from '@utils/countryCode';
+import React from "react";
+import Select, { SingleValue } from "react-select";
+import ReactCountryFlag from "react-country-flag";
+import countries from "world-countries";
 
 interface Option {
-  value: string;
-  label: string;
-  flag: string;
+  value: string;       
+  dialCode: string;    
+  displayName: string;
+  flag: string;       
+  label: string;   
 }
 
 interface CountrySelectProps {
@@ -18,74 +19,110 @@ interface CountrySelectProps {
   className?: string;
 }
 
-const options: Option[] = Object.entries(countryCodes).map(([code, dialCode]) => ({
-  value: code,
-  label: dialCode, // Display only the dial code for compactness
-  flag: code,
-}));
+function getDisplayName(country: any): string {
+  const common = country?.name?.common ?? "";
+  const nativeObj = country?.name?.nativeName ?? {};
+  const nativeKeys = Object.keys(nativeObj);
+
+  if (nativeKeys.length > 0) {
+    const firstNativeLangKey = nativeKeys[0];
+    const nativeCommon = nativeObj[firstNativeLangKey]?.common ?? "";
+    if (nativeCommon && nativeCommon !== common) {
+      return `${common} (${nativeCommon})`;
+    }
+  }
+  return common;
+}
+
+
+const options: Option[] = countries.map((country) => {
+  const root = country.idd?.root ?? "";
+  const suffix = country.idd?.suffixes?.[0] ?? "";
+  const dialCode = root && suffix ? `${root}${suffix}` : "";
+  const displayName = getDisplayName(country);
+
+  return {
+    value: country.cca2,           // e.g. "FI"
+    dialCode,                      // e.g. "+358"
+    displayName,                   // e.g. "Finland (Suomi)"
+    flag: country.cca2,           // for ReactCountryFlag
+    label: `${displayName} ${dialCode}`, // used internally by react-select to filter
+};
+}).filter((opt) => opt.dialCode);
 
 const customStyles = {
-    control: (provided: any, state: any) => ({
-        ...provided,
-        backgroundColor: '#2d3748', // Tailwind's bg-gray-800
-        color: '#fff',
-        alignItems: 'center', // Centers content vertically
-        justifyContent: 'center',
-        borderRadius: '0.5rem', // Tailwind's rounded-lg
-        minWidth: '100px', // Adjust as needed
-        borderColor: '#4a5568', // Tailwind's gray-700
-        boxShadow: state.isFocused ? '0 0 0 1px #718096' : 'none', // Add hover focus
-        '&:hover': {
-          borderColor: '#718096',
-        },
-        padding: '0', // Remove default padding
-        margin: '0', // Remove unnecessary margin
-      }),
-  singleValue: (provided: any) => ({
-    ...provided,
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+  control: (base: any, state: any) => ({
+    ...base,
+    minWidth: "110px",
+    height: "56px", // Maintain the height
+    backgroundColor: "#2d3748",
+    color: "#fff",
+    padding: "4px",
+    borderRadius: "0.5rem",
+    borderColor: state.isFocused ? "#718096" : "#4a5568",
+    boxShadow: state.isFocused ? "0 0 0 1px #718096" : "none",
+    display: "flex",
+    alignItems: "center",
+    "&:hover": {
+      borderColor: "#718096",
+    },
   }),
-  menu: (provided: any) => ({
-    ...provided,
-    backgroundColor: '#2d3748',
+  singleValue: (base: any) => ({
+    ...base,
+    display: "flex",
+    alignItems: "center",
+    height: "100%",
+    margin: "0", 
+    gap: "0.5rem", 
+  }),
+  valueContainer: (base: any) => ({
+    ...base,
+    display: "flex",
+    alignItems: "center",
+    height: "100%", // Ensure full height alignment
+    padding: "0",
+  }),
+  menu: (base: any) => ({
+    ...base,
+    backgroundColor: "#2d3748",
     zIndex: 9999,
-    alignItems: 'center', // Centers content vertically
-    justifyContent: 'center',
+    borderRadius: "0.5rem",
+    minWidth: "230px",
   }),
-  option: (provided: any, state: any) => ({
-    ...provided,
-    backgroundColor: state.isFocused ? '#4a5568' : '#2d3748',
-    color: '#fff',
-    padding: '10px',
-    cursor: 'pointer',
-    alignItems: 'center', // Centers content vertically
-    justifyContent: 'center',
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isFocused ? "#4a5568" : "#2d3748",
+    color: "#fff",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    padding: "10px",
   }),
-  dropdownIndicator: (provided: any) => ({
-    ...provided,
-    padding: '4px', // Reduced the arrow width
-    alignItems: 'center', // Centers content vertically
-    justifyContent: 'center',
+  dropdownIndicator: (base: any) => ({
+    ...base,
+    padding: 4,
+    color: "#fff",
+    "&:hover": {
+      color: "#fff",
+    },
   }),
-  indicatorSeparator: (provided: any) => ({
-    ...provided,
-    display: 'none', // Remove the separator for a cleaner look
-    alignItems: 'center', // Centers content vertically
-    justifyContent: 'center',
+  indicatorSeparator: (base: any) => ({
+    ...base,
+    display: "none",
   }),
 };
-
-const CountrySelect: React.FC<CountrySelectProps> = ({ name, value, onChange, isDisabled, className }) => {
-  const handleSelectChange = (selectedOption: SingleValue<Option>) => {
-    if (selectedOption) {
-      onChange(selectedOption.value);
-    }
+const CountrySelect: React.FC<CountrySelectProps> = ({
+  name,
+  value,
+  onChange,
+  isDisabled,
+  className,
+}) => {
+  const handleSelectChange = (selected: SingleValue<Option>) => {
+    if (selected) onChange(selected.value);
   };
 
-  const selectedOption = options.find((option) => option.value === value);
+  const selectedOption = options.find((o) => o.value === value);
 
   return (
     <Select
@@ -93,26 +130,24 @@ const CountrySelect: React.FC<CountrySelectProps> = ({ name, value, onChange, is
       value={selectedOption}
       onChange={handleSelectChange}
       options={options}
-      styles={customStyles}
       isDisabled={isDisabled}
       className={className}
+      styles={customStyles}
       components={{
         Option: (props) => (
           <div
             {...props.innerRef}
             {...props.innerProps}
-            className="cursor-pointer"
+            className="flex items-center cursor-pointer"
           >
             <ReactCountryFlag
               countryCode={props.data.flag}
               svg
-              style={{
-                width: '1em',
-                height: '1em',
-                marginRight: '0.5em',
-              }}
+              style={{ width: "1.25em", height: "1.25em" }}
             />
-            <span>{props.data.label}</span>
+            <span>
+              {`${props.data.displayName} ${props.data.dialCode}`}
+            </span>
           </div>
         ),
         SingleValue: (props) => (
@@ -120,13 +155,8 @@ const CountrySelect: React.FC<CountrySelectProps> = ({ name, value, onChange, is
             <ReactCountryFlag
               countryCode={props.data.flag}
               svg
-              style={{
-                width: '1em',
-                height: '1em',
-                marginRight: '0.3em',
-              }}
             />
-            <span>{props.data.label}</span>
+            <span>{props.data.dialCode}</span>
           </div>
         ),
       }}

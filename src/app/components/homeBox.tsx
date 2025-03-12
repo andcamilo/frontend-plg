@@ -11,19 +11,19 @@ interface HomeBoxProps {
 const HomeBox: React.FC<HomeBoxProps> = ({ title, number, color }) => {
   const renderIcon = () => {
     if (title === "Otros") {
-      return <BusinessCenterIcon className="text-white text-4xl" />;
+      return <BusinessCenterIcon className="text-white text-3xl" />;
     } else {
-      return <AccountBalanceIcon className="text-white text-4xl" />;
+      return <AccountBalanceIcon className="text-white text-3xl" />;
     }
   };
 
   return (
-    <div className="bg-component text-center p-1 rounded-lg shadow-lg flex flex-col justify-center items-center w-full h-52">
-      <div className={`${color} p-2 rounded-md mb-4`}>
+    <div className="bg-component text-center rounded-lg shadow-lg flex flex-col justify-center items-center h-32">
+      <div className={`${color} rounded-md mb-1`}>
         {renderIcon()}
       </div>
-      <h2 className="text-lg font-semibold text-gray-400">{title}</h2>
-      <p className="text-2xl font-bold text-white">{number}</p>
+      <h2 className="text-md font-semibold text-gray-400">{title}</h2>
+      <p className="text-xl font-bold text-white">{number}</p>
     </div>
   );
 }

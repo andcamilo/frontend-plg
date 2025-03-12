@@ -4,7 +4,6 @@ import Swal from "sweetalert2";
 import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
 import AppStateContext from "@context/menoresContext";
-import countryCodes from '@utils/countryCode';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import { useRouter } from 'next/router';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -1516,7 +1515,7 @@ const MenoresAlExtranjero: React.FC = () => {
         try {
             const requestData = {
                 nombreSolicita: formData.nombreCompleto,
-                telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}`,
+                telefonoSolicita: `${formData.telefonoCodigo} ${formData.telefono}`.trim(),
                 cedulaPasaporte: formData.cedulaPasaporte || "",
                 emailSolicita: formData.email,
                 nacionalidad: formData.nacionalidad,
@@ -1525,7 +1524,7 @@ const MenoresAlExtranjero: React.FC = () => {
                     autorizante: {
                         nombreCompletoAutorizante: formData.nombreCompletoAutorizante,
                         emailAutorizante: formData.emailAutorizante,
-                        telefonoAutorizante: formData.telefonoAutorizante,
+                        telefonoAutorizante:  `${formData.telefonoCodigoAutorizante} ${formData.telefonoAutorizante}`.trim(),
                         cedulaPasaporteAutorizante: formData.cedulaPasaporteAutorizante,
                         parentescoConMenor: formData.parentescoConMenor,
                         ...(formData.parentescoConMenor === "Otros" && {
@@ -1538,7 +1537,7 @@ const MenoresAlExtranjero: React.FC = () => {
                         tutor: {
                             nombreCompletoTutor: formData.nombreCompletoTutor,
                             emailTutor: formData.emailTutor,
-                            telefonoTutor: formData.telefonoTutor,
+                            telefonoTutor: `${formData.telefonoCodigoTutor} ${formData.telefonoTutor}`.trim(),
                             cedulaPasaporteTutor: formData.cedulaPasaporteTutor,
                         }
                     }),
@@ -1547,7 +1546,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             madre: {
                                 nombreCompletoMadre: formData.nombreCompletoMadre,
                                 emailMadre: formData.emailMadre,
-                                telefonoMadre: formData.telefonoMadre,
+                                telefonoMadre: `${formData.telefonoCodigoMadre} ${formData.telefonoMadre}`.trim(),
                                 cedulaPasaporteMadre: formData.cedulaPasaporteMadre,
                             }
                         }),
@@ -1555,8 +1554,8 @@ const MenoresAlExtranjero: React.FC = () => {
                             padre: {
                                 nombreCompletoPadre: formData.nombreCompletoPadre,
                                 emailPadre: formData.emailPadre,
-                                telefonoPadre: formData.telefonoPadre,
-                                cedulaPasaportePadre: formData.cedulaPasaportePadre,
+                                telefonoPadre: `${formData.telefonoCodigoPadre} ${formData.telefonoPadre}`.trim(),
+                                cedulaPasaportePadre: formData.cedulaPasaportePadre, 
                             }
                         }),
 
@@ -1565,7 +1564,7 @@ const MenoresAlExtranjero: React.FC = () => {
                 autorizado: {
                     nombreCompletoAutorizado: formData.nombreCompletoAutorizado,
                     emailAutorizado: formData.emailAutorizado,
-                    telefonoAutorizado: formData.telefonoAutorizado,
+                    telefonoAutorizado: `${formData.telefonoCodigoAutorizado} ${formData.telefonoAutorizado}`.trim(),
                     cedulaPasaporteAutorizado: formData.cedulaPasaporteAutorizado,
                     nacionalidadAutorizado: formData.nacionalidadAutorizado,
                     parentescoConMenorAutorizado: formData.parentescoConMenorAutorizado,
@@ -2314,16 +2313,12 @@ const MenoresAlExtranjero: React.FC = () => {
                                                     <div className="flex flex-col w-full">
                                                         <label className="block text-white">Número de teléfono de la Madre:</label>
                                                         <div className="flex gap-2 mt-2">
-                                                            <select
+                                                            <CountrySelect
                                                                 name="telefonoCodigoMadre"
                                                                 value={formData.telefonoCodigoMadre}
-                                                                onChange={handleInputChange}
-                                                                className="p-4 bg-gray-800 text-white rounded-lg"
-                                                            >
-                                                                {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                                                    <option key={code} value={code}>{code}: {dialCode}</option>
-                                                                ))}
-                                                            </select>
+                                                                onChange={(value) => handleCountryChange('telefonoCodigoMadre', value)}
+                                                                className="w-contain"
+                                                            />
                                                             <input
                                                                 ref={telefonoMadreRef}
                                                                 type="text"
@@ -2407,16 +2402,13 @@ const MenoresAlExtranjero: React.FC = () => {
                                                     <div className="flex flex-col w-full">
                                                         <label className="block text-white">Número de teléfono del Padre:</label>
                                                         <div className="flex gap-2 mt-2">
-                                                            <select
+                                                            <CountrySelect
                                                                 name="telefonoCodigoPadre"
                                                                 value={formData.telefonoCodigoPadre}
-                                                                onChange={handleInputChange}
-                                                                className="p-4 bg-gray-800 text-white rounded-lg"
-                                                            >
-                                                                {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                                                    <option key={code} value={code}>{code}: {dialCode}</option>
-                                                                ))}
-                                                            </select>
+                                                                onChange={(value) => handleCountryChange('telefonoCodigoPadre', value)}
+                                                                className="w-contain"
+                                                            />
+                                                            
                                                             <input
                                                                 ref={telefonoPadreRef}
                                                                 type="text"

@@ -39,6 +39,8 @@ const tramites: Tramite[] = [
 
 const NavBar = () => {
   const [solicitudesAnchorEl, setSolicitudesAnchorEl] = useState<null | HTMLElement>(null);
+  const [faqsAnchorEl, setFaqsAnchorEl] = useState<null | HTMLElement>(null);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredTramites, setFilteredTramites] = useState<Tramite[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
@@ -46,6 +48,31 @@ const NavBar = () => {
 
   const router = useRouter();
 
+  /* ---------------------------
+     SOLICITUDES MENU HANDLERS
+  --------------------------- */
+  const handleSolicitudesMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setSolicitudesAnchorEl(event.currentTarget);
+  };
+
+  const handleSolicitudesClose = () => {
+    setSolicitudesAnchorEl(null);
+  };
+
+  /* ---------------------------
+     FAQ MENU HANDLERS
+  --------------------------- */
+  const handleFaqsMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setFaqsAnchorEl(event.currentTarget);
+  };
+
+  const handleFaqsMenuClose = () => {
+    setFaqsAnchorEl(null);
+  };
+
+  /* ---------------------------
+     SEARCH & NAVIGATION LOGIC
+  --------------------------- */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setSearchTerm(term);
@@ -64,9 +91,7 @@ const NavBar = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActiveIndex((prevIndex) =>
-        Math.min(prevIndex + 1, filteredTramites.length - 1)
-      );
+      setActiveIndex((prevIndex) => Math.min(prevIndex + 1, filteredTramites.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActiveIndex((prevIndex) => Math.max(prevIndex - 1, 0));
@@ -81,14 +106,6 @@ const NavBar = () => {
     router.push(redirectUrl).finally(() => setIsLoading(false));
   };
 
-  const handleSolicitudesMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setSolicitudesAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setSolicitudesAnchorEl(null);
-  };
-
   const handleMiCuentaClick = () => {
     const auth = checkAuthToken();
     if (auth) {
@@ -101,12 +118,15 @@ const NavBar = () => {
   return (
     <nav className="w-full bg-[#1C1A1F] text-white">
       <div className="hidden md:flex items-center justify-between px-8 py-4">
+        {/* Left Section: Logo & Main Links */}
         <div className="flex items-center space-x-8">
           <Image src={Logo} alt="Logo" width={210} height={82} className="mr-8" />
+
           <Link href="/home" className="text-xl font-bold hover:text-profile">
             Inicio
           </Link>
 
+          {/* Solicitudes Dropdown */}
           <IconButton
             onClick={handleSolicitudesMenuClick}
             className="text-xl text-white font-bold hover:text-profile"
@@ -126,8 +146,8 @@ const NavBar = () => {
             anchorEl={solicitudesAnchorEl}
             keepMounted
             open={Boolean(solicitudesAnchorEl)}
-            onClose={handleClose}
-            MenuListProps={{ onMouseLeave: handleClose }}
+            onClose={handleSolicitudesClose}
+            MenuListProps={{ onMouseLeave: handleSolicitudesClose }}
             sx={{ px: 3, color: 'white !important' }}
             PaperProps={{
               style: {
@@ -140,16 +160,68 @@ const NavBar = () => {
               <MenuItem
                 key={index}
                 sx={{ px: 3, color: 'white !important' }}
-                onClick={() => handleTramiteClick(tramite.redirect)}
+                onClick={() => {
+                  handleTramiteClick(tramite.redirect);
+                  handleSolicitudesClose();
+                }}
               >
                 {tramite.tramite}
               </MenuItem>
             ))}
           </Menu>
 
-          <Link href="/faqs" className="text-xl font-bold hover:text-profile">
-            FAQs
-          </Link>
+          {/* FAQs Dropdown */}
+          <IconButton
+            onClick={handleFaqsMenuClick}
+            className="text-xl text-white font-bold hover:text-profile"
+            style={{ padding: 0 }}
+            sx={{
+              color: 'white !important',
+              padding: 0,
+              '&:hover': {
+                color: 'white !important',
+              },
+            }}
+          >
+            FAQs <ArrowDropDownIcon />
+          </IconButton>
+          <Menu
+            id="faqs-menu"
+            anchorEl={faqsAnchorEl}
+            keepMounted
+            open={Boolean(faqsAnchorEl)}
+            onClose={handleFaqsMenuClose}
+            MenuListProps={{ onMouseLeave: handleFaqsMenuClose }}
+            sx={{ px: 3, color: 'white !important' }}
+            PaperProps={{
+              style: {
+                backgroundColor: '#1F1F2E',
+                color: 'white',
+              },
+            }}
+          >
+            {/* Option 1: Generales */}
+            <MenuItem
+              sx={{ px: 3, color: 'white !important' }}
+              onClick={() => {
+                router.push('/faqs');
+                handleFaqsMenuClose();
+              }}
+            >
+              Generales
+            </MenuItem>
+            {/* Option 2: Sociedades */}
+            <MenuItem
+              sx={{ px: 3, color: 'white !important' }}
+              onClick={() => {
+                router.push('/faqs-sociedades');
+                handleFaqsMenuClose();
+              }}
+            >
+              Sociedades
+            </MenuItem>
+          </Menu>
+
           <button
             onClick={handleMiCuentaClick}
             className="text-xl font-bold hover:text-profile focus:outline-none"
@@ -161,6 +233,7 @@ const NavBar = () => {
           </a>
         </div>
 
+        {/* Right Section: Corporativo & Search */}
         <div className="flex items-center space-x-4">
           <button
             className="text-xl font-bold bg-profile rounded-lg px-4 py-2 text-white hover:bg-opacity-90"
@@ -215,6 +288,7 @@ const NavBar = () => {
         </div>
       </div>
 
+      {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="text-white text-xl">Loading...</div>
@@ -236,9 +310,15 @@ const NavBar = () => {
               {tramite.tramite}
             </a>
           ))}
-          <Link href="/faqs" className="menu-item">
-            FAQs
+          {/* Mobile menu items for FAQs */}
+          <p className="menu-item font-bold mt-4">FAQs</p>
+          <Link href="/faqs" className="menu-item pl-4">
+            Generales
           </Link>
+          <Link href="/faqs-sociedades" className="menu-item pl-4">
+            Sociedades
+          </Link>
+
           <Link href="/login" className="menu-item">
             Mi Cuenta
           </Link>

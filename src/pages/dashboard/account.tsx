@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
@@ -6,7 +8,7 @@ import { checkAuthToken } from "@/src/app/utils/checkAuthToken"
 import axios from "axios"
 import ChangePasswordModal from "@components/ChangePasswordModal"
 import { getRoleName } from "@/src/app/utils/roleSelector"
-import { backendBaseUrl, backendEnv } from '@utils/env';
+import { backendBaseUrl, backendEnv } from "@utils/env"
 
 interface UserData {
   id: string
@@ -21,13 +23,13 @@ const AccountPage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: ""
+    phone: "",
   })
   const [userRole, setUserRole] = useState("") // State for the role
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
-  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false) 
-  const [userId, setUserId] = useState("") 
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false)
+  const [userId, setUserId] = useState("")
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -39,9 +41,7 @@ const AccountPage: React.FC = () => {
         }
         console.log("🚀 ~ fetchUserData ~ user:", tokenChecked?.user_id)
 
-        const response = await axios.get(
-          `${backendBaseUrl}/${backendEnv}/get-user-id/${tokenChecked?.user_id}`,
-        )
+        const response = await axios.get(`${backendBaseUrl}/${backendEnv}/get-user-id/${tokenChecked?.user_id}`)
 
         console.log("🚀 ~ fetchUserData ~ response:", response)
 
@@ -85,15 +85,11 @@ const AccountPage: React.FC = () => {
         telefonoSolicita: formData.phone,
       }
 
-      const response = await axios.patch(
-        `${backendBaseUrl}/${backendEnv}/update-user/${userId}`,
-        updateData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+      const response = await axios.patch(`${backendBaseUrl}/${backendEnv}/update-user/${userId}`, updateData, {
+        headers: {
+          "Content-Type": "application/json",
         },
-      )
+      })
 
       if (response.status === 200) {
         alert("Perfil actualizado exitosamente")
@@ -127,14 +123,13 @@ const AccountPage: React.FC = () => {
 
   return (
     <DashboardLayout title="Mi Cuenta">
-      <div className="min-h-screen bg-[#151521] text-white p-8">
+      <div className="min-h-screen bg-[#151521] text-white p-8 w-fit">
         <h1 className="text-3xl font-bold mb-8">Usuario</h1>
-
-        <div className="bg-[#1c1c2b] rounded-lg p-8 max-w-4xl">
+        <div className="bg-[#1c1c2b] rounded-lg p-8 w-full max-w-7xl mx-auto">
           <h2 className="text-xl font-bold mb-6">Datos básicos</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-fit">
               <div>
                 <label className="block mb-2">
                   Nombre <span className="text-red-500">*</span>
@@ -143,7 +138,8 @@ const AccountPage: React.FC = () => {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full bg-[#2a2a3b] rounded p-2 text-white"
+                  className="w-fit min-w-[33ch] max-w-[50ch] bg-[#2a2a3b] rounded p-3 text-white block"
+                  
                   required
                 />
               </div>
@@ -156,7 +152,7 @@ const AccountPage: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-                  className="w-contain bg-[#2a2a3b] rounded p-2 text-white"
+                  className="w-fit min-w-[33ch] max-w-[50ch] bg-[#2a2a3b] rounded p-3 text-white block"
                   required
                 />
               </div>
@@ -167,7 +163,7 @@ const AccountPage: React.FC = () => {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-                  className="w-full bg-[#2a2a3b] rounded p-2 text-white"
+                  className="w-fit min-w-[33ch] max-w-[50ch] bg-[#2a2a3b] rounded p-3 text-white block"
                 />
               </div>
 
@@ -177,7 +173,7 @@ const AccountPage: React.FC = () => {
                   type="text"
                   value={getRoleName(Number(userRole))}
                   readOnly
-                  className="w-full bg-[#2a2a3b] rounded p-2 text-white cursor-not-allowed"
+                  className="w-fit min-w-[33ch] max-w-[50ch] bg-[#2a2a3b] rounded p-3 text-white block cursor-not-allowed"
                 />
               </div>
             </div>
@@ -209,9 +205,11 @@ const AccountPage: React.FC = () => {
           </form>
         </div>
       </div>
+
       <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={() => setIsChangePasswordModalOpen(false)} />
     </DashboardLayout>
   )
 }
 
 export default AccountPage
+

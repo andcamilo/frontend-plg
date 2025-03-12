@@ -36,11 +36,9 @@ const LegixStatistics: React.FC = () => {
   });
   const [months, setMonths] = useState<{ [key: string]: number }>({});
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(10);
 
-  // Paginación de solicitudes en proceso
   const [currentPageEnProceso, setCurrentPageEnProceso] = useState(1);
   const [paginationEnProceso, setPaginationEnProceso] = useState({
     hasPrevPage: false,
@@ -48,21 +46,18 @@ const LegixStatistics: React.FC = () => {
     totalPages: 1,
   });
 
-  // Paginación de solicitudes finalizadas
   const [currentPageFinalizadas, setCurrentPageFinalizadas] = useState(1);
   const [paginationFinalizadas, setPaginationFinalizadas] = useState({
     hasPrevPage: false,
     hasNextPage: false,
     totalPages: 1,
   });
-  // Cambiar página de las solicitudes en proceso
   const handlePageChangeEnProceso = (newPage: number) => {
     if (newPage > 0 && newPage <= paginationEnProceso.totalPages) {
       setCurrentPageEnProceso(newPage);
     }
   };
 
-  // Cambiar página de las solicitudes finalizadas
   const handlePageChangeFinalizadas = (newPage: number) => {
     if (newPage > 0 && newPage <= paginationFinalizadas.totalPages) {
       setCurrentPageFinalizadas(newPage);
@@ -243,7 +238,6 @@ const LegixStatistics: React.FC = () => {
     70: "status-finalizada",
   };
 
-  // Calcula las solicitudes con status igual a 70 y diferente de 70
   const solicitudFinalizada = (allSolicitudes || []).filter((solicitud) => parseInt(solicitud.status) === 70).length;
   const solicitudEnProceso = (allSolicitudes || []).filter((solicitud) => parseInt(solicitud.status) !== 70).length;
 
@@ -304,6 +298,11 @@ const LegixStatistics: React.FC = () => {
       fetchPaginatedSolicitudes(true);
     }
   }, [currentPage]);
+
+  useEffect(() => {
+    console.log("🚀 ~ tipoCounts:", tipoCounts)
+  }, [tipoCounts]);
+
 
   return (
     <div className="flex flex-col gap-4 p-8 w-full">

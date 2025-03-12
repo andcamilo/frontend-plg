@@ -5,7 +5,6 @@ import FundacionContext from "@context/fundacionContext";
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
-import countryCodes from '@utils/countryCode';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import CountrySelect from '@components/CountrySelect';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -311,7 +310,7 @@ const FundacionSolicitante: React.FC = () => {
         try {
             const requestData = {
                 nombreSolicita: formData.nombreCompleto,
-                telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}` || '',
+                telefonoSolicita: `${formData.telefonoCodigo}${formData.telefono}`.trim(),
                 cedulaPasaporte: formData.cedulaPasaporte,
                 emailSolicita: formData.email,
                 actualizarPorCorreo: formData.notificaciones === "yes",
