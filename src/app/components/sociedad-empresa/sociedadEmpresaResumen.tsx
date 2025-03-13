@@ -19,18 +19,18 @@ const SociedadEmpresaResumen: React.FC = () => {
     useEffect(() => {
         const fetchSolicitudAndPeople = async () => {
             try {
-                const solicitudResponse = await axios.get('/api/get-request-id', {
+                /* const solicitudResponse = await axios.get('/api/get-request-id', {
                     params: { solicitudId: store.solicitudId },
-                });
+                }); */
 
                 const peopleResponse = await axios.get('/api/get-people-id', {
                     params: { solicitudId: store.solicitudId },
                 });
 
-                console.log('Solicitud Data:', solicitudResponse.data);
+                console.log('Solicitud Data:', store.request);
                 console.log('People Data:', peopleResponse.data);
 
-                setSolicitudData(solicitudResponse.data);
+                setSolicitudData(store.request);
                 setPeopleData(peopleResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -54,11 +54,12 @@ const SociedadEmpresaResumen: React.FC = () => {
 
     const renderPersonName = (person: any) => {
         // Si es persona jurídica, mostrar nombreJuridico - nombreApellido
-        if (person.personaJuridica && person.personaJuridica.nombreJuridico) {
-            return `${person.personaJuridica.nombreJuridico} - ${person.nombreApellido}`;
+        if ((person?.personaJuridica || person.nombre_PersonaJuridica) &&
+            (person?.personaJuridica?.nombreJuridico || person.nombre_PersonaJuridica)) {
+            return `${person?.personaJuridica?.nombreJuridico || person.nombre_PersonaJuridica} - ${person?.nombreApellido || person.nombre}`;
         }
         // Si no es persona jurídica, mostrar solo el nombreApellido
-        return person.nombreApellido;
+        return person?.nombreApellido || person?.nombre;
     };
 
     const generatePDF = () => {
@@ -92,13 +93,13 @@ const SociedadEmpresaResumen: React.FC = () => {
         }
 
         // Opciones para el nombre de la sociedad
-        if (solicitudData?.empresa) {
+        if (solicitudData?.empresa || solicitudData?.nombreSociedad_1) {
             doc.setFontSize(16);
             addLine('Opciones para el nombre de la sociedad:');
             doc.setFontSize(12);
-            addLine(`1. ${solicitudData.empresa.nombreSociedad1 || 'N/A'}`);
-            addLine(`2. ${solicitudData.empresa.nombreSociedad2 || 'N/A'}`);
-            addLine(`3. ${solicitudData.empresa.nombreSociedad3 || 'N/A'}`);
+            addLine(`1. ${solicitudData?.empresa?.nombreSociedad1 || solicitudData?.nombreSociedad_1 || 'N/A'}`);
+            addLine(`2. ${solicitudData?.empresa?.nombreSociedad2 || solicitudData?.nombreSociedad_2 || 'N/A'}`);
+            addLine(`3. ${solicitudData?.empresa?.nombreSociedad3 || solicitudData?.nombreSociedad_3 || 'N/A'}`);
             y += 10;
         }
 
@@ -108,12 +109,17 @@ const SociedadEmpresaResumen: React.FC = () => {
             addLine('Directores de la Sociedad:');
             doc.setFontSize(12);
 
-            // Combinar directores propios y nominales
+            // **Fusionar directores propios y nominales en una sola lista**
             const allDirectors = [
                 ...peopleData.filter(person => person.director),
                 ...(solicitudData.directores || []).filter(director => director.servicio === 'Director Nominal'),
+                ...(solicitudData.directores || [])
+                    .filter(director => director.servicio !== 'Director Nominal') // Excluir nominales
+                    .map(director => peopleData.find(person => person.id === director.id_persona)) // Buscar en peopleData
+                    .filter(Boolean) // Remover valores nulos
             ];
 
+            // **Recorrer e imprimir todos los directores en una sola lista**
             allDirectors.forEach((director, index) => {
                 if (director.servicio === 'Director Nominal') {
                     addLine(`Director #${index + 1}: Director Nominal`);
@@ -133,26 +139,71 @@ const SociedadEmpresaResumen: React.FC = () => {
             addLine('Dignatarios de la Sociedad:');
             doc.setFontSize(12);
 
-            const allDignatarios = [
-                ...peopleData.filter(person => person.dignatario),
-                ...(solicitudData.dignatarios || []).filter(dignatario => dignatario.servicio === 'Dignatario Nominal'),
-            ];
+            // **1️⃣ Obtener dignatarios propios desde `peopleData`**
+            const dignatariosPropios = peopleData.filter(person => person.dignatario);
 
-            allDignatarios.forEach((dignatario, index) => {
-                if (dignatario.servicio === 'Dignatario Nominal') {
-                    addLine(`Dignatario Nominal #${index + 1}:`);
-                    const posicionesNominales = dignatario.posiciones || [];
-                    const posicionesConcatenadasNominal = posicionesNominales.map(posicion => posicion.nombre).join(', ');
-                    if (posicionesNominales.length > 0) {
-                        addLine(`  Posiciones: ${posicionesConcatenadasNominal}`);
+            // **2️⃣ Obtener dignatarios propios desde `solicitudData.dignatarios`, buscando en `peopleData`**
+            const dignatariosDesdeSolicitud = (solicitudData.dignatarios ?? [])
+                .filter(dignatario => dignatario.servicio !== 'Dignatario Nominal') // Excluir nominales
+                .map(dignatario => {
+                    const person = peopleData.find(person => person.id === dignatario.id_persona || person.id === dignatario.personId);
+                    if (!person) return null; // Si no se encuentra en peopleData, se omite
+
+                    return {
+                        ...person,
+                        servicio: dignatario.servicio, // Asegurar que tenga el servicio asignado
+                        posiciones: dignatario.posiciones || dignatario.positions || [], // Tomar posiciones de ambos campos
+                    };
+                })
+                .filter(Boolean); // Remover valores nulos
+
+            // **3️⃣ Obtener dignatarios nominales desde `solicitudData.dignatarios`**
+            const dignatariosNominales = (solicitudData.dignatarios ?? [])
+                .filter(dignatario => dignatario.servicio === 'Dignatario Nominal')
+                .map(dignatario => ({
+                    ...dignatario,
+                    posiciones: dignatario.posiciones || dignatario.positions || [], // Tomar posiciones de ambos campos
+                }));
+
+            // **Evitar duplicados usando un Set para IDs**
+            const dignatariosUnicosArray: any[] = [];
+            const idsUnicos = new Set();
+
+            [...dignatariosPropios, ...dignatariosDesdeSolicitud].forEach(dignatario => {
+                if (dignatario && dignatario.id && !idsUnicos.has(dignatario.id)) {
+                    idsUnicos.add(dignatario.id);
+                    dignatariosUnicosArray.push(dignatario);
+                }
+            });
+
+            // **Fusionar dignatarios propios y nominales**
+            const todosLosDignatarios = [...dignatariosUnicosArray, ...dignatariosNominales];
+
+            // **Generar el contenido en el PDF**
+            todosLosDignatarios.forEach((dignatario, index) => {
+                let posiciones = dignatario.posiciones || [];
+
+                // **Concatenar y mostrar las posiciones correctamente**
+                let posicionesConcatenadas = "";
+                if (Array.isArray(posiciones)) {
+                    if (posiciones.length > 0 && typeof posiciones[0] === "string") {
+                        // **Caso 1: `positions` es un array de strings**
+                        posicionesConcatenadas = posiciones.join(', ');
+                    } else if (posiciones.length > 0 && typeof posiciones[0] === "object" && posiciones[0]?.nombre) {
+                        // **Caso 2: `posiciones` es un array de objetos con `nombre`**
+                        posicionesConcatenadas = posiciones.map(posicion => posicion.nombre).join(', ');
                     }
+                }
+
+                // **Imprimir en el PDF**
+                if (dignatario.servicio === 'Dignatario Nominal') {
+                    addLine(`Dignatario #${index + 1}: Dignatario Nominal`);
                 } else {
                     addLine(`Dignatario #${index + 1}: ${renderPersonName(dignatario)}`);
-                    const posiciones = dignatario.dignatario?.posiciones || [];
-                    const posicionesConcatenadas = posiciones.map(posicion => posicion.nombre).join(', ');
-                    if (posiciones.length > 0) {
-                        addLine(`  Posiciones: ${posicionesConcatenadas}`);
-                    }
+                }
+
+                if (posicionesConcatenadas) {
+                    addLine(`  Posiciones: ${posicionesConcatenadas}`);
                 }
             });
 
@@ -162,18 +213,53 @@ const SociedadEmpresaResumen: React.FC = () => {
         }
 
         // Accionistas de la Sociedad
-        if (peopleData.length > 0) {
-            const accionistas = peopleData.filter(person => person.accionista);
-            if (accionistas.length > 0) {
-                doc.setFontSize(16);
-                addLine('Accionistas de la Sociedad:');
-                doc.setFontSize(12);
-                accionistas.forEach((accionista, index) => {
-                    const porcentaje = accionista.accionista?.porcentajeAcciones || 'N/A';
-                    addLine(`${index + 1}. ${renderPersonName(accionista)} - ${porcentaje}% acciones`);
-                });
-                y += 10;
-            }
+        if (peopleData.length > 0 || (solicitudData.accionistas && solicitudData.accionistas.length > 0)) {
+            doc.setFontSize(16);
+            addLine('Accionistas de la Sociedad:');
+            doc.setFontSize(12);
+
+            // **1️⃣ Obtener accionistas propios desde `peopleData`**
+            const accionistasPropios = peopleData
+                .filter(person => person.accionista)
+                .map(person => ({
+                    id: person.id,
+                    nombre: renderPersonName(person),
+                    porcentajeAcciones: person.accionista?.porcentajeAcciones || 'N/A'
+                }));
+
+            // **2️⃣ Obtener accionistas desde `solicitudData.accionistas`, buscando en `peopleData`**
+            const accionistasDesdeSolicitud = (solicitudData.accionistas ?? [])
+                .map(accionista => {
+                    const person = peopleData.find(person => person.id === accionista.id_persona);
+                    if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                    return {
+                        id: person.id,
+                        nombre: renderPersonName(person),
+                        porcentajeAcciones: accionista.porcentaje || 'N/A'
+                    };
+                })
+                .filter(Boolean); // Remover valores nulos
+
+            // **Evitar duplicados usando un Set para IDs**
+            const accionistasUnicosArray: any[] = [];
+            const idsUnicos = new Set();
+
+            [...accionistasPropios, ...accionistasDesdeSolicitud].forEach(accionista => {
+                if (accionista && accionista.id && !idsUnicos.has(accionista.id)) {
+                    idsUnicos.add(accionista.id);
+                    accionistasUnicosArray.push(accionista);
+                }
+            });
+
+            // **Generar el contenido en el PDF**
+            accionistasUnicosArray.forEach((accionista, index) => {
+                addLine(`Accionista #${index + 1}. ${accionista.nombre} - ${accionista.porcentajeAcciones}% de las acciones`);
+            });
+
+            y += 10;
+        } else {
+            addLine('No hay accionistas registrados.');
         }
 
         // Capital y División de Acciones
@@ -189,42 +275,123 @@ const SociedadEmpresaResumen: React.FC = () => {
         }
 
         // Poder de la Sociedad
-        if (peopleData.length > 0) {
-            const poderes = peopleData.filter(person => person.poder);
-            if (poderes.length > 0) {
-                doc.setFontSize(16);
-                addLine('Poder de la Sociedad:');
-                doc.setFontSize(12);
-                poderes.forEach((poder, index) => {
-                    addLine(`${index + 1}. ${renderPersonName(poder)}`);
-                });
-                y += 10;
-            }
+        if (peopleData.length > 0 || (solicitudData.poder && solicitudData.poder.length > 0)) {
+            doc.setFontSize(16);
+            addLine('Poder de la Sociedad:');
+            doc.setFontSize(12);
+
+            // **1️⃣ Obtener apoderados desde `peopleData`**
+            const apoderadosPropios = peopleData
+                .filter(person => person.poder)
+                .map(person => ({
+                    id: person.id,
+                    nombre: renderPersonName(person)
+                }));
+
+            // **2️⃣ Obtener apoderados desde `solicitudData.poder`, buscando en `peopleData`**
+            const apoderadosDesdeSolicitud = (solicitudData.poder ?? [])
+                .map(poder => {
+                    const person = peopleData.find(person => person.id === poder.id_persona);
+                    if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                    return {
+                        id: person.id,
+                        nombre: renderPersonName(person)
+                    };
+                })
+                .filter(Boolean); // Remover valores nulos
+
+            // **Evitar duplicados usando un Set para IDs**
+            const apoderadosUnicosArray: any[] = [];
+            const idsUnicos = new Set();
+
+            [...apoderadosPropios, ...apoderadosDesdeSolicitud].forEach(apoderado => {
+                if (apoderado && apoderado.id && !idsUnicos.has(apoderado.id)) {
+                    idsUnicos.add(apoderado.id);
+                    apoderadosUnicosArray.push(apoderado);
+                }
+            });
+
+            // **Generar el contenido en el PDF**
+            apoderadosUnicosArray.forEach((apoderado, index) => {
+                addLine(`Poder #${index + 1}. ${apoderado.nombre}`);
+            });
+
+            y += 10;
+        } else {
+            addLine('No hay poder registrados.');
         }
 
         // Actividades de la Sociedad
-        if (solicitudData?.actividades) {
+        if (solicitudData?.actividades || solicitudData?.dentroPanama) {
             doc.setFontSize(16);
             addLine('Actividades de la Sociedad:');
             doc.setFontSize(12);
-            if (solicitudData.actividades.actividadesDentroPanama === 'SiYaTengoLocal') {
-                addLine(`Nombre Comercial: ${solicitudData.actividades.actividadesDentroPanamaData.nombreComercial || 'N/A'}`);
-                addLine(`Dirección Comercial: ${solicitudData.actividades.actividadesDentroPanamaData.direccionComercial || 'N/A'}`);
-            } else if (solicitudData.actividades.actividadesDentroPanama === 'SiRequieroSociedadPrimero') {
-                addLine(`Actividad #1: ${solicitudData.actividades.actividad1 || 'N/A'}`);
-                addLine(`Actividad #2: ${solicitudData.actividades.actividad2 || 'N/A'}`);
-                addLine(`Actividad #3: ${solicitudData.actividades.actividad3 || 'N/A'}`);
-            } else if (solicitudData.actividades.actividadesDentroPanama === 'No' && solicitudData.actividades.actividadesOffshore) {
-                addLine(`Actividad Offshore #1: ${solicitudData.actividades.actividadesOffshore.actividadOffshore1 || 'N/A'}`);
-                addLine(`Actividad Offshore #2: ${solicitudData.actividades.actividadesOffshore.actividadOffshore2 || 'N/A'}`);
-                addLine(`Países: ${solicitudData.actividades.actividadesOffshore.paisesActividadesOffshore || 'N/A'}`);
+
+            // **1️⃣ Si la empresa YA TIENE LOCAL en Panamá**
+            if (
+                solicitudData.actividades?.actividadesDentroPanama === 'SiYaTengoLocal' ||
+                solicitudData?.dentroPanama === 'Si, ya tengo la local'
+            ) {
+                addLine('Actividades dentro de Panamá:');
+
+                addLine(`Nombre Comercial: ${solicitudData.actividades?.actividadesDentroPanamaData?.nombreComercial || solicitudData.avisOperacion?.aO_nombreComercial || 'N/A'}`);
+                addLine(`Dirección Comercial: ${solicitudData.actividades?.actividadesDentroPanamaData?.direccionComercial || solicitudData.avisOperacion?.aO_direccion || 'N/A'}`);
+                addLine(`Cómo llegar: ${solicitudData.actividades?.actividadesDentroPanamaData?.comoLlegar || solicitudData.avisOperacion?.aO_comoLlegar || 'N/A'}`);
+                addLine(`Provincia: ${solicitudData.actividades?.actividadesDentroPanamaData?.provincia || solicitudData.avisOperacion?.aO_provincia || 'N/A'}`);
+                addLine(`Teléfono: ${solicitudData.actividades?.actividadesDentroPanamaData?.telefono || solicitudData.avisOperacion?.aO_telefono || 'N/A'}`);
+
+                // **Validar contador**
+                if (
+                    (solicitudData.actividades?.contador && solicitudData.actividades?.mantieneContador === 'Si') ||
+                    (solicitudData.contador && solicitudData.contador.selectContador === 'Si')
+                ) {
+                    addLine('Información del Contador:');
+                    addLine(`Nombre: ${solicitudData.actividades?.contador?.nombreContador || solicitudData.contador?.contador_nombre || 'N/A'}`);
+                    addLine(`Idoneidad: ${solicitudData.actividades?.contador?.idoneidadContador || solicitudData.contador?.contador_idoneidad || 'N/A'}`);
+                    addLine(`Teléfono: ${solicitudData.actividades?.contador?.telefonoContador || solicitudData.contador?.contador_telefono || 'N/A'}`);
+                }
             }
 
-            // Actividades de Tenedora de Activos
-            if (Array.isArray(solicitudData.actividades.actividadTenedora)) {
+            // **2️⃣ Si REQUIERE SOCIEDAD PRIMERO**
+            else if (
+                solicitudData.actividades?.actividadesDentroPanama === 'SiRequieroSociedadPrimero' ||
+                solicitudData?.dentroPanama === 'Si, pero requiero la sociedad'
+            ) {
+                addLine('Actividades Comerciales:');
+                addLine(`Actividad #1: ${solicitudData.actividades?.actividad1 || solicitudData.actividadComercial?.aC_1 || 'N/A'}`);
+                addLine(`Actividad #2: ${solicitudData.actividades?.actividad2 || solicitudData.actividadComercial?.aC_2 || 'N/A'}`);
+                addLine(`Actividad #3: ${solicitudData.actividades?.actividad3 || solicitudData.actividadComercial?.aC_3 || 'N/A'}`);
+
+                // **Validar contador**
+                if (
+                    (solicitudData.actividades?.contador && solicitudData.actividades?.mantieneContador === 'Si') ||
+                    (solicitudData.contador && solicitudData.contador.selectContador === 'Si')
+                ) {
+                    addLine('Información del Contador:');
+                    addLine(`Nombre: ${solicitudData.actividades?.contador?.nombreContador || solicitudData.contador?.contador_nombre || 'N/A'}`);
+                    addLine(`Idoneidad: ${solicitudData.actividades?.contador?.idoneidadContador || solicitudData.contador?.contador_idoneidad || 'N/A'}`);
+                    addLine(`Teléfono: ${solicitudData.actividades?.contador?.telefonoContador || solicitudData.contador?.contador_telefono || 'N/A'}`);
+                }
+            }
+
+            // **3️⃣ Si la empresa NO OPERA EN PANAMÁ (Offshore)**
+            else if (
+                (solicitudData.actividades?.actividadesDentroPanama === 'No' && solicitudData.actividades?.actividadesOffshore) ||
+                (solicitudData?.dentroPanama === 'No' && solicitudData?.fueraPanama)
+            ) {
+                addLine('Actividades Offshore:');
+                addLine(`Actividad Offshore #1: ${solicitudData.actividades?.actividadesOffshore?.actividadOffshore1 || solicitudData.fueraPanama?.aCF_1 || 'N/A'}`);
+                addLine(`Actividad Offshore #2: ${solicitudData.actividades?.actividadesOffshore?.actividadOffshore2 || solicitudData.fueraPanama?.aCF_2 || 'N/A'}`);
+                addLine(`Países donde se ejecutarán las actividades: ${solicitudData.actividades?.actividadesOffshore?.paisesActividadesOffshore || solicitudData.fueraPanama?.aCF_paises || 'N/A'}`);
+            }
+
+            // **4️⃣ Si la empresa es TENEDORA DE ACTIVOS**
+            if (Array.isArray(solicitudData.actividades?.actividadTenedora)) {
                 doc.setFontSize(14);
                 addLine('Actividades de Tenedora de Activos:');
                 doc.setFontSize(12);
+
                 const actividadNombres = {
                     vehiculoInversion: 'Vehículo de Inversión',
                     portafolioBienesRaices: 'Portafolio de Bienes Raíces',
@@ -232,12 +399,16 @@ const SociedadEmpresaResumen: React.FC = () => {
                     grupoEconomico: 'Como parte de una estructura o grupo económico',
                     duenoNaveAeronave: 'Dueño de Nave o Aeronave',
                 };
+
                 solicitudData.actividades.actividadTenedora.forEach((actividad, index) => {
                     const actividadTexto = actividadNombres[actividad] || actividad;
                     addLine(`Actividad #${index + 1}: ${actividadTexto}`);
                 });
-                y += 10;
             }
+
+            y += 10;
+        } else {
+            addLine('No hay actividades registradas.');
         }
 
         // Fuentes de Ingresos
@@ -265,13 +436,33 @@ const SociedadEmpresaResumen: React.FC = () => {
         }
 
         // Solicitud Adicional
-        if (solicitudData?.solicitudAdicional?.solicitudAdicional) {
+        if (solicitudData?.solicitudAdicional?.solicitudAdicional || solicitudData?.solicitudAdicional) {
             doc.setFontSize(16);
             addLine('Solicitud Adicional:');
             doc.setFontSize(12);
-            addLine(solicitudData.solicitudAdicional.solicitudAdicional);
+            addLine(solicitudData?.solicitudAdicional?.solicitudAdicional || solicitudData?.solicitudAdicional);
         }
 
+        // Costos de la Sociedad
+        if (solicitudData?.canasta?.items?.length > 0) {
+            doc.setFontSize(16);
+            addLine('Costos:');
+            doc.setFontSize(12);
+        
+            // **Recorrer los ítems y agregarlos como texto**
+            solicitudData.canasta.items.forEach((item, index) => {
+                addLine(`${index + 1}. ${item.item}: $${(item.precio || 0).toFixed(2)}`);
+            });
+        
+            // **Subtotal y Total**
+            addLine(`Subtotal: $${(solicitudData.canasta.subtotal || 0).toFixed(2)}`);
+            addLine(`Total: $${(solicitudData.canasta.total || 0).toFixed(2)}`);
+        
+            y += 10; // Espacio después de los costos
+        } else {
+            addLine('No hay costos registrados.');
+        }
+        
         // Guardar el PDF
         doc.save('Resumen_Solicitud.pdf');
     };
@@ -292,12 +483,12 @@ const SociedadEmpresaResumen: React.FC = () => {
                 {renderField('Teléfono', solicitudData.telefonoSolicita)}
                 {renderField('Correo Electrónico', solicitudData.emailSolicita)}
                 <h2 className="text-3xl font-bold mb-4">Opciones para el nombre de la sociedad:</h2>
-                {solicitudData.empresa ? (
+                {solicitudData.empresa || solicitudData.nombreSociedad_1 ? (
                     <>
                         <div className="ml-6">
-                            {renderField('  1 ', solicitudData.empresa.nombreSociedad1)}
-                            {renderField('  2 ', solicitudData.empresa.nombreSociedad2)}
-                            {renderField('  3 ', solicitudData.empresa.nombreSociedad3)}
+                            {renderField('  1 ', solicitudData?.empresa?.nombreSociedad1 || solicitudData.nombreSociedad_1)}
+                            {renderField('  2 ', solicitudData?.empresa?.nombreSociedad2 || solicitudData.nombreSociedad_2)}
+                            {renderField('  3 ', solicitudData?.empresa?.nombreSociedad3 || solicitudData.nombreSociedad_3)}
                         </div>
                     </>
                 ) : (
@@ -307,24 +498,46 @@ const SociedadEmpresaResumen: React.FC = () => {
 
                 {/* Directores de la Sociedad */}
                 <h2 className="text-3xl font-bold mb-4">Directores de la Sociedad</h2>
-                {((solicitudData.directores && peopleData.length > 0) || (solicitudData.directores?.length ?? 0) > 0) ? (
-                    // Mostrar primero los directores propios y luego los nominales
-                    [...peopleData.filter(person => person.director), ...(solicitudData.directores ?? []).filter(director => director.servicio === 'Director Nominal')].map((director, index) => {
-                        // Verificar si el director es nominal
-                        if (director.servicio === 'Director Nominal') {
-                            return (
-                                <div key={index}>
-                                    {renderField(`Director #${index + 1}`, 'Director Nominal')}
-                                </div>
-                            );
+
+                {((solicitudData.directores && peopleData.length > 0) || (solicitudData.directores?.length ?? 0) > 0) ? (() => {
+                    // Obtener directores propios desde peopleData
+                    const directoresPropios = peopleData.filter(person => person.director);
+
+                    // Obtener directores nominales desde solicitudData
+                    const directoresNominales = (solicitudData.directores ?? []).filter(director => director.servicio === 'Director Nominal');
+
+                    // Obtener directores propios desde solicitudData (con búsqueda en peopleData)
+                    const directoresDesdeSolicitud = (solicitudData.directores ?? [])
+                        .filter(director => director.servicio !== 'Director Nominal') // Excluir nominales
+                        .map(director => peopleData.find(person => person.id === director.id_persona || person.id === director.personId))
+                        .filter(Boolean); // Remover valores nulos
+
+                    // **Evitar duplicados usando un Set para IDs**
+                    const directoresUnicosArray: any[] = [];
+                    const idsUnicos = new Set();
+
+                    [...directoresPropios, ...directoresDesdeSolicitud].forEach(director => {
+                        if (director && director.id && !idsUnicos.has(director.id)) {
+                            idsUnicos.add(director.id);
+                            directoresUnicosArray.push(director);
                         }
-                        return (
-                            <div key={index}>
-                                {renderField(`Director #${index + 1}`, renderPersonName(director))}
-                            </div>
-                        );
-                    })
-                ) : (
+                    });
+
+                    // Agregar directores nominales al final
+                    const todosLosDirectores = [...directoresUnicosArray, ...directoresNominales];
+
+                    return (
+                        <>
+                            {todosLosDirectores.map((director, index) => (
+                                <div key={index}>
+                                    {renderField(`Director #${index + 1}`,
+                                        director.servicio === 'Director Nominal' ? 'Director Nominal' : renderPersonName(director)
+                                    )}
+                                </div>
+                            ))}
+                        </>
+                    );
+                })() : (
                     <p>No hay directores registrados.</p>
                 )}
 
@@ -335,7 +548,7 @@ const SociedadEmpresaResumen: React.FC = () => {
                     [...peopleData.filter(person => person.dignatario), ...(solicitudData.dignatarios ?? []).filter(dignatario => dignatario.servicio === 'Dignatario Nominal')]
                         .map((dignatario, index) => {
                             // Verificar si el dignatario es nominal
-                            if (dignatario.servicio === 'Dignatario Nominal') {
+                            if (dignatario.servicio === 'Dignatario Nominal' && dignatario.posiciones) {
                                 // Obtener las posiciones del dignatario nominal
                                 const posicionesNominales = dignatario.posiciones || [];
                                 const posicionesConcatenadasNominal = posicionesNominales.map((posicion: any) => posicion.nombre).join(', ');
@@ -377,6 +590,55 @@ const SociedadEmpresaResumen: React.FC = () => {
                     <p>No hay dignatarios registrados.</p>
                 )}
 
+                {solicitudData.dignatarios && (() => {
+                    const dignatariosList = solicitudData.dignatarios
+                        .map((dignatario, index) => {
+                            if (dignatario.servicio === 'Dignatario Nominal') {
+                                // 🔹 Dignatario Nominal: No necesita buscar en `peopleData`
+                                const posicionesNominales = dignatario.positions || [];
+                                const posicionesConcatenadasNominal = posicionesNominales.join(', '); // Concatenar posiciones directamente
+
+                                return (
+                                    <div key={index} className="mb-4">
+                                        {renderField(`Dignatario #${index + 1}`, 'Dignatario Nominal')}
+
+                                        {/* Mostrar posiciones concatenadas si existen */}
+                                        {posicionesNominales.length > 0 && (
+                                            <div className="ml-6">
+                                                <strong>Posiciones: </strong>
+                                                <span>{posicionesConcatenadasNominal}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            } else {
+                                // 🔹 Dignatario Propio: Buscar en `peopleData`
+                                const person = peopleData.find(person => person.id === dignatario.id_persona);
+                                if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                                const posiciones = dignatario.positions || [];
+                                const posicionesConcatenadas = posiciones.join(', '); // Concatenar posiciones directamente
+
+                                return (
+                                    <div key={index} className="mb-4">
+                                        {renderField(`Dignatario #${index + 1}`, renderPersonName(person))}
+
+                                        {/* Mostrar posiciones concatenadas si existen */}
+                                        {posiciones.length > 0 && (
+                                            <div className="ml-6">
+                                                <strong>Posiciones: </strong>
+                                                <span>{posicionesConcatenadas}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                        })
+                        .filter(Boolean); // Remover elementos nulos
+
+                    return dignatariosList.length > 0 ? dignatariosList : null;
+                })()}
+
                 <hr className='mt-4 mb-4'></hr>
 
                 {/* Accionistas de la Sociedad */}
@@ -406,6 +668,33 @@ const SociedadEmpresaResumen: React.FC = () => {
                     <p>No hay accionistas registrados.</p>
                 )}
 
+                {solicitudData.accionistas && peopleData.length > 0 && (() => {
+                    const accionistasList = solicitudData.accionistas
+                        .map((accionista, index) => {
+                            const person = peopleData.find(person => person.id === accionista.id_persona);
+                            if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                            const porcentajeAcciones = accionista.porcentajeAcciones || 0; // Tomar el porcentaje de acciones
+
+                            return (
+                                <div key={index} className="mb-4">
+                                    {renderField(`Accionista #${index + 1}`, renderPersonName(person))}
+
+                                    {/* Mostrar porcentaje de acciones si está disponible */}
+                                    {porcentajeAcciones > 0 && (
+                                        <div className="ml-6">
+                                            <strong>Porcentaje de acciones: </strong>
+                                            <span>{porcentajeAcciones}%</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })
+                        .filter(Boolean); // Remover elementos nulos
+
+                    return accionistasList.length > 0 ? accionistasList : null;
+                })()}
+
                 <hr className='mt-4 mb-4'></hr>
                 {/* Capital y división de Acciones */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Capital y división de Acciones</h2>
@@ -434,84 +723,108 @@ const SociedadEmpresaResumen: React.FC = () => {
                 ) : (
                     <p>No hay poder registrados.</p>
                 )}
+
+                {solicitudData.poder && peopleData.length > 0 && (() => {
+                    const apoderadosList = solicitudData.poder
+                        .map((poder, index) => {
+                            const person = peopleData.find(person => person.id === poder.id_persona);
+                            if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                            return (
+                                <div key={index}>
+                                    {renderField(`Poder #${index + 1}`, renderPersonName(person))}
+                                </div>
+                            );
+                        })
+                        .filter(Boolean); // Remover elementos nulos
+
+                    return apoderadosList.length > 0 ? apoderadosList : null;
+                })()}
+
                 <hr className='mt-4 mb-4'></hr>
                 {/* Actividades de la Sociedad */}
                 <h2 className="text-2xl font-bold mt-2 mb-4">Actividades de la Sociedad</h2>
-                {solicitudData.actividades ? (
+                {solicitudData.actividades || solicitudData.dentroPanama ? (
                     <>
                         {/* Si la opción es "SiYaTengoLocal", mostrar los datos comerciales */}
-                        {solicitudData.actividades.actividadesDentroPanama === 'SiYaTengoLocal' && (
-                            <>
-                                <h5 className="text-xl font-bold mt-2 mb-4">Actividades dentro de Panamá</h5>
-                                <div className="ml-6">
-                                    {renderField('Nombre Comercial', solicitudData.actividades.actividadesDentroPanamaData.nombreComercial)}
-                                    {renderField('Dirección Comercial', solicitudData.actividades.actividadesDentroPanamaData.direccionComercial)}
-                                    {renderField('Cómo llegar', solicitudData.actividades.actividadesDentroPanamaData.comoLlegar)}
-                                    {renderField('Provincia', solicitudData.actividades.actividadesDentroPanamaData.provincia)}
-                                    {renderField('Corregimiento', solicitudData.actividades.actividadesDentroPanamaData.corregimiento)}
-                                    {renderField('Número de Local', solicitudData.actividades.actividadesDentroPanamaData.numeroLocal)}
-                                    {renderField('Nombre del Edificio', solicitudData.actividades.actividadesDentroPanamaData.nombreEdificio)}
-                                    {renderField('Inversión de la sucursal', solicitudData.actividades.actividadesDentroPanamaData.inversionSucursal)}
-                                    {renderField('Cantidad de Trabajadores', solicitudData.actividades.actividadesDentroPanamaData.cantidadTrabajadores)}
-                                    {renderField('Mantener Rótulo', solicitudData.actividades.actividadesDentroPanamaData.mantenerRotulo)}
-                                    {renderField('Teléfono', solicitudData.actividades.actividadesDentroPanamaData.telefono)}
-                                    {renderField('Correo Electrónico', solicitudData.actividades.actividadesDentroPanamaData.correoElectronico)}
-                                    {renderField('Actividad #1', solicitudData.actividades.actividad1)}
-                                    {renderField('Actividad #2', solicitudData.actividades.actividad2)}
-                                    {renderField('Actividad #3', solicitudData.actividades.actividad3)}
-                                </div>
-                                {(solicitudData.actividades.contador && solicitudData.actividades.mantieneContador === 'Si') && (
-                                    <>
-                                        <h5 className="text-xl font-bold mt-2 mb-4">Información del contador</h5>
-                                        <div className="ml-6">
-                                            {renderField('Nombre del Contador', solicitudData.actividades.contador.nombreContador)}
-                                            {renderField('Idoneidad', solicitudData.actividades.contador.idoneidadContador)}
-                                            {renderField('Teléfono', solicitudData.actividades.contador.telefonoContador)}
-                                            {renderField('Correo Electrónico', solicitudData.actividades.contador.correoContador)}
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        )}
+                        {(solicitudData.actividades?.actividadesDentroPanama === 'SiYaTengoLocal') ||
+                            (solicitudData?.dentroPanama === 'Si, ya tengo la local') && (
+                                <>
+                                    <h5 className="text-xl font-bold mt-2 mb-4">Actividades dentro de Panamá</h5>
+                                    <div className="ml-6">
+                                        {renderField('Nombre Comercial', solicitudData.actividades?.actividadesDentroPanamaData.nombreComercial || solicitudData.avisOperacion.aO_nombreComercial)}
+                                        {renderField('Dirección Comercial', solicitudData.actividades?.actividadesDentroPanamaData.direccionComercial || solicitudData.avisOperacion.aO_direccion)}
+                                        {renderField('Cómo llegar', solicitudData.actividades?.actividadesDentroPanamaData.comoLlegar || solicitudData.avisOperacion.aO_comoLlegar)}
+                                        {renderField('Provincia', solicitudData.actividades?.actividadesDentroPanamaData.provincia || solicitudData.avisOperacion.aO_provincia)}
+                                        {renderField('Corregimiento', solicitudData.actividades?.actividadesDentroPanamaData.corregimiento || solicitudData.avisOperacion.aO_corregimiento)}
+                                        {renderField('Número de Local', solicitudData.actividades?.actividadesDentroPanamaData.numeroLocal || solicitudData.avisOperacion.aO_local)}
+                                        {renderField('Nombre del Edificio', solicitudData.actividades?.actividadesDentroPanamaData.nombreEdificio || solicitudData.avisOperacion.aO_edificio)}
+                                        {renderField('Inversión de la sucursal', solicitudData.actividades?.actividadesDentroPanamaData.inversionSucursal || solicitudData.avisOperacion.aO_inversion)}
+                                        {renderField('Cantidad de Trabajadores', solicitudData.actividades?.actividadesDentroPanamaData.cantidadTrabajadores || solicitudData.avisOperacion.aO_trabajadores)}
+                                        {renderField('Mantener Rótulo', solicitudData.actividades?.actividadesDentroPanamaData.mantenerRotulo || solicitudData.avisOperacion.aO_rotulo)}
+                                        {renderField('Teléfono', solicitudData.actividades?.actividadesDentroPanamaData.telefono || solicitudData.avisOperacion.aO_telefono)}
+                                        {renderField('Correo Electrónico', solicitudData.actividades?.actividadesDentroPanamaData.correoElectronico || solicitudData.avisOperacion.aO_email)}
+                                        {renderField('Actividad #1', solicitudData.actividades?.actividad1 || solicitudData.actividadComercial.aC_1)}
+                                        {renderField('Actividad #2', solicitudData.actividades?.actividad2 || solicitudData.actividadComercial.aC_2)}
+                                        {renderField('Actividad #3', solicitudData.actividades?.actividad3 || solicitudData.actividadComercial.aC_3)}
+                                    </div>
+                                    {((solicitudData.actividades?.contador && solicitudData.actividades?.mantieneContador === 'Si') ||
+                                        (solicitudData.contador && solicitudData.contador.selectContador === 'Si')
+                                    ) && (
+                                            <>
+                                                <h5 className="text-xl font-bold mt-2 mb-4">Información del contador</h5>
+                                                <div className="ml-6">
+                                                    {renderField('Nombre del Contador', solicitudData.actividades?.contador.nombreContador || solicitudData.contador.contador_nombre)}
+                                                    {renderField('Idoneidad', solicitudData.actividades?.contador.idoneidadContador || solicitudData.contador.contador_idoneidad)}
+                                                    {renderField('Teléfono', solicitudData.actividades?.contador.telefonoContador || solicitudData.contador.contador_telefono)}
+                                                    {renderField('Correo Electrónico', solicitudData.actividades?.contador.correoContador || solicitudData.contador.contador_email)}
+                                                </div>
+                                            </>
+                                        )}
+                                </>
+                            )}
 
                         {/* Si la opción es "SiRequieroSociedadPrimero", mostrar solo las actividades */}
-                        {solicitudData.actividades.actividadesDentroPanama === 'SiRequieroSociedadPrimero' && (
-                            <>
-                                <h4 className="text-xl font-bold mt-2 mb-4">Actividades Comerciales</h4>
-                                <div className="ml-6">
-                                    {renderField('Actividad #1', solicitudData.actividades.actividad1)}
-                                    {renderField('Actividad #2', solicitudData.actividades.actividad2)}
-                                    {renderField('Actividad #3', solicitudData.actividades.actividad3)}
-                                </div>
-                                {(solicitudData.actividades.contador && solicitudData.actividades.mantieneContador === 'Si') && (
-                                    <>
-                                        <h5 className="text-xl font-bold mt-2 mb-4">Información del contador</h5>
-                                        <div className="ml-6">
-                                            {renderField('Nombre del Contador', solicitudData.actividades.contador.nombreContador)}
-                                            {renderField('Idoneidad', solicitudData.actividades.contador.idoneidadContador)}
-                                            {renderField('Teléfono', solicitudData.actividades.contador.telefonoContador)}
-                                            {renderField('Correo Electrónico', solicitudData.actividades.contador.correoContador)}
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        )}
+                        {(solicitudData.actividades?.actividadesDentroPanama === 'SiRequieroSociedadPrimero') ||
+                            (solicitudData?.dentroPanama === 'Si, pero requiero la sociedad') && (
+                                <>
+                                    <h4 className="text-xl font-bold mt-2 mb-4">Actividades Comerciales</h4>
+                                    <div className="ml-6">
+                                        {renderField('Actividad #1', solicitudData.actividades?.actividad1 || solicitudData.actividadComercial.aC_1)}
+                                        {renderField('Actividad #2', solicitudData.actividades?.actividad2 || solicitudData.actividadComercial.aC_2)}
+                                        {renderField('Actividad #3', solicitudData.actividades?.actividad3 || solicitudData.actividadComercial.aC_3)}
+                                    </div>
+                                    {((solicitudData.actividades?.contador && solicitudData.actividades?.mantieneContador === 'Si') ||
+                                        (solicitudData.contador && solicitudData.contador.selectContador === 'Si')) && (
+                                            <>
+                                                <h5 className="text-xl font-bold mt-2 mb-4">Información del contador</h5>
+                                                <div className="ml-6">
+                                                    {renderField('Nombre del Contador', solicitudData.actividades?.contador.nombreContador || solicitudData.contador.contador_nombre)}
+                                                    {renderField('Idoneidad', solicitudData.actividades?.contador.idoneidadContador || solicitudData.contador.contador_idoneidad)}
+                                                    {renderField('Teléfono', solicitudData.actividades?.contador.telefonoContador || solicitudData.contador.contador_telefono)}
+                                                    {renderField('Correo Electrónico', solicitudData.actividades?.contador.correoContador || solicitudData.contador.contador_email)}
+                                                </div>
+                                            </>
+                                        )}
+                                </>
+                            )}
 
                         {/* Si la opción es "No" y es "offshore", mostrar las actividades offshore */}
-                        {solicitudData.actividades.actividadesDentroPanama === 'No' && solicitudData.actividades.actividadesOffshore && (
-                            <>
-                                <h3 className="text-xl font-bold mt-2 mb-4">Actividades Offshore</h3>
-                                <div className="ml-6">
-                                    {renderField('Actividad Offshore #1', solicitudData.actividades.actividadesOffshore.actividadOffshore1)}
-                                    {renderField('Actividad Offshore #2', solicitudData.actividades.actividadesOffshore.actividadOffshore2)}
-                                    {renderField('Países donde se ejecutarán las actividades', solicitudData.actividades.actividadesOffshore.paisesActividadesOffshore)}
-                                </div>
-                            </>
-                        )}
+                        {(solicitudData.actividades?.actividadesDentroPanama === 'No' && solicitudData.actividades?.actividadesOffshore) ||
+                            (solicitudData?.dentroPanama === 'No' && solicitudData?.fueraPanama) && (
+                                <>
+                                    <h3 className="text-xl font-bold mt-2 mb-4">Actividades Offshore</h3>
+                                    <div className="ml-6">
+                                        {renderField('Actividad Offshore #1', solicitudData.actividades?.actividadesOffshore?.actividadOffshore1 || solicitudData.fueraPanama.aCF_1)}
+                                        {renderField('Actividad Offshore #2', solicitudData.actividades?.actividadesOffshore?.actividadOffshore2 || solicitudData.fueraPanama.aCF_2)}
+                                        {renderField('Países donde se ejecutarán las actividades', solicitudData.actividades?.actividadesOffshore?.paisesActividadesOffshore || solicitudData.fueraPanama.aCF_paises)}
+                                    </div>
+                                </>
+                            )}
 
                         {/* Si la opción es "No" y es "tenedora de activos", mostrar las opciones de tenedora de activos */}
                         {
-                            Array.isArray(solicitudData.actividades.actividadTenedora) && (
+                            Array.isArray(solicitudData.actividades?.actividadTenedora) && (
                                 <>
                                     <h3 className="text-xl font-bold mt-2 mb-4">Actividades de Tenedora de Activos</h3>
                                     <div className="ml-6">
@@ -585,9 +898,11 @@ const SociedadEmpresaResumen: React.FC = () => {
                 <h2 className="text-2xl font-bold mt-2 mb-4">Solicitud Adicional</h2>
                 {solicitudData.solicitudAdicional && (
                     <>
-                        {renderField('Solicitud Adicional', solicitudData.solicitudAdicional.solicitudAdicional)}
+                        {renderField('Solicitud Adicional', solicitudData?.solicitudAdicional?.solicitudAdicional || solicitudData.solicitudAdicional)}
                     </>
                 )}
+
+
 
                 <hr className='mt-4 mb-4'></hr>
                 <h2 className="text-3xl font-bold mb-4">Costos</h2>

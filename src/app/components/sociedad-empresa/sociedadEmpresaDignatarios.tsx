@@ -190,9 +190,10 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                         </>
                     )
                     : persona.nombreApellido || '---',
-                posicion: persona.dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
+                posicion: persona.dignatario?.posiciones?.map((posicion: any) => posicion.nombre).join(', ') || 
+                          persona.dignatario?.positions?.join(', ') || '---', // Agregar soporte para ambos formatos
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
-            }));
+            }));            
 
             // Obtener datos de la solicitud
             const solicitudes = await axios.get('/api/get-request-id', {
@@ -215,7 +216,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                 .map((dignatario: any) => ({
                     nombre: dignatario.servicio,
                     posicion: getPositions(dignatario),
-                    Opciones: <Actions id={dignatario.personId || dignatario._id} solicitudId={store.solicitudId} onEdit={openModal} />,
+                    Opciones: <Actions id={dignatario.personId || dignatario.id_persona} solicitudId={store.solicitudId} onEdit={openModal} />,
                 }));
 
             // Extraer id_persona y positions de requestData
@@ -234,7 +235,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
 
             // Formatear los datos
             let formattedDignatariosPropios = dignatariosPropios.map((persona: any) => ({
-                nombre: persona.tipo === 'Persona Jurídica'
+                nombre: persona.tipo === 'Persona Jurídica' 
                     ? (
                         <>
                             {persona.nombre}
@@ -247,7 +248,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                     )
                     : persona.nombre || '---',
                 posicion: dignatariosPropiosMap.get(persona.id) || '---',  // Obtener posiciones desde el mapa
-                Opciones: <Actions id={persona.id_persona} solicitudId={store.solicitudId} onEdit={openModal} />,
+                Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
             }));
 
             // 🔹 Combinar datos
