@@ -23,13 +23,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Verificar si es Dignatario Nominal o Propio
     if (dignatario.servicio === 'Dignatario Nominal') {
+      const formattedPositions = dignatario.positions
+        ? dignatario.positions // Si ya viene como array de strings, lo dejamos igual
+        : dignatario.posiciones?.map(pos => pos.nombre) || [];
+
+      // Determinar el nombre del campo basado en cuál propiedad existe
+      const positionsField = dignatario.positions ? 'positions' : 'posiciones';
+      const personIdField = positionsField === 'positions' ? 'id_persona' : 'personId';
+      
       // Para Dignatario Nominal solo enviamos el servicio, sin personId ni posiciones
       updatePayload = {
-        solicitudId,  
+        solicitudId,
         dignatario: {
-          personId: dignatario.personId,
-          servicio: dignatario.servicio,  // Solo servicio para dignatario nominal
-          posiciones: dignatario.posiciones,
+          [personIdField]: dignatario.personId,
+          servicio: dignatario.servicio,
+          [positionsField]: formattedPositions,
         }
       };
     } else if (dignatario.servicio === 'Dignatario Propio') {
@@ -38,32 +46,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: 'personId es requerido para Dignatario Propio' });
       }
 
-      if (!Array.isArray(dignatario.posiciones) || dignatario.posiciones.length === 0) {
-        return res.status(400).json({ message: 'posiciones es requerido para Dignatario Propio' });
+      if (!Array.isArray(dignatario.positions) && !Array.isArray(dignatario.posiciones)) {
+        return res.status(400).json({ message: 'Debe proporcionar positions o posiciones como un array' });
       }
+
+      // Convertir la estructura de posiciones según lo recibido
+      const formattedPositions = dignatario.positions
+        ? dignatario.positions // Si ya viene como array de strings, lo dejamos igual
+        : dignatario.posiciones?.map(pos => pos.nombre) || []; // Convertir `posiciones` a array de strings
+
+      const positionsField = dignatario.positions ? 'positions' : 'posiciones';
+      const personIdField = positionsField === 'positions' ? 'id_persona' : 'personId';
 
       updatePayload = {
         solicitudId,
         dignatario: {
-          personId: dignatario.personId,  // Enviar personId solo en el caso de Dignatario Propio
+          [personIdField]: dignatario.personId,  // Enviar personId solo en el caso de Dignatario Propio
           servicio: dignatario.servicio,
-          posiciones: dignatario.posiciones, // Enviar las posiciones seleccionadas
+          [positionsField]: formattedPositions, // Asegurar que positions sea siempre un array de strings
         }
       };
     } else {
       return res.status(400).json({ message: 'Tipo de servicio no válido' });
     }
 
+    console.log('📤 Payload enviado a la API externa:', JSON.stringify(updatePayload, null, 2));
+
     // Enviar solicitud a la API externa (por ejemplo, AWS Lambda o Firebase)
     const externalApiResponse = await axios.patch(
-      `${backendBaseUrl}/${backendEnv}/update-personDignatario`,  // Solo usamos la URL sin personId
+      `${backendBaseUrl}/${backendEnv}/update-personDignatario`,
       updatePayload  // Enviar el cuerpo con solicitudId y dignatario
     );
 
     // Retornar la respuesta de la API externa
     return res.status(200).json(externalApiResponse.data);
   } catch (error) {
-    console.error('Error haciendo PATCH request a la API:', error.toJSON ? error.toJSON() : error);
+    console.error('❌ Error haciendo PATCH request a la API:', error.toJSON ? error.toJSON() : error);
 
     if (error.response) {
       return res.status(error.response.status).json({

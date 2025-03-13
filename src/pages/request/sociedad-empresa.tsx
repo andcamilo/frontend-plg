@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import HomeLayout from '@components/homeLayout';
-import AppStateContext from '@context/sociedadesContext'; // Import the context
+import AppStateContext from '@context/sociedadesContext'; 
 import SociedadEmpresaBienvenido from '@components/sociedad-empresa/sociedadEmpresaBienvenido';
 import SociedadEmpresaSolicitante from '@components/sociedad-empresa/sociedadEmpresaSolicitud';
 import SociedadEmpresaEmpresa from '@components/sociedad-empresa/sociedadEmpresaEmpresa';
@@ -76,6 +76,8 @@ const SociedadEmpresa: React.FC = () => {
         setLoading(true);
         setShowPaymentWidget(true);
     };
+
+    const dentroPanama = Boolean(store.request?.dentroPanama && store.request?.dentroPanama !== "false");
 
     return (
         <HomeLayout>
@@ -187,8 +189,8 @@ const SociedadEmpresa: React.FC = () => {
                             <button
                                 className={`p-2 text-xs rounded-lg ${store.ingresos ? (activeStep === 11 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                                     }`}
-                                onClick={() => store.ingresos && setActiveStep(11)}
-                                disabled={!store.ingresos}
+                                onClick={() => (store.ingresos || Boolean(store.request?.dentroPanama)) && setActiveStep(11)}
+                                disabled={!(store.ingresos || Boolean(store.request?.dentroPanama))}
                             >
                                 Ingresos
                             </button>

@@ -13,6 +13,7 @@ import {
   firebaseMessagingSenderId,
   firebaseAppId
 } from "@utils/env";
+import { useRouter } from 'next/router';
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -28,6 +29,9 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
 const SolicitudForm: React.FC = () => {
+  const router = useRouter();
+  const { id } = router.query;
+
   const [formData, setFormData] = useState<{
     email: string;
     tipoServicio: string;
@@ -51,6 +55,7 @@ const SolicitudForm: React.FC = () => {
   const [isEmergentFieldVisible, setIsEmergentFieldVisible] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [solicitudData, setSolicitudData] = useState<any>(null);
 
   useEffect(() => {
     const userData = checkAuthToken();
@@ -64,6 +69,37 @@ const SolicitudForm: React.FC = () => {
       setIsLoggedIn(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (id) {
+      const fetchSolicitud = async () => {
+        try {
+          const response = await axios.get('/api/get-request-id', {
+            params: { solicitudId: id },
+          });
+          setSolicitudData(response.data); // Establece solicitudData una vez obtenida
+        } catch (error) {
+          console.error('Error fetching solicitud:', error);
+        }
+      };
+      fetchSolicitud();
+      console.log('ID del registro:', id);
+    }
+  }, [id]);
+
+  // Actualiza formData cuando solicitudData cambia
+  useEffect(() => {
+    if (solicitudData) {
+      setFormData((prevData) => ({
+        ...prevData,
+        tipoServicio: solicitudData.tipoServicio || solicitudData.solicitudBase.detalle || "",
+        nivelUrgencia: solicitudData.nivelUrgencia || solicitudData.solicitudBase.urgencia || "",
+        descripcion: solicitudData.descripcion || solicitudData.solicitudBase.descripcion || "",
+        descripcionExtra: solicitudData.descripcionExtra || "",
+      }));
+
+    }
+  }, [solicitudData]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
@@ -111,7 +147,7 @@ const SolicitudForm: React.FC = () => {
 
     // Mostrar/ocultar campo emergente según la opción seleccionada
     if (name === "nivelUrgencia") {
-      setIsEmergentFieldVisible(value === "extraordinaria");
+      setIsEmergentFieldVisible(value === "Atención Extraordinaria");
     }
   };
 
@@ -139,7 +175,7 @@ const SolicitudForm: React.FC = () => {
       setIsDescripcionInvalid(false);
     }
 
-    if (formData.nivelUrgencia === "extraordinaria" && formData.descripcionExtra.trim().length < 3) {
+    if (formData.nivelUrgencia === "Atención Extraordinaria" && formData.descripcionExtra.trim().length < 3) {
       setIsDescripcionExtraInvalid(true);
       Swal.fire({
         position: "top-end",
@@ -217,7 +253,7 @@ const SolicitudForm: React.FC = () => {
         tipoServicio: formData.tipoServicio,
         nivelUrgencia: formData.nivelUrgencia,
         descripcion: formData.descripcion,
-        ...(formData.nivelUrgencia === "extraordinaria" && {
+        ...(formData.nivelUrgencia === "Atención Extraordinaria" && {
           descripcionExtra: formData.descripcionExtra || "",
         }),
         cuenta: cuenta,
@@ -297,16 +333,16 @@ const SolicitudForm: React.FC = () => {
               className="p-4 bg-gray-800 text-white rounded-lg"
               required
             >
-              <option value="contrato">Revisión o Elaboración de Contrato</option>
-              <option value="laboral">Laboral</option>
-              <option value="consultaInvestigacion">Consulta o Investigación Legal</option>
-              <option value="dgi">DGI</option>
-              <option value="css">Caja de Seguro Social</option>
-              <option value="municipio">Municipio</option>
-              <option value="migracion">Migración</option>
-              <option value="temasBancarios">Temas Bancarios</option>
-              <option value="varios">Varios</option>
-              <option value="otros">Otros</option>
+              <option value="Revisión o Elaboración de Contrato">Revisión o Elaboración de Contrato</option>
+              <option value="Laboral">Laboral</option>
+              <option value="Consulta o Investigación Legal">Consulta o Investigación Legal</option>
+              <option value="DGI">DGI</option>
+              <option value="Caja de Seguro Social">Caja de Seguro Social</option>
+              <option value="Municipio">Municipio</option>
+              <option value="Migración">Migración</option>
+              <option value="Temas Bancarios">Temas Bancarios</option>
+              <option value="Varios">Varios</option>
+              <option value="Otros">Otros</option>
             </select>
           </div>
 
@@ -319,10 +355,10 @@ const SolicitudForm: React.FC = () => {
               onChange={handleChange}
               className="p-4 bg-gray-800 text-white rounded-lg"
             >
-              <option value="bajo">Bajo: No excede 15 días hábiles</option>
-              <option value="medio">Medio:  No excede 7 días hábiles</option>
-              <option value="alto">Alto:  No excede 72 horas</option>
-              <option value="extraordinaria"> Atención Extraordinaria: No excede 24 horas</option>
+              <option value="Bajo">Bajo: No excede 15 días hábiles</option>
+              <option value="Medio">Medio:  No excede 7 días hábiles</option>
+              <option value="Alto">Alto:  No excede 72 horas</option>
+              <option value="Atención Extraordinaria"> Atención Extraordinaria: No excede 24 horas</option>
             </select>
             <small className="text-gray-400 mt-1">
               * Por favor tomar nota de que los tiempos aquí establecidos son respecto al proceso de la firma, sin embargo, los trámites también dependerán de la institución pública en los casos que aplique, para la cual daremos seguimiento, pero no podemos garantizar tiempos de ejecución de ellas.

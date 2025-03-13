@@ -180,7 +180,7 @@ const SociedadEmpresaDirectores: React.FC = () => {
                     .map((director: any) => ({
                         tipo: director.servicio,
                         nombre: director.nombre || '---',
-                        Opciones: <Actions id={director.personId} solicitudId={store.solicitudId} />,
+                        Opciones: <Actions id={director.personId || director.id_persona} solicitudId={store.solicitudId} />,
                     }));
             }
 
@@ -199,18 +199,18 @@ const SociedadEmpresaDirectores: React.FC = () => {
 
                 formattedData = paginatedData.map((persona: any) => ({
                     tipo: persona.director?.servicio || '---',
-                    nombre: persona.tipoPersona === 'Persona Jurídica'
+                    nombre: persona?.tipoPersona === 'Persona Jurídica' || persona?.tipo === 'Persona Jurídica'
                         ? (
                             <>
-                                {persona.nombreApellido}
+                                {persona?.nombreApellido || persona?.nombre}
                                 <br />
                                 <span className="text-gray-400 text-sm">
                                     <BusinessIcon style={{ verticalAlign: 'middle', marginRight: '5px' }} />
-                                    {persona.personaJuridica?.nombreJuridico || '---'}
+                                    {persona.personaJuridica?.nombreJuridico || persona?.nombre_PersonaJuridica || '---'}
                                 </span>
                             </>
                         )
-                        : persona.nombreApellido || '---',
+                        : persona?.nombreApellido || persona?.nombre || '---',
                     Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
                 }));
 
