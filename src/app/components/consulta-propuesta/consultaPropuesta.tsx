@@ -125,17 +125,18 @@ const ConsultaPropuesta: React.FC = () => {
                 nombreCompleto: solicitudData.nombreSolicita || "",
                 email: solicitudData.emailSolicita || "",
                 cedulaPasaporte: solicitudData.cedulaPasaporte || "",
-                telefono: solicitudData.telefonoSolicita || "",
+                telefono: solicitudData.telefonoSolicita || "", 
                 telefonoCodigo: 'PA',
-                celular: solicitudData.celularSolicita || "",
+                celular: solicitudData.celularSolicita || solicitudData.telefonoWhatsApp || "", 
                 celularCodigo: 'PA',
-                emailRespuesta: solicitudData.emailRespuesta || "",
-                empresa: solicitudData.empresaSolicita || "",
-                tipoConsulta: solicitudData.tipoConsulta || "Propuesta Legal",
-                areaLegal: solicitudData.areaLegal || "Migración",
-                detallesPropuesta: solicitudData.detallesPropuesta || "",
-                preguntasEspecificas: solicitudData.preguntasEspecificas || "",
-                notificaciones: solicitudData.notificaciones || "",
+                emailRespuesta: solicitudData.emailRespuesta || solicitudData.aditionalEmail || "", 
+                empresa: solicitudData.empresaSolicita || solicitudData.nombreEmpresa || "", 
+                tipoConsulta: solicitudData.tipoConsulta === "Propuesta-Legal" ? "Propuesta Legal" : (solicitudData.tipoConsulta || "Propuesta Legal"),
+                areaLegal: solicitudData.areaLegal || solicitudData.areasLegales || "Migración", 
+                detallesPropuesta: solicitudData.detallesPropuesta || solicitudData.descripcionConsulta || "", 
+                preguntasEspecificas: solicitudData.preguntasEspecificas || solicitudData.preguntasConsulta || "", 
+                /* notificaciones: solicitudData.notificaciones || "", */
+                notificaciones: solicitudData.actualizarPorCorreo === "si" ? "yes" : (solicitudData.actualizarPorCorreo || "No"),
                 terminosAceptados: false,
                 archivoURL: solicitudData.adjuntoDocumentoConsulta || "",
                 consultaOficina: solicitudData.consultaOficina || "Si",
@@ -145,7 +146,8 @@ const ConsultaPropuesta: React.FC = () => {
                 cuenta: "",
                 userId: "",
             });
-            if (solicitudData.tipo !== "propuesta-legal" && solicitudData.tipo !== "consulta-escrita") {
+            if (solicitudData.tipo !== "propuesta-legal" && solicitudData.tipo !== "consulta-legal" 
+                && solicitudData.tipo !== "consulta-escrita") {
                 setDisponibilidad(solicitudData.disponibilidad.map((item) => ({
                     fecha: item.fecha || "",
                     horaInicio: item.horaInicio || "",
