@@ -316,9 +316,9 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                 emailSolicita: formData.email,
                 actualizarPorCorreo: formData.notificaciones === "yes",
                 cuenta: cuenta || "",
-                precio: 150,
-                subtotal: 150,
-                total: 150,
+                precio: 1700,
+                subtotal: 1700,
+                total: 1700,
                 accion: "Creación de solicitud",
                 tipo: "new-sociedad-empresa",
             };
