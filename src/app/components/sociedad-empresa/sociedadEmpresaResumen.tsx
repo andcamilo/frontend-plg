@@ -191,7 +191,7 @@ const SociedadEmpresaResumen: React.FC = () => {
                         posicionesConcatenadas = posiciones.join(', ');
                     } else if (posiciones.length > 0 && typeof posiciones[0] === "object" && posiciones[0]?.nombre) {
                         // **Caso 2: `posiciones` es un array de objetos con `nombre`**
-                        posicionesConcatenadas = posiciones.map(posicion => posicion.nombre).join(', ');
+                        posicionesConcatenadas = posiciones.join(', ');
                     }
                 }
 
@@ -551,7 +551,7 @@ const SociedadEmpresaResumen: React.FC = () => {
                             if (dignatario.servicio === 'Dignatario Nominal' && dignatario.posiciones) {
                                 // Obtener las posiciones del dignatario nominal
                                 const posicionesNominales = dignatario.posiciones || [];
-                                const posicionesConcatenadasNominal = posicionesNominales.map((posicion: any) => posicion.nombre).join(', ');
+                                const posicionesConcatenadasNominal = posicionesNominales.join(', ');
 
                                 return (
                                     <div key={index} className="mb-4">
@@ -570,7 +570,7 @@ const SociedadEmpresaResumen: React.FC = () => {
 
                             // Obtener las posiciones del dignatario propio
                             const posiciones = dignatario.dignatario?.posiciones || [];
-                            const posicionesConcatenadas = posiciones.map((posicion: any) => posicion.nombre).join(', ');
+                            const posicionesConcatenadas = posiciones.join(', ');
 
                             return (
                                 <div key={index} className="mb-4">

@@ -37,12 +37,14 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
             const personas = response.data || [];
 
             // Extraer los id_persona de los directores actuales
-            const idsAccionistas = new Set(store.request.accionistas.map((d: any) => d.id_persona));
+            const idsAccionistas = new Set(
+                Array.isArray(store.request?.accionistas) ? store.request.accionistas.map((d: any) => d.id_persona) : []
+            );
 
             const personasFiltradas = personas.filter((persona: any) =>
                 (persona.solicitudId === solicitudId || persona.id_solicitud === solicitudId) &&
                 !persona.accionista &&
-                !idsAccionistas.has(persona.id) 
+                !idsAccionistas.has(persona.id)
             );
 
             setPersonas(personasFiltradas);
@@ -96,9 +98,10 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
         }
 
         // Calcular el porcentaje total de los accionistas existentes
-        const totalPorcentajeExistente = accionistasExistentes.reduce((total, accionista: any) => {
-            return total + parseFloat(accionista.porcentajeAcciones || accionista.porcentaje);
-        }, 0);
+        const totalPorcentajeExistente = (Array.isArray(accionistasExistentes) ? accionistasExistentes : [])
+            .reduce((total, accionista: any) => {
+                return total + parseFloat(accionista.porcentajeAcciones || accionista.porcentaje || '0');
+            }, 0);
 
         // Sumar el porcentaje del nuevo accionista
         const porcentajeTotalConNuevo = totalPorcentajeExistente + porcentajeAccionesNuevo;

@@ -130,8 +130,12 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                 params: { solicitudId }
             });
 
+            const solicitudes = await axios.get('/api/get-request-id', {
+                params: { solicitudId }
+            });
+
             const people = response.data;
-            const requestData = store.request;
+            const requestData = solicitudes.data;
 
             // 1. Obtener los accionistas desde requestData y mapear su id_persona con su porcentajeAcciones
             let accionistasMap: Record<string, number> = {};

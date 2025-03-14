@@ -140,14 +140,14 @@ const FundacionResumen: React.FC = () => {
                 if (dignatario.servicio === 'Dignatario Nominal') {
                     addLine(`Dignatario Nominal #${index + 1}:`);
                     const posicionesNominales = dignatario.posiciones || [];
-                    const posicionesConcatenadasNominal = posicionesNominales.map(posicion => posicion.nombre).join(', ');
+                    const posicionesConcatenadasNominal = posicionesNominales.join(', ');
                     if (posicionesNominales.length > 0) {
                         addLine(`  Posiciones: ${posicionesConcatenadasNominal}`);
                     }
                 } else {
                     addLine(`Dignatario #${index + 1}: ${renderPersonName(dignatario)}`);
                     const posiciones = dignatario.dignatario?.posiciones || [];
-                    const posicionesConcatenadas = posiciones.map(posicion => posicion.nombre).join(', ');
+                    const posicionesConcatenadas = posiciones.join(', ');
                     if (posiciones.length > 0) {
                         addLine(`  Posiciones: ${posicionesConcatenadas}`);
                     }
@@ -359,7 +359,7 @@ const FundacionResumen: React.FC = () => {
                         if (dignatario.servicio === 'Dignatario Nominal') {
                             // Obtener las posiciones del dignatario nominal
                             const posicionesNominales = dignatario.posiciones || [];
-                            const posicionesConcatenadasNominal = posicionesNominales.map((posicion: any) => posicion.nombre).join(', ');
+                            const posicionesConcatenadasNominal = posicionesNominales.join(', ');
 
                             return (
                                 <div key={index} className="mb-4">
@@ -378,7 +378,7 @@ const FundacionResumen: React.FC = () => {
 
                         // Obtener las posiciones del dignatario propio
                         const posiciones = dignatario.dignatario?.posiciones || [];
-                        const posicionesConcatenadas = posiciones.map((posicion: any) => posicion.nombre).join(', ');
+                        const posicionesConcatenadas = posiciones.join(', ');
 
                         return (
                             <div key={index} className="mb-4">

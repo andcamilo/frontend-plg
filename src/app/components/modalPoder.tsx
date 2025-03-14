@@ -38,7 +38,9 @@ const ModalPoder: React.FC<ModalPoderProps> = ({ onClose }) => {
             const personas = response.data || [];
 
             // Extraer los id_persona de los directores actuales
-            const idsPoder = new Set(store.request.poder.map((d: any) => d.id_persona));
+            const idsPoder = new Set(
+                Array.isArray(store.request?.poder) ? store.request.poder.map((d: any) => d.id_persona) : []
+            );
 
             const personasFiltradas = personas.filter((persona: any) =>
                 (persona.solicitudId === solicitudId || persona.id_solicitud === solicitudId) &&

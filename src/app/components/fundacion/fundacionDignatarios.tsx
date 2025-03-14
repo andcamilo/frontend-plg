@@ -189,7 +189,7 @@ const FundacionDignatarios: React.FC = () => {
                         </>
                     )
                     : persona.nombreApellido || '---',
-                posicion: persona?.dignatario?.posiciones.map((posicion: any) => posicion.nombre).join(', '),
+                posicion: persona?.dignatario?.posiciones.join(', '),
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
             }));
 
@@ -207,7 +207,7 @@ const FundacionDignatarios: React.FC = () => {
                     .map((dignatario: any) => ({
                         tipo: dignatario.servicio,
                         nombre: dignatario.nombre || '---',
-                        posicion: dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', '),
+                        posicion: dignatario.posiciones.join(', '),
                         Opciones: <Actions id={dignatario.personId} solicitudId={store.solicitudId} onEdit={openModal} />,
                     }));
             }

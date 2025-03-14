@@ -190,10 +190,10 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                         </>
                     )
                     : persona.nombreApellido || '---',
-                posicion: persona.dignatario?.posiciones?.map((posicion: any) => posicion.nombre).join(', ') || 
-                          persona.dignatario?.positions?.join(', ') || '---', // Agregar soporte para ambos formatos
+                posicion: persona.dignatario?.posiciones?.join(', ') ||
+                    persona.dignatario?.positions?.join(', ') || '---', // Agregar soporte para ambos formatos
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} onEdit={openModal} />,
-            }));            
+            }));
 
             // Obtener datos de la solicitud
             const solicitudes = await axios.get('/api/get-request-id', {
@@ -206,18 +206,21 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                 if (dignatario?.positions?.length) {
                     return dignatario.positions.join(', ');
                 } else if (dignatario?.posiciones?.length) {
-                    return dignatario.posiciones.map((posicion: any) => posicion.nombre).join(', ');
+                    return dignatario.posiciones.join(', ');
                 }
                 return '---'; // Valor por defecto si no hay posiciones
             };
 
-            const formattedRequestData = requestData?.dignatarios
-                ?.filter((dignatario: any) => dignatario.servicio.trim().toLowerCase() === "dignatario nominal")
-                .map((dignatario: any) => ({
-                    nombre: dignatario.servicio,
-                    posicion: getPositions(dignatario),
-                    Opciones: <Actions id={dignatario.personId || dignatario.id_persona} solicitudId={store.solicitudId} onEdit={openModal} />,
-                }));
+            const formattedRequestData = Array.isArray(requestData?.dignatarios)
+                ? requestData.dignatarios
+                    .filter((dignatario: any) => dignatario.servicio?.trim().toLowerCase() === "dignatario nominal")
+                    .map((dignatario: any) => ({
+                        nombre: dignatario.servicio,
+                        posicion: getPositions(dignatario),
+                        Opciones: <Actions id={dignatario.personId || dignatario.id_persona} solicitudId={store.solicitudId} onEdit={openModal} />,
+                    }))
+                : [];
+
 
             // Extraer id_persona y positions de requestData
             let dignatariosPropiosMap = new Map();
@@ -235,7 +238,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
 
             // Formatear los datos
             let formattedDignatariosPropios = dignatariosPropios.map((persona: any) => ({
-                nombre: persona.tipo === 'Persona Jurídica' 
+                nombre: persona.tipo === 'Persona Jurídica'
                     ? (
                         <>
                             {persona.nombre}

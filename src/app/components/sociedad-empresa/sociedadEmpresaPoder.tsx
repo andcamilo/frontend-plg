@@ -116,8 +116,12 @@ const SociedadEmpresaPoder: React.FC = () => {
                 throw error;
             });
 
+            const solicitudes = await axios.get('/api/get-request-id', {
+                params: { solicitudId }
+            });
+
             const people = response?.data || [];
-            const requestData = store.request;
+            const requestData = solicitudes.data;
 
             // 2. Obtener los poderes de requestData y almacenar sus id_persona
             let idPersonasPoder: string[] = [];
