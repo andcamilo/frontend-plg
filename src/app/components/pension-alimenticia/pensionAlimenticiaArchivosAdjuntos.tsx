@@ -142,9 +142,58 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
     setShowAdditionalDocs(!showAdditionalDocs);
   };
 
+  const [errors, setErrors] = useState({
+    cedula: false,
+
+  });
+
+  const validateFields = () => {
+    let isValid = true;
+    const newErrors = { ...errors };
+
+    if (!formData.archivosAdjuntos.cedula) {
+      newErrors.cedula = true;
+      isValid = false;
+
+      Swal.fire({  
+        title: 'Es necesario adjuntar la copia de la cédula o pasaporte.',
+        position: "top-end",
+        icon: "warning",
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true,
+        toast: true,
+        background: '#2c2c3e',
+        color: '#fff',
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title',
+          icon: 'custom-swal-icon',
+          timerProgressBar: 'custom-swal-timer-bar',
+        },
+      });
+
+      // Llevar el scroll al campo de archivo y hacer focus
+      document.getElementsByName('cedula')[0]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+      document.getElementsByName('cedula')[0]?.focus();
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    if (!validateFields()) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
 
@@ -295,8 +344,9 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           )}
           <input
             type="file"
+            name='cedula'
             onChange={(e) => handleFileChange(e, setCedulaFile)}
-            className="w-full p-2 bg-gray-800 text-white rounded-lg"
+            className={`w-full p-2 border ${errors.cedula ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
             disabled={store.request.status >= 10 && store.rol < 20}
           />
         </div>
@@ -342,23 +392,23 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
         {(store.request.pensionType === "Primera vez" && (store.request.pensionCategory === "Mujer embarazada (ayuda prenatal)"
           || store.request.pensionCategory === "En condición de Cónyuge"
         )) && (
-          <div>
-            <label className="block mb-2 text-sm">Certificado de Matrimonio.</label>
-            {formData.archivosAdjuntos.certificadoMatrimonio && (
-              <p className="text-sm text-blue-500">
-                <a href={formData.archivosAdjuntos.certificadoMatrimonio} target="_blank" rel="noopener noreferrer">
-                  Ver documento actual
-                </a>
-              </p>
-            )}
-            <input
-              type="file"
-              onChange={(e) => handleFileChange(e, setMatrimonioFile)}
-              className="w-full p-2 bg-gray-800 text-white rounded-lg"
-              disabled={store.request.status >= 10 && store.rol < 20}
-            />
-          </div>
-        )}
+            <div>
+              <label className="block mb-2 text-sm">Certificado de Matrimonio.</label>
+              {formData.archivosAdjuntos.certificadoMatrimonio && (
+                <p className="text-sm text-blue-500">
+                  <a href={formData.archivosAdjuntos.certificadoMatrimonio} target="_blank" rel="noopener noreferrer">
+                    Ver documento actual
+                  </a>
+                </p>
+              )}
+              <input
+                type="file"
+                onChange={(e) => handleFileChange(e, setMatrimonioFile)}
+                className="w-full p-2 bg-gray-800 text-white rounded-lg"
+                disabled={store.request.status >= 10 && store.rol < 20}
+              />
+            </div>
+          )}
 
         {(store.request.pensionType !== "Primera vez" && store.request.knowsCaseLocation !== "No") && (
           <div>

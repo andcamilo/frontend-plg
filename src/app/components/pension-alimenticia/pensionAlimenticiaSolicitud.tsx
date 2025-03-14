@@ -1378,22 +1378,32 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                       name="provinceExpediente"
                       value={formData.provinceExpediente}
                       onChange={handleChange}
-                      className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.provinceExpediente ? 'border-red-500' : ''}`}
+                      className={`p-4 mt-2 w-full bg-gray-800 text-white rounded-lg ${invalidFields.provinceExpediente ? 'border-red-500' : ''
+                        }`}
                       disabled={store.request.status >= 10 && store.rol < 20}
                     >
                       <option value="">Seleccione una opción</option>
-                      <option value="Bocas del Toro">Bocas del Toro</option>
-                      <option value="Chiriquí">Chiriquí</option>
-                      <option value="Coclé">Coclé</option>
-                      <option value="Colón">Colón</option>
-                      <option value="Darién">Darién</option>
-                      <option value="Herrera">Herrera</option>
-                      <option value="Los Santos">Los Santos</option>
-                      <option value="Panamá">Panamá</option>
-                      <option value="Panamá Oeste">Panamá Oeste</option>
-                      <option value="Veraguas">Veraguas</option>
+                      <optgroup label="Provincias">
+                        <option value="Bocas del Toro">Bocas del Toro</option>
+                        <option value="Chiriquí">Chiriquí</option>
+                        <option value="Coclé">Coclé</option>
+                        <option value="Colón">Colón</option>
+                        <option value="Darién">Darién</option>
+                        <option value="Herrera">Herrera</option>
+                        <option value="Los Santos">Los Santos</option>
+                        <option value="Panamá">Panamá</option>
+                        <option value="Panamá Oeste">Panamá Oeste</option>
+                        <option value="Veraguas">Veraguas</option>
+                      </optgroup>
+                      <optgroup label="Comarcas Indígenas">
+                        <option value="Guna Yala">Guna Yala</option>
+                        <option value="Emberá-Wounaan">Emberá-Wounaan</option>
+                        <option value="Ngäbe-Buglé">Ngäbe-Buglé</option>
+                        <option value="Naso Tjër Di">Naso Tjër Di</option>
+                        <option value="Guna de Madugandí">Guna de Madugandí</option>
+                        <option value="Guna de Wargandí">Guna de Wargandí</option>
+                      </optgroup>
                     </select>
-
                   </>
                 )}
               </>
