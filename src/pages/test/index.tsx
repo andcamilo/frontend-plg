@@ -179,7 +179,6 @@ const PaymentTestSale: React.FC<{
       </soap:Envelope>`;
 
     try {
-      // Endpoint SOAP de producción
       const response = await axios.post('/api/sale', xmlData, {
         headers: {
           'Content-Type': 'text/xml; charset=utf-8',
