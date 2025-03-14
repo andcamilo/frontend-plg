@@ -4,7 +4,7 @@ import axios, { AxiosError } from 'axios'
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log("Entered /api/sale endpoint");
 
-  const SOAP_URL = process.env.NEXT_PUBLIC__PAYMENT_SOAP_URL;
+  const SOAP_URL = "https://gateway.merchantprocess.net/tokenv2/TokenWebService.asmx";
   const SOAP_ACTION = '"http://tempuri.org/Sale"';
 
   if (!SOAP_URL) {
