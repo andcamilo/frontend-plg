@@ -280,6 +280,9 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
                     ...(solicitudData?.empresa && {
                         posiciones: selectedPositions.map((pos) => pos),
                     }),
+                    ...(solicitudData?.fundacion && {
+                        posiciones: selectedPositions.map((pos) => pos),
+                    }),
                 },
             };
 

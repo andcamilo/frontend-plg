@@ -59,11 +59,13 @@ const Request: React.FC = () => {
         email: string;
         rol: string;
         userId: string;
+        comprobantePagoURL: any,
     }>({
         cuenta: "",
         email: "",
         rol: "",
         userId: "",
+        comprobantePagoURL: '',
     });
 
     const getStatusName = (status: number) => {
@@ -107,10 +109,12 @@ const Request: React.FC = () => {
                 if (!userData) {
                     throw new Error("User is not authenticated.");
                 }
+                const comprobantePagoURL = get(solicitudResponse.data, 'adjuntoComprobantePago', '');
                 setFormData((prevData) => ({
                     ...prevData,
                     email: userData.email,
                     cuenta: userData.user_id,
+                    comprobantePagoURL,
                 }));
 
                 // 2. Fetch User Data based on cuenta
@@ -1500,40 +1504,41 @@ const Request: React.FC = () => {
                 </div>
             </div>
             {/* Sección de Información del Solicitante */}
-            <div className="bg-gray-800 p-8 rounded-lg md:w-1/2">
-                <h3 className="text-lg font-bold text-white mb-4">Información del solicitante</h3>
-                <p className="text-gray-300">
-                    <strong>Nombre del solicitante:</strong> {solicitudData ? solicitudData.nombreSolicita : "Cargando..."}
-                </p>
-                <p className="text-gray-300">
-                    <strong>Teléfono:</strong> {solicitudData ? solicitudData.telefonoSolicita : "Cargando..."}
-                </p>
-                <p className="text-gray-300">
-                    <strong>Correo electrónico:</strong> {solicitudData ? solicitudData.emailSolicita : "Cargando..."}
-                </p>
-                <hr className='mt-2 mb-2' />
-                <p
-                    className="text-purple-400 cursor-pointer mt-2 hover:underline"
-                    onClick={handleClick}
-                >
-                    Ver detalles de solicitud
-                </p>
+            <div className="flex flex-col gap-8 md:w-1/2">
+                <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
+                    <h3 className="text-lg font-bold text-white mb-4">Información del solicitante</h3>
+                    <p className="text-gray-300">
+                        <strong>Nombre del solicitante:</strong> {solicitudData ? solicitudData.nombreSolicita : "Cargando..."}
+                    </p>
+                    <p className="text-gray-300">
+                        <strong>Teléfono:</strong> {solicitudData ? solicitudData.telefonoSolicita : "Cargando..."}
+                    </p>
+                    <p className="text-gray-300">
+                        <strong>Correo electrónico:</strong> {solicitudData ? solicitudData.emailSolicita : "Cargando..."}
+                    </p>
+                    <hr className='mt-2 mb-2' />
+                    <p
+                        className="text-purple-400 cursor-pointer mt-2 hover:underline"
+                        onClick={handleClick}
+                    >
+                        Ver detalles de solicitud
+                    </p>
 
-                <hr className='mt-2 mb-2' />
-                <p className="text-gray-300">
-                    <strong>Estatus Actual:</strong> {solicitudData ? statusName : "Cargando..."}
-                </p>
+                    <hr className='mt-2 mb-2' />
+                    <p className="text-gray-300">
+                        <strong>Estatus Actual:</strong> {solicitudData ? statusName : "Cargando..."}
+                    </p>
 
-                <h3 className="text-lg font-bold text-white mt-6">Costos</h3>
-                <table className="w-full text-gray-300 mt-2">
-                    <thead>
-                        <tr className="border-b border-gray-600">
-                            <th className="text-left">#</th>
-                            <th className="text-left">Item</th>
-                            <th className="text-right">Precio</th>
-                        </tr>
-                    </thead>
-                    {/* <tbody>
+                    <h3 className="text-lg font-bold text-white mt-6">Costos</h3>
+                    <table className="w-full text-gray-300 mt-2">
+                        <thead>
+                            <tr className="border-b border-gray-600">
+                                <th className="text-left">#</th>
+                                <th className="text-left">Item</th>
+                                <th className="text-right">Precio</th>
+                            </tr>
+                        </thead>
+                        {/* <tbody>
                         <tr className="border-b border-gray-600">
                             <td>1</td>
                             <td>{solicitudData ? solicitudData.canasta.items[0].item : "Cargando..."}</td>
@@ -1541,69 +1546,87 @@ const Request: React.FC = () => {
                         </tr>
 
                     </tbody> */}
-                    <tfoot>
-                        {get(solicitudData, 'canasta.items', []).map((item, index) => (
-                            <tr key={index} className="border-b border-gray-600">
-                                <td className="p-2">{index + 1}</td>
-                                <td className="p-2">{item.item}</td>
-                                <td className="text-right p-2">${item.precio}</td>
+                        <tfoot>
+                            {get(solicitudData, 'canasta.items', []).map((item, index) => (
+                                <tr key={index} className="border-b border-gray-600">
+                                    <td className="p-2">{index + 1}</td>
+                                    <td className="p-2">{item.item}</td>
+                                    <td className="text-right p-2">${item.precio}</td>
+                                </tr>
+                            ))}
+                            <tr className="border-b border-gray-600">
+                                <td colSpan={2} className="text-right">Subtotal</td>
+                                <td className="text-right">
+                                    ${solicitudData
+                                        ? solicitudData?.canasta?.subtotal.toFixed(2) ?? "Cargando..."
+                                        : solicitudData?.canasta?.items[0]?.subtotal.toFixed(2) ?? "Cargando..."}
+                                </td>
                             </tr>
-                        ))}
-                        <tr className="border-b border-gray-600">
-                            <td colSpan={2} className="text-right">Subtotal</td>
-                            <td className="text-right">
-                                ${solicitudData
-                                    ? solicitudData?.canasta?.subtotal.toFixed(2) ?? "Cargando..."
-                                    : solicitudData?.canasta?.items[0]?.subtotal.toFixed(2) ?? "Cargando..."}
-                            </td>
-                        </tr>
-                        <tr className="border-b border-gray-600">
-                            <td colSpan={2} className="text-right">Total</td>
-                            <td className="text-right">
-                                ${solicitudData
-                                    ? solicitudData?.canasta?.total.toFixed(2) ?? "Cargando..."
-                                    : solicitudData?.canasta?.items[0]?.total.toFixed(2) ?? "Cargando..."}
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
+                            <tr className="border-b border-gray-600">
+                                <td colSpan={2} className="text-right">Total</td>
+                                <td className="text-right">
+                                    ${solicitudData
+                                        ? solicitudData?.canasta?.total.toFixed(2) ?? "Cargando..."
+                                        : solicitudData?.canasta?.items[0]?.total.toFixed(2) ?? "Cargando..."}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
 
-                <div className="flex space-x-4 mt-2">
-                    <button
-                        onClick={generatePDF}
-                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                    >
-                        Descargar Resumen PDF
-                    </button>
-                    {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
-                        <>
-                            <button
-                                className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                onClick={handleDownload}
-                            >
-                                Descargar Pacto Social
-                            </button>
-                        </>
-                    )}
+                    <div className="flex space-x-4 mt-2">
+                        <button
+                            onClick={generatePDF}
+                            className="bg-profile text-white px-4 py-2 rounded mt-8"
+                        >
+                            Descargar Resumen PDF
+                        </button>
+                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
+                            <>
+                                <button
+                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                    onClick={handleDownload}
+                                >
+                                    Descargar Pacto Social
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData &&
+                        solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
+                            <>
+                                <div className="flex space-x-4 ">
+                                    <button
+                                        onClick={generatePDFPersonas}
+                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                    >
+                                        Descargar información de las personas
+                                    </button>
+
+                                </div>
+                            </>
+                        )}
                 </div>
 
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData &&
-                    solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
-                        <>
-                            <div className="flex space-x-4 ">
-                                <button
-                                    onClick={generatePDFPersonas}
-                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                >
-                                    Descargar información de las personas
-                                </button>
+                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") && (
+                    <>
+                        <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
+                            <h3 className="text-lg font-bold text-white mb-4">Comprobante de pago</h3>
 
-                            </div>
-                        </>
-                    )}
-
-
+                            {formData.comprobantePagoURL ? (
+                                <p className="text-sm text-blue-500">
+                                    <a href={formData.comprobantePagoURL} target="_blank" rel="noopener noreferrer">
+                                        Ver documento actual
+                                    </a>
+                                </p>
+                            ) : (
+                                <p className="text-sm text-red-500">No hay comprobante de pago cargado.</p>
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
+
         </div>
     );
 };

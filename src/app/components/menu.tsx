@@ -126,6 +126,12 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Solicitudes
         </Link>
       </div>
+      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/requestsCasos')}`}>
+        <FeedIcon className="mr-2" />
+        <Link href="/dashboard/requestsCasos" className='font-semibold' onClick={closeMenu}>
+          Casos Pensión
+        </Link>
+      </div>
       {formData?.rol && (formData.rol === 17 || formData.rol === 99) && (
         <div
           className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/nuevo')}`}

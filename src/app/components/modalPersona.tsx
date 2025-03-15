@@ -1291,16 +1291,12 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                             <div className="flex flex-col col-span-1">
                                 <label className="text-white">Teléfono</label>
                                 <div className="flex gap-2">
-                                    <select
+                                    <CountrySelect
                                         name="bancoTelefonoCodigo"
                                         value={formData.bancoTelefonoCodigo}
-                                        onChange={handleChange}
-                                        className="p-2 bg-gray-800 text-white rounded-lg"
-                                    >
-                                        {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                            <option key={code} value={code}>{code}: {dialCode}</option>
-                                        ))}
-                                    </select>
+                                        onChange={(value) => handleCountryChange('bancoTelefonoCodigo', value)}
+                                        className="w-contain"
+                                    />
                                     <input
                                         type="tel"
                                         name="bancoTelefono"
@@ -1350,16 +1346,12 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                             <div className="flex flex-col col-span-1">
                                 <label className="text-white">Teléfono</label>
                                 <div className="flex gap-2">
-                                    <select
+                                    <CountrySelect
                                         name="comercialTelefonoCodigo"
                                         value={formData.comercialTelefonoCodigo}
-                                        onChange={handleChange}
-                                        className="p-2 bg-gray-800 text-white rounded-lg"
-                                    >
-                                        {Object.entries(countryCodes).map(([code, dialCode]) => (
-                                            <option key={code} value={code}>{code}: {dialCode}</option>
-                                        ))}
-                                    </select>
+                                        onChange={(value) => handleCountryChange('comercialTelefonoCodigo', value)}
+                                        className="w-contain"
+                                    />
                                     <input
                                         type="tel"
                                         name="comercialTelefono"

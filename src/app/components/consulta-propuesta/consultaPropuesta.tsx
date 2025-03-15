@@ -125,16 +125,16 @@ const ConsultaPropuesta: React.FC = () => {
                 nombreCompleto: solicitudData.nombreSolicita || "",
                 email: solicitudData.emailSolicita || "",
                 cedulaPasaporte: solicitudData.cedulaPasaporte || "",
-                telefono: solicitudData.telefonoSolicita || "", 
+                telefono: solicitudData.telefonoSolicita || "",
                 telefonoCodigo: 'PA',
-                celular: solicitudData.celularSolicita || solicitudData.telefonoWhatsApp || "", 
+                celular: solicitudData.celularSolicita || solicitudData.telefonoWhatsApp || "",
                 celularCodigo: 'PA',
-                emailRespuesta: solicitudData.emailRespuesta || solicitudData.aditionalEmail || "", 
-                empresa: solicitudData.empresaSolicita || solicitudData.nombreEmpresa || "", 
+                emailRespuesta: solicitudData.emailRespuesta || solicitudData.aditionalEmail || "",
+                empresa: solicitudData.empresaSolicita || solicitudData.nombreEmpresa || "",
                 tipoConsulta: solicitudData.tipoConsulta === "Propuesta-Legal" ? "Propuesta Legal" : (solicitudData.tipoConsulta || "Propuesta Legal"),
-                areaLegal: solicitudData.areaLegal || solicitudData.areasLegales || "Migración", 
-                detallesPropuesta: solicitudData.detallesPropuesta || solicitudData.descripcionConsulta || "", 
-                preguntasEspecificas: solicitudData.preguntasEspecificas || solicitudData.preguntasConsulta || "", 
+                areaLegal: solicitudData.areaLegal || solicitudData.areasLegales || "Migración",
+                detallesPropuesta: solicitudData.detallesPropuesta || solicitudData.descripcionConsulta || "",
+                preguntasEspecificas: solicitudData.preguntasEspecificas || solicitudData.preguntasConsulta || "",
                 /* notificaciones: solicitudData.notificaciones || "", */
                 notificaciones: solicitudData.actualizarPorCorreo === "si" ? "yes" : (solicitudData.actualizarPorCorreo || "No"),
                 terminosAceptados: false,
@@ -146,7 +146,7 @@ const ConsultaPropuesta: React.FC = () => {
                 cuenta: "",
                 userId: "",
             });
-            if (solicitudData.tipo !== "propuesta-legal" && solicitudData.tipo !== "consulta-legal" 
+            if (solicitudData.tipo !== "propuesta-legal" && solicitudData.tipo !== "consulta-legal"
                 && solicitudData.tipo !== "consulta-escrita") {
                 setDisponibilidad(solicitudData.disponibilidad.map((item) => ({
                     fecha: item.fecha || "",
@@ -808,7 +808,17 @@ const ConsultaPropuesta: React.FC = () => {
                     icon: "error",
                     title: "Este correo ya está en uso. Por favor, inicia sesión para continuar.",
                     showConfirmButton: false,
-                    timer: 1500,
+                    timer: 2500,
+                    timerProgressBar: true,
+                    toast: true,
+                    background: '#2c2c3e',
+                    color: '#fff',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        icon: 'custom-swal-icon',
+                        timerProgressBar: 'custom-swal-timer-bar'
+                    }
                 });
             } else if (!cuenta) {
                 await sendCreateRequest("");
@@ -819,7 +829,17 @@ const ConsultaPropuesta: React.FC = () => {
                 icon: "error",
                 title: "Hubo un problema verificando el correo. Por favor, inténtalo de nuevo más tarde.",
                 showConfirmButton: false,
-                timer: 1500,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
             });
             console.error("API Error:", error);
         } finally {
@@ -1075,18 +1095,18 @@ const ConsultaPropuesta: React.FC = () => {
             <p className="text-white mt-4 ">
                 <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                     <Link
-                    href="https://wa.me/50769853352"
-                    target="_blank"
-                    rel="nofollow"
-                    style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        color: 'green', 
-                        textDecoration: 'none' 
-                    }}
+                        href="https://wa.me/50769853352"
+                        target="_blank"
+                        rel="nofollow"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            color: 'green',
+                            textDecoration: 'none'
+                        }}
                     >
-                    <WhatsAppIcon style={{ color: '#25D366', fontSize: '24px', marginRight: '8px' }} />
-                    <span>WhatsApp</span>
+                        <WhatsAppIcon style={{ color: '#25D366', fontSize: '24px', marginRight: '8px' }} />
+                        <span>WhatsApp</span>
                     </Link>
                 </span>
             </p>
