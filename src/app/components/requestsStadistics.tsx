@@ -73,9 +73,9 @@ const Actions: React.FC<{ tipo: string, id: string, status: number, rol: string 
                 return `/request/consulta-propuesta?id=${id}`;
         }
     };
-
-    const canShowDelete = ((status === 1 && (rol === "Cliente Recurrente" || rol === "Cliente")) || (rol === "Cliente Recurrente" || rol !== "Cliente"));
-    const canShowPagar = ((status !== 19 && (rol === "Cliente Recurrente" || rol === "Cliente")) || (rol === "Cliente Recurrente" || rol !== "Cliente"));
+    
+    const canShowDelete = ((status === 1 && (rol === "Cliente recurrente" || rol === "Cliente")) || (rol !== "Cliente recurrente" && rol !== "Cliente"));
+    const canShowPagar = ((status < 19 && (rol === "Cliente recurrente" || rol === "Cliente")) || (rol !== "Cliente recurrente" && rol !== "Cliente"));
 
     return (
         <div className="flex gap-2">
@@ -92,7 +92,7 @@ const Actions: React.FC<{ tipo: string, id: string, status: number, rol: string 
             )}
             {canShowDelete && (
                 <DeleteIcon
-                    className="cursor-pointer"
+                    className="cursor-pointer text-red-500"
                     onClick={handleDelete}
                     titleAccess="Eliminar"
                 />
