@@ -24,14 +24,9 @@ export default async function handler(req, res) {
     const response = await axios.get(lambdaUrl);
 
     // Acceder de manera segura a los datos de las personas usando lodash's get
-    const people = get(response, 'data.people', null);
+    const people = get(response, 'data.people', []);
 
-    // Verificar si se encontraron personas
-    if (!people || people.length === 0) {
-      return res.status(404).json({ message: 'No people found for the provided Solicitud ID' });
-    }
-
-    // Enviar los datos de las personas de vuelta al cliente
+    // ✅ En lugar de un 404, devolver un array vacío si no hay personas
     return res.status(200).json(people);
   } catch (error) {
     console.error('Error fetching people:', error);

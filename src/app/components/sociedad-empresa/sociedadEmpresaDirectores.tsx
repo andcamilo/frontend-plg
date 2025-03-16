@@ -74,7 +74,7 @@ const SociedadEmpresaDirectores: React.FC = () => {
 
     const { store, setStore } = context;
     const solicitudId = store.solicitudId; // Aquí obtienes el `solicitudId` actual del store
-    console.log("Store.request ", store.request)
+    
     useEffect(() => {
         fetchData();
     }, [currentPage, solicitudId]); // Se agrega solicitudId como dependencia para actualizar si cambia
@@ -139,8 +139,12 @@ const SociedadEmpresaDirectores: React.FC = () => {
                 throw error;
             });
 
+            const solicitudes = await axios.get('/api/get-request-id', {
+                params: { solicitudId }
+            });
+
             const people = response?.data || [];
-            const requestData = store.request;
+            const requestData = solicitudes?.data;
 
             // 3. Obtener los directores nominales de requestData y almacenar sus id_persona
             let idPersonasDirectoresPropios: string[] = [];

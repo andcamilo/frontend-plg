@@ -59,11 +59,13 @@ const Request: React.FC = () => {
         email: string;
         rol: string;
         userId: string;
+        comprobantePagoURL: any,
     }>({
         cuenta: "",
         email: "",
         rol: "",
         userId: "",
+        comprobantePagoURL: '',
     });
 
     const getStatusName = (status: number) => {
@@ -107,10 +109,12 @@ const Request: React.FC = () => {
                 if (!userData) {
                     throw new Error("User is not authenticated.");
                 }
+                const comprobantePagoURL = get(solicitudResponse.data, 'adjuntoComprobantePago', '');
                 setFormData((prevData) => ({
                     ...prevData,
                     email: userData.email,
                     cuenta: userData.user_id,
+                    comprobantePagoURL,
                 }));
 
                 // 2. Fetch User Data based on cuenta
@@ -509,18 +513,23 @@ const Request: React.FC = () => {
 
         // Función auxiliar para manejar texto con saltos de página automáticos
         const addLine = (text: string) => {
-            if (y + 10 > pageHeight) {
-                doc.addPage();
-                y = 20; // Reinicia la posición Y en la nueva página
-            }
-            doc.text(text, 10, y);
-            y += 10;
+            const margin = 10; // Margen izquierdo
+            const maxWidth = doc.internal.pageSize.width - 2 * margin; // Ancho máximo del texto
+            const lines = doc.splitTextToSize(text, maxWidth); // Divide el texto en líneas ajustadas al ancho
+            lines.forEach(line => {
+                if (y + 10 > pageHeight) {
+                    doc.addPage();
+                    y = 20; // Reinicia la posición Y en la nueva página
+                }
+                doc.text(line, margin, y);
+                y += 7; // Ajusta el espacio entre líneas
+            });
         };
 
         // Título del documento
         doc.setFontSize(20);
         addLine('Resumen de la Solicitud');
-
+        y += 10;
         if (solicitudData.tipo === "new-sociedad-empresa") {
             // Información del Solicitante
             if (solicitudData) {
@@ -534,13 +543,13 @@ const Request: React.FC = () => {
             }
 
             // Opciones para el nombre de la sociedad
-            if (solicitudData?.empresa) {
+            if (solicitudData?.empresa || solicitudData?.nombreSociedad_1) {
                 doc.setFontSize(16);
                 addLine('Opciones para el nombre de la sociedad:');
                 doc.setFontSize(12);
-                addLine(`1. ${solicitudData.empresa.nombreSociedad1 || 'N/A'}`);
-                addLine(`2. ${solicitudData.empresa.nombreSociedad2 || 'N/A'}`);
-                addLine(`3. ${solicitudData.empresa.nombreSociedad3 || 'N/A'}`);
+                addLine(`1. ${solicitudData?.empresa?.nombreSociedad1 || solicitudData?.nombreSociedad_1 || 'N/A'}`);
+                addLine(`2. ${solicitudData?.empresa?.nombreSociedad2 || solicitudData?.nombreSociedad_2 || 'N/A'}`);
+                addLine(`3. ${solicitudData?.empresa?.nombreSociedad3 || solicitudData?.nombreSociedad_3 || 'N/A'}`);
                 y += 10;
             }
 
@@ -550,12 +559,17 @@ const Request: React.FC = () => {
                 addLine('Directores de la Sociedad:');
                 doc.setFontSize(12);
 
-                // Combinar directores propios y nominales
+                // **Fusionar directores propios y nominales en una sola lista**
                 const allDirectors = [
                     ...peopleData.filter(person => person.director),
                     ...(solicitudData.directores || []).filter(director => director.servicio === 'Director Nominal'),
+                    ...(solicitudData.directores || [])
+                        .filter(director => director.servicio !== 'Director Nominal') // Excluir nominales
+                        .map(director => peopleData.find(person => person.id === director.id_persona)) // Buscar en peopleData
+                        .filter(Boolean) // Remover valores nulos
                 ];
 
+                // **Recorrer e imprimir todos los directores en una sola lista**
                 allDirectors.forEach((director, index) => {
                     if (director.servicio === 'Director Nominal') {
                         addLine(`Director #${index + 1}: Director Nominal`);
@@ -575,26 +589,71 @@ const Request: React.FC = () => {
                 addLine('Dignatarios de la Sociedad:');
                 doc.setFontSize(12);
 
-                const allDignatarios = [
-                    ...peopleData.filter(person => person.dignatario),
-                    ...(solicitudData.dignatarios || []).filter(dignatario => dignatario.servicio === 'Dignatario Nominal'),
-                ];
+                // **1️⃣ Obtener dignatarios propios desde `peopleData`**
+                const dignatariosPropios = peopleData.filter(person => person.dignatario);
 
-                allDignatarios.forEach((dignatario, index) => {
-                    if (dignatario.servicio === 'Dignatario Nominal') {
-                        addLine(`Dignatario Nominal #${index + 1}:`);
-                        const posicionesNominales = dignatario.posiciones || [];
-                        const posicionesConcatenadasNominal = posicionesNominales.map(posicion => posicion.nombre).join(', ');
-                        if (posicionesNominales.length > 0) {
-                            addLine(`  Posiciones: ${posicionesConcatenadasNominal}`);
+                // **2️⃣ Obtener dignatarios propios desde `solicitudData.dignatarios`, buscando en `peopleData`**
+                const dignatariosDesdeSolicitud = (solicitudData.dignatarios ?? [])
+                    .filter(dignatario => dignatario.servicio !== 'Dignatario Nominal') // Excluir nominales
+                    .map(dignatario => {
+                        const person = peopleData.find(person => person.id === dignatario.id_persona || person.id === dignatario.personId);
+                        if (!person) return null; // Si no se encuentra en peopleData, se omite
+
+                        return {
+                            ...person,
+                            servicio: dignatario.servicio, // Asegurar que tenga el servicio asignado
+                            posiciones: dignatario.posiciones || dignatario.positions || [], // Tomar posiciones de ambos campos
+                        };
+                    })
+                    .filter(Boolean); // Remover valores nulos
+
+                // **3️⃣ Obtener dignatarios nominales desde `solicitudData.dignatarios`**
+                const dignatariosNominales = (solicitudData.dignatarios ?? [])
+                    .filter(dignatario => dignatario.servicio === 'Dignatario Nominal')
+                    .map(dignatario => ({
+                        ...dignatario,
+                        posiciones: dignatario.posiciones || dignatario.positions || [], // Tomar posiciones de ambos campos
+                    }));
+
+                // **Evitar duplicados usando un Set para IDs**
+                const dignatariosUnicosArray: any[] = [];
+                const idsUnicos = new Set();
+
+                [...dignatariosPropios, ...dignatariosDesdeSolicitud].forEach(dignatario => {
+                    if (dignatario && dignatario.id && !idsUnicos.has(dignatario.id)) {
+                        idsUnicos.add(dignatario.id);
+                        dignatariosUnicosArray.push(dignatario);
+                    }
+                });
+
+                // **Fusionar dignatarios propios y nominales**
+                const todosLosDignatarios = [...dignatariosUnicosArray, ...dignatariosNominales];
+
+                // **Generar el contenido en el PDF**
+                todosLosDignatarios.forEach((dignatario, index) => {
+                    let posiciones = dignatario.posiciones || [];
+
+                    // **Concatenar y mostrar las posiciones correctamente**
+                    let posicionesConcatenadas = "";
+                    if (Array.isArray(posiciones)) {
+                        if (posiciones.length > 0 && typeof posiciones[0] === "string") {
+                            // **Caso 1: `positions` es un array de strings**
+                            posicionesConcatenadas = posiciones.join(', ');
+                        } else if (posiciones.length > 0 && typeof posiciones[0] === "string") {
+                            // **Caso 2: `posiciones` es un array de objetos con `nombre`**
+                            posicionesConcatenadas = posiciones.join(', ');
                         }
+                    }
+
+                    // **Imprimir en el PDF**
+                    if (dignatario.servicio === 'Dignatario Nominal') {
+                        addLine(`Dignatario #${index + 1}: Dignatario Nominal`);
                     } else {
                         addLine(`Dignatario #${index + 1}: ${renderPersonName(dignatario)}`);
-                        const posiciones = dignatario.dignatario?.posiciones || [];
-                        const posicionesConcatenadas = posiciones.map(posicion => posicion.nombre).join(', ');
-                        if (posiciones.length > 0) {
-                            addLine(`  Posiciones: ${posicionesConcatenadas}`);
-                        }
+                    }
+
+                    if (posicionesConcatenadas) {
+                        addLine(`  Posiciones: ${posicionesConcatenadas}`);
                     }
                 });
 
@@ -604,18 +663,53 @@ const Request: React.FC = () => {
             }
 
             // Accionistas de la Sociedad
-            if (peopleData.length > 0) {
-                const accionistas = peopleData.filter(person => person.accionista);
-                if (accionistas.length > 0) {
-                    doc.setFontSize(16);
-                    addLine('Accionistas de la Sociedad:');
-                    doc.setFontSize(12);
-                    accionistas.forEach((accionista, index) => {
-                        const porcentaje = accionista.accionista?.porcentajeAcciones || 'N/A';
-                        addLine(`${index + 1}. ${renderPersonName(accionista)} - ${porcentaje}% acciones`);
-                    });
-                    y += 10;
-                }
+            if (peopleData.length > 0 || (solicitudData.accionistas && solicitudData.accionistas.length > 0)) {
+                doc.setFontSize(16);
+                addLine('Accionistas de la Sociedad:');
+                doc.setFontSize(12);
+
+                // **1️⃣ Obtener accionistas propios desde `peopleData`**
+                const accionistasPropios = peopleData
+                    .filter(person => person.accionista)
+                    .map(person => ({
+                        id: person.id,
+                        nombre: renderPersonName(person),
+                        porcentajeAcciones: person.accionista?.porcentajeAcciones || 'N/A'
+                    }));
+
+                // **2️⃣ Obtener accionistas desde `solicitudData.accionistas`, buscando en `peopleData`**
+                const accionistasDesdeSolicitud = (solicitudData.accionistas ?? [])
+                    .map(accionista => {
+                        const person = peopleData.find(person => person.id === accionista.id_persona);
+                        if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                        return {
+                            id: person.id,
+                            nombre: renderPersonName(person),
+                            porcentajeAcciones: accionista.porcentaje || 'N/A'
+                        };
+                    })
+                    .filter(Boolean); // Remover valores nulos
+
+                // **Evitar duplicados usando un Set para IDs**
+                const accionistasUnicosArray: any[] = [];
+                const idsUnicos = new Set();
+
+                [...accionistasPropios, ...accionistasDesdeSolicitud].forEach(accionista => {
+                    if (accionista && accionista.id && !idsUnicos.has(accionista.id)) {
+                        idsUnicos.add(accionista.id);
+                        accionistasUnicosArray.push(accionista);
+                    }
+                });
+
+                // **Generar el contenido en el PDF**
+                accionistasUnicosArray.forEach((accionista, index) => {
+                    addLine(`Accionista #${index + 1}. ${accionista.nombre} - ${accionista.porcentajeAcciones}% de las acciones`);
+                });
+
+                y += 10;
+            } else {
+                addLine('No hay accionistas registrados.');
             }
 
             // Capital y División de Acciones
@@ -631,42 +725,123 @@ const Request: React.FC = () => {
             }
 
             // Poder de la Sociedad
-            if (peopleData.length > 0) {
-                const poderes = peopleData.filter(person => person.poder);
-                if (poderes.length > 0) {
-                    doc.setFontSize(16);
-                    addLine('Poder de la Sociedad:');
-                    doc.setFontSize(12);
-                    poderes.forEach((poder, index) => {
-                        addLine(`${index + 1}. ${renderPersonName(poder)}`);
-                    });
-                    y += 10;
-                }
+            if (peopleData.length > 0 || (solicitudData.poder && solicitudData.poder.length > 0)) {
+                doc.setFontSize(16);
+                addLine('Poder de la Sociedad:');
+                doc.setFontSize(12);
+
+                // **1️⃣ Obtener apoderados desde `peopleData`**
+                const apoderadosPropios = peopleData
+                    .filter(person => person.poder)
+                    .map(person => ({
+                        id: person.id,
+                        nombre: renderPersonName(person)
+                    }));
+
+                // **2️⃣ Obtener apoderados desde `solicitudData.poder`, buscando en `peopleData`**
+                const apoderadosDesdeSolicitud = (solicitudData.poder ?? [])
+                    .map(poder => {
+                        const person = peopleData.find(person => person.id === poder.id_persona);
+                        if (!person) return null; // Omitir si no se encuentra en `peopleData`
+
+                        return {
+                            id: person.id,
+                            nombre: renderPersonName(person)
+                        };
+                    })
+                    .filter(Boolean); // Remover valores nulos
+
+                // **Evitar duplicados usando un Set para IDs**
+                const apoderadosUnicosArray: any[] = [];
+                const idsUnicos = new Set();
+
+                [...apoderadosPropios, ...apoderadosDesdeSolicitud].forEach(apoderado => {
+                    if (apoderado && apoderado.id && !idsUnicos.has(apoderado.id)) {
+                        idsUnicos.add(apoderado.id);
+                        apoderadosUnicosArray.push(apoderado);
+                    }
+                });
+
+                // **Generar el contenido en el PDF**
+                apoderadosUnicosArray.forEach((apoderado, index) => {
+                    addLine(`Poder #${index + 1}. ${apoderado.nombre}`);
+                });
+
+                y += 10;
+            } else {
+                addLine('No hay poder registrados.');
             }
 
             // Actividades de la Sociedad
-            if (solicitudData?.actividades) {
+            if (solicitudData?.actividades || solicitudData?.dentroPanama) {
                 doc.setFontSize(16);
                 addLine('Actividades de la Sociedad:');
                 doc.setFontSize(12);
-                if (solicitudData.actividades.actividadesDentroPanama === 'SiYaTengoLocal') {
-                    addLine(`Nombre Comercial: ${solicitudData.actividades.actividadesDentroPanamaData.nombreComercial || 'N/A'}`);
-                    addLine(`Dirección Comercial: ${solicitudData.actividades.actividadesDentroPanamaData.direccionComercial || 'N/A'}`);
-                } else if (solicitudData.actividades.actividadesDentroPanama === 'SiRequieroSociedadPrimero') {
-                    addLine(`Actividad #1: ${solicitudData.actividades.actividad1 || 'N/A'}`);
-                    addLine(`Actividad #2: ${solicitudData.actividades.actividad2 || 'N/A'}`);
-                    addLine(`Actividad #3: ${solicitudData.actividades.actividad3 || 'N/A'}`);
-                } else if (solicitudData.actividades.actividadesDentroPanama === 'No' && solicitudData.actividades.actividadesOffshore) {
-                    addLine(`Actividad Offshore #1: ${solicitudData.actividades.actividadesOffshore.actividadOffshore1 || 'N/A'}`);
-                    addLine(`Actividad Offshore #2: ${solicitudData.actividades.actividadesOffshore.actividadOffshore2 || 'N/A'}`);
-                    addLine(`Países: ${solicitudData.actividades.actividadesOffshore.paisesActividadesOffshore || 'N/A'}`);
+
+                // **1️⃣ Si la empresa YA TIENE LOCAL en Panamá**
+                if (
+                    solicitudData.actividades?.actividadesDentroPanama === 'SiYaTengoLocal' ||
+                    solicitudData?.dentroPanama === 'Si, ya tengo la local'
+                ) {
+                    addLine('Actividades dentro de Panamá:');
+
+                    addLine(`Nombre Comercial: ${solicitudData.actividades?.actividadesDentroPanamaData?.nombreComercial || solicitudData.avisOperacion?.aO_nombreComercial || 'N/A'}`);
+                    addLine(`Dirección Comercial: ${solicitudData.actividades?.actividadesDentroPanamaData?.direccionComercial || solicitudData.avisOperacion?.aO_direccion || 'N/A'}`);
+                    addLine(`Cómo llegar: ${solicitudData.actividades?.actividadesDentroPanamaData?.comoLlegar || solicitudData.avisOperacion?.aO_comoLlegar || 'N/A'}`);
+                    addLine(`Provincia: ${solicitudData.actividades?.actividadesDentroPanamaData?.provincia || solicitudData.avisOperacion?.aO_provincia || 'N/A'}`);
+                    addLine(`Teléfono: ${solicitudData.actividades?.actividadesDentroPanamaData?.telefono || solicitudData.avisOperacion?.aO_telefono || 'N/A'}`);
+
+                    // **Validar contador**
+                    if (
+                        (solicitudData.actividades?.contador && solicitudData.actividades?.mantieneContador === 'Si') ||
+                        (solicitudData.contador && solicitudData.contador.selectContador === 'Si')
+                    ) {
+                        addLine('Información del Contador:');
+                        addLine(`Nombre: ${solicitudData.actividades?.contador?.nombreContador || solicitudData.contador?.contador_nombre || 'N/A'}`);
+                        addLine(`Idoneidad: ${solicitudData.actividades?.contador?.idoneidadContador || solicitudData.contador?.contador_idoneidad || 'N/A'}`);
+                        addLine(`Teléfono: ${solicitudData.actividades?.contador?.telefonoContador || solicitudData.contador?.contador_telefono || 'N/A'}`);
+                    }
                 }
 
-                // Actividades de Tenedora de Activos
-                if (Array.isArray(solicitudData.actividades.actividadTenedora)) {
+                // **2️⃣ Si REQUIERE SOCIEDAD PRIMERO**
+                else if (
+                    solicitudData.actividades?.actividadesDentroPanama === 'SiRequieroSociedadPrimero' ||
+                    solicitudData?.dentroPanama === 'Si, pero requiero la sociedad'
+                ) {
+                    addLine('Actividades Comerciales:');
+                    addLine(`Actividad #1: ${solicitudData.actividades?.actividad1 || solicitudData.actividadComercial?.aC_1 || 'N/A'}`);
+                    addLine(`Actividad #2: ${solicitudData.actividades?.actividad2 || solicitudData.actividadComercial?.aC_2 || 'N/A'}`);
+                    addLine(`Actividad #3: ${solicitudData.actividades?.actividad3 || solicitudData.actividadComercial?.aC_3 || 'N/A'}`);
+
+                    // **Validar contador**
+                    if (
+                        (solicitudData.actividades?.contador && solicitudData.actividades?.mantieneContador === 'Si') ||
+                        (solicitudData.contador && solicitudData.contador.selectContador === 'Si')
+                    ) {
+                        addLine('Información del Contador:');
+                        addLine(`Nombre: ${solicitudData.actividades?.contador?.nombreContador || solicitudData.contador?.contador_nombre || 'N/A'}`);
+                        addLine(`Idoneidad: ${solicitudData.actividades?.contador?.idoneidadContador || solicitudData.contador?.contador_idoneidad || 'N/A'}`);
+                        addLine(`Teléfono: ${solicitudData.actividades?.contador?.telefonoContador || solicitudData.contador?.contador_telefono || 'N/A'}`);
+                    }
+                }
+
+                // **3️⃣ Si la empresa NO OPERA EN PANAMÁ (Offshore)**
+                else if (
+                    (solicitudData.actividades?.actividadesDentroPanama === 'No' && solicitudData.actividades?.actividadesOffshore) ||
+                    (solicitudData?.dentroPanama === 'No' && solicitudData?.fueraPanama)
+                ) {
+                    addLine('Actividades Offshore:');
+                    addLine(`Actividad Offshore #1: ${solicitudData.actividades?.actividadesOffshore?.actividadOffshore1 || solicitudData.fueraPanama?.aCF_1 || 'N/A'}`);
+                    addLine(`Actividad Offshore #2: ${solicitudData.actividades?.actividadesOffshore?.actividadOffshore2 || solicitudData.fueraPanama?.aCF_2 || 'N/A'}`);
+                    addLine(`Países donde se ejecutarán las actividades: ${solicitudData.actividades?.actividadesOffshore?.paisesActividadesOffshore || solicitudData.fueraPanama?.aCF_paises || 'N/A'}`);
+                }
+
+                // **4️⃣ Si la empresa es TENEDORA DE ACTIVOS**
+                if (Array.isArray(solicitudData.actividades?.actividadTenedora)) {
                     doc.setFontSize(14);
                     addLine('Actividades de Tenedora de Activos:');
                     doc.setFontSize(12);
+
                     const actividadNombres = {
                         vehiculoInversion: 'Vehículo de Inversión',
                         portafolioBienesRaices: 'Portafolio de Bienes Raíces',
@@ -674,12 +849,16 @@ const Request: React.FC = () => {
                         grupoEconomico: 'Como parte de una estructura o grupo económico',
                         duenoNaveAeronave: 'Dueño de Nave o Aeronave',
                     };
+
                     solicitudData.actividades.actividadTenedora.forEach((actividad, index) => {
                         const actividadTexto = actividadNombres[actividad] || actividad;
                         addLine(`Actividad #${index + 1}: ${actividadTexto}`);
                     });
-                    y += 10;
                 }
+
+                y += 10;
+            } else {
+                addLine('No hay actividades registradas.');
             }
 
             // Fuentes de Ingresos
@@ -707,11 +886,11 @@ const Request: React.FC = () => {
             }
 
             // Solicitud Adicional
-            if (solicitudData?.solicitudAdicional?.solicitudAdicional) {
+            if (solicitudData?.solicitudAdicional?.solicitudAdicional || solicitudData?.solicitudAdicional) {
                 doc.setFontSize(16);
                 addLine('Solicitud Adicional:');
                 doc.setFontSize(12);
-                addLine(solicitudData.solicitudAdicional.solicitudAdicional);
+                addLine(solicitudData?.solicitudAdicional?.solicitudAdicional || solicitudData?.solicitudAdicional);
             }
         } else if (solicitudData.tipo === "new-fundacion") {
             // Información del Solicitante
@@ -774,14 +953,14 @@ const Request: React.FC = () => {
                     if (dignatario.servicio === 'Dignatario Nominal') {
                         addLine(`Dignatario Nominal #${index + 1}:`);
                         const posicionesNominales = dignatario.posiciones || [];
-                        const posicionesConcatenadasNominal = posicionesNominales.map(posicion => posicion.nombre).join(', ');
+                        const posicionesConcatenadasNominal = posicionesNominales.join(', ');
                         if (posicionesNominales.length > 0) {
                             addLine(`  Posiciones: ${posicionesConcatenadasNominal}`);
                         }
                     } else {
                         addLine(`Dignatario #${index + 1}: ${renderPersonName(dignatario)}`);
                         const posiciones = dignatario.dignatario?.posiciones || [];
-                        const posicionesConcatenadas = posiciones.map(posicion => posicion.nombre).join(', ');
+                        const posicionesConcatenadas = posiciones.join(', ');
                         if (posiciones.length > 0) {
                             addLine(`  Posiciones: ${posicionesConcatenadas}`);
                         }
@@ -927,7 +1106,7 @@ const Request: React.FC = () => {
                 doc.setFontSize(12);
                 addLine(solicitudData.solicitudAdicional.solicitudAdicional);
             }
-        } else if (solicitudData.tipo === "propuesta-legal" || solicitudData.tipo === "consulta-escrita"
+        } else if (solicitudData.tipo === "propuesta-legal" || solicitudData.tipo === "consulta-legal" || solicitudData.tipo === "consulta-escrita"
             || solicitudData.tipo === "consulta-virtual" || solicitudData.tipo === "consulta-presencial") {
             if (solicitudData) {
                 doc.setFontSize(16);
@@ -936,7 +1115,7 @@ const Request: React.FC = () => {
                 addLine(`Nombre: ${solicitudData.nombreSolicita || 'N/A'}`);
                 addLine(`Cédula o Pasaporte: ${solicitudData.cedulaPasaporte || 'N/A'}`);
                 addLine(`Teléfono: ${solicitudData.telefonoSolicita || 'N/A'}`);
-                addLine(`Celular / WhatsApp: ${solicitudData.celularSolicita || 'N/A'}`);
+                addLine(`Celular / WhatsApp: ${solicitudData.celularSolicita || solicitudData.telefonoWhatsApp || 'N/A'}`);
                 addLine(`Correo Electrónico: ${solicitudData.emailSolicita || 'N/A'}`);
                 y += 10;
 
@@ -949,15 +1128,19 @@ const Request: React.FC = () => {
                     addLine('Detalles de la Consulta');
                     doc.setFontSize(12);
                 }
-                if (solicitudData.tipo === "propuesta-legal") {
-                    if (solicitudData.emailRespuesta !== "") {
-                        addLine(`Correo Electrónico para recibir respuesta: ${solicitudData.emailRespuesta || 'N/A'}`);
+                if (solicitudData.tipo === "propuesta-legal" || solicitudData.tipo === "consulta-legal") {
+                    const emailEmpresa = solicitudData?.emailRespuesta?.trim() || solicitudData?.aditionalEmail?.trim();
+                    if (emailEmpresa) {
+                        addLine(`Correo Electrónico para recibir respuesta: ${emailEmpresa}`);
                     }
-                    addLine(`Propuesta dirigida a la empresa: ${solicitudData.empresaSolicita || 'N/A'}`);
+                    addLine(`Propuesta dirigida a la empresa: ${solicitudData.empresaSolicita || solicitudData.nombreEmpresa || 'N/A'}`);
+                    y += 10;
                 }
-                addLine(`Área Legal: ${solicitudData.areaLegal || 'N/A'}`);
-                addLine(`Detalles de la Solicitud de Propuesta: ${solicitudData.detallesPropuesta || 'N/A'}`);
-                addLine(`Preguntas Específicas: ${solicitudData.preguntasEspecificas || 'N/A'}`);
+                addLine(`Área Legal: ${solicitudData.areaLegal || solicitudData.areasLegales || 'N/A'}`);
+                y += 10;
+                addLine(`Detalles de la Solicitud de Propuesta: ${solicitudData.detallesPropuesta || solicitudData.descripcionConsulta || 'N/A'}`);
+                y += 10;
+                addLine(`Preguntas Específicas: ${solicitudData.preguntasEspecificas || solicitudData.preguntasConsulta || 'N/A'}`);
                 y += 10;
 
                 if (solicitudData.tipo === "consulta-virtual" || solicitudData.tipo === "consulta-presencial") {
@@ -982,6 +1165,57 @@ const Request: React.FC = () => {
             }
         } else if (solicitudData.tipo === "menores-al-extranjero") {
 
+        } else if (solicitudData.tipo === "tramite-general") {
+            doc.setFontSize(16);
+            addLine('Información del Solicitante');
+            doc.setFontSize(12);
+            addLine(`Nombre: ${solicitudData.nombreSolicita || 'N/A'}`);
+            addLine(`Cédula o Pasaporte: ${solicitudData.cedulaPasaporte || 'N/A'}`);
+            addLine(`Teléfono: ${solicitudData.telefonoSolicita || 'N/A'}`);
+            addLine(`Celular / WhatsApp: ${solicitudData.celularSolicita || solicitudData.telefonoWhatsApp || 'N/A'}`);
+            addLine(`Correo Electrónico: ${solicitudData.emailSolicita || 'N/A'}`);
+            y += 10;
+
+            addLine(`Detalle el tipo de servicio que requiere: ${solicitudData?.solicitudBase?.detalle || solicitudData?.tipoServicio || 'N/A'}`);
+            addLine(`Nivel de urgencia: ${solicitudData?.solicitudBase?.urgencia || solicitudData?.nivelUrgencia || 'N/A'}`);
+            const nivelUregncia = solicitudData?.nivelUrgencia || solicitudData?.solicitudBase?.urgencia;
+            if (nivelUregncia && nivelUregncia === "Atención Extraordinaria") {
+                addLine(`Descripción de la situación: ${solicitudData?.solicitudBase?.detalle_urgencia || solicitudData?.descripcionExtra || 'N/A'}`);
+            }
+            y += 10;
+            addLine(`Descripción del requerimiento o situación: ${solicitudData?.solicitudBase?.descripcion || solicitudData?.descripcion || 'N/A'}`);
+        } else if (solicitudData.tipo === "solicitud-cliente-recurrente") {
+            doc.setFontSize(16);
+            addLine('Información del Solicitante');
+            doc.setFontSize(12);
+            addLine(`Nombre: ${solicitudData.nombreSolicita || 'N/A'}`);
+            addLine(`Cédula o Pasaporte: ${solicitudData.cedulaPasaporte || 'N/A'}`);
+            addLine(`Teléfono: ${solicitudData.telefonoSolicita || 'N/A'}`);
+            addLine(`Celular / WhatsApp: ${solicitudData.celularSolicita || solicitudData.telefonoWhatsApp || 'N/A'}`);
+            addLine(`Correo Electrónico: ${solicitudData.emailSolicita || 'N/A'}`);
+            addLine(`Comentarios: ${solicitudData?.solicitudBase?.comentarios || solicitudData?.comentarios || 'N/A'}`);
+            y += 10;
+        }
+
+        if ((solicitudData.tipo !== "propuesta-legal" && solicitudData.tipo !== "consulta-legal" &&
+            solicitudData.tipo !== "tramite-general" && solicitudData.tipo !== "solicitud-cliente-recurrente")
+            && (solicitudData?.canasta?.items?.length > 0)) {
+            doc.setFontSize(16);
+            addLine('Costos:');
+            doc.setFontSize(12);
+
+            // **Recorrer los ítems y agregarlos como texto**
+            solicitudData.canasta.items.forEach((item, index) => {
+                addLine(`${index + 1}. ${item.item}: $${(item.precio || 0).toFixed(2)}`);
+            });
+
+            // **Subtotal y Total**
+            addLine(`Subtotal: $${(solicitudData.canasta.subtotal || 0).toFixed(2)}`);
+            addLine(`Total: $${(solicitudData.canasta.total || 0).toFixed(2)}`);
+
+            y += 10; // Espacio después de los costos
+        } else {
+            addLine('No hay costos registrados.');
         }
 
         // Guardar el PDF
@@ -1270,40 +1504,41 @@ const Request: React.FC = () => {
                 </div>
             </div>
             {/* Sección de Información del Solicitante */}
-            <div className="bg-gray-800 p-8 rounded-lg md:w-1/2">
-                <h3 className="text-lg font-bold text-white mb-4">Información del solicitante</h3>
-                <p className="text-gray-300">
-                    <strong>Nombre del solicitante:</strong> {solicitudData ? solicitudData.nombreSolicita : "Cargando..."}
-                </p>
-                <p className="text-gray-300">
-                    <strong>Teléfono:</strong> {solicitudData ? solicitudData.telefonoSolicita : "Cargando..."}
-                </p>
-                <p className="text-gray-300">
-                    <strong>Correo electrónico:</strong> {solicitudData ? solicitudData.emailSolicita : "Cargando..."}
-                </p>
-                <hr className='mt-2 mb-2' />
-                <p
-                    className="text-purple-400 cursor-pointer mt-2 hover:underline"
-                    onClick={handleClick}
-                >
-                    Ver detalles de solicitud
-                </p>
+            <div className="flex flex-col gap-8 md:w-1/2">
+                <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
+                    <h3 className="text-lg font-bold text-white mb-4">Información del solicitante</h3>
+                    <p className="text-gray-300">
+                        <strong>Nombre del solicitante:</strong> {solicitudData ? solicitudData.nombreSolicita : "Cargando..."}
+                    </p>
+                    <p className="text-gray-300">
+                        <strong>Teléfono:</strong> {solicitudData ? solicitudData.telefonoSolicita : "Cargando..."}
+                    </p>
+                    <p className="text-gray-300">
+                        <strong>Correo electrónico:</strong> {solicitudData ? solicitudData.emailSolicita : "Cargando..."}
+                    </p>
+                    <hr className='mt-2 mb-2' />
+                    <p
+                        className="text-purple-400 cursor-pointer mt-2 hover:underline"
+                        onClick={handleClick}
+                    >
+                        Ver detalles de solicitud
+                    </p>
 
-                <hr className='mt-2 mb-2' />
-                <p className="text-gray-300">
-                    <strong>Estatus Actual:</strong> {solicitudData ? statusName : "Cargando..."}
-                </p>
+                    <hr className='mt-2 mb-2' />
+                    <p className="text-gray-300">
+                        <strong>Estatus Actual:</strong> {solicitudData ? statusName : "Cargando..."}
+                    </p>
 
-                <h3 className="text-lg font-bold text-white mt-6">Costos</h3>
-                <table className="w-full text-gray-300 mt-2">
-                    <thead>
-                        <tr className="border-b border-gray-600">
-                            <th className="text-left">#</th>
-                            <th className="text-left">Item</th>
-                            <th className="text-right">Precio</th>
-                        </tr>
-                    </thead>
-                    {/* <tbody>
+                    <h3 className="text-lg font-bold text-white mt-6">Costos</h3>
+                    <table className="w-full text-gray-300 mt-2">
+                        <thead>
+                            <tr className="border-b border-gray-600">
+                                <th className="text-left">#</th>
+                                <th className="text-left">Item</th>
+                                <th className="text-right">Precio</th>
+                            </tr>
+                        </thead>
+                        {/* <tbody>
                         <tr className="border-b border-gray-600">
                             <td>1</td>
                             <td>{solicitudData ? solicitudData.canasta.items[0].item : "Cargando..."}</td>
@@ -1311,69 +1546,87 @@ const Request: React.FC = () => {
                         </tr>
 
                     </tbody> */}
-                    <tfoot>
-                        {get(solicitudData, 'canasta.items', []).map((item, index) => (
-                            <tr key={index} className="border-b border-gray-600">
-                                <td className="p-2">{index + 1}</td>
-                                <td className="p-2">{item.item}</td>
-                                <td className="text-right p-2">${item.precio}</td>
+                        <tfoot>
+                            {get(solicitudData, 'canasta.items', []).map((item, index) => (
+                                <tr key={index} className="border-b border-gray-600">
+                                    <td className="p-2">{index + 1}</td>
+                                    <td className="p-2">{item.item}</td>
+                                    <td className="text-right p-2">${item.precio}</td>
+                                </tr>
+                            ))}
+                            <tr className="border-b border-gray-600">
+                                <td colSpan={2} className="text-right">Subtotal</td>
+                                <td className="text-right">
+                                    ${solicitudData
+                                        ? solicitudData?.canasta?.subtotal.toFixed(2) ?? "Cargando..."
+                                        : solicitudData?.canasta?.items[0]?.subtotal.toFixed(2) ?? "Cargando..."}
+                                </td>
                             </tr>
-                        ))}
-                        <tr className="border-b border-gray-600">
-                            <td colSpan={2} className="text-right">Subtotal</td>
-                            <td className="text-right">
-                                ${solicitudData
-                                    ? solicitudData?.canasta?.subtotal.toFixed(2) ?? "Cargando..."
-                                    : solicitudData?.canasta?.items[0]?.subtotal.toFixed(2) ?? "Cargando..."}
-                            </td>
-                        </tr>
-                        <tr className="border-b border-gray-600">
-                            <td colSpan={2} className="text-right">Total</td>
-                            <td className="text-right">
-                                ${solicitudData
-                                    ? solicitudData?.canasta?.total.toFixed(2) ?? "Cargando..."
-                                    : solicitudData?.canasta?.items[0]?.total.toFixed(2) ?? "Cargando..."}
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
+                            <tr className="border-b border-gray-600">
+                                <td colSpan={2} className="text-right">Total</td>
+                                <td className="text-right">
+                                    ${solicitudData
+                                        ? solicitudData?.canasta?.total.toFixed(2) ?? "Cargando..."
+                                        : solicitudData?.canasta?.items[0]?.total.toFixed(2) ?? "Cargando..."}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
 
-                <div className="flex space-x-4 mt-2">
-                    <button
-                        onClick={generatePDF}
-                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                    >
-                        Descargar Resumen PDF
-                    </button>
-                    {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
-                        <>
-                            <button
-                                className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                onClick={handleDownload}
-                            >
-                                Descargar Pacto Social
-                            </button>
-                        </>
-                    )}
+                    <div className="flex space-x-4 mt-2">
+                        <button
+                            onClick={generatePDF}
+                            className="bg-profile text-white px-4 py-2 rounded mt-8"
+                        >
+                            Descargar Resumen PDF
+                        </button>
+                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
+                            <>
+                                <button
+                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                    onClick={handleDownload}
+                                >
+                                    Descargar Pacto Social
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData &&
+                        solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
+                            <>
+                                <div className="flex space-x-4 ">
+                                    <button
+                                        onClick={generatePDFPersonas}
+                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                    >
+                                        Descargar información de las personas
+                                    </button>
+
+                                </div>
+                            </>
+                        )}
                 </div>
 
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData &&
-                    solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
-                        <>
-                            <div className="flex space-x-4 ">
-                                <button
-                                    onClick={generatePDFPersonas}
-                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                >
-                                    Descargar información de las personas
-                                </button>
+                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") && (
+                    <>
+                        <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
+                            <h3 className="text-lg font-bold text-white mb-4">Comprobante de pago</h3>
 
-                            </div>
-                        </>
-                    )}
-
-
+                            {formData.comprobantePagoURL ? (
+                                <p className="text-sm text-blue-500">
+                                    <a href={formData.comprobantePagoURL} target="_blank" rel="noopener noreferrer">
+                                        Ver documento actual
+                                    </a>
+                                </p>
+                            ) : (
+                                <p className="text-sm text-red-500">No hay comprobante de pago cargado.</p>
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
+
         </div>
     );
 };

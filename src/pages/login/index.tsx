@@ -91,7 +91,7 @@ const Login: React.FC = () => {
           </form>
           {error && <p className="text-profile mt-4">{error}</p>}
           <div className="flex flex-col items-center mt-[10%]">
-            <p><span className='text-profile'>Crea una cuenta</span> al realizar tu primer trámite en línea.</p>
+            <p className='text-[#A8AEBB]' ><span className='text-profile'>Crea una cuenta</span> al realizar tu primer trámite en línea.</p>
             <p className='text-profile'>¿Has olvidado tu contraseña?.</p>
           </div>
         </div>
