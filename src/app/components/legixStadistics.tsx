@@ -136,7 +136,7 @@ const LegixStatistics: React.FC = () => {
         console.log("All Solicituds ", solicitudes)
         setAllSolicitudes(solicitudes);
         setTipoCounts(tipoCounts);
-        
+
       } else {
 
         const solicitudesData = await getRequests(rowsPerPage, currentPage);
@@ -208,9 +208,11 @@ const LegixStatistics: React.FC = () => {
     "consulta-virtual": "Consulta Virtual",
     "consulta-presencial": "Consulta Presencial",
     "new-fundacion-interes-privado": "Fundación de Interés Privado",
+    "new-fundacion": "Fundación de Interés Privado",
     "new-sociedad-empresa": "Sociedad / Empresa",
     "menores-al-extranjero": "Salida de Menores al Extranjero",
     "pension-alimenticia": "Pensión Alimenticia",
+    "pension": "Pensión Alimenticia",
     "tramite-general": "Trámite General",
     "pension-desacato": "Pensión Desacato",
     "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
@@ -308,19 +310,23 @@ const LegixStatistics: React.FC = () => {
     <div className="flex flex-col gap-4 p-8 w-full">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 w-[80%]">
         <HomeBox title="Sociedades" number={tipoCounts['new-sociedad-empresa'] || 0} color="bg-[#9694FF]" />
-        <HomeBox title="Fundaciones" number={tipoCounts['new-fundacion-interes-privado'] || 0} color="bg-[#57caeb]" />
+        <HomeBox
+          title="Fundaciones"
+          number={(tipoCounts['new-fundacion-interes-privado'] || 0) + (tipoCounts['new-fundacion'] || 0)}
+          color="bg-[#57caeb]"
+        />
         <HomeBox
           title="Propuesta Legal"
-          number={(tipoCounts['Propuesta-Legal'] || 0) + (tipoCounts['consulta-legal'] || 0)}
+          number={(tipoCounts['Propuesta-Legal'] || 0) + (tipoCounts['consulta-legal'] || 0) + (tipoCounts['propuesta-legal'] || 0)}
           color="bg-[#5ddab4]"
         />
-        <HomeBox title="Consulta Escrita" number={tipoCounts['Consulta-Escrita'] || 0} color="bg-[#ff7976]" />
-        <HomeBox title="Consulta Virtual" number={tipoCounts['Consulta-Virtual'] || 0} color="bg-black" />
-        <HomeBox title="Consulta Presencial" number={tipoCounts['Consulta-Presencial'] || 0} color="bg-[#f4a261]" />
+        <HomeBox title="Consulta Escrita" number={(tipoCounts['Consulta-Escrita'] || 0) + (tipoCounts['consulta-escrita'] || 0)} color="bg-[#ff7976]" />
+        <HomeBox title="Consulta Virtual" number={(tipoCounts['Consulta-Virtual'] || 0) + (tipoCounts['consulta-virtual'] || 0)} color="bg-black" />
+        <HomeBox title="Consulta Presencial" number={(tipoCounts['Consulta-Presencial'] || 0) + (tipoCounts['consulta-presencial'] || 0) } color="bg-[#f4a261]" />
         <HomeBox title="Tramite General" number={tipoCounts['tramite-general'] || 0} color="bg-[#e76f51]" />
-        <HomeBox title="Pensiones" number={tipoCounts['pension-alimenticia'] || 0} color="bg-[#2a9d8f]" />
+        <HomeBox title="Pensiones" number={(tipoCounts['pension-alimenticia'] || 0) + (tipoCounts['pension'] || 0)} color="bg-[#2a9d8f]" />
         <HomeBox title="Pension Desacato" number={tipoCounts['pension-desacato'] || 0} color="bg-[#264653]" />
-        <HomeBox title="Salida de Menores al Extranjero" number={tipoCounts['salida-menores-al-extranjero'] || 0} color="bg-[#e9c46a]" />
+        <HomeBox title="Salida de Menores al Extranjero" number={tipoCounts['menores-al-extranjero'] || 0} color="bg-[#e9c46a]" />
         <HomeBox title="Cliente Recurrente" number={tipoCounts['solicitud-cliente-recurrente'] || 0} color="bg-[#264653]" />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
@@ -348,7 +354,7 @@ const LegixStatistics: React.FC = () => {
           />
 
           {!(
-            (typeof formData.rol === 'number' && formData.rol < 20) ||
+            (typeof formData.rol === 'number' && formData.rol < 50) ||
             (typeof formData.rol === 'string' && formData.rol === 'Cliente') ||
             (typeof formData.rol === 'string' && formData.rol === 'Cliente recurrente')
           ) && <PivotTable months={months} />}
@@ -356,7 +362,7 @@ const LegixStatistics: React.FC = () => {
         </div>
         <div className="lg:col-span-1">
           {!(
-            (typeof formData.rol === 'number' && formData.rol < 20) ||
+            (typeof formData.rol === 'number' && formData.rol < 50) ||
             (typeof formData.rol === 'string' && formData.rol === 'Cliente') ||
             (typeof formData.rol === 'string' && formData.rol === 'Cliente recurrente')
           ) &&

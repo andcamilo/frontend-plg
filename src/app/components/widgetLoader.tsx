@@ -11,7 +11,7 @@ import Swal from "sweetalert2";
 import { Loader2 } from 'lucide-react';
 
 const WidgetLoader: React.FC = () => {
-  const pensionContext = useContext(AppStateContext)
+  const pensionContext = useContext(AppStateContext);
   const sociedadContext = useContext(SociedadContext);
   const fundacionContext = useContext(AppStateContextFundacion);
   const menoresContext = useContext(MenoresContext);
@@ -30,8 +30,14 @@ const WidgetLoader: React.FC = () => {
             ? consultaContext
             : pagoContext;
 
+  /* const solicitudData = context?.store?.request as Record<string, any> || {}; */
+  // @ts-ignore
+  const solicitudData = context?.store?.request || {};
+
   const [isLoading, setIsLoading] = useState(false);
   console.log("CONTEX ", context)
+  console.log("solicitudData :", solicitudData);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const script = document.createElement('script');
@@ -138,6 +144,7 @@ const WidgetLoader: React.FC = () => {
 
   return (
     <div>
+      {solicitudData !== undefined && solicitudData?.status <= 10 && (
       <button
         className={`bg-profile text-white w-full py-3 rounded-lg flex items-center justify-center mb-4 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
@@ -153,23 +160,24 @@ const WidgetLoader: React.FC = () => {
           'Pagar en Línea'
         )}
       </button>
-      {/* {context?.store?.request !== undefined && context?.store?.request?.status < 10 && ( */}
-        <button
-          className={`bg-profile text-white w-full py-3 rounded-lg flex items-center justify-center ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          onClick={updateRequest}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Cargando...
-            </>
-          ) : (
-            'Enviar y pagar más tarde'
-          )}
-        </button>
-      {/* )} */}
+      )}
+      {solicitudData !== undefined && solicitudData?.status < 10 && ( 
+      <button
+        className={`bg-profile text-white w-full py-3 rounded-lg flex items-center justify-center ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        onClick={updateRequest}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Cargando...
+          </>
+        ) : (
+          'Enviar y pagar más tarde'
+        )}
+      </button>
+      )} 
 
       <div id="creditcard-container" style={{ marginTop: '20px' }}></div>
     </div>
