@@ -38,18 +38,18 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
     // Función para obtener la solicitud con los dignatarios
     const fetchSolicitudData = async () => {
         try {
-            /* const response = await axios.get('/api/get-request-id', {
+            const response = await axios.get('/api/get-request-id', {
                 params: { solicitudId }, // Pasamos el ID de la solicitud como filtro
-            }); */
+            });
 
-            const solicitudData = store.request;
+            const solicitudData = response.data;
             console.log('Datos de solicitud:', solicitudData);
 
             // Extraemos las posiciones ya asignadas de los dignatarios existentes
             const dignatarios = solicitudData.dignatarios || [];
             const posicionesAsignadas = dignatarios.flatMap((dignatario: any) =>
                 dignatario.posiciones
-                    ? dignatario.posiciones.map((posicion: any) => posicion.nombre)
+                    ? dignatario.posiciones
                     : dignatario.positions || [] // Si `positions` existe, usarlo directamente
             );
 
@@ -103,7 +103,7 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
     
         // Extraer posiciones
         const posiciones = dignatario.posiciones
-            ? dignatario.posiciones.map((posicion: any) => posicion.nombre)
+            ? dignatario.posiciones
             : dignatario.positions || [];
     
         console.log("Posiciones extraídas:", posiciones);
@@ -155,7 +155,9 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
             const personas = response.data || [];
             
             // Extraer los id_persona de los dignatarios actuales
-            const idsDignatarios = new Set(solicitudData.dignatarios.map((d: any) => d.id_persona));
+            const idsDignatarios = new Set(
+                Array.isArray(store.request?.dignatarios) ? solicitudData.dignatarios.map((d: any) => d.id_persona) : []
+            );
 
             // Filtrar personas que tengan solicitudId igual a solicitudId
             // y que no sean dignatarios ni estén en la lista de dignatarios actuales
@@ -275,8 +277,8 @@ const ModalDignatarios: React.FC<ModalDignatariosProps> = ({ onClose, id }) => {
                     ...(solicitudData?.nombreSociedad_1 && {
                         positions: selectedPositions.map((pos) => pos),
                     }),
-                    ...(!solicitudData?.nombreSociedad_1 && {
-                        posiciones: selectedPositions.map((pos) => ({ nombre: pos })),
+                    ...(solicitudData?.empresa && {
+                        posiciones: selectedPositions.map((pos) => pos),
                     }),
                 },
             };

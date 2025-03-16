@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (dignatario.servicio === 'Dignatario Nominal') {
       const formattedPositions = dignatario.positions
         ? dignatario.positions // Si ya viene como array de strings, lo dejamos igual
-        : dignatario.posiciones?.map(pos => pos.nombre) || [];
+        : dignatario.posiciones || [];
 
       // Determinar el nombre del campo basado en cuál propiedad existe
       const positionsField = dignatario.positions ? 'positions' : 'posiciones';
@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Convertir la estructura de posiciones según lo recibido
       const formattedPositions = dignatario.positions
         ? dignatario.positions // Si ya viene como array de strings, lo dejamos igual
-        : dignatario.posiciones?.map(pos => pos.nombre) || []; // Convertir `posiciones` a array de strings
+        : dignatario.posiciones || []; // Convertir `posiciones` a array de strings
 
       const positionsField = dignatario.positions ? 'positions' : 'posiciones';
       const personIdField = positionsField === 'positions' ? 'id_persona' : 'personId';

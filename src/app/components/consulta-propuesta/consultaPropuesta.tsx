@@ -901,7 +901,7 @@ const ConsultaPropuesta: React.FC = () => {
                 tipo: tipo,
                 item: item,
                 ...(formData.tipoConsulta === "Propuesta Legal" && {
-                    status: 10,
+                    status: 20,
                 }),
                 ...(formData.tipoConsulta !== "Propuesta Legal" && {
                     status: 1,

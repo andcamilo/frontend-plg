@@ -32,9 +32,11 @@ const ModalDirectores: React.FC<ModalDirectoresProps> = ({ onClose }) => {
             });
 
             const personas = response.data || [];
-            
+
             // Extraer los id_persona de los directores actuales
-            const idsDirectores = new Set(store.request.directores.map((d: any) => d.id_persona));
+            const idsDirectores = new Set(
+                Array.isArray(store.request?.directores) ? store.request.directores.map((d: any) => d.id_persona) : []
+            );
 
             const personasFiltradas = personas.filter((persona: any) =>
                 (persona.solicitudId === solicitudId || persona.id_solicitud === solicitudId) &&

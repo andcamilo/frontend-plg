@@ -133,7 +133,7 @@ const LegixStatistics: React.FC = () => {
           solicitudes = [],
           tipoCounts,
         } = solicitudesData;
-
+        console.log("All Solicituds ", solicitudes)
         setAllSolicitudes(solicitudes);
         setTipoCounts(tipoCounts);
         
