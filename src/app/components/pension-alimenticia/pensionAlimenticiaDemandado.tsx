@@ -507,7 +507,7 @@ const PensionAlimenticiaDemandado: React.FC = () => {
             </select>
           </div>
 
-          {formData.trabajando.value === 'si' && (
+          {formData.trabajando.value === 'si' && ( 
             <>
               <div>
                 <label className="block mb-2 text-sm">Ocupación:</label>

@@ -3,6 +3,8 @@ import axios from 'axios';
 import AppStateContext from '@context/context';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const PensionAlimenticiaResumen: React.FC = () => {
   // Access the context values
@@ -50,6 +52,313 @@ const PensionAlimenticiaResumen: React.FC = () => {
   if (!solicitudData) {
     return <p className="text-white">Cargando los detalles de la solicitud...</p>;
   }
+
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    let y = 20; // Posición inicial en Y
+    const pageHeight = doc.internal.pageSize.height; // Altura de la página
+
+    // Función auxiliar para manejar texto con saltos de página automáticos
+    const addLine = (text: string) => {
+      if (y + 10 > pageHeight) {
+        doc.addPage();
+        y = 20; // Reinicia la posición Y en la nueva página
+      }
+      doc.text(text, 10, y);
+      y += 10;
+    };
+
+    // Título del documento
+    doc.setFontSize(20);
+    addLine('Resumen de la Solicitud');
+
+    // Información del Solicitante
+    if (solicitudData) {
+      doc.setFontSize(16);
+      addLine('Información del Solicitante');
+      doc.setFontSize(12);
+      addLine(`Nombre: ${solicitudData.nombreSolicita || 'N/A'}`);
+      addLine(`Teléfono: ${solicitudData.telefonoSolicita || 'N/A'}`);
+      addLine(`Teléfono Alternativo: ${solicitudData.telefonoSolicita2 || 'N/A'}`);
+      addLine(`Cédula o Pasaporte: ${solicitudData.cedulaPasaporte || 'N/A'}`);
+      addLine(`Correo Electrónico: ${solicitudData.emailSolicita || 'N/A'}`);
+      y += 10;
+    }
+
+    doc.setFontSize(16);
+    addLine('Información de la Solicitud');
+    doc.setFontSize(12);
+    addLine(`Tipo de Pensión: ${solicitudData.pensionType || 'N/A'}`);
+
+    if (solicitudData.pensionType === 'Primera vez') {
+      y += 5; // Espaciado entre secciones
+      doc.setFontSize(14);
+      addLine('Está solicitando pensión alimentaria por primera vez.');
+      doc.setFontSize(12);
+      y += 5;
+
+      addLine(`¿Cuánto desea obtener de Pensión Alimenticia?: ${solicitudData.pensionAmount || 'N/A'}`);
+      addLine(`¿Recibe usted algún aporte por parte del demandado?: ${solicitudData.receiveSupport || 'N/A'}`);
+
+      if (solicitudData.receiveSupport === 'Sí') {
+        addLine(`¿Cuánto le están aportando de pensión alimenticia actualmente?: ${solicitudData.currentSupportAmount || 'N/A'}`);
+      }
+
+      addLine(`¿Qué tipo de pensión requiere solicitar?: ${solicitudData.pensionCategory || 'N/A'}`);
+      y += 10;
+    } else if (solicitudData.pensionType === 'Aumento') {
+      y += 5; // Espaciado antes de la sección
+      doc.setFontSize(14);
+      addLine('Quiere solicitar un Aumento.');
+      doc.setFontSize(12);
+      y += 5;
+
+      addLine(`¿Cuánto le están aportando de pensión alimenticia actualmente?: ${solicitudData.currentAmount || 'N/A'}`);
+      addLine(`¿Cuánto desea solicitar de aumento?: ${solicitudData.increaseAmount || 'N/A'}`);
+      addLine(`El monto total que desea recibir es el siguiente: ${solicitudData.totalAmount || 'N/A'}`);
+      addLine(`¿Está usted de acuerdo con el monto total que recibirá?: ${solicitudData.agreesWithAmount || 'N/A'}`);
+
+      if (solicitudData.agreesWithAmount === 'No') {
+        addLine(`Por favor explique por qué no está de acuerdo con el monto total: ${solicitudData.disagreementReason || 'N/A'}`);
+      }
+
+      addLine(`¿Sabe dónde está radicado su expediente actualmente de pensión alimenticia?: ${solicitudData.knowsCaseLocation || 'N/A'}`);
+
+      if (solicitudData.knowsCaseLocation === 'Si') {
+        addLine(`Indique Juzgado: ${solicitudData.court || 'N/A'}`);
+        addLine(`Indique número de expediente: ${solicitudData.caseNumber || 'N/A'}`);
+        addLine(`Indique la fecha de la última sentencia: ${solicitudData.sentenceDate || 'N/A'}`);
+      }
+
+      if (solicitudData.knowsCaseLocation === 'No') {
+        addLine(`¿Desea que la firma se encargue de investigar dónde se encuentra adjudicado el expediente y la sentencia?: ${solicitudData.wantsInvestigation || 'N/A'}`);
+
+        if (solicitudData.wantsInvestigation === 'Si') {
+          addLine(`Especifique la provincia: ${solicitudData.province || 'N/A'}`);
+        }
+      }
+
+      y += 10;
+    } else if (solicitudData.pensionType === 'Rebaja o Suspensión') {
+      y += 5; // Espaciado antes de la sección
+      doc.setFontSize(14);
+      addLine('Quiere solicitar Rebaja o Suspensión');
+      doc.setFontSize(12);
+      y += 5;
+
+      addLine(`¿Desea Disminuir o Suspender la pensión?: ${solicitudData.pensionSubType || 'N/A'}`);
+
+      if (solicitudData.pensionSubType === 'Disminuir') {
+        addLine(`¿Cuánto le está aportando de pensión alimenticia actualmente?: ${solicitudData.currentAmount || 'N/A'}`);
+        addLine(`¿Cuánto desea reducir de la pensión asignada?: ${solicitudData.reduceAmount || 'N/A'}`);
+        addLine(`¿Sabe dónde está radicado su expediente actualmente de pensión alimenticia?: ${solicitudData.knowsCaseLocation || 'N/A'}`);
+
+        if (solicitudData.knowsCaseLocation === 'No') {
+          addLine(`¿Desea que la firma se encargue de investigar dónde se encuentra adjudicado el expediente y la sentencia?: ${solicitudData.wantsInvestigation || 'N/A'}`);
+
+          if (solicitudData.wantsInvestigation === 'Si') {
+            addLine(`Especifique la provincia: ${solicitudData.province || 'N/A'}`);
+          }
+        }
+
+        if (solicitudData.knowsCaseLocation === 'Si') {
+          addLine(`Indique Juzgado: ${solicitudData.court || 'N/A'}`);
+          addLine(`Indique número de expediente: ${solicitudData.caseNumber || 'N/A'}`);
+          addLine(`Indique la fecha de la última sentencia: ${solicitudData.sentenceDate || 'N/A'}`);
+        }
+      }
+
+      y += 10; // Espaciado antes de la siguiente sección
+    } else if (solicitudData.pensionType === 'Desacato') {
+      y += 5; // Espaciado antes de la sección
+      doc.setFontSize(14);
+      addLine('Quiere solicitar un Desacato.');
+      doc.setFontSize(12);
+      y += 5;
+
+      addLine(`Indique el día de pago asignado por el juez: ${solicitudData.paymentDay || 'N/A'}`);
+      addLine(`Indique la fecha en la que recibió la última mensualidad: ${solicitudData.lastPaymentDate || 'N/A'}`);
+      addLine(`¿Sabe dónde está radicado su expediente actualmente de pensión alimenticia?: ${solicitudData.knowsCaseLocation || 'N/A'}`);
+
+      if (solicitudData.knowsCaseLocation === 'No') {
+        addLine(`¿Desea que la firma se encargue de investigar dónde se encuentra adjudicado el expediente y la sentencia?: ${solicitudData.wantsInvestigation || 'N/A'}`);
+
+        if (solicitudData.wantsInvestigation === 'Si') {
+          addLine(`Especifique la provincia: ${solicitudData.province || 'N/A'}`);
+        }
+      }
+
+      if (solicitudData.knowsCaseLocation === 'Si') {
+        addLine(`Indique Juzgado: ${solicitudData.court || 'N/A'}`);
+        addLine(`Indique número de expediente: ${solicitudData.caseNumber || 'N/A'}`);
+        addLine(`Indique la fecha de la última sentencia: ${solicitudData.sentenceDate || 'N/A'}`);
+      }
+
+      y += 10; // Espaciado antes de la siguiente sección
+    }
+
+    if (solicitudData.demandante) {
+      y += 5; // Espaciado antes de la sección
+      doc.setFontSize(16);
+      addLine('Información del Demandante');
+      doc.setFontSize(12);
+      y += 5;
+
+      addLine(`Nombre Completo: ${solicitudData.demandante.nombreCompleto || 'N/A'}`);
+      addLine(`Cédula: ${solicitudData.demandante.cedula || 'N/A'}`);
+      addLine(`Correo Electrónico: ${solicitudData.demandante.email || 'N/A'}`);
+      addLine(`Teléfono: ${solicitudData.demandante.telefonoSolicita || 'N/A'}`);
+      addLine(`Dirección: ${solicitudData.demandante.direccion || 'N/A'}`);
+      addLine(`Detalle Dirección: ${solicitudData.demandante.detalleDireccion || 'N/A'}`);
+      addLine(`Nacionalidad: ${solicitudData.demandante.nacionalidad?.label || 'N/A'}`);
+      addLine(`País de Residencia: ${solicitudData.demandante.paisDondeVive?.label || 'N/A'}`);
+      addLine(`Provincia: ${solicitudData.demandante.provincia?.label || 'N/A'}`);
+      addLine(`Corregimiento: ${solicitudData.demandante.corregimiento?.label || 'N/A'}`);
+      addLine(`Estado Civil: ${solicitudData.demandante.estadoCivil?.label || 'N/A'}`);
+      addLine(`Relación con el Demandado: ${solicitudData.demandante.relacionDemandado?.label || 'N/A'}`);
+
+      addLine(`¿Mantiene usted ingresos por trabajo o como independiente?: ${solicitudData.demandante.mantieneIngresos?.label || 'N/A'}`);
+
+      if (solicitudData.demandante.mantieneIngresos?.label === 'Sí') {
+        addLine(`  Lugar de Trabajo: ${solicitudData.demandante.lugarTrabajo || 'N/A'}`);
+        addLine(`  Ocupación: ${solicitudData.demandante.ocupacion || 'N/A'}`);
+        addLine(`  Ingresos Mensuales: ${solicitudData.demandante.ingresosMensuales || 'N/A'}`);
+        addLine(`  Vive en: ${solicitudData.demandante.viveEn?.label || 'N/A'}`);
+      }
+
+      addLine(`Estudia: ${solicitudData.demandante.estudia?.label || 'N/A'}`);
+
+      if (solicitudData.demandante.estudia?.label === 'Sí') {
+        addLine(`  Lugar de Estudio: ${solicitudData.demandante.lugarEstudio || 'N/A'}`);
+        addLine(`  Año que Cursa: ${solicitudData.demandante.anoCursando || 'N/A'}`);
+        addLine(`  Tipo de Estudio: ${solicitudData.demandante.tipoEstudio?.label || 'N/A'}`);
+        addLine(`  Tiempo Completo: ${solicitudData.demandante.tiempoCompleto?.label || 'N/A'}`);
+        addLine(`  Parentesco con el Pensionado: ${solicitudData.demandante.parentescoPension?.label || 'N/A'}`);
+      }
+
+      addLine(`Representa a un Menor: ${solicitudData.demandante.representaMenor?.label || 'N/A'}`);
+
+      y += 10; // Espaciado antes de la siguiente sección
+    }
+
+    if (solicitudData.demandado) {
+      y += 5; // Espaciado antes de la sección
+      doc.setFontSize(16);
+      addLine('Información del Demandado');
+      doc.setFontSize(12);
+      y += 5;
+
+      addLine(`Nombre Completo: ${solicitudData.demandado.nombreCompleto || 'N/A'}`);
+      addLine(`Cédula: ${solicitudData.demandado.cedula || 'N/A'}`);
+      addLine(`Teléfono: ${solicitudData.demandado.telefono || 'N/A'}`);
+      addLine(`Nacionalidad: ${solicitudData.demandado.nacionalidad?.label || 'N/A'}`);
+      addLine(`País de Residencia: ${solicitudData.demandado.paisDondeVive?.label || 'N/A'}`);
+      addLine(`Provincia: ${solicitudData.demandado.provincia?.label || solicitudData.demandado?.provincia2 || 'N/A'}`);
+      addLine(`Corregimiento: ${solicitudData.demandado.corregimiento?.label || solicitudData.demandado?.corregimiento2 || 'N/A'}`);
+      addLine(`Estado Civil: ${solicitudData.demandado.estadoCivil?.label || 'N/A'}`);
+      addLine(`¿Está Trabajando?: ${solicitudData.demandado.trabajando.label || 'No'}`);
+
+      if (solicitudData.demandado.trabajando.value === 'si') {
+        addLine(`  Ocupación: ${solicitudData.demandado.ocupacion || 'N/A'}`);
+        addLine(`  Ingresos por Trabajo: ${solicitudData.demandado.ingresosTrabajo || 'N/A'}`);
+        addLine(`  Dirección de Trabajo: ${solicitudData.demandado.direccionTrabajo || 'N/A'}`);
+        addLine(`  Detalle Dirección de Trabajo: ${solicitudData.demandado.detalleDireccionTrabajo || 'N/A'}`);
+      }
+
+      y += 10; // Espaciado antes de la siguiente sección
+    }
+
+    if (solicitudData.gastosPensionado) {
+      y += 5; // Espaciado antes de la sección
+      doc.setFontSize(16);
+      addLine('Información sobre Gastos del Pensionado');
+      doc.setFontSize(12);
+      y += 5;
+
+      addLine(`Agua: ${solicitudData.gastosPensionado.agua || 'N/A'}`);
+      addLine(`Luz: ${solicitudData.gastosPensionado.luz || 'N/A'}`);
+      addLine(`Teléfono: ${solicitudData.gastosPensionado.telefono || 'N/A'}`);
+      addLine(`Supermercado: ${solicitudData.gastosPensionado.supermercado || 'N/A'}`);
+      addLine(`Vestuario: ${solicitudData.gastosPensionado.vestuario || 'N/A'}`);
+      addLine(`Recreación: ${solicitudData.gastosPensionado.recreacion || 'N/A'}`);
+      addLine(`Habitación: ${solicitudData.gastosPensionado.habitacion || 'N/A'}`);
+      addLine(`Transporte: ${solicitudData.gastosPensionado.transporte || 'N/A'}`);
+      addLine(`Meriendas: ${solicitudData.gastosPensionado.meriendas || 'N/A'}`);
+      addLine(`Medicamentos: ${solicitudData.gastosPensionado.medicamentos || 'N/A'}`);
+      addLine(`Atención Médica: ${solicitudData.gastosPensionado.atencionMedica || 'N/A'}`);
+      addLine(`Cuota de Padres: ${solicitudData.gastosPensionado.cuotaPadres || 'N/A'}`);
+      addLine(`Matrícula: ${solicitudData.gastosPensionado.matricula || 'N/A'}`);
+      addLine(`Mensualidad Escolar: ${solicitudData.gastosPensionado.mensualidadEscolar || 'N/A'}`);
+      addLine(`Útiles Escolares: ${solicitudData.gastosPensionado.utiles || 'N/A'}`);
+      addLine(`Uniformes: ${solicitudData.gastosPensionado.uniformes || 'N/A'}`);
+      addLine(`Textos o Libros: ${solicitudData.gastosPensionado.textosLibros || 'N/A'}`);
+      addLine(`Otros Gastos: ${solicitudData.gastosPensionado.otros || 'N/A'}`);
+      addLine(`Gastos Totales del Pensionado: ${solicitudData.gastosPensionado.sumaTotal || 'N/A'}`);
+
+      y += 10; // Espaciado antes de la siguiente sección
+    }
+
+    if (solicitudData.firmaYEntrega) {
+      y += 5; // Espaciado antes de la sección
+      doc.setFontSize(16);
+      addLine('Información sobre la Firma y Entrega');
+      doc.setFontSize(12);
+      y += 5;
+
+      addLine('Por favor indícanos cómo deseas firmar y entregarnos los documentos para el proceso:');
+
+      if (solicitudData.firmaYEntrega.deliveryOption === "home") {
+        y += 5;
+        addLine('Entrega y firma a domicilio.');
+        addLine(`Dirección: ${solicitudData.firmaYEntrega.direccion || 'N/A'}`);
+        addLine(`Día: ${solicitudData.firmaYEntrega.dia || 'N/A'}`);
+        addLine(`Número de teléfono: ${solicitudData.firmaYEntrega.telefonoSolicita || 'N/A'}`);
+        addLine(`Hora (Formato 24 horas): ${solicitudData.firmaYEntrega.hora || 'N/A'}`);
+      }
+
+      if (solicitudData.firmaYEntrega.deliveryOption === "office") {
+        y += 5;
+        addLine('Puedo ir a sus oficinas a firmar y entregar todo.');
+      }
+
+      y += 10; // Espaciado antes de la siguiente sección
+    }
+
+    if (solicitudData.solicitudAdicional) {
+      y += 5; // Espaciado antes de la sección
+      doc.setFontSize(16);
+      addLine('Solicitud Adicional');
+      doc.setFontSize(12);
+      y += 5;
+
+      addLine(`Descripción de la solicitud: ${solicitudData.solicitudAdicional.descripcion || 'N/A'}`);
+
+      y += 10; // Espaciado antes de la siguiente sección
+    }
+
+    // Costos de la Sociedad
+    if (solicitudData?.canasta?.items?.length > 0) {
+      doc.setFontSize(16);
+      addLine('Costos:');
+      doc.setFontSize(12);
+
+      // **Recorrer los ítems y agregarlos como texto**
+      solicitudData.canasta.items.forEach((item, index) => {
+        addLine(`${index + 1}. ${item.item}: $${(item.precio || 0).toFixed(2)}`);
+      });
+
+      // **Subtotal y Total**
+      addLine(`Subtotal: $${(solicitudData.canasta.subtotal || 0).toFixed(2)}`);
+      addLine(`Total: $${(solicitudData.canasta.total || 0).toFixed(2)}`);
+
+      y += 10; // Espacio después de los costos
+    } else {
+      addLine('No hay costos registrados.');
+    }
+
+    // Guardar el PDF
+    doc.save('Resumen_Solicitud.pdf');
+  };
 
   return (
     <div className="text-white">
@@ -241,13 +550,13 @@ const PensionAlimenticiaResumen: React.FC = () => {
             {renderField('Teléfono', get(solicitudData, 'demandado.telefono'))}
             {renderField('Nacionalidad', get(solicitudData, 'demandado.nacionalidad.label'))}
             {renderField('País de Residencia', get(solicitudData, 'demandado.paisDondeVive.label'))}
-            {renderField('Provincia', get(solicitudData, 'demandado.provincia.label'))}
-            {renderField('Corregimiento', get(solicitudData, 'demandado.corregimiento.label'))}
+            {renderField('Provincia', get(solicitudData, 'demandado.provincia.label') || get(solicitudData, 'demandado.provincia2'))}
+            {renderField('Corregimiento', get(solicitudData, 'demandado.corregimiento.label') || get(solicitudData, 'demandado.corregimiento2'))}
             {renderField('Estado Civil', get(solicitudData, 'demandado.estadoCivil.label'))}
 
-            {renderField('¿Está Trabajando?', get(solicitudData, 'demandado.trabajando.label'))}
+            {renderField('¿Está Trabajando?', get(solicitudData, 'demandado.trabajando', 'No'))}
 
-            {solicitudData.demandado.trabajando.label === 'Sí' && (
+            {solicitudData.demandado.trabajando.value === 'si' && (
               <div className="ml-6">
                 {renderField('Ocupación', get(solicitudData, 'demandado.ocupacion'))}
                 {renderField('Ingresos por Trabajo', get(solicitudData, 'demandado.ingresosTrabajo'))}
@@ -352,6 +661,13 @@ const PensionAlimenticiaResumen: React.FC = () => {
             </tr>
           </tbody>
         </table>
+
+        <button
+          onClick={generatePDF}
+          className="mt-6 px-4 py-2 bg-profile text-white font-bold rounded hover:bg-profile-600"
+        >
+          Descargar Resumen PDF
+        </button>
 
       </div>
     </div>

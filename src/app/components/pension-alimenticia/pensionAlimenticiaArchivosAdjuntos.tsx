@@ -285,6 +285,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
           </span>
         </button>
       </h1>
+
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
@@ -309,7 +310,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
               <iframe
                 width="100%"
                 height="315"
-                src="https://www.youtube.com/embed/bND1jqKk1p8"
+                src="https://www.youtube.com/embed/KdG8CoCPMfk"
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
