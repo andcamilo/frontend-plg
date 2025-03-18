@@ -1237,7 +1237,7 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                                 <option value="Si">Sí</option>
                             </select>
                         </div>
-                        <p className="col-span-2 texto_justificado">
+                        <p className="col-span-2 texto_justificado texto-blanco">
                             * La persona expuesta políticamente son las personas nacionales o extranjeras que cumplen funciones públicas destacadas de alto nivel o con mando y jurisdicción en un Estado, como (pero sin limitarse) los jefes de Estado o de un gobierno, los políticos de alto perfil, los funcionarios gubernamentales, judiciales o militares de alta jerarquía, los ejecutivos de empresas o corporaciones estatales, los funcionarios públicos, que ocupen posiciones de elección popular, entre otros que ejerzan la toma de decisiones en las entidades públicas; personas que cumplen o a quienes se les han confiado funciones importantes por una organización institucional, como los miembros de la alta gerencia, es decir, directores, subdirectores y miembros de la junta directiva o funciones equivalentes.
                         </p>
                         {/* Mostrar campos adicionales si es Persona políticamente expuesta */}
@@ -1322,7 +1322,7 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                                 />
                             </div>
                         </div>
-                        <p className="col-span-2">
+                        <p className="col-span-2 texto-blanco">
                             * El Teléfono y Correo Electrónico que deben colocar es el de su enlace en el banco de tenerlo o el oficial del banco que ve su cuenta.
                         </p>
                         <hr className="col-span-2"></hr>
@@ -1377,7 +1377,7 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                                 />
                             </div>
                         </div>
-                        <p className="col-span-2">
+                        <p className="col-span-2 texto-blanco">
                             * Aquí debes poner el nombre y contacto de cualquier referencia comercial, si no se mantiene una referencia comercial porque no ha ejecutado actividades comerciales, según la ocupación, puede dejarlo en blanco.
                         </p>
                         <div className="col-span-1 mt-2">
@@ -1413,7 +1413,7 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                             )}
                         </div>
 
-                        <p className="col-span-2">
+                        <p className="col-span-2 texto-blanco">
                             * Es necesario adjuntar el pasaporte o cédula de identidad de la persona.
                         </p>
 
