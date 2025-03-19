@@ -16,6 +16,11 @@
   }
 }
 
+.texto-blanco {
+  color: white;
+}
+
+
 .styleUL {
   margin-bottom: 16px;
   list-style-type: disc;

@@ -1754,6 +1754,19 @@ const Request: React.FC = () => {
                                     <tr key={index} className="border-b border-gray-600">
                                         <td className="p-4">
                                             {index + 1} - {entry.accion || entry.observation}
+
+                                            {entry.adjuntoDocumentoBitacora && (
+                                                <div className="mt-2">
+                                                    <a
+                                                        href={entry.adjuntoDocumentoBitacora}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="bg-profile text-white font-semibold py-2 px-4 rounded-lg"
+                                                    >
+                                                        Ver Documento Adjunto
+                                                    </a>
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="p-4 text-right">
                                             <p>Inicio: {entry.date ? mostrarDate(entry.date) : "Fecha inválida"}</p>
