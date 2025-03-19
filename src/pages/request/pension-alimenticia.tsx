@@ -163,7 +163,7 @@ const PensionAlimenticia: React.FC = () => {
               </button>
             </div>
 
-            {(activeStep >= 8 || store.firmaYEntrega) && (
+            {(activeStep >= 8 || store.firmaYEntrega || !store.token) && (
               <div className="mt-8">
                 <WidgetLoader />
               </div>

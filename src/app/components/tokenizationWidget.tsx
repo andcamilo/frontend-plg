@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 const TokenizationWidget: React.FC = () => {
-  const apiKey = 'EhrqwakURmYS'; // Tu API Key
+  const apiKey = process.env.NEXT_PUBLIC__PAYMENT_API_KEY
 
   useEffect(() => {
     // Cargar jQuery dinámicamente
@@ -24,10 +24,10 @@ const TokenizationWidget: React.FC = () => {
       $('#creditcard-container').slideUp(500);
       $.ajax({
         type: 'GET',
-        url: 'https://bacapicomponentv2-test.merchantprocess.net/UIComponent/CreditCard', // URL del Widget
+        url: process.env.NEXT_PUBLIC__PAYMENT_WIDGET_URL,
         data: {
-          APIKey: apiKey,  // Llave de API
-          Culture: 'es',   // Idioma en español
+          APIKey: apiKey, 
+          Culture: 'es',
         },
         success: function (jsonResponse: any) {
           $('#creditcard-container').html(jsonResponse);

@@ -1681,7 +1681,7 @@ const ConsultaPropuesta: React.FC = () => {
                             zIndex: 1000,
                         }}
                     >
-                        {/* Contenido del Modal */}
+                    
                         <div className="mt-8">
                             <WidgetLoader />
                         </div>
