@@ -84,9 +84,9 @@ const WidgetLoader: React.FC = () => {
       $('#creditcard-container').slideUp(500);
       $.ajax({
         type: 'GET',
-        url: 'https://apicomponentv2-test.merchantprocess.net/UIComponent/CreditCard',
+        url: process.env.NEXT_PUBLIC__PAYMENT_WIDGET_URL,
         data: {
-          APIKey: 'EhrqwakURmYS',
+          APIKey: process.env.NEXT_PUBLIC__PAYMENT_API_KEY,
           Culture: 'es',
         },
         success: function (jsonResponse: any) {

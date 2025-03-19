@@ -5,12 +5,16 @@ import axios from 'axios';
 import xml2js from 'xml2js';
 import Swal from 'sweetalert2';
 
-const PaymentTestWidget: React.FC<{
-  onTokenSuccess: (token: string) => void;
-}> = ({ onTokenSuccess }) => {
+// **************************
+// 1) PAYMENT WIDGET COMPONENT
+// **************************
+const PaymentTestWidget: React.FC<{ onTokenSuccess: (token: string) => void }> = ({
+  onTokenSuccess,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    // Dynamically load jQuery
     if (typeof window !== 'undefined') {
       const script = document.createElement('script');
       script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
@@ -19,9 +23,13 @@ const PaymentTestWidget: React.FC<{
       document.body.appendChild(script);
     }
 
+    // Define the global callbacks the widget expects
     if (typeof window !== 'undefined') {
       (window as any).SaveCreditCard_SuccessCallback = function (response: any) {
+        console.log('>>> SaveCreditCard_SuccessCallback triggered');
         console.log('Tokenization successful:', response.TokenDetails.AccountToken);
+
+     
         onTokenSuccess(response.TokenDetails.AccountToken);
         setIsLoading(false);
       };
@@ -53,12 +61,13 @@ const PaymentTestWidget: React.FC<{
 
       $.ajax({
         type: 'GET',
-        url: 'https://bacgateway.merchantprocess.net/SecureComponent/v2/UIComponent/CreditCard', 
+        url: process.env.NEXT_PUBLIC__PAYMENT_WIDGET_URL, // e.g. "https://bacgateway.merchantprocess.net/SecureComponent/v2/UIComponent/CreditCard"
         data: {
-          APIKey: 'AgR2KqHC7mPl', 
+          APIKey: process.env.NEXT_PUBLIC__PAYMENT_API_KEY, // e.g. "AgR2KqHC7mPl"
           Culture: 'es',
         },
         success: function (jsonResponse: any) {
+          // Insert the widget's HTML into our container
           $('#creditcard-container').html(jsonResponse);
           $('#creditcard-container').slideDown(500);
           setIsLoading(false);
@@ -95,14 +104,16 @@ const PaymentTestWidget: React.FC<{
         {isLoading ? 'Cargando...' : 'Pagar en Línea'}
       </button>
 
+      {/* Container where the widget HTML is injected */}
       <div id="creditcard-container" style={{ marginTop: '20px' }} />
     </div>
   );
 };
 
-const PaymentTestSale: React.FC<{
-  token: string;
-}> = ({ token }) => {
+// **************************
+// 2) SALE COMPONENT (CVV FORM)
+// **************************
+const PaymentTestSale: React.FC<{ token: string }> = ({ token }) => {
   const [cvv, setCvv] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -136,14 +147,9 @@ const PaymentTestSale: React.FC<{
           <Sale xmlns="http://tempuri.org/">
             <APIKey>AgR2KqHC7mPl</APIKey>
             <accountToken>${token}</accountToken>
-            
-            <!-- Ajustar el 'accessCode' real de producción (si difiere) -->
             <accessCode>123123</accessCode>
-            
-            <!-- PRODUCCIÓN: MID y TID -->
             <merchantAccountNumber>103333</merchantAccountNumber>
             <terminalName>103333001</terminalName>
-            
             <clientTracking>SALE-TRACKING-01</clientTracking>
             <amount>${saleAmount}</amount>
             <currencyCode>840</currencyCode>
@@ -241,6 +247,7 @@ const PaymentTestSale: React.FC<{
       >
         {loading ? 'Processing...' : 'Process Sale'}
       </button>
+
       {!token && (
         <p className="mt-2 text-yellow-500">
           Please load the payment widget and obtain a token first.
@@ -250,26 +257,57 @@ const PaymentTestSale: React.FC<{
   );
 };
 
+// **************************
 // 3) PAGE CONTAINER
+// **************************
 const PaymentTestPage: React.FC = () => {
   const [token, setToken] = useState<string>('');
+
+  /**
+   * Whenever token changes, forcibly remove leftover widget UI (if any),
+   * such as dialogs or overlays that may still be lingering.
+   */
+  useEffect(() => {
+    if (token) {
+      console.log('>>> PaymentTestPage: token state changed to:', token);
+
+      // Hide / clear out the widget container
+      const widgetContainer = document.getElementById('creditcard-container');
+      if (widgetContainer) {
+        widgetContainer.innerHTML = '';
+        widgetContainer.style.display = 'none';
+      }
+      // Also remove any possible leftover jQuery UI overlays/dialogs
+      document.querySelectorAll('.ui-dialog, .ui-widget-overlay').forEach((el) => {
+        el.remove();
+      });
+    }
+  }, [token]);
 
   return (
     <div className="min-h-screen bg-[#13131A] text-white p-6">
       <h1 className="text-2xl font-semibold mb-6">Payment Test Page</h1>
 
-      {/* Payment Widget Loader */}
-      <PaymentTestWidget onTokenSuccess={(newToken) => setToken(newToken)} />
-
-      {/* If we have a token, show the sale component */}
+      {/* 
+        If there's a token, show the "Sale" form (CVV input).
+        If there's no token, show the PaymentTestWidget + "please complete" message.
+      */}
       {token ? (
         <div className="mt-6">
           <PaymentTestSale token={token} />
         </div>
       ) : (
-        <p className="mt-4 text-gray-400">
-          Please complete the payment widget to proceed with the sale.
-        </p>
+        <div>
+          <PaymentTestWidget
+            onTokenSuccess={(newToken) => {
+              console.log('>>> onTokenSuccess in parent:', newToken);
+              setToken(newToken);
+            }}
+          />
+          <p className="mt-4 text-gray-400">
+            Please complete the payment widget to proceed with the sale.
+          </p>
+        </div>
       )}
     </div>
   );
