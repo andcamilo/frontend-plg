@@ -73,7 +73,7 @@ const Actions: React.FC<{ tipo: string, id: string, status: number, rol: string 
                 return `/request/consulta-propuesta?id=${id}`;
         }
     };
-    
+
     const canShowDelete = ((status === 1 && (rol === "Cliente recurrente" || rol === "Cliente")) || (rol !== "Cliente recurrente" && rol !== "Cliente"));
     const canShowPagar = ((status < 19 && (rol === "Cliente recurrente" || rol === "Cliente")) || (rol !== "Cliente recurrente" && rol !== "Cliente"));
 
@@ -134,6 +134,12 @@ const RequestsStatistics: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [filterTipo, setFilterTipo] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
+    const [filterDate, setFilterDate] = useState('');
+    const [filterExpediente, setFilterExpediente] = useState('');
+    const hayFiltrosActivos = filterTipo || filterStatus || filterDate || filterExpediente;
+
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -188,97 +194,188 @@ const RequestsStatistics: React.FC = () => {
         fetchData();
     }, []); // 🔥 Ahora el efecto solo se ejecuta una vez al montar el componente
 
+    const getSolicitudesFiltradas = (array: any[]) => {
+        return array
+            .filter(solicitud =>
+                (!(formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente') || solicitud.cuenta === formData.cuenta)
+            )
+            .filter(({ tipo, date, status, expediente }) => {
+                const tipoMapping: { [key: string]: string } = {
+                    "propuesta-legal": "Propuesta Legal",
+                    "consulta-legal": "Propuesta Legal",
+                    "consulta-escrita": "Consulta Escrita",
+                    "consulta-virtual": "Consulta Virtual",
+                    "consulta-presencial": "Consulta Presencial",
+                    "new-fundacion-interes-privado": "Fundación de Interés Privado",
+                    "new-fundacion": "Fundación de Interés Privado",
+                    "new-sociedad-empresa": "Sociedad / Empresa",
+                    "menores-al-extranjero": "Salida de Menores al Extranjero",
+                    "pension-alimenticia": "Pensión Alimenticia",
+                    "pension": "Pensión Alimenticia",
+                    "tramite-general": "Trámite General",
+                    "pension-desacato": "Pensión Desacato",
+                    "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
+                };
+
+                const tipoTexto = tipoMapping[tipo] || tipo;
+                const formattedDate = formatDate(date);
+                const inputDate = filterDate ? filterDate.split('-').reverse().join('/') : '';
+
+                return (
+                    (filterTipo ? tipoTexto === filterTipo : true) &&
+                    (filterStatus ? status.toString() === filterStatus : true) &&
+                    (filterDate ? formattedDate === inputDate : true) &&
+                    (filterExpediente ? expediente?.toLowerCase().includes(filterExpediente.toLowerCase()) : true)
+                );
+            })
+            .sort((a, b) => b.date._seconds - a.date._seconds);
+    };
+
+    // Aplicar paginación
+    const solicitudesFiltradasEnProceso = getSolicitudesFiltradas(
+        solicitudes.filter(solicitud => solicitud.status !== 70)
+    );
+
+    const solicitudesFiltradasFinalizadas = getSolicitudesFiltradas(
+        solicitudes.filter(solicitud => solicitud.status === 70)
+    );
+
+    const paginatedSolicitudesEnProceso = solicitudesFiltradasEnProceso.slice(
+        (currentPageEnProceso - 1) * rowsPerPage,
+        currentPageEnProceso * rowsPerPage
+    );
+
+    const paginatedSolicitudesFinalizadas = solicitudesFiltradasFinalizadas.slice(
+        (currentPageFinalizadas - 1) * rowsPerPage,
+        currentPageFinalizadas * rowsPerPage
+    );
+
     // ⚠️ Ahora movemos la paginación a otro efecto separado
     useEffect(() => {
-        const solicitudesEnProceso = solicitudes.filter(solicitud => solicitud.status !== 70);
-        const solicitudesFinalizadas = solicitudes.filter(solicitud => solicitud.status === 70);
-
         setPaginationEnProceso({
             hasPrevPage: currentPageEnProceso > 1,
-            hasNextPage: currentPageEnProceso < Math.ceil(solicitudesEnProceso.length / rowsPerPage),
-            totalPages: Math.ceil(solicitudesEnProceso.length / rowsPerPage),
+            hasNextPage: currentPageEnProceso < Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage),
+            totalPages: Math.max(1, Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage)),
         });
 
         setPaginationFinalizadas({
             hasPrevPage: currentPageFinalizadas > 1,
-            hasNextPage: currentPageFinalizadas < Math.ceil(solicitudesFinalizadas.length / rowsPerPage),
-            totalPages: Math.ceil(solicitudesFinalizadas.length / rowsPerPage),
+            hasNextPage: currentPageFinalizadas < Math.ceil(solicitudesFiltradasFinalizadas.length / rowsPerPage),
+            totalPages: Math.max(1, Math.ceil(solicitudesFiltradasFinalizadas.length / rowsPerPage)),
         });
-    }, [currentPageEnProceso, currentPageFinalizadas, solicitudes]); // 🔥 Ahora este efecto solo recalcula la paginación sin recargar los datos
-
-
-    // Aplicar paginación
-    const paginatedSolicitudesEnProceso = solicitudes
-        .filter(solicitud =>
-            solicitud.status !== 70 &&
-            (!(formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente') || solicitud.cuenta === formData.cuenta)
-        )
-        .slice((currentPageEnProceso - 1) * rowsPerPage, currentPageEnProceso * rowsPerPage);
-
-    const paginatedSolicitudesFinalizadas = solicitudes
-        .filter(solicitud =>
-            solicitud.status === 70 &&
-            (!(formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente') || solicitud.cuenta === formData.cuenta)
-        )
-        .slice((currentPageFinalizadas - 1) * rowsPerPage, currentPageFinalizadas * rowsPerPage);
+    }, [currentPageEnProceso, currentPageFinalizadas, solicitudesFiltradasEnProceso, solicitudesFiltradasFinalizadas]);
 
     // Transformar datos para la tabla
     const transformData = (solicitudes: any[]) => {
-        return solicitudes.map(({ id, tipo, emailSolicita, date, status, expediente, abogados }) => {
-            const statusLabels: { [key: number]: string } = {
-                0: "Rechazada",
-                1: "Borrador",
-                10: "Enviada, pendiente de pago",
-                12: "Aprobada",
-                19: "Confirmando pago",
-                20: "Pagada",
-                30: "En proceso",
-                70: "Finalizada",
-            };
+        return solicitudes
+            .filter(({ tipo, date, status, expediente }) => {
+                const tipoMapping: { [key: string]: string } = {
+                    "propuesta-legal": "Propuesta Legal",
+                    "consulta-legal": "Propuesta Legal",
+                    "consulta-escrita": "Consulta Escrita",
+                    "consulta-virtual": "Consulta Virtual",
+                    "consulta-presencial": "Consulta Presencial",
+                    "new-fundacion-interes-privado": "Fundación de Interés Privado",
+                    "new-fundacion": "Fundación de Interés Privado",
+                    "new-sociedad-empresa": "Sociedad / Empresa",
+                    "menores-al-extranjero": "Salida de Menores al Extranjero",
+                    "pension-alimenticia": "Pensión Alimenticia",
+                    "pension": "Pensión Alimenticia",
+                    "tramite-general": "Trámite General",
+                    "pension-desacato": "Pensión Desacato",
+                    "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
+                };
 
-            const statusClasses: { [key: number]: string } = {
-                0: "status-rechazada",
-                1: "status-borrador",
-                10: "status-enviada",
-                12: "status-aprobada",
-                19: "status-confirmando-pago",
-                20: "status-pagada",
-                30: "status-en-proceso",
-                70: "status-finalizada",
-            };
+                const tipoTexto = tipoMapping[tipo] || tipo;
+                const formattedDate = formatDate(date);
+                const inputDate = filterDate ? filterDate.split('-').reverse().join('/') : '';
 
-            const tipoMapping: { [key: string]: string } = {
-                "propuesta-legal": "Propuesta Legal",
-                "consulta-legal": "Propuesta Legal",
-                "consulta-escrita": "Consulta Escrita",
-                "consulta-virtual": "Consulta Virtual",
-                "consulta-presencial": "Consulta Presencial",
-                "new-fundacion-interes-privado": "Fundación de Interés Privado",
-                "new-fundacion": "Fundación de Interés Privado",
-                "new-sociedad-empresa": "Sociedad / Empresa",
-                "menores-al-extranjero": "Salida de Menores al Extranjero",
-                "pension-alimenticia": "Pensión Alimenticia",
-                "pension": "Pensión Alimenticia",
-                "tramite-general": "Trámite General",
-                "pension-desacato": "Pensión Desacato",
-                "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
-            };
+                return (
+                    (filterTipo ? tipoTexto === filterTipo : true) &&
+                    (filterStatus ? status.toString() === filterStatus : true) &&
+                    (filterDate ? formattedDate === inputDate : true) &&
+                    (filterExpediente ? expediente?.toLowerCase().includes(filterExpediente.toLowerCase()) : true)
+                );
+            })
+            .map(({ id, tipo, emailSolicita, date, status, expediente, abogados }) => {
+                const statusLabels: { [key: number]: string } = {
+                    0: "Rechazada",
+                    1: "Borrador",
+                    10: "Enviada, pendiente de pago",
+                    12: "Aprobada",
+                    19: "Confirmando pago",
+                    20: "Pagada",
+                    30: "En proceso",
+                    70: "Finalizada",
+                };
 
-            return {
-                Tipo: tipoMapping[tipo] || tipo,
-                Fecha: formatDate(date),
-                Email: emailSolicita,
-                Estatus: (
-                    <span className={`status-badge ${statusClasses[status]}`}>
-                        {statusLabels[status]}
-                    </span>
-                ),
-                Expediente: expediente,
-                Abogado: abogados.map((abogado: any) => abogado.nombre).join(', '),
-                Opciones: <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />
-            };
-        });
+                const statusClasses: { [key: number]: string } = {
+                    0: "status-rechazada",
+                    1: "status-borrador",
+                    10: "status-enviada",
+                    12: "status-aprobada",
+                    19: "status-confirmando-pago",
+                    20: "status-pagada",
+                    30: "status-en-proceso",
+                    70: "status-finalizada",
+                };
+
+                const tipoMapping: { [key: string]: string } = {
+                    "propuesta-legal": "Propuesta Legal",
+                    "consulta-legal": "Propuesta Legal",
+                    "consulta-escrita": "Consulta Escrita",
+                    "consulta-virtual": "Consulta Virtual",
+                    "consulta-presencial": "Consulta Presencial",
+                    "new-fundacion-interes-privado": "Fundación de Interés Privado",
+                    "new-fundacion": "Fundación de Interés Privado",
+                    "new-sociedad-empresa": "Sociedad / Empresa",
+                    "menores-al-extranjero": "Salida de Menores al Extranjero",
+                    "pension-alimenticia": "Pensión Alimenticia",
+                    "pension": "Pensión Alimenticia",
+                    "tramite-general": "Trámite General",
+                    "pension-desacato": "Pensión Desacato",
+                    "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
+                };
+
+                return {
+                    Tipo: tipoMapping[tipo] || tipo,
+                    Fecha: formatDate(date),
+                    Email: emailSolicita,
+                    Estatus: (
+                        <span className={`status-badge ${statusClasses[status]}`}>
+                            {statusLabels[status]}
+                        </span>
+                    ),
+                    Expediente: expediente,
+                    Abogado: abogados.map((abogado: any) => abogado.nombre).join(', '),
+                    Opciones: <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />
+                };
+            });
     };
+
+    const tiposDisponibles = [
+        "Propuesta Legal",
+        "Consulta Escrita",
+        "Consulta Virtual",
+        "Consulta Presencial",
+        "Fundación de Interés Privado",
+        "Sociedad / Empresa",
+        "Salida de Menores al Extranjero",
+        "Pensión Alimenticia",
+        "Trámite General",
+        "Solicitud Cliente Recurrente",
+    ];
+
+    const estatusDisponibles = [
+        { value: 0, label: "Rechazada" },
+        { value: 1, label: "Borrador" },
+        { value: 10, label: "Enviada, pendiente de pago" },
+        { value: 12, label: "Aprobada" },
+        { value: 19, label: "Confirmando pago" },
+        { value: 20, label: "Pagada" },
+        { value: 30, label: "En proceso" },
+        { value: 70, label: "Finalizada" },
+    ];
 
     return (
         <div className="flex flex-col gap-4 p-8 w-full">
@@ -288,6 +385,65 @@ const RequestsStatistics: React.FC = () => {
                 <div className="text-red-500">{error}</div>
             ) : (
                 <>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <select
+                            className="w-full p-2 bg-gray-800 text-white rounded-lg"
+                            value={filterTipo}
+                            onChange={(e) => {
+                                setFilterTipo(e.target.value);
+                                setCurrentPageEnProceso(1);
+                                setCurrentPageFinalizadas(1);
+                            }}
+                        >
+                            <option value="">Todos los tipos</option>
+                            {tiposDisponibles.map((tipo, index) => (
+                                <option key={index} value={tipo}>
+                                    {tipo}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            className="w-full p-2 bg-gray-800 text-white rounded-lg"
+                            value={filterStatus}
+                            onChange={(e) => {
+                                setFilterStatus(e.target.value);
+                                setCurrentPageEnProceso(1);
+                                setCurrentPageFinalizadas(1);
+                            }}
+                        >
+                            <option value="">Todos los estatus</option>
+                            {estatusDisponibles.map((status) => (
+                                <option key={status.value} value={status.value}>
+                                    {status.label}
+                                </option>
+                            ))}
+                        </select>
+
+                        <input
+                            type="date"
+                            className="w-full p-2 bg-gray-800 text-white rounded-lg"
+                            value={filterDate}
+                            onChange={(e) => {
+                                setFilterDate(e.target.value);
+                                setCurrentPageEnProceso(1);
+                                setCurrentPageFinalizadas(1);
+                            }}
+                        />
+
+                        <input
+                            type="text"
+                            placeholder="Buscar expediente..."
+                            className="w-full p-2 bg-gray-800 text-white rounded-lg"
+                            value={filterExpediente}
+                            onChange={(e) => {
+                                setFilterExpediente(e.target.value);
+                                setCurrentPageEnProceso(1);
+                                setCurrentPageFinalizadas(1);
+                            }}
+                        />
+                    </div>
+
                     <TableWithRequests
                         data={transformData(paginatedSolicitudesEnProceso)}
                         rowsPerPage={rowsPerPage}
