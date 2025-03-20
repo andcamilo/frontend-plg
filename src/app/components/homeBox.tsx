@@ -18,12 +18,12 @@ const HomeBox: React.FC<HomeBoxProps> = ({ title, number, color }) => {
   };
 
   return (
-    <div className="bg-component text-center rounded-lg shadow-lg flex flex-col justify-center items-center h-32">
+    <div className="bg-component text-center rounded-lg shadow-lg flex flex-col justify-center items-center h-[100px] w-[98%]">
       <div className={`${color} rounded-md mb-1`}>
         {renderIcon()}
       </div>
-      <h2 className="text-md font-semibold text-gray-400">{title}</h2>
-      <p className="text-xl font-bold text-white">{number}</p>
+      <h2 className="text-xs font-semibold text-gray-400">{title}</h2>
+      <p className="text-md font-bold text-white">{number}</p>
     </div>
   );
 }
