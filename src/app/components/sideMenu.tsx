@@ -1,43 +1,44 @@
 "use client"
-import React, { useState } from 'react';
-import MenuIcon from '@mui/icons-material/Menu';
-import '@app/globals.css';
-import MenuComponent from './menu'; 
+import React from "react"
+import MenuIcon from "@mui/icons-material/Menu"
+import "@app/globals.css"
+import MenuComponent from "./menu"
 
-const SideMenu: React.FC = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
+interface SideMenuProps {
+  isOpen: boolean
+  setIsOpen: (open: boolean) => void
+}
 
+const SideMenu: React.FC<SideMenuProps> = ({ isOpen, setIsOpen }) => {
   const handleStateChange = (state: { isOpen: boolean }) => {
-    setMenuOpen(state.isOpen);
-  };
+    setIsOpen(state.isOpen)
+  }
 
-  const closeMenu = () => {
-    setMenuOpen(false);
-  };
+  const closeMenu = () => setIsOpen(false)
 
   const showSettings = (event: React.MouseEvent) => {
-    event.preventDefault();
-    alert('Settings clicked!');
-    closeMenu();
-  };
+    event.preventDefault()
+    alert("Settings clicked!")
+    closeMenu()
+  }
 
   return (
-    <div>
-      <MenuComponent 
-        menuOpen={menuOpen}
+    <>
+      <MenuComponent
+        menuOpen={isOpen}
         handleStateChange={handleStateChange}
         closeMenu={closeMenu}
         showSettings={showSettings}
       />
+
       <button
-        className={`fixed top-4 left-14 border-none bg-transparent cursor-pointer transform z-50`}
-        onClick={() => handleStateChange({ isOpen: !menuOpen })}
+        className="fixed top-4 left-14 border-none bg-transparent cursor-pointer z-50"
+        onClick={() => handleStateChange({ isOpen: !isOpen })}
       >
         <MenuIcon className="text-profile" />
       </button>
-    </div>
-  );
+    </>
+  )
 }
 
-
-export default SideMenu;
+export default SideMenu

@@ -308,7 +308,7 @@ const LegixStatistics: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 p-8 w-full">
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 w-[80%]">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 w-[97%]">
         <HomeBox title="Sociedades" number={tipoCounts['new-sociedad-empresa'] || 0} color="bg-[#9694FF]" />
         <HomeBox
           title="Fundaciones"
