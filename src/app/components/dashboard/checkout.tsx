@@ -40,8 +40,13 @@ const Checkout: React.FC = () => {
     
 
     const router = useRouter();
-    const params = useParams() as { id: string }; // Assert that "id" is a string
-    const { id } = params;
+    const params = useParams();
+  
+    if (!params || !params.id) {
+      return <div>Loading...</div>;
+    }
+    
+    const { id } = params as { id: string };
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const [statusName, setStatusName] = useState("");
     const pagoContext = useContext(PaymentContext);

@@ -18,8 +18,14 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const router = useRouter();
-  const params = useParams() as { id: string };
-    const { id } = params;
+  const params = useParams();
+  
+  // Check if params or id is not available
+  if (!params || !params.id) {
+    return <div>Loading...</div>;
+  }
+  
+  const { id } = params as { id: string };
 
   if (!context) {
     throw new Error('AppStateContext must be used within an AppStateProvider');

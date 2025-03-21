@@ -31,8 +31,14 @@ const storage = getStorage(app);
 
 const SolicitudForm: React.FC = () => {
   const router = useRouter();
-  const params = useParams() as { id: string };
-    const { id } = params;
+  const params = useParams();
+  
+  // Check if params or id is not available
+  if (!params || !params.id) {
+    return <div>Loading...</div>;
+  }
+  
+  const { id } = params as { id: string };
 
   const [formData, setFormData] = useState<{
     email: string;

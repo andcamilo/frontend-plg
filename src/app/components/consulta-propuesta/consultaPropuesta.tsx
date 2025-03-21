@@ -41,8 +41,13 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
 const ConsultaPropuesta: React.FC = () => {
-    const params = useParams() as { id: string };
-    const { id } = params;
+    const params = useParams();
+
+    if (!params || !params.id) {
+      return <div>Loading...</div>;
+    }
+    
+    const { id } = params as { id: string };
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const context = useContext(AppStateContext);
     const [recaptchaToken, setRecaptchaToken] = useState(null);

@@ -6,8 +6,13 @@ import Swal from 'sweetalert2';
 
 const Client: React.FC = () => {
     const router = useRouter();
-    const params = useParams() as { id: string }; // Assert that "id" is a string
-    const { id } = params;
+    const params = useParams();
+  
+    if (!params || !params.id) {
+      return <div>Loading...</div>;
+    }
+    
+    const { id } = params as { id: string };
     const [puedeEditarEmail, setPuedeEditarEmail] = useState(false);
 
     const [formData, setFormData] = useState({

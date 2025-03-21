@@ -49,8 +49,14 @@ const Request: React.FC = () => {
     const [status, setStatus] = useState(-1);
     const [observation, setObservation] = useState('');
     const router = useRouter();
-    const params = useParams() as { id: string };
-    const { id } = params;
+    const params = useParams();
+  
+    // Check if params or id is not available
+    if (!params || !params.id) {
+      return <div>Loading...</div>;
+    }
+    
+    const { id } = params as { id: string };
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const [statusName, setStatusName] = useState("");
     const [lawyers, setLawyers] = useState<any[]>([]);

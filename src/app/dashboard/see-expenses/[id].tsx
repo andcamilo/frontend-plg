@@ -6,8 +6,14 @@ import Expense from '@/src/app/components/expense/expense';
 
 const SeeExpense: React.FC = () => {
   const router = useRouter();
-  const params = useParams() as { id: string };
-    const { id } = params; // Get expense ID from URL
+  const params = useParams();
+  
+  // Check if params or id is not available
+  if (!params || !params.id) {
+    return <div>Loading...</div>;
+  }
+  
+  const { id } = params as { id: string };
 
   if (!id) {
     return <div className="text-white">Cargando...</div>;
