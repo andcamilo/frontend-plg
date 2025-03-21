@@ -1,6 +1,5 @@
 "use client"
 import React from 'react';
-import DashboardLayout from '@components/dashboardLayout';
 import RequestDashboard from '@components/dashboard/client';
 
 const Request: React.FC = () => {

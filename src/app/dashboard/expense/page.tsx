@@ -1,6 +1,5 @@
 "use client"
 import React from 'react';
-import DashboardLayout from '@components/dashboardLayout';
 import ExpenseComponent from '@/src/app/components/ExpenseComponent';
 
 const Clients: React.FC = () => {

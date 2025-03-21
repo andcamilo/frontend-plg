@@ -1,6 +1,5 @@
 "use client"
 import React from 'react';
-import DashboardLayout from '@components/dashboardLayout';
 import RequestsCasos from '@components/requestsCasos';
 
 const Requests: React.FC = () => {

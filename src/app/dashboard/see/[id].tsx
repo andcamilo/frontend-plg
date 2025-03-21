@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation"; 
-import DashboardLayout from '@components/dashboardLayout';
 import DesembolsoContext from '@context/desembolsoContext';
 import Disbursement from '@/src/app/components/disbursement/disbursement'; // Your main form component
 import axios from 'axios';
@@ -52,22 +51,35 @@ const See: React.FC = () => {
 
   if (loading) {
     return (
-      <DashboardLayout title="Editar Desembolso">
-        <div>Loading...</div>
-      </DashboardLayout>
+            <div className="p-4">
+                <h1 className="text-4xl font-bold text-white pl-8 mb-4">
+                Editar Desembolso
+                </h1>
+                <div>Loading...</div>
+            </div>
     );
   }
 
   if (typeof id !== 'string') {
     return (
-      <DashboardLayout title="Editar Desembolso">
-        <div>Error: Invalid Disbursement ID</div>
-      </DashboardLayout>
+            <div className="p-4">
+                <h1 className="text-4xl font-bold text-white pl-8 mb-4">
+                Editar Desembolso
+                </h1>
+                <div>Error: Invalid Disbursement ID</div>
+            </div>
     );
   }
 
   return (
-      <Disbursement id={id} />
+
+      <div className="p-4">
+            <h1 className="text-4xl font-bold text-white pl-8 mb-4">
+            Editar Desembolso
+            </h1>
+          <Disbursement id={id} />
+      </div>
+      
   );
 };
 

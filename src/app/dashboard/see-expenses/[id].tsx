@@ -2,7 +2,6 @@
 import React from 'react';
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation"; 
-import DashboardLayout from '@components/dashboardLayout';
 import Expense from '@/src/app/components/expense/expense';
 
 const SeeExpense: React.FC = () => {

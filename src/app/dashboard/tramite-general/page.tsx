@@ -2,7 +2,6 @@
 import React, { useContext } from 'react';
 import TramiteGenerales from '@components/tramite-general/tramiteGeneral';
 import TramiteContext from '@context/tramiteContext';
-import DashboardLayout from '@components/dashboardLayout';
 
 const TramiteGeneral: React.FC = () => {
     const tramiteContext = useContext(TramiteContext);
