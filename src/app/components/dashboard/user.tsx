@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -30,7 +31,8 @@ const storage = getStorage(app);
 
 const User: React.FC = () => {
     const router = useRouter();
-    const { id } = router.query;
+    const params = useParams() as { id: string };
+    const { id } = params;
     const [puedeEditarEmail, setPuedeEditarEmail] = useState(false);
     const [archivoFile, setArchivoFile] = useState<File | null>(null);
 
@@ -172,7 +174,7 @@ const User: React.FC = () => {
                         background: '#2c2c3e',
                         color: '#fff',
                     });
-                    router.reload();
+                    window.location.reload();
                 }
             } catch (error) {
                 Swal.fire({

@@ -10,16 +10,20 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ title, children }) => {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="flex bg-[#151521] min-h-screen relative transition-all duration-300">
-      <SideMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
+      <SideMenu
+        menuOpen={isOpen}
+        handleStateChange={(state) => setIsOpen(state.isOpen)}
+        closeMenu={() => setIsOpen(false)}
+      />
 
       <div
         id="page-wrap"
         className={`flex-grow flex flex-col pt-16 pl-6 transition-all duration-300 ${
-          menuOpen ? "ml-64" : "ml-0"
+          isOpen ? "ml-64" : "ml-0"
         }`}
       >
         <div className="flex items-center justify-between w-full pr-8">

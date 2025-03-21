@@ -4,7 +4,8 @@ import AppStateContext from '@context/fundacionContext';
 import ClipLoader from 'react-spinners/ClipLoader';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import EmailIcon from '@mui/icons-material/Email';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
@@ -13,7 +14,8 @@ import get from 'lodash/get';
 const SociedadEmpresaBienvenido: React.FC = () => {
     const context = useContext(AppStateContext);
     const router = useRouter();
-    const { id } = router.query;
+    const params = useParams() as { id: string };
+    const { id } = params;
 
     if (!context) {
         throw new Error('AppStateContext must be used within an AppStateProvider');

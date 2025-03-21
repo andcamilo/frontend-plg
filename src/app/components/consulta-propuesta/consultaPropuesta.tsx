@@ -8,7 +8,8 @@ import get from 'lodash/get';
 import Link from 'next/link';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import AppStateContext from "@context/consultaContext";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -40,8 +41,8 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
 const ConsultaPropuesta: React.FC = () => {
-    const router = useRouter();
-    const { id } = router.query;
+    const params = useParams() as { id: string };
+    const { id } = params;
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const context = useContext(AppStateContext);
     const [recaptchaToken, setRecaptchaToken] = useState(null);

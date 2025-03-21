@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import Swal from "sweetalert2";
 
 const CasoResumen: React.FC = () => {
-    const router = useRouter();
-    const { id } = router.query; // Obtener el id de la URL
+    const params = useParams() as { id: string };
+    const { id } = params;
 
     const [emailEditado, setEmailEditado] = useState("");
     const [resumenEditado, setResumenEditado] = useState("");

@@ -13,7 +13,8 @@ import {
   firebaseMessagingSenderId,
   firebaseAppId
 } from "@utils/env";
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -30,7 +31,8 @@ const storage = getStorage(app);
 
 const SolicitudForm: React.FC = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const params = useParams() as { id: string };
+    const { id } = params;
 
   const [formData, setFormData] = useState<{
     email: string;

@@ -5,7 +5,8 @@ import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
 import AppStateContext from "@context/menoresContext";
 import { checkAuthToken } from "@utils/checkAuthToken";
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import WidgetLoader from '@/src/app/components/widgetLoader';
@@ -38,7 +39,8 @@ const storage = getStorage(app);
 
 const MenoresAlExtranjero: React.FC = () => {
     const router = useRouter();
-    const { id } = router.query;
+    const params = useParams() as { id: string };
+    const { id } = params;
     const [solicitudData, setSolicitudData] = useState<any>(null);
 
     const context = useContext(AppStateContext);

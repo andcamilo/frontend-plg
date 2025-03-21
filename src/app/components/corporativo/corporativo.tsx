@@ -6,7 +6,8 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { checkAuthToken } from "@utils/checkAuthToken";
 import get from 'lodash/get';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -30,8 +31,8 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
 const SolicitudForm: React.FC = () => {
-    const router = useRouter();
-    const { id } = router.query;
+    const params = useParams() as { id: string };
+    const { id } = params;
     const [solicitudData, setSolicitudData] = useState<any>(null);
 
     const [formData, setFormData] = useState<{

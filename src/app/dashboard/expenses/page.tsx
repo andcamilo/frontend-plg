@@ -1,0 +1,17 @@
+"use client"
+import React from 'react';
+import DashboardLayout from '@components/dashboardLayout';
+import ListExpenses from '@/src/app/components/disbursement/listExpenses';
+
+const See: React.FC = () => {
+  return (
+      <div className="p-4">
+        <h1 className="text-4xl font-bold text-white pl-8 mb-4">
+          Ver Gastos
+        </h1>
+        <ListExpenses  />
+    </div>
+  );
+}
+
+export default See;

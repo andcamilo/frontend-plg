@@ -5,7 +5,8 @@ import Logo from '@public/images/legix.png';
 import { auth, signInWithEmailAndPassword } from '@configuration/firebase';
 import errorMessages from './errorMessages.json';
 import { FirebaseErrorMessages } from '@utils/types';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import cookie from 'js-cookie';
 import { Eye, EyeOff } from 'lucide-react';
 import ResetPasswordModal from '@components/ResetPasswordModal'; // <-- Import your modal

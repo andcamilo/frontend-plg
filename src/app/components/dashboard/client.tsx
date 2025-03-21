@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
 const Client: React.FC = () => {
     const router = useRouter();
-    const { id } = router.query;
+    const params = useParams() as { id: string }; // Assert that "id" is a string
+    const { id } = params;
     const [puedeEditarEmail, setPuedeEditarEmail] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -64,8 +66,6 @@ const Client: React.FC = () => {
                 telefonoSolicita: formData.telefono, 
                 cedulaPasaporte: formData.cedulaPasaporte,
             };
-
-            // Enviar solicitud a la API para actualizar la persona seleccionada como accionista
             const response = await axios.patch('/api/update-user', updatePayload);
 
             if (response.status === 200) {
@@ -77,7 +77,7 @@ const Client: React.FC = () => {
                     background: '#2c2c3e',
                     color: '#fff',
                 });
-                router.reload();
+                window.location.reload();
             }
         } catch (error) {
             Swal.fire({

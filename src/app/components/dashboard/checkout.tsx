@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import WidgetLoader from '@/src/app/components/widgetLoader';
@@ -39,7 +40,8 @@ const Checkout: React.FC = () => {
     
 
     const router = useRouter();
-    const { id } = router.query;
+    const params = useParams() as { id: string }; // Assert that "id" is a string
+    const { id } = params;
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const [statusName, setStatusName] = useState("");
     const pagoContext = useContext(PaymentContext);
