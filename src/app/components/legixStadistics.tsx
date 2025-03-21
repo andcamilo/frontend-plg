@@ -292,7 +292,13 @@ const LegixStatistics: React.FC = () => {
       hasNextPage: currentPageFinalizadas < Math.ceil(solicitudesFinalizadas.length / rowsPerPage),
       totalPages: Math.ceil(solicitudesFinalizadas.length / rowsPerPage),
     });
-  }, [solicitudesFinalizadas, currentPageEnProceso, currentPageFinalizadas]);
+  }, [  
+    solicitudesEnProceso.length,
+    solicitudesFinalizadas.length,
+    currentPageEnProceso,
+    currentPageFinalizadas,
+    rowsPerPage
+     ]);
 
 
   useEffect(() => {

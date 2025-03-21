@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -48,7 +49,9 @@ const Request: React.FC = () => {
     const [status, setStatus] = useState(-1);
     const [observation, setObservation] = useState('');
     const router = useRouter();
-    const { id } = router.query;
+    const params = useParams();
+  
+    const id = params?.id as string | undefined;
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const [statusName, setStatusName] = useState("");
     const [lawyers, setLawyers] = useState<any[]>([]);

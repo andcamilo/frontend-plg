@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import get from 'lodash/get';
@@ -21,6 +22,7 @@ const InvoicesStatistics: React.FC = () => {
             page: currentPage,
           },
         });
+        console.log("🚀 ~ fetchData ~ response:", response)
 
         const invoices = get(response, 'data.invoices', []);
         const totalInvoices = get(response, 'data.totalInvoices', 0);

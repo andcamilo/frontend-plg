@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import HomeLayout from '@components/homeLayout';
 import TramitesPopulares from '@components/processCarousel'; 
 import FaqComponent from '@/src/app/components/faqComponent';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 
 const Home: React.FC = () => {
   const carouselItems = [

@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useState } from 'react';
 import TableWithRequests from '@components/TableWithRequests';
 import { getRequests } from '@api/request';
@@ -192,7 +193,7 @@ const RequestsStatistics: React.FC = () => {
         };
 
         fetchData();
-    }, []); // 🔥 Ahora el efecto solo se ejecuta una vez al montar el componente
+    }, []);
 
     const getSolicitudesFiltradas = (array: any[]) => {
         return array
@@ -250,7 +251,6 @@ const RequestsStatistics: React.FC = () => {
         currentPageFinalizadas * rowsPerPage
     );
 
-    // ⚠️ Ahora movemos la paginación a otro efecto separado
     useEffect(() => {
         setPaginationEnProceso({
             hasPrevPage: currentPageEnProceso > 1,
@@ -263,7 +263,7 @@ const RequestsStatistics: React.FC = () => {
             hasNextPage: currentPageFinalizadas < Math.ceil(solicitudesFiltradasFinalizadas.length / rowsPerPage),
             totalPages: Math.max(1, Math.ceil(solicitudesFiltradasFinalizadas.length / rowsPerPage)),
         });
-    }, [currentPageEnProceso, currentPageFinalizadas, solicitudesFiltradasEnProceso, solicitudesFiltradasFinalizadas]);
+    }, []);
 
     // Transformar datos para la tabla
     const transformData = (solicitudes: any[]) => {

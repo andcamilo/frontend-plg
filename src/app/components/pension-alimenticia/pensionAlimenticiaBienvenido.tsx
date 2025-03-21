@@ -7,7 +7,8 @@ import { checkAuthToken } from '@utils/checkAuthToken';
 import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
-import { useRouter } from 'next/router';
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import get from 'lodash/get';
 import ReCAPTCHA from 'react-google-recaptcha';
 import CountrySelect from '@components/CountrySelect'; // Adjust the path accordingly
@@ -17,7 +18,9 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const router = useRouter();
-  const { id } = router.query;
+  const params = useParams();
+  
+  const id = params?.id as string | undefined;
 
   if (!context) {
     throw new Error('AppStateContext must be used within an AppStateProvider');

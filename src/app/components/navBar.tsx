@@ -3,7 +3,7 @@ import Logo from '@public/images/legix.png';
 import React, { useState } from 'react';
 import { slide as BurgerMenu } from 'react-burger-menu';
 import { Menu, MenuItem, IconButton } from '@mui/material';
-import { useRouter } from 'next/router';
+import { useRouter } from "next/navigation"; 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -101,10 +101,15 @@ const NavBar = () => {
     }
   };
 
-  const handleTramiteClick = (redirectUrl: string) => {
+  const handleTramiteClick = async (redirectUrl: string) => {
     setIsLoading(true);
-    router.push(redirectUrl).finally(() => setIsLoading(false));
+    try {
+      await router.push(redirectUrl);
+    } finally {
+      setIsLoading(false);
+    }
   };
+  
 
   const handleMiCuentaClick = () => {
     const auth = checkAuthToken();
