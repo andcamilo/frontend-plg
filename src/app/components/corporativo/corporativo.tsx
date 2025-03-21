@@ -33,11 +33,9 @@ const storage = getStorage(app);
 const SolicitudForm: React.FC = () => {
     const params = useParams();
   
-    if (!params || !params.id) {
-      return <div>Loading...</div>;
-    }
     
-    const { id } = params as { id: string };
+    const id = params?.id as string | undefined;
+    
     const [solicitudData, setSolicitudData] = useState<any>(null);
 
     const [formData, setFormData] = useState<{

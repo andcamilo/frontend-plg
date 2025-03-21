@@ -20,12 +20,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
   const router = useRouter();
   const params = useParams();
   
-  // Check if params or id is not available
-  if (!params || !params.id) {
-    return <div>Loading...</div>;
-  }
-  
-  const { id } = params as { id: string };
+  const id = params?.id as string | undefined;
 
   if (!context) {
     throw new Error('AppStateContext must be used within an AppStateProvider');

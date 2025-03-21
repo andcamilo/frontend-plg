@@ -33,12 +33,7 @@ const User: React.FC = () => {
     const router = useRouter();
     const params = useParams();
   
-    // Check if params or id is not available
-    if (!params || !params.id) {
-      return <div>Loading...</div>;
-    }
-    
-    const { id } = params as { id: string };
+    const id = params?.id as string | undefined;
     const [puedeEditarEmail, setPuedeEditarEmail] = useState(false);
     const [archivoFile, setArchivoFile] = useState<File | null>(null);
 
