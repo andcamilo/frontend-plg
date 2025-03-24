@@ -70,7 +70,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   };
 
   return (
-    <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-6xl mb-4">
+    <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-8xl mb-4">
       <h2 className="text-lg font-bold text-white mb-4">{title}</h2>
       <div className="overflow-x-auto">
         {data.length > 0 ? (

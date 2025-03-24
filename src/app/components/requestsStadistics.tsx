@@ -181,7 +181,8 @@ const RequestsStatistics: React.FC = () => {
                 }));
 
                 // Obtener TODAS las solicitudes una sola vez al cargar
-                const { solicitudes: allSolicitudes } = await getRequests(1000, 1);
+                const { solicitudes: allSolicitudes } = await getRequests(userData.email, 1000, 1);
+
 
                 setSolicitudes(allSolicitudes);
             } catch (err: any) {
