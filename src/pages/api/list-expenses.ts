@@ -4,6 +4,7 @@ import { backendBaseUrl, backendEnv } from '@utils/env';
 
 const listExpensesUrl = `${backendBaseUrl}/${backendEnv}/listExpenses`;
 
+console.log("🚀 ~ listExpensesUrl:", listExpensesUrl)
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method Not Allowed' });

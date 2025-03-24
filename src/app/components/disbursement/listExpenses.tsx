@@ -22,6 +22,7 @@ const ListExpenses: React.FC = () => {
           limit: rowsPerPage,
         },
       });
+      console.log("🚀 ~ fetchInvoices ~ response:", response)
 
       const invoices = response.data?.data || [];
 
