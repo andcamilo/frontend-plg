@@ -8,18 +8,22 @@ import axios from 'axios';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import get from 'lodash/get';
 import ReCAPTCHA from 'react-google-recaptcha';
 import CountrySelect from '@components/CountrySelect'; // Adjust the path accordingly
 import { backendBaseUrl, backendEnv } from '@utils/env';
+import PensionInfoImage from '@public/images/Imagen bienvenido pensiones version extendida transparente.svg';
+import Image from 'next/image';
+import Link from 'next/link';
+import BannerOpciones from '@components/BannerOpciones';
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const router = useRouter();
   const params = useParams();
-  
+
   const id = params?.id as string | undefined;
 
   if (!context) {
@@ -347,7 +351,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         actualizarPorCorreo: formData.notificaciones === 'yes',
         cuenta: cuenta || authToken?.user_id || '',
         precio: 0,
-        subtotal:0,
+        subtotal: 0,
         total: 0,
         resumenCaso: formData.resumenCaso || '',
         summaryEmail: formData.summaryEmail || formData.email,
@@ -488,8 +492,64 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           </div>
         </div>
       )}
-      <p className="text-white mt-4">
+      <p className="text-white mt-4 mb-4">
         Estimado cliente, por favor asegúrese de leer la descripción a continuación antes de solicitar el trámite y para aclarar dudas.
+      </p>
+
+      <BannerOpciones />
+
+      {/* <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 text-white">
+        <div className="bg-[#1E1E2D] p-4 rounded-xl border-2 border-profile">
+          <h3 className="text-lg font-bold mb-2 ">Pensión alimenticia por primera vez</h3>
+          <p className="text-sm leading-relaxed texto_justificado">
+            Si aún no existe una pensión establecida, puedes iniciar el proceso para determinar la cantidad adecuada, considerando los ingresos del demandado y las necesidades del beneficiario.
+          </p>
+        </div>
+
+        <div className="bg-[#1E1E2D] p-4 rounded-xl border-2 border-profile">
+          <h3 className="text-lg font-bold mb-2 ">Aumento o disminución de la pensión</h3>
+          <p className="text-sm leading-relaxed texto_justificado">
+            Si las circunstancias económicas de alguna de las partes han cambiado, puedes solicitar una revisión de la pensión existente.
+          </p>
+        </div>
+
+        <div className="bg-[#1E1E2D] p-4 rounded-xl border-2 border-profile">
+          <h3 className="text-lg font-bold mb-2 ">Suspensión de la pensión</h3>
+          <p className="text-sm leading-relaxed texto_justificado">
+            Si el beneficiario ha alcanzado la mayoría de edad, ya no depende económicamente del demandado, o ya no se encuentra estudiando, puedes solicitar la suspensión de la pensión.
+          </p>
+        </div>
+
+        <div className="bg-[#1E1E2D] p-4 rounded-xl border-2 border-profile">
+          <h3 className="text-lg font-bold mb-2 ">Desacato por incumplimiento</h3>
+          <p className="text-sm leading-relaxed texto_justificado">
+            Si el demandado no ha cumplido con los pagos de la pensión establecida, puedes iniciar un proceso de desacato. Esta debe presentarse en el momento en que incurra en el no pago dentro de los 30 días correspondientes.
+          </p>
+        </div>
+
+        <div className="md:col-span-2 lg:col-span-4 mt-4 text-center text-sm text-white opacity-80 texto_justificado">
+          Llena primero la información de la persona que le dará seguimiento al trámite y quien será el punto de contacto.
+          Podrás ver videos de guía mientras avanzas y durante el proceso, tienes la opción de guardar y enviar más tarde.
+        </div>
+      </div> */}
+
+      {/* <div className="flex justify-center">
+        <Image
+          src={PensionInfoImage}
+          alt="¿Qué puedes solicitar en este trámite?"
+          width={1500}
+          height={800}
+          className="rounded-lg shadow-lg"
+        />
+      </div> */}
+
+      <p className="text-white mt-6 text-justify">
+        <span className="text-red-500 font-bold">Importante: </span>
+        Este formulario se limita a trámites de pensión alimenticia, para servicios adicionales como apelaciones, divorcios o guarda y crianza, se requieren trámites separados. <br />
+        Si no estás seguro si aplicas a la Pensión Alimenticia o tienes dudas, solicita una consulta con nuestros abogados,&nbsp;
+        <Link href="/request/consulta-propuesta" className="text-blue-400 hover:text-blue-500">
+          consultas y propuestas
+        </Link>.
       </p>
 
       <form className="mt-4" onSubmit={(e) => handleSubmit(e, false, store.currentPosition || 0)}>
@@ -578,7 +638,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         </div>
 
         {/* Toggle button for case summary */}
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <button
             type="button"
             className="bg-profile text-white w-full py-3 rounded-lg"
@@ -586,7 +646,7 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           >
             {showSummaryForm ? "Ocultar Resumen de tu caso ▲" : "Enviar Resumen de tu caso ▼"}
           </button>
-        </div>
+        </div> */}
 
         {/* Conditionally render the summary form */}
         {showSummaryForm && (
@@ -700,7 +760,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           </button>
         )}
 
-        {/* Continue button when request status >= 10 */}
         {store.request.status >= 10 && (
           <button
             className="bg-profile text-white w-full py-3 rounded-lg mt-6"
@@ -715,6 +774,32 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
             Continuar
           </button>
         )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 text-center">
+          <a
+            href="https://panamalegalgroup.com/abogadosdefamiliapanama/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
+          >
+            Acerca de las<br />Pensiones Alimenticias
+          </a>
+          <a
+            href="/request/consulta-propuesta"
+            className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
+          >
+            Solicitar Propuesta<br />o Consulta Legal
+          </a>
+          <a
+            href="https://panamalegalgroup.com/contactenos/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
+          >
+            Contáctanos
+          </a>
+        </div>
+
       </form>
     </div>
   );
