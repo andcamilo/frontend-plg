@@ -6,7 +6,9 @@ const getRequestsUrl = `${backendBaseUrl}/${backendEnv}/get-requests`;
 const getRequestsByEmailUrl = `${backendBaseUrl}/${backendEnv}/get-requests-by-email`;
 
 export const getRequests = async (email, limit = 10, page = 1) => {
+
   try {
+    console.log("🚀 ~ getRequests ~ email:", email)
     let response;
     if (email === 'jbecerra@panamalegalgroup.com') {
       response = await axios.get(getRequestsUrl, {
