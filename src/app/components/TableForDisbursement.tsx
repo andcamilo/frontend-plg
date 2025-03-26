@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface TableForDisbursementProps {
   data: { [key: string]: any }[];
@@ -40,11 +40,18 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   const [selectAll, setSelectAll] = useState(false);
 
   const handleRowSelect = (rowIndex: number) => {
-    setSelectedRows((prev) => ({
-      ...prev,
-      [rowIndex]: !prev[rowIndex],
-    }));
+    setSelectedRows((prev) => {
+      const newValue = !prev[rowIndex];
+      console.log('Row index:', rowIndex, 'selected:', newValue);
+      console.log("🚀 ~ selectedRows:", selectedRows)
+      return { ...prev, [rowIndex]: newValue };
+    });
   };
+
+  useEffect(() => {
+    console.log('Selected rows changed:', selectedRows);
+  }, [selectedRows]);
+  
 
   const handleSelectAll = () => {
     const allSelected = !selectAll;
@@ -60,15 +67,24 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
 
     setSelectedRows(newSelectedRows);
   };
-
+  
   const handleGetSelectedIds = () => {
-    const selectedIds = Object.keys(selectedRows)
-      .filter((key) => selectedRows[Number(key)])
-      .map((key) => data[Number(key)].id);
-
+    const selectedRowIndexes = Object.keys(selectedRows).filter(
+      (key) => selectedRows[Number(key)]
+    );
+  
+    // Log out each selected row
+    selectedRowIndexes.forEach((key) => {
+      console.log('Selected row data:', data[Number(key)]);
+    });
+  
+    // If the row property is invoice_id, for example:
+    const selectedIds = selectedRowIndexes.map((key) => data[Number(key)].invoice_id);
+  
+    console.log("🚀 ~ handleGetSelectedIds ~ selectedIds:", selectedIds);
     onGetSelectedIds(selectedIds);
   };
-
+  
   return (
     <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-8xl mb-4">
       <h2 className="text-lg font-bold text-white mb-4">{title}</h2>

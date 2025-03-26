@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation"; 
 import TableForDisbursement from '../TableForDisbursement';
 import axios from 'axios';
@@ -24,6 +23,7 @@ const ListInvoices: React.FC = () => {
       });
 
       const invoices = response.data?.data || [];
+   
 
       setData(invoices);
       setCurrentPage(page);
@@ -44,8 +44,8 @@ const ListInvoices: React.FC = () => {
   };
 
   const handleEdit = (row: { [key: string]: any }) => {
-    const id = row.invoice_id; // Use the invoice_id as the identifier
-    router.push(`/dashboard/see-invoices/${id}`); // Navigate to detail page
+    const id = row.invoice_id; 
+    router.push(`/dashboard/see-invoices/${id}`); 
   };
 
   const handleGetSelectedIds = async (selectedIds: string[]) => {
@@ -57,18 +57,20 @@ const ListInvoices: React.FC = () => {
     }
 
     try {
-      const response = await axios.patch('/api/update-invoices', {
-        fieldUpdate: { status: 'approved' }, // Example update field
-        ids: selectedIds,
-      });
-
-      console.log('Update Response:', response.data);
+      const responses = await Promise.all(
+        selectedIds.map((invoiceId: string) =>
+          axios.post(`/api/set-invoice-approve?invoiceId=${encodeURIComponent(invoiceId)}`)
+        )
+      );
+    
+      console.log('Draft Response:', responses.map(r => r.data));
       alert('Facturas actualizadas correctamente.');
-      fetchInvoices(currentPage); // Refresh the table after update
-    } catch (error) {
+      fetchInvoices(currentPage);
+    } catch (error: any) {
       console.error('Error updating invoices:', error);
       alert('Error al actualizar las facturas.');
     }
+    
   };
 
   return (
