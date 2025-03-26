@@ -37,12 +37,11 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
   const [formData, setFormData] = useState<{
     cuenta: string;
     email: string;
-    rol: number;
+    rol: string;
   }>({
     cuenta: "",
     email: "",
-    rol: -1,
-
+    rol: "",
   });
 
   useEffect(() => {
@@ -67,9 +66,23 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
 
           const user = response.data;
           console.log("Usuario ", user)
+
+          const rawRole = get(user, 'solicitud.rol', 0);
+          const roleMapping: { [key: number]: string } = {
+            99: "Super Admin",
+            90: "Administrador",
+            80: "Auditor",
+            50: "Caja Chica",
+            40: "Abogados",
+            35: "Asistente",
+            17: "Cliente recurrente",
+            10: "Cliente",
+          };
+          const stringRole = typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || "Desconocido";
+
           setFormData((prevData) => ({
             ...prevData,
-            rol: get(user, 'solicitud.rol', 0)
+            rol: stringRole,
           }));
 
         } catch (error) {
@@ -126,13 +139,13 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Solicitudes
         </Link>
       </div>
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/requestsCasos')}`}>
+      {/* <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/requestsCasos')}`}>
         <FeedIcon className="mr-2" />
         <Link href="/dashboard/requestsCasos" className='font-semibold' onClick={closeMenu}>
           Casos Pensión
         </Link>
-      </div>
-      {formData?.rol && (formData.rol === 17 || formData.rol === 99) && (
+      </div> */}
+      {formData?.rol && (formData.rol === "Cliente recurrente" || formData.rol === "Super Admin") && (
         <div
           className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/nuevo')}`}
           onClick={toggleDropdown}
@@ -162,39 +175,45 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </Link>
         </div>
       )}
-      {formData?.rol && formData.rol >= 35 && (
-        <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}>
-          <PaidIcon className="mr-2" />
-          <Link href="/dashboard/balances" className='font-semibold' onClick={closeMenu}>
-            Balances
-          </Link>
-        </div>
-      )}
-      {formData?.rol && formData.rol >= 50 && (
-        <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/clients')}`}>
-          <PeopleIcon className="mr-2" />
-          <Link href="/dashboard/clients" className='font-semibold' onClick={closeMenu}>
-            Clientes
-          </Link>
-        </div>
-      )}
-      {formData?.rol && formData.rol >= 80 && (
-        <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/users')}`}>
-          <PeopleIcon className="mr-2" />
-          <Link href="/dashboard/users" className='font-semibold' onClick={closeMenu}>
-            Usuarios
-          </Link>
-        </div>
-      )}
-      {/* {formData?.rol && formData.rol >= 35 && ( */}
-        <>
-          <p className='font-bold'>Trámites internos</p>
-          <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
-            <StickyNote2Icon className="mr-2" />
-            <span className="flex-grow">Caja chica</span>
-            <ArrowDropDownIcon />
+      {formData?.rol && (
+        ["Asistente", "Abogados", "Caja Chica", "Auditor", "Administrador", "Super Admin"].includes(formData.rol)
+      ) && (
+          <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}>
+            <PaidIcon className="mr-2" />
+            <Link href="/dashboard/balances" className='font-semibold' onClick={closeMenu}>
+              Balances
+            </Link>
           </div>
-        </>
+        )}
+      {formData?.rol && (
+        ["Caja Chica", "Auditor", "Administrador", "Super Admin"].includes(formData.rol)
+      ) && (
+          <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/clients')}`}>
+            <PeopleIcon className="mr-2" />
+            <Link href="/dashboard/clients" className='font-semibold' onClick={closeMenu}>
+              Clientes
+            </Link>
+          </div>
+        )}
+      {formData?.rol && (
+        ["Auditor", "Administrador", "Super Admin"].includes(formData.rol)
+      ) && (
+          <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/users')}`}>
+            <PeopleIcon className="mr-2" />
+            <Link href="/dashboard/users" className='font-semibold' onClick={closeMenu}>
+              Usuarios
+            </Link>
+          </div>
+        )}
+      {/* {formData?.rol && formData.rol >= 35 && ( */}
+      <>
+        <p className='font-bold'>Trámites internos</p>
+        <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
+          <StickyNote2Icon className="mr-2" />
+          <span className="flex-grow">Caja chica</span>
+          <ArrowDropDownIcon />
+        </div>
+      </>
       {/* )} */}
       {dropdownOpenCC && (
         <div className="ml-6 transition-all">
