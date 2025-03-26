@@ -775,30 +775,34 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           </button>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 text-center">
-          <a
-            href="https://panamalegalgroup.com/abogadosdefamiliapanama/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
-          >
-            Acerca de las<br />Pensiones Alimenticias
-          </a>
-          <a
-            href="/request/consulta-propuesta"
-            className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
-          >
-            Solicitar Propuesta<br />o Consulta Legal
-          </a>
-          <a
-            href="https://panamalegalgroup.com/contactenos/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
-          >
-            Contáctanos
-          </a>
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 text-center">
+            <Link
+              href="https://panamalegalgroup.com/abogadosdefamiliapanama/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
+            >
+              Acerca de las
+              <br />
+              Pensiones Alimenticias
+            </Link>
+            <Link
+              href="/request/consulta-propuesta"
+              className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
+            >
+              Solicitar Propuesta
+              <br />
+              o Consulta Legal
+            </Link>
+            <Link
+              href="https://panamalegalgroup.com/contactenos/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
+            >
+              Contáctanos
+            </Link>
+          </div>
 
       </form>
     </div>
