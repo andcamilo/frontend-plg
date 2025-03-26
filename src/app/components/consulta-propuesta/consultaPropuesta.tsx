@@ -1091,7 +1091,10 @@ const ConsultaPropuesta: React.FC = () => {
             </p>
 
             <p className="text-white mt-4 texto_justificado">
-                Si tienes alguna duda de nuestros servicios, pueden contactarnos a: <a className='text-blue-500' href="mailto:info@panamalegalgroup.com">info@panamalegalgroup.com</a>
+                Si tienes alguna duda de nuestros servicios, pueden contactarnos a:{" "}
+                <Link href="mailto:info@panamalegalgroup.com" className="text-blue-500">
+                    info@panamalegalgroup.com
+                </Link>
             </p>
 
             <p className="text-white mt-4 ">
@@ -1339,11 +1342,15 @@ const ConsultaPropuesta: React.FC = () => {
                                 disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             />
                             {formData.archivoURL && (
-                                <p className="text-sm text-blue-500">
-                                    <a href={formData.archivoURL} target="_blank" rel="noopener noreferrer">
-                                        Ver documento actual
-                                    </a>
-                                </p>
+                            <p className="text-sm text-blue-500">
+                                <Link
+                                href={formData.archivoURL}
+                                target={formData.archivoURL.startsWith('/') ? undefined : '_blank'}
+                                rel={formData.archivoURL.startsWith('/') ? undefined : 'noopener noreferrer'}
+                                >
+                                    Ver documento actual
+                                </Link>
+                            </p>
                             )}
                         </div>
 
