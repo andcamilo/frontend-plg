@@ -41,7 +41,7 @@ const Fundacion: React.FC = () => {
 
     const renderActiveForm = () => {
         switch (activeStep) {
-            case 9:
+            case 1:
                 return <FundacionBienvenido />;
             case 2:
                 return <FundacionSolicitante />;
@@ -57,7 +57,7 @@ const Fundacion: React.FC = () => {
                 return <FundacionMiembros />; 
             case 8:
                 return <FundacionProtector />; 
-            case 1:
+            case 9:
                 return <FundacionBeneficiarios />; 
             case 10:
                 return <FundacionPatrimonio />; 
