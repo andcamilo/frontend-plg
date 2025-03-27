@@ -139,7 +139,8 @@ const LegixStatistics: React.FC = () => {
 
       } else {
 
-        const solicitudesData = await getRequests(rowsPerPage, currentPage);
+        const userData = checkAuthToken();
+        const solicitudesData = await getRequests(userData?.email, rowsPerPage, currentPage);
 
         const {
           allSolicitudes = [],
@@ -169,7 +170,9 @@ const LegixStatistics: React.FC = () => {
       ) {
         solicitudesData = await getRequestsCuenta(rowsPerPage, formData.cuenta, lastVisibleCursor);
       } else {
-        solicitudesData = await getRequests(rowsPerPage, currentPage);
+        const userData = checkAuthToken();
+        solicitudesData = await getRequests(userData?.email, rowsPerPage, currentPage)
+
       }
 
       const { solicitudes, pagination } = solicitudesData;

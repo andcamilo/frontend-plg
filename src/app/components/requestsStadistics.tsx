@@ -180,7 +180,7 @@ const RequestsStatistics: React.FC = () => {
                     userId: get(user, 'solicitud.id', ""),
                 }));
 
-                // Obtener TODAS las solicitudes una sola vez al cargar
+                
                 const { solicitudes: allSolicitudes } = await getRequests(userData.email, 1000, 1);
 
 
