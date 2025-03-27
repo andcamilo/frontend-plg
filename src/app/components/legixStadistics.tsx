@@ -141,6 +141,7 @@ const LegixStatistics: React.FC = () => {
 
         const userData = checkAuthToken();
         const solicitudesData = await getRequests(userData?.email, rowsPerPage, currentPage);
+        
 
         const {
           allSolicitudes = [],
