@@ -20,7 +20,7 @@ const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): stri
     return `${day}/${month}/${year}`;
 };
 
-const Actions: React.FC<{ tipo: string, id: string, status: number, rol: string }> = ({ tipo, id, status, rol }) => {
+const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string }> = ({ tipo, id, status, rol }) => {
     const handleDelete = async () => {
         const result = await Swal.fire({
             title: '¿Estás seguro?',
@@ -44,9 +44,7 @@ const Actions: React.FC<{ tipo: string, id: string, status: number, rol: string 
                     timer: 4000,
                     showConfirmButton: false,
                 });
-                // Remove the deleted solicitud from the state instead of reloading
-                // This requires lifting the state up or using a context/state management solution
-                // For simplicity, we'll reload the page
+                // For simplicity, we reload the page
                 window.location.reload();
             } catch (error) {
                 console.error('Error al eliminar la solicitud:', error);
@@ -75,8 +73,15 @@ const Actions: React.FC<{ tipo: string, id: string, status: number, rol: string 
         }
     };
 
-    const canShowDelete = ((status === 1 && (rol === "Cliente recurrente" || rol === "Cliente")) || (rol !== "Cliente recurrente" && rol !== "Cliente"));
-    const canShowPagar = ((status < 19 && (rol === "Cliente recurrente" || rol === "Cliente")) || (rol !== "Cliente recurrente" && rol !== "Cliente"));
+    // e.g. only show Delete if status=1 for certain roles
+    const canShowDelete =
+        (status === 1 && (rol === "Cliente recurrente" || rol === "Cliente")) ||
+        (rol !== "Cliente recurrente" && rol !== "Cliente");
+
+    // e.g. can pay if status<19 or user not a client, etc.
+    const canShowPagar =
+        (status < 19 && (rol === "Cliente recurrente" || rol === "Cliente")) ||
+        (rol !== "Cliente recurrente" && rol !== "Cliente");
 
     return (
         <div className="flex gap-2">
@@ -116,7 +121,7 @@ const RequestsStatistics: React.FC = () => {
         userId: "",
     });
 
-    // Estados de paginación
+    // For local (client-side) pagination, we'll keep separate page states
     const [currentPageEnProceso, setCurrentPageEnProceso] = useState(1);
     const [paginationEnProceso, setPaginationEnProceso] = useState({
         hasPrevPage: false,
@@ -131,6 +136,7 @@ const RequestsStatistics: React.FC = () => {
         totalPages: 1,
     });
 
+    // you can set this to 10, 20, etc. for the local slicing
     const [rowsPerPage] = useState(10);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -139,28 +145,32 @@ const RequestsStatistics: React.FC = () => {
     const [filterStatus, setFilterStatus] = useState('');
     const [filterDate, setFilterDate] = useState('');
     const [filterExpediente, setFilterExpediente] = useState('');
+    // you mention "hayFiltrosActivos" but it's not used currently
     const hayFiltrosActivos = filterTipo || filterStatus || filterDate || filterExpediente;
 
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             setError(null);
+
             try {
                 const userData = checkAuthToken();
                 if (!userData) {
                     throw new Error("User is not authenticated.");
                 }
-                setFormData((prevData) => ({
+                // store user info
+                setFormData(prevData => ({
                     ...prevData,
                     email: userData.email,
                     cuenta: userData.user_id,
                 }));
 
+                // fetch user info to get role
                 const userResponse = await axios.get('/api/get-user-cuenta', {
                     params: { userCuenta: userData.user_id },
                 });
-
                 const user = userResponse.data;
+
                 const rawRole = get(user, 'solicitud.rol', 0);
                 const roleMapping: { [key: number]: string } = {
                     99: "Super Admin",
@@ -172,19 +182,25 @@ const RequestsStatistics: React.FC = () => {
                     17: "Cliente recurrente",
                     10: "Cliente",
                 };
-                const stringRole = typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || "Desconocido";
+                const stringRole =
+                    typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || "Desconocido";
 
-                setFormData((prevData) => ({
+                setFormData(prevData => ({
                     ...prevData,
                     rol: stringRole,
                     userId: get(user, 'solicitud.id', ""),
                 }));
 
-                
-                const { solicitudes: allSolicitudes } = await getRequests(userData.email, 1000, 1);
+                // *** HERE we fetch a big chunk: limit=1000, page=1, etc. (just once)
+                // so we have everything on the client
+                const { solicitudes: entireSolicitudes } = await getRequests(
+                    userData.email, // though you never use email on the server?
+                    1000,           // large limit
+                    1               // always page 1
+                );
 
+                setSolicitudes(entireSolicitudes);
 
-                setSolicitudes(allSolicitudes);
             } catch (err: any) {
                 console.error('Error fetching data:', err);
                 setError(err.message || 'An error occurred while fetching data.');
@@ -196,11 +212,15 @@ const RequestsStatistics: React.FC = () => {
         fetchData();
     }, []);
 
+    // helper function to apply filters
     const getSolicitudesFiltradas = (array: any[]) => {
         return array
+            // If user is "Cliente", only show docs where solicitud.cuenta === userData.cuenta
             .filter(solicitud =>
-                (!(formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente') || solicitud.cuenta === formData.cuenta)
+                !(formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente')
+                || solicitud.cuenta === formData.cuenta
             )
+            // apply the local filters
             .filter(({ tipo, date, status, expediente }) => {
                 const tipoMapping: { [key: string]: string } = {
                     "propuesta-legal": "Propuesta Legal",
@@ -227,131 +247,110 @@ const RequestsStatistics: React.FC = () => {
                     (filterTipo ? tipoTexto === filterTipo : true) &&
                     (filterStatus ? status.toString() === filterStatus : true) &&
                     (filterDate ? formattedDate === inputDate : true) &&
-                    (filterExpediente ? expediente?.toLowerCase().includes(filterExpediente.toLowerCase()) : true)
+                    (filterExpediente
+                        ? expediente?.toLowerCase().includes(filterExpediente.toLowerCase())
+                        : true)
                 );
             })
             .sort((a, b) => b.date._seconds - a.date._seconds);
     };
 
-    // Aplicar paginación
+    // separate "en proceso" vs. "finalizadas"
     const solicitudesFiltradasEnProceso = getSolicitudesFiltradas(
         solicitudes.filter(solicitud => solicitud.status !== 70)
     );
-
     const solicitudesFiltradasFinalizadas = getSolicitudesFiltradas(
         solicitudes.filter(solicitud => solicitud.status === 70)
     );
 
+    // do local "slice" for en proceso
     const paginatedSolicitudesEnProceso = solicitudesFiltradasEnProceso.slice(
         (currentPageEnProceso - 1) * rowsPerPage,
         currentPageEnProceso * rowsPerPage
     );
-
+    // local "slice" for finalizadas
     const paginatedSolicitudesFinalizadas = solicitudesFiltradasFinalizadas.slice(
         (currentPageFinalizadas - 1) * rowsPerPage,
         currentPageFinalizadas * rowsPerPage
     );
 
+    // update local pagination data whenever pages or filters change
     useEffect(() => {
+        // recalc "en proceso" pagination
         setPaginationEnProceso({
             hasPrevPage: currentPageEnProceso > 1,
-            hasNextPage: currentPageEnProceso < Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage),
+            hasNextPage: currentPageEnProceso <
+                Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage),
             totalPages: Math.max(1, Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage)),
         });
+    }, [currentPageEnProceso, solicitudesFiltradasEnProceso, rowsPerPage]);
 
+    useEffect(() => {
+        // recalc "finalizadas" pagination
         setPaginationFinalizadas({
             hasPrevPage: currentPageFinalizadas > 1,
-            hasNextPage: currentPageFinalizadas < Math.ceil(solicitudesFiltradasFinalizadas.length / rowsPerPage),
+            hasNextPage: currentPageFinalizadas <
+                Math.ceil(solicitudesFiltradasFinalizadas.length / rowsPerPage),
             totalPages: Math.max(1, Math.ceil(solicitudesFiltradasFinalizadas.length / rowsPerPage)),
         });
-    }, []);
+    }, [currentPageFinalizadas, solicitudesFiltradasFinalizadas, rowsPerPage]);
 
-    // Transformar datos para la tabla
+    // transform data for the table
     const transformData = (solicitudes: any[]) => {
-        return solicitudes
-            .filter(({ tipo, date, status, expediente }) => {
-                const tipoMapping: { [key: string]: string } = {
-                    "propuesta-legal": "Propuesta Legal",
-                    "consulta-legal": "Propuesta Legal",
-                    "consulta-escrita": "Consulta Escrita",
-                    "consulta-virtual": "Consulta Virtual",
-                    "consulta-presencial": "Consulta Presencial",
-                    "new-fundacion-interes-privado": "Fundación de Interés Privado",
-                    "new-fundacion": "Fundación de Interés Privado",
-                    "new-sociedad-empresa": "Sociedad / Empresa",
-                    "menores-al-extranjero": "Salida de Menores al Extranjero",
-                    "pension-alimenticia": "Pensión Alimenticia",
-                    "pension": "Pensión Alimenticia",
-                    "tramite-general": "Trámite General",
-                    "pension-desacato": "Pensión Desacato",
-                    "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
-                };
+        return solicitudes.map(({ id, tipo, emailSolicita, date, status, expediente, abogados }) => {
+            const statusLabels: { [key: number]: string } = {
+                0: "Rechazada",
+                1: "Borrador",
+                10: "Enviada, pendiente de pago",
+                12: "Aprobada",
+                19: "Confirmando pago",
+                20: "Pagada",
+                30: "En proceso",
+                70: "Finalizada",
+            };
 
-                const tipoTexto = tipoMapping[tipo] || tipo;
-                const formattedDate = formatDate(date);
-                const inputDate = filterDate ? filterDate.split('-').reverse().join('/') : '';
+            const statusClasses: { [key: number]: string } = {
+                0: "status-rechazada",
+                1: "status-borrador",
+                10: "status-enviada",
+                12: "status-aprobada",
+                19: "status-confirmando-pago",
+                20: "status-pagada",
+                30: "status-en-proceso",
+                70: "status-finalizada",
+            };
 
-                return (
-                    (filterTipo ? tipoTexto === filterTipo : true) &&
-                    (filterStatus ? status.toString() === filterStatus : true) &&
-                    (filterDate ? formattedDate === inputDate : true) &&
-                    (filterExpediente ? expediente?.toLowerCase().includes(filterExpediente.toLowerCase()) : true)
-                );
-            })
-            .map(({ id, tipo, emailSolicita, date, status, expediente, abogados }) => {
-                const statusLabels: { [key: number]: string } = {
-                    0: "Rechazada",
-                    1: "Borrador",
-                    10: "Enviada, pendiente de pago",
-                    12: "Aprobada",
-                    19: "Confirmando pago",
-                    20: "Pagada",
-                    30: "En proceso",
-                    70: "Finalizada",
-                };
+            const tipoMapping: { [key: string]: string } = {
+                "propuesta-legal": "Propuesta Legal",
+                "consulta-legal": "Propuesta Legal",
+                "consulta-escrita": "Consulta Escrita",
+                "consulta-virtual": "Consulta Virtual",
+                "consulta-presencial": "Consulta Presencial",
+                "new-fundacion-interes-privado": "Fundación de Interés Privado",
+                "new-fundacion": "Fundación de Interés Privado",
+                "new-sociedad-empresa": "Sociedad / Empresa",
+                "menores-al-extranjero": "Salida de Menores al Extranjero",
+                "pension-alimenticia": "Pensión Alimenticia",
+                "pension": "Pensión Alimenticia",
+                "tramite-general": "Trámite General",
+                "pension-desacato": "Pensión Desacato",
+                "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
+            };
 
-                const statusClasses: { [key: number]: string } = {
-                    0: "status-rechazada",
-                    1: "status-borrador",
-                    10: "status-enviada",
-                    12: "status-aprobada",
-                    19: "status-confirmando-pago",
-                    20: "status-pagada",
-                    30: "status-en-proceso",
-                    70: "status-finalizada",
-                };
-
-                const tipoMapping: { [key: string]: string } = {
-                    "propuesta-legal": "Propuesta Legal",
-                    "consulta-legal": "Propuesta Legal",
-                    "consulta-escrita": "Consulta Escrita",
-                    "consulta-virtual": "Consulta Virtual",
-                    "consulta-presencial": "Consulta Presencial",
-                    "new-fundacion-interes-privado": "Fundación de Interés Privado",
-                    "new-fundacion": "Fundación de Interés Privado",
-                    "new-sociedad-empresa": "Sociedad / Empresa",
-                    "menores-al-extranjero": "Salida de Menores al Extranjero",
-                    "pension-alimenticia": "Pensión Alimenticia",
-                    "pension": "Pensión Alimenticia",
-                    "tramite-general": "Trámite General",
-                    "pension-desacato": "Pensión Desacato",
-                    "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
-                };
-
-                return {
-                    Tipo: tipoMapping[tipo] || tipo,
-                    Fecha: formatDate(date),
-                    Email: emailSolicita,
-                    Estatus: (
-                        <span className={`status-badge ${statusClasses[status]}`}>
-                            {statusLabels[status]}
-                        </span>
-                    ),
-                    Expediente: expediente,
-                    Abogado: abogados.map((abogado: any) => abogado.nombre).join(', '),
-                    Opciones: <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />
-                };
-            });
+            return {
+                Tipo: tipoMapping[tipo] || tipo,
+                Fecha: formatDate(date),
+                Email: emailSolicita,
+                Estatus: (
+                    <span className={`status-badge ${statusClasses[status]}`}>
+                        {statusLabels[status]}
+                    </span>
+                ),
+                Expediente: expediente,
+                Abogado: abogados.map((abogado: any) => abogado.nombre).join(', '),
+                Opciones: <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />,
+            };
+        });
     };
 
     const tiposDisponibles = [
@@ -378,6 +377,7 @@ const RequestsStatistics: React.FC = () => {
         { value: 70, label: "Finalizada" },
     ];
 
+    // Render
     return (
         <div className="flex flex-col gap-4 p-8 w-full">
             {isLoading ? (
@@ -386,6 +386,7 @@ const RequestsStatistics: React.FC = () => {
                 <div className="text-red-500">{error}</div>
             ) : (
                 <>
+                    {/* Filters */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <select
                             className="w-full p-2 bg-gray-800 text-white rounded-lg"
@@ -445,6 +446,7 @@ const RequestsStatistics: React.FC = () => {
                         />
                     </div>
 
+                    {/* Table of "En proceso" */}
                     <TableWithRequests
                         data={transformData(paginatedSolicitudesEnProceso)}
                         rowsPerPage={rowsPerPage}
@@ -456,6 +458,7 @@ const RequestsStatistics: React.FC = () => {
                         onPageChange={setCurrentPageEnProceso}
                     />
 
+                    {/* Table of "Finalizadas" */}
                     <TableWithRequests
                         data={transformData(paginatedSolicitudesFinalizadas)}
                         rowsPerPage={rowsPerPage}
