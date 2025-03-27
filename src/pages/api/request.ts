@@ -9,16 +9,10 @@ export const getRequests = async (email, limit = 10, page = 1) => {
 
   try {
     console.log("🚀 ~ getRequests ~ email:", email)
-    let response;
-    if (email === 'jbecerra@panamalegalgroup.com') {
-      response = await axios.get(getRequestsUrl, {
+    const response = await axios.get(getRequestsUrl, {
         params: { limit, page },
       });
-    } else {
-      response = await axios.get(getRequestsByEmailUrl, {
-        params: { email },
-      });
-    }
+
 
     const data = response.data;
     const solicitudes = get(data, 'solicitudes', []);

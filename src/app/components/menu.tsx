@@ -205,16 +205,18 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
             </Link>
           </div>
         )}
-      {/* {formData?.rol && formData.rol >= 35 && ( */}
-      <>
-        <p className='font-bold'>Trámites internos</p>
-        <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
-          <StickyNote2Icon className="mr-2" />
-          <span className="flex-grow">Caja chica</span>
-          <ArrowDropDownIcon />
-        </div>
-      </>
-      {/* )} */}
+      {formData?.rol && (
+        ["Asistente", "Abogados", "Caja Chica", "Auditor", "Administrador", "Super Admin"].includes(formData.rol)
+      ) && (
+          <>
+            <p className='font-bold'>Trámites internos</p>
+            <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
+              <StickyNote2Icon className="mr-2" />
+              <span className="flex-grow">Caja chica</span>
+              <ArrowDropDownIcon />
+            </div>
+          </>
+        )}
       {dropdownOpenCC && (
         <div className="ml-6 transition-all">
           <Link href="/dashboard/disbursement" className={`block mb-2  ${isActive('/dashboard/disbursement')}`} onClick={closeMenu}>
