@@ -61,20 +61,20 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
   const getEditUrl = () => {
     switch (tipo) {
       case 'new-fundacion':
-        return `/request/fundacion?id=${id}`;
+        return `/request/fundacion/${id}`;
       case 'new-sociedad-empresa':
-        return `/request/sociedad-empresa?id=${id}`;
+        return `/request/sociedad-empresa/${id}`;
       case 'menores-al-extranjero':
-        return `/request/menores-extranjero?id=${id}`;
+        return `/request/menores-extranjero/${id}`;
       case 'pension':
-        return `/request/pension-alimenticia?id=${id}`;
+        return `/request/pension-alimenticia/${id}`;
       case 'tramite-general':
-        return `/dashboard/tramite-general?id=${id}`;
+        return `/dashboard/tramite-general/${id}`;
       case 'cliente-recurrente':
       case 'solicitud-cliente-recurrente':
-        return `/request/corporativo?id=${id}`;
+        return `/request/corporativo/${id}`;
       default:
-        return `/request/consulta-propuesta?id=${id}`;
+        return `/request/consulta-propuesta/${id}`;
     }
   };
 
@@ -89,14 +89,14 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
 
   return (
     <div className="flex gap-2">
-      <Link href={`/dashboard/request?id=${id}`}>
+      <Link href={`/dashboard/request/${id}`}>
         <VisibilityIcon className="cursor-pointer" titleAccess="Ver" />
       </Link>
       <Link href={getEditUrl()}>
         <EditIcon className="cursor-pointer" titleAccess="Editar" />
       </Link>
       {canShowPagar && (
-        <Link href={`/dashboard/checkout?id=${id}`}>
+        <Link href={`/dashboard/checkout/${id}`}>
           <AttachMoneyIcon className="cursor-pointer" titleAccess="Pagar" />
         </Link>
       )}

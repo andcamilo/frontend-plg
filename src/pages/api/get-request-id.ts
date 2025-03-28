@@ -3,27 +3,22 @@ import { backendBaseUrl, backendEnv } from '@utils/env';
 import get from 'lodash/get';
 
 export default async function handler(req, res) {
-  // Allow only GET requests
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Only GET requests are allowed' });
   }
 
-  // Extract solicitudId from query parameters
   const { solicitudId } = req.query;
+  console.log("🚀 ~ handler ~ solicitudId:", solicitudId)
 
-  // Validate if solicitudId is provided
   if (!solicitudId) {
     return res.status(400).json({ message: 'Solicitud ID is required' });
   }
 
   try {
-    // Lambda function URL to fetch the request by ID
     const lambdaUrl = `${backendBaseUrl}/${backendEnv}/get-request-id/${solicitudId}`;
 
-    // Make the request to your AWS Lambda function
     const response = await axios.get(lambdaUrl);
 
-    // Safely access the solicitud data using lodash's get
     const solicitud = get(response, 'data.solicitud', null);
 
     // Check if solicitud is found

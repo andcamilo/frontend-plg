@@ -84,7 +84,7 @@ const Checkout: React.FC = () => {
 
     useEffect(() => {
         if (id) {
-            // Usa el ID como necesites, por ejemplo, para obtener los detalles de la solicitud
+            
             console.log('ID del registro:', id);
         }
     }, [id]);
@@ -92,16 +92,18 @@ const Checkout: React.FC = () => {
     useEffect(() => {
         const fetchSolicitud = async () => {
             if (!id) return;
-
+            
             try {
+                console.log("🚀 ~ fetchSolicitud ~ id:", id)
                 const solicitudResponse = await axios.get('/api/get-request-id', {
                     params: { solicitudId: id },
                 });
+                console.log("🚀 ~ fetchSolicitud ~ solicitudResponse:", solicitudResponse)
 
-                console.log('Solicitud Data:', solicitudResponse.data); // Verifica los datos
+                console.log('Solicitud Data:', solicitudResponse.data); 
                 setSolicitudData(solicitudResponse.data);
 
-                // Convertir solicitudData.status a número antes de pasarlo a getStatusName
+        
                 const statusNumber = parseInt(solicitudResponse.data.status, 10);
                 setStatusName(getStatusName(statusNumber));
 
@@ -109,6 +111,7 @@ const Checkout: React.FC = () => {
                 console.error('Error fetching data:', error);
             }
         };
+        
 
         fetchSolicitud();
     }, [id]);
