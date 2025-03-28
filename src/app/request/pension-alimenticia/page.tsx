@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useState, useContext } from 'react';
 import HomeLayout from '@components/homeLayout';
 import PensionAlimenticiaBienvenido from '@components/pension-alimenticia/pensionAlimenticiaBienvenido';
