@@ -1,16 +1,16 @@
 "use client"
 import React from 'react';
-import RequestDashboard from '@components/dashboard/client';
+import ClientsStatistics from '@components/dashboard/clientsStadistics';
 
-const Request: React.FC = () => {
+const Clients: React.FC = () => {
   return (
       <div className="p-4">
         <h1 className="text-4xl font-bold text-white pl-8 mb-4">
-          Clienteeeee
+          Clientes
         </h1>
-        <RequestDashboard />
+        <ClientsStatistics />
       </div>
   );
 }
 
-export default Request;
+export default Clients;

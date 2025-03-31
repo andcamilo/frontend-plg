@@ -8,6 +8,7 @@ interface InvoiceProps {
 }
 
 const Invoice: React.FC<InvoiceProps> = ({ id }) => {
+  console.log("🚀 ~ id:", id)
   const [invoice, setInvoice] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,6 +19,7 @@ const Invoice: React.FC<InvoiceProps> = ({ id }) => {
         const response = await axios.get(
           `${backendBaseUrl}/${backendEnv}/getInvoice/${id}`
         );
+        console.log("🚀 ~ fetchInvoice ~ response:", response)
         setInvoice(response.data.data.invoice);
       } catch (error) {
         console.error("Error fetching invoice:", error);
@@ -52,7 +54,6 @@ const Invoice: React.FC<InvoiceProps> = ({ id }) => {
           Factura #{invoice.invoice_number}
         </h2>
 
-        {/* Encabezado / Datos principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <label className="block text-gray-300">ID de Factura</label>
@@ -118,7 +119,6 @@ const Invoice: React.FC<InvoiceProps> = ({ id }) => {
           </div>
         </div>
 
-        {/* Items / Conceptos */}
         <div className="mt-8">
           <h3 className="text-lg font-semibold text-white mb-3">
             Items / Conceptos
@@ -149,7 +149,6 @@ const Invoice: React.FC<InvoiceProps> = ({ id }) => {
           </div>
         </div>
 
-        {/* Totales */}
         <div className="mt-6 flex flex-col items-end space-y-1">
           <div className="flex justify-between w-full md:w-1/2 text-white">
             <span className="text-gray-300">Subtotal:</span>
@@ -186,7 +185,6 @@ const Invoice: React.FC<InvoiceProps> = ({ id }) => {
           </div>
         </div>
 
-        {/* Notas y Términos */}
         {invoice.notes && (
           <div className="mt-6">
             <h3 className="text-lg font-semibold text-white mb-2">Notas</h3>
