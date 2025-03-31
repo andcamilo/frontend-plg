@@ -105,7 +105,8 @@ const FundacionSolicitante: React.FC = () => {
         if (store.request) {
             const nombreCompleto = get(store.request, 'nombreSolicita', '');
             const telefono = get(store.request, 'telefonoSolicita', '');
-            const emailSolicita = get(store.request, 'emailSolicita', '');
+            const email = get(store.request, 'emailSolicita', '');
+            const confirmEmail = get(store.request, 'emailSolicita', '');
             const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
 
             // Actualizar el formData con los campos de la raíz y "fundacion"
@@ -113,7 +114,8 @@ const FundacionSolicitante: React.FC = () => {
                 ...prevFormData,
                 nombreCompleto,
                 telefono,
-                emailSolicita,
+                email,
+                confirmEmail,
                 cedulaPasaporte,
             }));
         }
