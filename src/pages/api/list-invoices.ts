@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const invoices = response.data?.data?.invoices || [];
 
     const filteredInvoices = invoices.map((invoice: any) => ({
-      invoice_id: invoice.invoice_number,
+      invoice_id: invoice.invoice_id,
       customer_id: invoice.customer_id,
       customer_name: invoice.customer_name,
       invoice_number: invoice.invoice_number,

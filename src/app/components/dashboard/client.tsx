@@ -27,13 +27,13 @@ const Client: React.FC = () => {
                     params: { userId: id },
                 });
 
-                const user = response.data;
-                console.log("Cliente ", user)
+                const user = response.data.user;
+                console.log("🚀 ~ fetchUserData ~ user:", user)
                 setFormData({
-                    nombre: user.solicitud.nombre || '',
-                    email: user.solicitud.email || '',
-                    telefono: user.solicitud.telefonoSolicita || '', 
-                    cedulaPasaporte: user.solicitud.cedulaPasaporte || '', 
+                    nombre: user.nombre || '',
+                    email: user.email || '',
+                    telefono: user.telefonoSolicita || '', 
+                    cedulaPasaporte: user.cedulaPasaporte || '', 
                 });
             } catch (error) {
                 console.error('Error fetching user data:', error);
