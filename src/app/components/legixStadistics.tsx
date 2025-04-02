@@ -76,6 +76,33 @@ const LegixStatistics: React.FC = () => {
     rol: 0,
   });
 
+  const getSolicitudesFiltradasPorRol = (solicitudes: any[]) => {
+    return solicitudes.filter((solicitud) => {
+      const rol = formData.rol;
+      const cuenta = formData.cuenta;
+
+      const esCliente =
+        (typeof rol === 'number' && rol < 20) ||
+        rol === 'Cliente' || rol === 'Cliente recurrente';
+
+      const esAbogadoOAsistente =
+        rol === 'Abogados' || rol === 'Asistente' || rol === 40 || rol === 35;
+
+      if (esCliente) {
+        return solicitud.cuenta === cuenta;
+      }
+
+      if (esAbogadoOAsistente) {
+        const abogadoAsignado = (solicitud.abogados || []).some((abogado: any) =>
+          abogado?.id === cuenta || abogado?._id === cuenta
+        );
+        return solicitud.cuenta === cuenta || abogadoAsignado;
+      }
+
+      // Otros roles (admin, etc.) ven todo
+      return true;
+    });
+  };
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -141,7 +168,7 @@ const LegixStatistics: React.FC = () => {
 
         const userData = checkAuthToken();
         const solicitudesData = await getRequests(userData?.email, rowsPerPage, currentPage);
-        
+
 
         const {
           allSolicitudes = [],
@@ -188,13 +215,9 @@ const LegixStatistics: React.FC = () => {
   };
 
   useEffect(() => {
-    if (formData.cuenta) {
-      console.log("✔️ Cuenta actualizada correctamente:", formData.cuenta);
-
-      // Cargar todas las solicitudes solo una vez
+    if (formData.cuenta && formData.rol !== 0) {
+      console.log("✔️ Rol y cuenta listos:", formData.rol, formData.cuenta);
       fetchAllSolicitudes();
-
-      // Cargar los datos paginados para la tabla
       fetchPaginatedSolicitudes(true);
     }
   }, [formData.cuenta, formData.rol]);
@@ -244,10 +267,19 @@ const LegixStatistics: React.FC = () => {
     70: "status-finalizada",
   };
 
-  const solicitudFinalizada = (allSolicitudes || []).filter((solicitud) => parseInt(solicitud.status) === 70).length;
-  const solicitudEnProceso = (allSolicitudes || []).filter((solicitud) => parseInt(solicitud.status) !== 70).length;
+  const solicitudesFiltradas = getSolicitudesFiltradasPorRol(allSolicitudes);
+  const solicitudFinalizada = solicitudesFiltradas.filter(
+    (solicitud) => parseInt(solicitud.status) === 70
+  ).length;
 
-  const solicitudesFinalizadas = allSolicitudes
+  const solicitudEnProceso = solicitudesFiltradas.filter(
+    (solicitud) => {
+      const status = parseInt(solicitud.status);
+      return status !== 70 && status !== 1; 
+    }
+  ).length;
+
+  const solicitudesFinalizadas = getSolicitudesFiltradasPorRol(allSolicitudes)
     .filter((solicitud) => parseInt(solicitud.status) === 70)
     .map(({ tipo, emailSolicita, date, status }) => ({
       Tipo: tipoMapping[tipo] || tipo,
@@ -259,7 +291,8 @@ const LegixStatistics: React.FC = () => {
         </span>
       ),
     }));
-  const solicitudesEnProceso = allSolicitudes
+
+  const solicitudesEnProceso = getSolicitudesFiltradasPorRol(allSolicitudes)
     .filter((solicitud) => parseInt(solicitud.status) !== 70)
     .map(({ tipo, emailSolicita, date, status }) => ({
       Tipo: tipoMapping[tipo] || tipo,
@@ -271,6 +304,12 @@ const LegixStatistics: React.FC = () => {
         </span>
       ),
     }));
+
+  const tipoCountsFiltrados: { [key: string]: number } = {};
+  solicitudesFiltradas.forEach((solicitud) => {
+    tipoCountsFiltrados[solicitud.tipo] = (tipoCountsFiltrados[solicitud.tipo] || 0) + 1;
+  });
+
   // Paginación de solicitudes finalizadas
   const paginatedSolicitudesEnProceso = solicitudesEnProceso.slice(
     (currentPageEnProceso - 1) * rowsPerPage,
@@ -296,13 +335,13 @@ const LegixStatistics: React.FC = () => {
       hasNextPage: currentPageFinalizadas < Math.ceil(solicitudesFinalizadas.length / rowsPerPage),
       totalPages: Math.ceil(solicitudesFinalizadas.length / rowsPerPage),
     });
-  }, [  
+  }, [
     solicitudesEnProceso.length,
     solicitudesFinalizadas.length,
     currentPageEnProceso,
     currentPageFinalizadas,
     rowsPerPage
-     ]);
+  ]);
 
 
   useEffect(() => {
@@ -319,25 +358,25 @@ const LegixStatistics: React.FC = () => {
   return (
     <div className="flex flex-col gap-4 p-8 w-full">
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 w-[97%]">
-        <HomeBox title="Sociedades" number={tipoCounts['new-sociedad-empresa'] || 0} color="bg-[#9694FF]" />
+        <HomeBox title="Sociedades" number={tipoCountsFiltrados['new-sociedad-empresa'] || 0} color="bg-[#9694FF]" />
         <HomeBox
           title="Fundaciones"
-          number={(tipoCounts['new-fundacion-interes-privado'] || 0) + (tipoCounts['new-fundacion'] || 0)}
+          number={(tipoCountsFiltrados['new-fundacion-interes-privado'] || 0) + (tipoCountsFiltrados['new-fundacion'] || 0)}
           color="bg-[#57caeb]"
         />
         <HomeBox
           title="Propuesta Legal"
-          number={(tipoCounts['Propuesta-Legal'] || 0) + (tipoCounts['consulta-legal'] || 0) + (tipoCounts['propuesta-legal'] || 0)}
+          number={(tipoCountsFiltrados['Propuesta-Legal'] || 0) + (tipoCountsFiltrados['consulta-legal'] || 0) + (tipoCountsFiltrados['propuesta-legal'] || 0)}
           color="bg-[#5ddab4]"
         />
-        <HomeBox title="Consulta Escrita" number={(tipoCounts['Consulta-Escrita'] || 0) + (tipoCounts['consulta-escrita'] || 0)} color="bg-[#ff7976]" />
-        <HomeBox title="Consulta Virtual" number={(tipoCounts['Consulta-Virtual'] || 0) + (tipoCounts['consulta-virtual'] || 0)} color="bg-black" />
-        <HomeBox title="Consulta Presencial" number={(tipoCounts['Consulta-Presencial'] || 0) + (tipoCounts['consulta-presencial'] || 0) } color="bg-[#f4a261]" />
-        <HomeBox title="Tramite General" number={tipoCounts['tramite-general'] || 0} color="bg-[#e76f51]" />
-        <HomeBox title="Pensiones" number={(tipoCounts['pension-alimenticia'] || 0) + (tipoCounts['pension'] || 0)} color="bg-[#2a9d8f]" />
-        <HomeBox title="Pension Desacato" number={tipoCounts['pension-desacato'] || 0} color="bg-[#264653]" />
-        <HomeBox title="Salida de Menores al Extranjero" number={tipoCounts['menores-al-extranjero'] || 0} color="bg-[#e9c46a]" />
-        <HomeBox title="Cliente Recurrente" number={tipoCounts['solicitud-cliente-recurrente'] || 0} color="bg-[#264653]" />
+        <HomeBox title="Consulta Escrita" number={(tipoCountsFiltrados['Consulta-Escrita'] || 0) + (tipoCountsFiltrados['consulta-escrita'] || 0)} color="bg-[#ff7976]" />
+        <HomeBox title="Consulta Virtual" number={(tipoCountsFiltrados['Consulta-Virtual'] || 0) + (tipoCountsFiltrados['consulta-virtual'] || 0)} color="bg-black" />
+        <HomeBox title="Consulta Presencial" number={(tipoCountsFiltrados['Consulta-Presencial'] || 0) + (tipoCountsFiltrados['consulta-presencial'] || 0)} color="bg-[#f4a261]" />
+        <HomeBox title="Tramite General" number={tipoCountsFiltrados['tramite-general'] || 0} color="bg-[#e76f51]" />
+        <HomeBox title="Pensiones" number={(tipoCountsFiltrados['pension-alimenticia'] || 0) + (tipoCountsFiltrados['pension'] || 0)} color="bg-[#2a9d8f]" />
+        <HomeBox title="Pension Desacato" number={tipoCountsFiltrados['pension-desacato'] || 0} color="bg-[#264653]" />
+        <HomeBox title="Salida de Menores al Extranjero" number={tipoCountsFiltrados['menores-al-extranjero'] || 0} color="bg-[#e9c46a]" />
+        <HomeBox title="Cliente Recurrente" number={tipoCountsFiltrados['solicitud-cliente-recurrente'] || 0} color="bg-[#264653]" />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
         <div className="lg:col-span-2">
