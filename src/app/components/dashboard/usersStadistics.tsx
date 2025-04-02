@@ -46,7 +46,7 @@ const Actions: React.FC<{ id: string }> = ({ id }) => {
 
   return (
     <div className="flex gap-2">
-      <Link href={`dashboard/user/${id}`}>
+      <Link href={`/dashboard/user/${id}`}>
         <EditIcon className="cursor-pointer" titleAccess="Editar" />
       </Link>
       <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />

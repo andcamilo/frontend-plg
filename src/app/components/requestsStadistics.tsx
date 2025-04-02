@@ -217,12 +217,24 @@ const RequestsStatistics: React.FC = () => {
   const getSolicitudesFiltradas = (array: any[]) => {
     return array
       // If user is "Cliente" or "Cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
-      .filter(
-        (solicitud) =>
-          !(
-            formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente'
-          ) || solicitud.cuenta === formData.cuenta
-      )
+      .filter((solicitud) => {
+        const esCliente = formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente';
+        const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
+
+        if (esCliente) {
+          return solicitud.cuenta === formData.cuenta;
+        }
+
+        if (esAsistenteOAbogado) {
+          const abogadoAsignado = (solicitud.abogados || []).some((abogado: any) =>
+            abogado.id === formData.userId || abogado._id === formData.userId
+          );
+          return solicitud.cuenta === formData.cuenta || abogadoAsignado;
+        }
+
+        // Para todos los demás roles (Admin, etc.)
+        return true;
+      })
       // apply local filters
       .filter(({ tipo, date, status, expediente }) => {
         const tipoMapping: { [key: string]: string } = {

@@ -63,8 +63,8 @@ const User: React.FC = () => {
                     params: { userId: id },
                 });
 
-                const user = response.data;
-
+                const user = response.data.user;
+                console.log("USER ", user)
                 const rolLabels = {
                     99: "Super Administrador",
                     90: "Administrador ",
@@ -76,15 +76,15 @@ const User: React.FC = () => {
                     17: "Cliente recurrente",
                 };
                 // Mapear el rol numérico al valor de rolLabels
-                const mappedRol = rolLabels[user.solicitud.rol] || '';
+                const mappedRol = rolLabels[user.rol] || '';
 
                 setFormData({
-                    nombre: user.solicitud.nombre || '',
-                    email: user.solicitud.email || '',
-                    telefono: user.solicitud.telefonoSolicita || '',
+                    nombre: user.nombre || '',
+                    email: user.email || '',
+                    telefono: user.telefonoSolicita || '',
                     rol: mappedRol,
-                    archivoURL: user.solicitud.adjuntoFotoPerfil || "",
-                    cedulaPasaporte: user.solicitud.cedulaPasaporte || "",
+                    archivoURL: user.adjuntoFotoPerfil || "",
+                    cedulaPasaporte: user.cedulaPasaporte || "",
                 });
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -264,7 +264,7 @@ const User: React.FC = () => {
                 if (responseDataUpdate.status === 200) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Usuario 22 creado correctamente',
+                        title: 'Usuario creado correctamente',
                         timer: 2000,
                         showConfirmButton: false,
                         background: '#2c2c3e',
