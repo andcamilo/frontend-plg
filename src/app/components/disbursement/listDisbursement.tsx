@@ -1,60 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from 'next/navigation';
 import TableForDisbursement from '../TableForDisbursement';
 import axios from 'axios';
 
 const ListDisbursement: React.FC = () => {
-  const router = useRouter(); // Next.js router for navigation
-  const [data, setData] = useState<{ [key: string]: any }[]>([]); // Table data
-  const [currentPage, setCurrentPage] = useState(1); // Current pagination page
+  const router = useRouter();
+
+  const [data, setData] = useState<{ [key: string]: any }[]>([]);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [hasPrevPage, setHasPrevPage] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const rowsPerPage = 10;
-
-  const fetchDisbursements = async (page: number) => {
+  const fetchDisbursements = async (page: number, limit: number) => {
     try {
+      setLoading(true);
+
       const response = await axios.get('/api/list-disbursements', {
         params: {
+          limit,
           page,
-          limit: rowsPerPage,
         },
       });
 
-      console.log("🚀 ~ fetchDisbursements ~ response:", response.data.disbursements);
+      const { disbursements, totalPages: backendTotalPages } = response.data;
 
-      const { disbursements, pagination } = response.data;
-      setData(disbursements);
-      setCurrentPage(pagination.currentPage);
-      setTotalPages(pagination.totalPages);
-      setHasPrevPage(pagination.hasPrevPage);
-      setHasNextPage(pagination.hasNextPage);
+      setData(disbursements || []);
+      setTotalPages(backendTotalPages || 1);
     } catch (error) {
       console.error('Error fetching disbursements:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDisbursements(currentPage);
-  }, [currentPage]);
+    fetchDisbursements(currentPage, rowsPerPage);
+  }, [currentPage, rowsPerPage]);
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
 
-  /**
-   * Handle row editing and redirect to the detailed page.
-   */
+  const handleRowsPerPageChange = (value: number) => {
+    setRowsPerPage(value);
+    setCurrentPage(1); // Reset to first page when limit changes
+  };
+
   const handleEdit = (row: { [key: string]: any }) => {
-    const id = row.id; // Extract the ID from the row
-    router.push(`/dashboard/see/${id}`); // Navigate to detail page
+    const id = row.id;
+    router.push(`/dashboard/see/${id}`);
   };
 
   const handleGetSelectedIds = async (selectedIds: string[]) => {
-    console.log('Selected IDs:', selectedIds);
-
     if (selectedIds.length === 0) {
       alert('No se han seleccionado desembolsos.');
       return;
@@ -62,13 +60,13 @@ const ListDisbursement: React.FC = () => {
 
     try {
       const response = await axios.patch('/api/update-disbursements', {
-        fieldUpdate: { status: 'pre-aprobada' }, // Example update field
+        fieldUpdate: { status: 'pre-aprobada' },
         ids: selectedIds,
       });
 
       console.log('🚀 ~ handleGetSelectedIds ~ Update Response:', response.data);
       alert('Desembolsos actualizados correctamente.');
-      fetchDisbursements(currentPage); // Refresh the table after update
+      fetchDisbursements(currentPage, rowsPerPage);
     } catch (error) {
       console.error('Error updating disbursements:', error);
       alert('Error al actualizar los desembolsos.');
@@ -78,18 +76,21 @@ const ListDisbursement: React.FC = () => {
   return (
     <div className="w-full p-6 bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-white mb-6">Listado de Desembolsos</h1>
+
       <TableForDisbursement
         data={data}
         rowsPerPage={rowsPerPage}
+        onChangeRowsPerPage={handleRowsPerPageChange}
         title="Desembolsos"
         showActionButtons={false}
         currentPage={currentPage}
         totalPages={totalPages}
-        hasPrevPage={hasPrevPage}
-        hasNextPage={hasNextPage}
+        hasPrevPage={currentPage > 1}
+        hasNextPage={currentPage < totalPages}
         onPageChange={handlePageChange}
-        onEdit={handleEdit} // Pass the edit callback
-        onGetSelectedIds={handleGetSelectedIds} // Pass the callback to handle selected IDs
+        onEdit={handleEdit}
+        onGetSelectedIds={handleGetSelectedIds}
+        loading={loading}
       />
     </div>
   );

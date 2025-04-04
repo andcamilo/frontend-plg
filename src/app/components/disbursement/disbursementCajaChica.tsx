@@ -64,22 +64,22 @@ const DisbursementCajaChica: React.FC = () => {
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
         index: number
-    ) => {
+      ) => {
         const { name, value } = e.target;
-
+      
         setState((prevState) => ({
-            ...prevState,
-            desemboloOficina: prevState.desemboloOficina.map((item, i) =>
-                i === index
-                    ? {
-                        ...item,
-                        [name]: value,
-                        status: true,
-                    }
-                    : item
-            ),
+          ...prevState,
+          desembolsoCajaChica: prevState.desembolsoCajaChica.map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  [name]: value,
+                  status: true,
+                }
+              : item
+          ),
         }));
-    };
+      };
       
 
     const handleAddExpense = () => {
@@ -143,10 +143,11 @@ const DisbursementCajaChica: React.FC = () => {
                                 >
                                     <option value="">Selecciona un abogado</option>
                                     {vendors.map((vendor, i) => (
-                                        <option key={i} value={vendor}>
-                                            {vendor}
+                                        <option key={i} value={vendor.value}>
+                                            {vendor.label}
                                         </option>
                                     ))}
+
                                 </select>
                             )}
                         </div>
@@ -183,49 +184,16 @@ const DisbursementCajaChica: React.FC = () => {
                             <label htmlFor={`invoiceNumber-${index}`} className="block text-gray-300 mb-2">
                                 Número de factura
                             </label>
-                            <Select
-                                options={invoices}
-                                value={invoices.find(invoice => invoice.value === expense.invoiceNumber) || null}
-                                onChange={(selectedOption) => handleSelectChange(selectedOption, index, 'invoiceNumber')}
+                            <input
+                                type="text"
+                                id={`invoiceNumber-${index}`}
+                                name="invoiceNumber"
+                                value={expense.invoiceNumber || ''}
+                                onChange={(e) => handleChange(e, index)}
                                 placeholder="Buscar número de factura"
-                                classNamePrefix="react-select"
-                                styles={{
-                                    control: (provided) => ({
-                                        ...provided,
-                                        backgroundColor: '#374151',
-                                        borderColor: '#4B5563',
-                                        color: '#FFFFFF',
-                                        padding: '4px',
-                                        borderRadius: '0.5rem',
-                                        boxShadow: 'none',
-                                        '&:hover': {
-                                            borderColor: '#3B82F6',
-                                        },
-                                    }),
-                                    singleValue: (provided) => ({
-                                        ...provided,
-                                        color: '#FFFFFF',
-                                    }),
-                                    placeholder: (provided) => ({
-                                        ...provided,
-                                        color: '#9CA3AF',
-                                    }),
-                                    input: (provided) => ({
-                                        ...provided,
-                                        color: '#FFFFFF',
-                                    }),
-                                    menu: (provided) => ({
-                                        ...provided,
-                                        backgroundColor: '#374151',
-                                        borderRadius: '0.5rem',
-                                    }),
-                                    option: (provided, state) => ({
-                                        ...provided,
-                                        backgroundColor: state.isFocused ? '#1F2937' : '#374151',
-                                        color: state.isFocused ? '#FFFFFF' : '#D1D5DB',
-                                    }),
-                                }}
-                            />
+                                className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+
                         </div>
 
                         <div className="mb-4">

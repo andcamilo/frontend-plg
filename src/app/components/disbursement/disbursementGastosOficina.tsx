@@ -32,6 +32,7 @@ const DisbursementGastosOficina: React.FC = () => {
         const fetchVendors = async () => {
             try {
                 const response = await fetch("/api/list-vendors");
+                console.log("🚀 ~ fetchVendors ~ response:", response)
                 const data = await response.json();
 
                 const formattedVendors = data?.data?.map((vendor: any) => ({
@@ -98,18 +99,21 @@ const DisbursementGastosOficina: React.FC = () => {
     };
 
     const handleSelectChange = (selectedOption: any, index: number, name: string) => {
+        const value = typeof selectedOption === 'string' ? selectedOption : selectedOption?.value || '';
+      
         setState((prevState) => ({
-            ...prevState,
-            desemboloOficina: prevState.desemboloOficina.map((item, i) =>
-                i === index
-                    ? {
-                        ...item,
-                        [name]: selectedOption?.value || '',
-                    }
-                    : item
-            ),
+          ...prevState,
+          desemboloOficina: prevState.desemboloOficina.map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  [name]: value,
+                }
+              : item
+          ),
         }));
-    };
+      };
+      
 
     return (
         <div className="p-1">
@@ -240,52 +244,14 @@ const DisbursementGastosOficina: React.FC = () => {
                                 Número de factura asociada
                             </label>
 
-                            <Select
-                                options={invoices}
-                                value={invoices.find(invoice => invoice.value === expense.invoiceNumber) || null}
-                                onChange={(selectedOption) => handleSelectChange(selectedOption, index, 'invoiceNumber')}
+                                <input
+                                id={`invoiceNumber-${index}`}
+                                type="text"
+                                value={expense.invoiceNumber || ''}  // <- asegúrate que siempre sea string
+                                onChange={(e) => handleSelectChange(e.target.value, index, 'invoiceNumber')}
                                 placeholder="Buscar número de factura"
-                                classNamePrefix="react-select"
-                                styles={{
-                                    control: (provided) => ({
-                                    ...provided,
-                                    backgroundColor: '#374151', // bg-gray-700
-                                    borderColor: '#4B5563', // border-gray-600
-                                    color: '#FFFFFF', // text-white
-                                    padding: '4px', // Match padding
-                                    borderRadius: '0.5rem', // rounded-lg
-                                    boxShadow: 'none',
-                                    '&:hover': {
-                                        borderColor: '#3B82F6', // focus:border-blue-500
-                                    },
-                                    }),
-                                    singleValue: (provided) => ({
-                                    ...provided,
-                                    color: '#FFFFFF', // text-white
-                                    }),
-                                    placeholder: (provided) => ({
-                                    ...provided,
-                                    color: '#9CA3AF', // text-gray-400
-                                    }),
-                                    input: (provided) => ({
-                                    ...provided,
-                                    color: '#FFFFFF', // text-white for search input
-                                    }),
-                                    menu: (provided) => ({
-                                    ...provided,
-                                    backgroundColor: '#374151', // bg-gray-700
-                                    borderRadius: '0.5rem', // rounded-lg
-                                    }),
-                                    option: (provided, state) => ({
-                                    ...provided,
-                                    backgroundColor: state.isFocused ? '#1F2937' : '#374151', // bg-gray-800 on hover
-                                    color: state.isFocused ? '#FFFFFF' : '#D1D5DB', // text-white on hover, text-gray-300 otherwise
-                                    }),
-                                }}
+                                className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-
-
-
 
                         </div>
                     </div>
