@@ -10,28 +10,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const response = await axios.get(listInvoicesUrl);
+    // Always fetch 1000 records from page 1 in the backend
+    const { page = '1', limit = '1000' } = req.query;
 
-    const invoices = response.data?.data?.invoices || [];
+    const response = await axios.get(listInvoicesUrl, {
+      params: { page, limit },
+    });
 
-    const filteredInvoices = invoices.map((invoice: any) => ({
-      invoice_id: invoice.invoice_id,
-      customer_id: invoice.customer_id,
-      customer_name: invoice.customer_name,
-      invoice_number: invoice.invoice_number,
-      email: invoice.email,
-      status: invoice.status,
-    }));
+    // We'll assume 'response.data.data' is already an array in the shape 
+    // we want to pass to our frontend. 
+    // If your external service returns a nested object, adjust accordingly.
+    const remote = response.data;
 
-    // Return the filtered invoices
     return res.status(200).json({
       status: 'success',
-      data: filteredInvoices,
+      // we want a direct array in `data`
+      // if remote.data is the array of invoices, pass it along
+      data: remote.data || [],
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching invoices:', error);
-
-    const errorMessage = error.response?.data?.message || 'Failed to fetch invoices';
-    return res.status(error.response?.status || 500).json({ message: errorMessage });
+    return res
+      .status(error?.response?.status || 500)
+      .json({ message: error?.response?.data?.message || 'Failed to fetch invoices' });
   }
 }

@@ -222,16 +222,16 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           <Link href="/dashboard/disbursement" className={`block mb-2  ${isActive('/dashboard/disbursement')}`} onClick={closeMenu}>
             Solcitar Desembolso
           </Link>
+
           <Link href="/dashboard/see" className={`block mb-2 ${isActive('/dashboard/see')}`} onClick={closeMenu}>
             Ver Desembolsos
           </Link>
-          <Link href="/dashboard/see-invoices" className={`block mb-2 ${isActive('/dashboard/invoices')}`} onClick={closeMenu}>
+          <Link href="/dashboard/see-invoices" className={`block mb-2 ${isActive('/dashboard/see-invoices')}`} onClick={closeMenu}>
             Ver Facturas
           </Link>
-          <Link href="/dashboard/see-expenses" className={`block mb-2 ${isActive('/dashboard/expenses')}`} onClick={closeMenu}>
+          <Link href="/dashboard/see-expenses" className={`block mb-2 ${isActive('/dashboard/see-expenses')}`} onClick={closeMenu}>
             Ver Gastos
           </Link>
-
         </div>
       )}
       <p className='font-bold'>Otros enlaces</p>

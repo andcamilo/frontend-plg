@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { getSpanishTitle } from '../utils/translateColumnTitle';
 
 interface TableForDisbursementProps {
   data: { [key: string]: any }[];
   rowsPerPage: number;
+  onChangeRowsPerPage: (value: number) => void;
   title: string;
   currentPage: number;
   totalPages: number;
@@ -11,89 +13,82 @@ interface TableForDisbursementProps {
   showActionButtons: boolean;
   onPageChange: (pageNumber: number) => void;
   onEdit: (row: { [key: string]: any }) => void;
-  onGetSelectedIds: (selectedIds: string[]) => void; // Callback to pass selected IDs
-  buttonText?: string; // Make buttonText optional
+  onGetSelectedIds: (selectedIds: string[]) => void;
+  buttonText?: string;
+  loading?: boolean;
 }
 
-const toCamelCase = (str: string) => {
-  return str
-    .toLowerCase()
-    .replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
+const formatCellValue = (value: any) => {
+  if (typeof value === 'boolean') return value.toString();
+  if (value === null || value === undefined || value === '') return '-';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return value;
 };
 
 const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   data,
   rowsPerPage,
+  onChangeRowsPerPage,
   title,
   currentPage,
   totalPages,
-  showActionButtons,
   hasPrevPage,
   hasNextPage,
+  showActionButtons,
   onPageChange,
   onEdit,
   onGetSelectedIds,
-  buttonText = "Editar", // Default to "Editar" if not provided
+  buttonText = 'Editar',
+  loading = false,
 }) => {
   const columns = data.length > 0 ? Object.keys(data[0]) : [];
   const [selectedRows, setSelectedRows] = useState<{ [key: number]: boolean }>({});
   const [selectAll, setSelectAll] = useState(false);
 
-  const handleRowSelect = (rowIndex: number) => {
-    setSelectedRows((prev) => {
-      const newValue = !prev[rowIndex];
-      console.log('Row index:', rowIndex, 'selected:', newValue);
-      console.log("🚀 ~ selectedRows:", selectedRows)
-      return { ...prev, [rowIndex]: newValue };
-    });
-  };
-
   useEffect(() => {
-    console.log('Selected rows changed:', selectedRows);
-  }, [selectedRows]);
-  
+    setSelectedRows({});
+    setSelectAll(false);
+  }, [data]);
+
+  const handleRowSelect = (rowIndex: number) => {
+    setSelectedRows((prev) => ({
+      ...prev,
+      [rowIndex]: !prev[rowIndex],
+    }));
+  };
 
   const handleSelectAll = () => {
     const allSelected = !selectAll;
     setSelectAll(allSelected);
 
-    const newSelectedRows = data.reduce<{ [key: number]: boolean }>(
-      (acc, _, index) => {
-        acc[index] = allSelected;
-        return acc;
-      },
-      {}
-    );
-
+    const newSelectedRows = data.reduce<{ [key: number]: boolean }>((acc, _, index) => {
+      acc[index] = allSelected;
+      return acc;
+    }, {});
     setSelectedRows(newSelectedRows);
   };
-  
+
   const handleGetSelectedIds = () => {
-    const selectedRowIndexes = Object.keys(selectedRows).filter(
-      (key) => selectedRows[Number(key)]
-    );
-  
-    // Log out each selected row
-    selectedRowIndexes.forEach((key) => {
-      console.log('Selected row data:', data[Number(key)]);
-    });
-  
-    // If the row property is invoice_id, for example:
-    const selectedIds = selectedRowIndexes.map((key) => data[Number(key)].invoice_id);
-  
-    console.log("🚀 ~ handleGetSelectedIds ~ selectedIds:", selectedIds);
+    const selectedIndexes = Object.keys(selectedRows).filter((key) => selectedRows[Number(key)]);
+    const selectedIds = selectedIndexes.map((key) => data[Number(key)].invoice_id ?? data[Number(key)].id);
     onGetSelectedIds(selectedIds);
   };
-  
+
   return (
     <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-8xl mb-4">
-      <h2 className="text-lg font-bold text-white mb-4">{title}</h2>
-      <div className="overflow-x-auto">
-        {data.length > 0 ? (
-          <table className="w-full text-left text-gray-400">
+      {/* Translate the table TITLE to Spanish if you want */}
+      <h2 className="text-lg font-bold text-white mb-4">
+        {getSpanishTitle(title)}
+      </h2>
+
+      {loading ? (
+        <p className="text-gray-300">Cargando desembolsos...</p>
+      ) : data.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left text-gray-400 table-auto">
             <thead>
               <tr>
-                <th className="py-2">
+                <th className="py-2 px-2">
                   <input
                     type="checkbox"
                     checked={selectAll}
@@ -101,18 +96,22 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                     className="w-4 h-4"
                   />
                 </th>
+                {/* Use getSpanishTitle() for column headers */}
                 {columns.map((column, index) => (
-                  <th key={index} className="py-2 capitalize text-white">
-                    {toCamelCase(column)}
+                  <th
+                    key={index}
+                    className="py-2 px-2 text-white whitespace-nowrap"
+                  >
+                    {getSpanishTitle(column)}
                   </th>
                 ))}
-                <th className="py-2 capitalize text-white">Actions</th>
+                <th className="py-2 px-2 text-white">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {data.map((row, rowIndex) => (
                 <tr key={rowIndex} className="border-t border-gray-700">
-                  <td className="py-2">
+                  <td className="py-2 px-2">
                     <input
                       type="checkbox"
                       checked={!!selectedRows[rowIndex]}
@@ -121,13 +120,14 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                     />
                   </td>
                   {columns.map((column, colIndex) => (
-                    <td key={colIndex} className="py-2">
-                      {typeof row[column] === 'object' && row[column] !== null
-                        ? JSON.stringify(row[column])
-                        : row[column]}
+                    <td
+                      key={colIndex}
+                      className="py-2 px-2 whitespace-nowrap"
+                    >
+                      {formatCellValue(row[column])}
                     </td>
                   ))}
-                  <td className="py-2">
+                  <td className="py-2 px-2">
                     <button
                       onClick={() => onEdit(row)}
                       className="bg-profile text-white px-3 py-1 rounded-lg hover:bg-blue-500"
@@ -139,13 +139,12 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
               ))}
             </tbody>
           </table>
-        ) : (
-          <p className="text-gray-400">No data available</p>
-        )}
-      </div>
+        </div>
+      ) : (
+        <p className="text-gray-400">No hay datos disponibles.</p>
+      )}
 
-      {/* Conditionally Render Action Buttons */}
-      {showActionButtons && (
+      {/* {showActionButtons && (
         <div className="flex justify-end gap-4 mt-4">
           <button
             onClick={handleGetSelectedIds}
@@ -154,33 +153,50 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
             Pre-Aprobar
           </button>
           <button
-            onClick={() => console.log('Crear Gasto clicked')} // Placeholder function
+            onClick={() => console.log('Crear Gasto clicked')}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
           >
             Crear Gasto
           </button>
         </div>
-      )}
+      )} */}
 
-      {/* Pagination Controls */}
-      <div className="flex justify-between items-center mt-4">
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={!hasPrevPage}
-          className="bg-gray-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Anterior
-        </button>
-        <div className="text-gray-400">
-          Página {currentPage} de {totalPages}
+      <div className="flex justify-between items-center mt-6">
+        <div className="flex items-center gap-2 text-white">
+          <label htmlFor="limit" className="text-sm">Resultados por página:</label>
+          <select
+            id="limit"
+            value={rowsPerPage}
+            onChange={(e) => onChangeRowsPerPage(Number(e.target.value))}
+            className="bg-gray-700 text-white px-2 py-1 rounded"
+          >
+            {[5, 10, 20, 50].map((val) => (
+              <option key={val} value={val}>
+                {val}
+              </option>
+            ))}
+          </select>
         </div>
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={!hasNextPage}
-          className="bg-gray-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Siguiente
-        </button>
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={!hasPrevPage}
+            className="bg-gray-700 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <span className="text-gray-300">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={!hasNextPage}
+            className="bg-gray-700 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
 "use client"
-// src/pages/dashboard/reports.tsx
 import React from 'react';
 import Disbursement from '@/src/app/components/disbursement/disbursement';
 
