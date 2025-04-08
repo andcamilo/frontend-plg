@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCcVisa, faCcMastercard, faBitcoin } from '@fortawesome/free-brands-svg-icons';
 import { faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
+import LogoPLG from '@public/images/Logotipo PLG.png';
 
 const HomeFooter: React.FC = () => {
   return (
@@ -13,6 +14,25 @@ const HomeFooter: React.FC = () => {
         <div>
           <Image src={Logo} alt="Logo" width={210} height={82} className="mr-8" />
           <p className='text-gray-200'>Trámites Legales en Línea de Panama Legal Group.</p>
+
+          {/* Texto encima de la imagen */}
+          <p className="mt-4 text-gray-300 font-semibold">Visite nuestra página:</p>
+
+          {/* Imagen con link */}
+          <Link
+            href="https://panamalegalgroup.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-2"
+          >
+            <Image
+              src={LogoPLG}
+              alt="Logo PLG"
+              width={180}
+              height={60}
+              className="hover:opacity-80 transition-opacity"
+            />
+          </Link>
         </div>
 
         <div>
