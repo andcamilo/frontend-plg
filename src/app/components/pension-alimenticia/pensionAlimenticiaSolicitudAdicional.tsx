@@ -159,7 +159,7 @@ const PensionAlimenticiaSolicitudAdicional: React.FC = () => {
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
       {/* Header Section */}
-      <h1 className="text-white text-4xl font-bold">Solicitud Adicional</h1>
+      <h1 className="text-white text-3xl font-bold">Solicitud Adicional</h1>
     
       <p className="mb-6">
         Si requiere algún otro proceso no incluido en esta solicitud, por favor detallar y nuestro equipo se contactará contigo en no más de 48 horas laborables.
