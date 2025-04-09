@@ -9,9 +9,7 @@ import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import CountrySelect from '@components/CountrySelect';
 import ReCAPTCHA from 'react-google-recaptcha';
 import get from 'lodash/get';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import '@fortawesome/fontawesome-free/css/all.css';
-
 
 const FundacionSolicitante: React.FC = () => {
     const context = useContext(FundacionContext);
@@ -63,10 +61,10 @@ const FundacionSolicitante: React.FC = () => {
 
     const handleCountryChange = (name: string, value: string) => {
         setFormData((prevData) => ({
-          ...prevData,
-          [name]: value,
+            ...prevData,
+            [name]: value,
         }));
-      };
+    };
 
 
     useEffect(() => {
@@ -216,8 +214,8 @@ const FundacionSolicitante: React.FC = () => {
     };
 
     const handleRecaptchaChange = (token) => {
-        setRecaptchaToken(token); 
-      };
+        setRecaptchaToken(token);
+    };
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -226,7 +224,7 @@ const FundacionSolicitante: React.FC = () => {
         if (!recaptchaToken) {
             alert('Please complete the reCAPTCHA');
             return;
-          }
+        }
 
         setIsLoading(true);
 
@@ -269,7 +267,7 @@ const FundacionSolicitante: React.FC = () => {
             setIsLoading(false);
             return;
         }
-        
+
 
         try {
             const emailResult = await axios.get("/api/validate-email", {
@@ -377,18 +375,19 @@ const FundacionSolicitante: React.FC = () => {
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            {/* <h1 className="text-white text-4xl font-bold">Información del Solicitante</h1> */}
-            <h1 className="text-white text-4xl font-bold flex items-center">
+            {/* <h1 className="text-white text-3xl font-bold">Información del Solicitante</h1> */}
+            <h1 className="text-white text-3xl font-bold flex items-center">
                 Información del Solicitante
-                <button
-                    className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
-                    type="button"
-                    onClick={toggleModal}
-                >
-                    <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
-                        <i className="fa-solid fa-info text-sm"></i>
-                    </span>
-                </button>
+                <div className="flex flex-col items-center">
+                    <button
+                        className="w-10 h-10 bg-white text-black rounded-md border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                        type="button"
+                        onClick={toggleModal}
+                    >
+                        <i className="fa-solid fa-play text-lg"></i> 
+                    </button>
+                    <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
+                </div>
             </h1>
 
             {/* Modal */}
@@ -460,7 +459,7 @@ const FundacionSolicitante: React.FC = () => {
                     </div>
 
                     <div className="flex gap-2">
-                        
+
                         <CountrySelect
                             name="telefonoCodigo"
                             value={formData.telefonoCodigo}

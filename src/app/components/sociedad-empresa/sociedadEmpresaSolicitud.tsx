@@ -119,7 +119,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
         if (store.request) {
             const nombreCompleto = get(store.request, 'nombreSolicita', '');
             const telefono = get(store.request, 'telefonoSolicita', '');
-            const email = get(store.request, 'emailSolicita', ''); 
+            const email = get(store.request, 'emailSolicita', '');
             const confirmEmail = get(store.request, 'emailSolicita', '');
             const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '') || get(store.request, 'documentoSolicita', '');
 
@@ -127,7 +127,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                 ...prevFormData,
                 nombreCompleto,
                 telefono,
-                email, 
+                email,
                 confirmEmail,
                 cedulaPasaporte,
             }));
@@ -375,17 +375,19 @@ const SociedadEmpresaSolicitante: React.FC = () => {
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold flex items-center">
+            <h1 className="text-white text-3xl font-bold flex items-center gap-3">
                 Información del Solicitante
-                <button
-                    className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
-                    type="button"
-                    onClick={toggleModal}
-                >
-                    <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
-                        <i className="fa-solid fa-info text-sm"></i>
-                    </span>
-                </button>
+
+                <div className="flex flex-col items-center">
+                    <button
+                        className="w-10 h-10 bg-white text-black rounded-md border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                        type="button"
+                        onClick={toggleModal}
+                    >
+                        <i className="fa-solid fa-play text-lg"></i> 
+                    </button>
+                    <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
+                </div>
             </h1>
 
             {/* Modal */}
@@ -431,10 +433,11 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                     </div>
                 </div>
             )}
-            
+
             <p className="text-white mt-4 texto_justificado">
                 Aquí podrás agregar los datos de la persona que realizara la solicitud.
             </p>
+
             <hr className="mt-4" />
             <p className="text-white mt-4 texto_justificado">
                 <small>* Aquí se incluye la información de la persona natural que estará en contacto con nosotros para cualquier coordinación.</small>
@@ -593,6 +596,7 @@ const SociedadEmpresaSolicitante: React.FC = () => {
                         </button>
                     </>
                 )}
+
             </form>
         </div>
     );

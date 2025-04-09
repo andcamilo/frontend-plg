@@ -5,17 +5,20 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import EmailIcon from '@mui/icons-material/Email';
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import get from 'lodash/get';
+import BannerOpcionesFundacion from "../BannerOpcionesFundacion";
+import Link from 'next/link';
+import BotonesPreguntasYContactos from '@components/botonesPreguntasYContactos';
 
 const SociedadEmpresaBienvenido: React.FC = () => {
     const context = useContext(AppStateContext);
     const router = useRouter();
     const params = useParams();
-  
+
     const id = params?.id as string | undefined;
 
     if (!context) {
@@ -120,17 +123,28 @@ const SociedadEmpresaBienvenido: React.FC = () => {
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold texto_justificado">¡Bienvenidos a nuestro servicio de Solicitud de Fundaciones de Interés Privado en línea de Panamá!</h1>
+            <h1 className="text-white text-3xl font-bold texto_justificado">¡Bienvenidos a nuestro servicio de Solicitud de Fundaciones de Interés Privado en línea de Panamá!</h1>
             <p className="text-white mt-4 texto_justificado">
                 Aquí puedes solicitar la creación de una Fundaciones de Interés Privado de forma sencilla y segura, totalmente en línea desde tu teléfono o computadora, y desde cualquier lugar del mundo. Las Fundaciones de Interés Privado son una excelente opción para proteger tus activos y llevar a cabo tus negocios de manera formal. Podrás optar por diferentes actividades fuera de la República de Panamá, o dentro de la República de Panamá.
             </p>
 
-            <p className="text-white mt-4 texto_justificado">
+            <BannerOpcionesFundacion />
+            {/* <p className="text-white mt-4 texto_justificado">
                 Podrás iniciar el trámite y continuar cuando desees.
             </p>
 
+            <BannerOpcionesFundacion />
+
             <p className="text-white mt-4 texto_justificado">
-                Si necesitas más información sobre las Fundaciones de Interés Privado puedes ir <a href="https://www.panamalegalgroup.com/sociedades-anonimas-en-panama/#" target="_blank">aquí</a>.
+                Si necesitas más información sobre las Fundaciones de Interés Privado puedes ir{' '}
+                <Link
+                    href="https://panamalegalgroup.com/sociedades-y-fundaciones/fundaciones-de-interes-privado/#"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 underline hover:text-blue-600 transition-colors"
+                >
+                    aquí
+                </Link>.
             </p>
             <p className="text-white mt-4 texto_justificado">
                 También puedes obtener información <a href="/pag/faqs-sociedades" target="_blank">aquí</a>.
@@ -187,10 +201,10 @@ const SociedadEmpresaBienvenido: React.FC = () => {
                 <li>
                     <b>Actualizaciones en Tiempo Real:</b> Nosotros vamos a ti, sin que tengas que preguntar por tu trámite. Te mantenemos al tanto del progreso de tu solicitud a través de nuestra plataforma en línea.
                 </li>
-            </ol>
+            </ol> */}
 
             <p className="text-white mt-4 texto_justificado">
-                Estamos aquí para ayudarte a hacer realidad tus planes empresariales. Si tienes alguna pregunta, no dudes en contactarnos. ¡Estamos emocionados de ser parte de tu éxito empresarial!
+                ¡Estamos emocionados de ser parte de tu éxito empresarial!
             </p>
 
             <p className="text-white mt-4 texto_justificado">
@@ -212,6 +226,16 @@ const SociedadEmpresaBienvenido: React.FC = () => {
                     'Continuar'
                 )}
             </button>
+
+            <BotonesPreguntasYContactos
+                primerTexto={
+                    <>
+                        Acerca de las<br /> Fundaciones de Interés Privado
+                    </>
+                }
+                primerHref="https://panamalegalgroup.com/sociedades-y-fundaciones/fundaciones-de-interes-privado/"
+                preguntasHref="/faqs"
+            />
 
         </div>
     );
