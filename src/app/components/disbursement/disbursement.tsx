@@ -13,6 +13,7 @@ interface DisbursementProps {
 }
 
 const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
+  console.log("🚀 ~ id:", id)
   const context = useContext(DesembolsoContext);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -31,7 +32,6 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
         : `/api/create-disbursement`;
       const method = id ? 'PATCH' : 'POST';
 
-      // Construct the request body. If updating, include the id.
       const requestBody = id ? { ...state, id } : state;
       console.log("🚀 Request Body:", requestBody);
 
@@ -127,19 +127,15 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
             <select
               id="status"
               name="status"
-              value={state.status || ''}
+              value={state.status || 'creada'}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+              disabled
             >
-              <option value="" disabled>Selecciona una opción</option>
               <option value="creada">Creada</option>
-              <option value="rechazada">Rechazada</option>
-              <option value="pre-aprobada">Pre-Aprobada</option>
-              <option value="aprobada">Aprobada</option>
-              <option value="deseembolsado">Deseembolsado</option>
-              <option value="pagado-por-cliente">Pagado por el cliente</option>
             </select>
           </div>
+
         </div>
         <hr className="my-2" />
         {state.disbursementType === 'desembolso-gastos' && state.expenseType === 'de-oficina' ? (
