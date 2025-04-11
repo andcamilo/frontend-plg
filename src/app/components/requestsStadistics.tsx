@@ -81,7 +81,7 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
   // Logic for showing the delete/pay icons
   const canShowDelete =
     (status === 1 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-    (rol !== 'Cliente recurrente' && rol !== 'Cliente');
+    (rol !== 'Cliente recurrente' && rol !== 'Cliente' && rol !== 'Asistente' && rol !== 'Abogados');
 
   const canShowPagar =
     (status < 19 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||

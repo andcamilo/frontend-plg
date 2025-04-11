@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -46,15 +46,17 @@ const storage = getStorage(app);
 
 const Request: React.FC = () => {
     const [selectedLawyer, setSelectedLawyer] = useState<any>(null);
+    const [selectedAssignedLawyer, setSelectedAssignedLawyer] = useState<any>(null);
     const [status, setStatus] = useState(-1);
     const [observation, setObservation] = useState('');
     const router = useRouter();
     const params = useParams();
-  
+
     const id = params?.id as string | undefined;
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const [statusName, setStatusName] = useState("");
     const [lawyers, setLawyers] = useState<any[]>([]);
+    const [assignedLawyers, setAssignedLawyers] = useState<any[]>([]);
     const [peopleData, setPeopleData] = useState<any[]>([]);
 
     const [formData, setFormData] = useState<{
@@ -168,7 +170,11 @@ const Request: React.FC = () => {
 
             try {
                 // Obtener los IDs de los abogados ya asignados en la solicitud
-                const assignedLawyerIds = solicitudData?.abogados?.map((abogado: any) => abogado.id) || [];
+                /* const assignedLawyerIds = solicitudData?.abogados?.map((abogado: any) => abogado.id) || []; */
+                const assignedLawyers = solicitudData?.abogados?.map((abogado: any) => ({
+                    id: abogado.id,
+                    nombre: abogado.nombre
+                })) || [];
 
                 while (hasMore) {
                     const response = await axios.get('/api/user', {
@@ -180,7 +186,8 @@ const Request: React.FC = () => {
 
                     const usuarios = response.data.usuarios;
 
-                    // Filtrar usuarios con `rol >= 35` y que no estén en `assignedLawyerIds`
+                    const assignedLawyerIds = assignedLawyers.map((lawyer) => lawyer.id);
+
                     const filteredLawyers = usuarios.filter((user: any) =>
                         user.rol >= 35 && !assignedLawyerIds.includes(user.id)
                     );
@@ -197,6 +204,7 @@ const Request: React.FC = () => {
                 }
 
                 setLawyers(allLawyers); // Almacenar todos los abogados en el estado
+                setAssignedLawyers(assignedLawyers);
             } catch (error) {
                 console.error('Error fetching all lawyers:', error);
             }
@@ -419,6 +427,61 @@ const Request: React.FC = () => {
                 position: 'top-end'
             });
             console.error("Error assigning lawyer:", error);
+        }
+    };
+
+    const handleRemoveLawyer = async () => {
+        if (!selectedAssignedLawyer) {
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Debes seleccionar un abogado asignado.",
+                timer: 2500,
+                showConfirmButton: false,
+                background: '#2c2c3e',
+                color: '#fff',
+            });
+            return;
+        }
+
+        try {
+            const removePayload = {
+                solicitudId: id,
+                id: selectedAssignedLawyer.id,
+            };
+
+            const responseData = await axios.post('/api/remove-request-abogados', removePayload);
+
+            if (responseData.status === 200) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Abogado eliminado correctamente",
+                    timer: 2500,
+                    showConfirmButton: false,
+                    background: '#2c2c3e',
+                    color: '#fff',
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error al eliminar abogado",
+                    timer: 2500,
+                    showConfirmButton: false,
+                    background: '#2c2c3e',
+                    color: '#fff',
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Hubo un problema eliminando el abogado.",
+                timer: 1500,
+                showConfirmButton: false,
+                position: 'top-end'
+            });
+            console.error("Error removing lawyer:", error);
         }
     };
 
@@ -1708,32 +1771,57 @@ const Request: React.FC = () => {
 
 
                 {/* Sección de Asignar abogado */}
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") && (
-                    <>
-                        <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
-                            <h3 className="text-lg font-bold text-white mb-4">Asignar abogado:</h3>
-                            <select
-                                className="w-full p-2 rounded bg-gray-900 text-white"
-                                value={selectedLawyer ? selectedLawyer.id : ""}
-                                onChange={(e) => {
-                                    const lawyer = lawyers.find((l) => l.id === e.target.value);
-                                    setSelectedLawyer(lawyer || null);
-                                }}
-                            >
-                                <option value="">Seleccionar abogado</option>
-                                {lawyers.map((lawyer) => (
-                                    <option key={lawyer.id} value={lawyer.id}>
-                                        {lawyer.nombre}
-                                    </option>
-                                ))}
-                            </select>
-                            <div className="flex space-x-4 mt-2">
-                                <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={handleBack}>Volver</button>
-                                <button className="bg-profile text-white px-4 py-2 rounded" onClick={handleAssignLawyer}>Asignar</button>
+                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && formData.rol !== "Asistente"
+                    && formData.rol !== "Abogados" && formData.rol !== "Auditor"
+                ) && (
+                        <>
+                            <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
+                                <h3 className="text-lg font-bold text-white mb-4">Asignar abogado:</h3>
+                                <select
+                                    className="w-full p-2 rounded bg-gray-900 text-white"
+                                    value={selectedLawyer ? selectedLawyer.id : ""}
+                                    onChange={(e) => {
+                                        const lawyer = lawyers.find((l) => l.id === e.target.value);
+                                        setSelectedLawyer(lawyer || null);
+                                    }}
+                                >
+                                    <option value="">Seleccionar abogado</option>
+                                    {lawyers.map((lawyer) => (
+                                        <option key={lawyer.id} value={lawyer.id}>
+                                            {lawyer.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                                <div className="flex space-x-4 mt-2">
+                                    <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={handleBack}>Volver</button>
+                                    <button className="bg-profile text-white px-4 py-2 rounded" onClick={handleAssignLawyer}>Asignar</button>
+                                </div>
                             </div>
-                        </div>
-                    </>
-                )}
+
+                            <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
+                                <h3 className="text-lg font-bold text-white mt-4 mb-4">Eliminar abogado:</h3>
+                                <select
+                                    className="w-full p-2 rounded bg-gray-900 text-white"
+                                    value={selectedAssignedLawyer ? selectedAssignedLawyer.id : ""}
+                                    onChange={(e) => {
+                                        const assignedLawyer = assignedLawyers.find((l) => l.id === e.target.value);
+                                        setSelectedAssignedLawyer(assignedLawyer || null);
+                                    }}
+                                >
+                                    <option value="">Seleccionar abogado</option>
+                                    {assignedLawyers.map((lawyer) => (
+                                        <option key={lawyer.id} value={lawyer.id}>
+                                            {lawyer.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                                <div className="flex space-x-4 mt-2">
+                                    <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={handleBack}>Volver</button>
+                                    <button className="bg-profile text-white px-4 py-2 rounded" onClick={handleRemoveLawyer}>Eliminar</button>
+                                </div>
+                            </div>
+                        </>
+                    )}
 
                 {/*Información de la bitacora */}
                 <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
@@ -1887,23 +1975,25 @@ const Request: React.FC = () => {
                         )}
                 </div>
 
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") && (
-                    <>
-                        <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
-                            <h3 className="text-lg font-bold text-white mb-4">Comprobante de pago</h3>
+                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && formData.rol !== "Asistente"
+                    && formData.rol !== "Abogados" && formData.rol !== "Auditor"
+                ) && (
+                        <>
+                            <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
+                                <h3 className="text-lg font-bold text-white mb-4">Comprobante de pago</h3>
 
-                            {formData.comprobantePagoURL ? (
-                                <p className="text-sm text-blue-500">
-                                    <a href={formData.comprobantePagoURL} target="_blank" rel="noopener noreferrer">
-                                        Ver documento actual
-                                    </a>
-                                </p>
-                            ) : (
-                                <p className="text-sm text-red-500">No hay comprobante de pago cargado.</p>
-                            )}
-                        </div>
-                    </>
-                )}
+                                {formData.comprobantePagoURL ? (
+                                    <p className="text-sm text-blue-500">
+                                        <a href={formData.comprobantePagoURL} target="_blank" rel="noopener noreferrer">
+                                            Ver documento actual
+                                        </a>
+                                    </p>
+                                ) : (
+                                    <p className="text-sm text-red-500">No hay comprobante de pago cargado.</p>
+                                )}
+                            </div>
+                        </>
+                    )}
             </div>
 
         </div>
