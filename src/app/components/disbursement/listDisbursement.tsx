@@ -25,6 +25,9 @@ const ListDisbursement: React.FC = () => {
 
       const { disbursements, totalPages: backendTotalPages } = response.data;
 
+      const cleanedDisbursements = disbursements.map(({ id, ...rest }) => rest);
+      console.log("🚀 ~ fetchDisbursements ~ disbursements:", cleanedDisbursements)
+
       setData(disbursements || []);
       setTotalPages(backendTotalPages || 1);
     } catch (error) {

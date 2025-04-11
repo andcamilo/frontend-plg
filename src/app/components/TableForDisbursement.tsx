@@ -41,7 +41,8 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   buttonText = 'Editar',
   loading = false,
 }) => {
-  const columns = data.length > 0 ? Object.keys(data[0]) : [];
+  // Exclude 'id' from columns to render, but keep it in row data
+  const columns = data.length > 0 ? Object.keys(data[0]).filter(col => col !== 'id') : [];
   const [selectedRows, setSelectedRows] = useState<{ [key: number]: boolean }>({});
   const [selectAll, setSelectAll] = useState(false);
 
@@ -76,7 +77,6 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
 
   return (
     <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-8xl mb-4">
-      {/* Translate the table TITLE to Spanish if you want */}
       <h2 className="text-lg font-bold text-white mb-4">
         {getSpanishTitle(title)}
       </h2>
@@ -96,12 +96,8 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                     className="w-4 h-4"
                   />
                 </th>
-                {/* Use getSpanishTitle() for column headers */}
                 {columns.map((column, index) => (
-                  <th
-                    key={index}
-                    className="py-2 px-2 text-white whitespace-nowrap"
-                  >
+                  <th key={index} className="py-2 px-2 text-white whitespace-nowrap">
                     {getSpanishTitle(column)}
                   </th>
                 ))}
@@ -120,10 +116,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                     />
                   </td>
                   {columns.map((column, colIndex) => (
-                    <td
-                      key={colIndex}
-                      className="py-2 px-2 whitespace-nowrap"
-                    >
+                    <td key={colIndex} className="py-2 px-2 whitespace-nowrap">
                       {formatCellValue(row[column])}
                     </td>
                   ))}
@@ -143,23 +136,6 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
       ) : (
         <p className="text-gray-400">No hay datos disponibles.</p>
       )}
-
-      {/* {showActionButtons && (
-        <div className="flex justify-end gap-4 mt-4">
-          <button
-            onClick={handleGetSelectedIds}
-            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
-          >
-            Pre-Aprobar
-          </button>
-          <button
-            onClick={() => console.log('Crear Gasto clicked')}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-          >
-            Crear Gasto
-          </button>
-        </div>
-      )} */}
 
       <div className="flex justify-between items-center mt-6">
         <div className="flex items-center gap-2 text-white">

@@ -40,8 +40,8 @@ const DisbursementCajaChica: React.FC = () => {
                 const data = await response.json();
 
                 const formattedVendors = data?.data?.map((vendor: any) => ({
-                    label: vendor.contact_name,
-                    value: vendor.contact_name,
+                    label: vendor.nombre,
+                    value: vendor.nombre,
                 })) || [];
 
                 setVendors(formattedVendors);

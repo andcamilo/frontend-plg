@@ -38,7 +38,7 @@ const DisbursementGastosCliente: React.FC = () => {
                 const response = await fetch("/api/list-vendors");
                 const data = await response.json();
 
-                const vendorNames = data?.data?.map((vendor: any) => vendor.contact_name) || [];
+                const vendorNames = data?.data?.map((vendor: any) => vendor.nombre) || [];
                 console.log("Fetched Vendor Names:", vendorNames);
                 setVendors(vendorNames);
             } catch (error) {
