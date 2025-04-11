@@ -194,7 +194,7 @@ const SolicitudAdicional: React.FC = () => {
 
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-      <h1 className="text-white text-4xl font-bold flex items-center">
+      <h1 className="text-white text-3xl font-bold flex items-center">
         Solicitud Adicional
         <button
           className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"

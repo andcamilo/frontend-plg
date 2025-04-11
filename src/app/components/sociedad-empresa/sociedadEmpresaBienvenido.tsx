@@ -5,11 +5,14 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import EmailIcon from '@mui/icons-material/Email';
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import get from 'lodash/get';
+import BannerOpcionesSociedad from "../BannerOpcionesSociedad";
+import Link from 'next/link';
+import BotonesPreguntasYContactos from '@components/botonesPreguntasYContactos';
 
 const SociedadEmpresaBienvenido: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -116,20 +119,46 @@ const SociedadEmpresaBienvenido: React.FC = () => {
 
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
-            <h1 className="text-white text-4xl font-bold texto_justificado">¡Bienvenidos a nuestro servicio de Solicitud de Sociedades en línea de Panamá!</h1>
+            <h1 className="text-white text-3xl font-bold texto_justificado">¡Bienvenidos a nuestro servicio de Solicitud de Sociedades en línea de Panamá!</h1>
             <p className="text-white mt-4 texto_justificado">
-                Aquí puedes solicitar la creación de una empresa de forma sencilla y segura, totalmente en línea desde tu teléfono o computadora, y desde cualquier lugar del mundo. Las sociedades anónimas son una excelente opción para proteger tus activos y llevar a cabo tus negocios de manera formal. Podrás optar por diferentes actividades fuera de la República de Panamá, o dentro de la República de Panamá.
+                Solicita la creación de una empresa de forma sencilla y segura, totalmente en línea, a través de tu teléfono o computadora, y desde cualquier lugar del mundo.
             </p>
 
             <p className="text-white mt-4 texto_justificado">
-                Podrás iniciar el trámite y continuar cuando desees.
+                Las sociedades anónimas son una excelente opción para llevar a cabo tus negocios en cualquier lugar del mundo o administrar tus activos. Podrás optar por diferentes actividades fuera o dentro de la República de Panamá.
             </p>
 
+            <BannerOpcionesSociedad />
             <p className="text-white mt-4 texto_justificado">
-                Si necesitas más información sobre las sociedades anónimas puedes ir <a href="https://www.panamalegalgroup.com/sociedades-anonimas-en-panama/#" target="_blank">aquí</a>.
+                ¡Estamos emocionados de ser parte de tu éxito empresarial!
+            </p>
+            <p className="text-white mt-4 texto_justificado">
+                Iniciemos con la información general de la persona que está llenando el formulario, y es a quien le vamos a notificar avances. Puede ser cualquier persona mayor de edad, que no necesariamente será parte de la sociedad. Podrás iniciar el trámite, guardarlo, y continuar cuando desees. Cada formulario tendrá un video de guía.
+            </p>
+            {/* <p className="text-white mt-4 texto_justificado">
+                Si necesitas más información sobre las sociedades anónimas puedes ir{' '}
+                <Link
+                    href="https://www.panamalegalgroup.com/sociedades-anonimas-en-panama/#"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 underline hover:text-blue-600 transition-colors"
+                >
+                    aquí
+                </Link>.
             </p>
             <p className="text-white mt-4">
                 También puedes obtener información <a href="/pag/faqs-sociedades" target="_blank">aquí</a>.
+            </p>
+            <p className="text-white mt-4 texto_justificado">
+                Puedes solicitar tu consulta escrita, virtual o presencial ir{' '}
+                <Link
+                    href="/request/consulta-propuesta"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 underline hover:text-blue-600 transition-colors"
+                >
+                    aquí
+                </Link>.
             </p>
             <p className="text-white mt-4 texto_justificado">
                 Si necesitas asistencia previa o tienes dudas adicionales, también puedes contactarnos:
@@ -139,9 +168,6 @@ const SociedadEmpresaBienvenido: React.FC = () => {
                     <WhatsAppIcon style={{ color: '#25D366', fontSize: '24px', marginRight: '8px' }} />
                     <span>WhatsApp</span>
                 </a>
-            </p>
-            <p className="text-white mt-4 texto_justificado">
-                Puedes solicitar tu consulta escrita, virtual o presencial <a href="/pag/consulta-legal">aquí</a>.
             </p>
             <p className="text-white mt-4">
                 <a
@@ -187,11 +213,7 @@ const SociedadEmpresaBienvenido: React.FC = () => {
 
             <p className="text-white mt-4 texto_justificado">
                 Estamos aquí para ayudarte a hacer realidad tus planes empresariales. Si tienes alguna pregunta, no dudes en contactarnos. ¡Estamos emocionados de ser parte de tu éxito empresarial!
-            </p>
-
-            <p className="text-white mt-4 texto_justificado">
-                Iniciemos con la información general de la persona que está llenando el formulario, y es a quien le vamos a notificar avances. Puede ser cualquier persona mayor de edad, que no necesariamente será parte de la sociedad.
-            </p>
+            </p> */}
 
             <button
                 className="bg-profile text-white w-full py-3 rounded-lg mt-4"
@@ -208,6 +230,16 @@ const SociedadEmpresaBienvenido: React.FC = () => {
                     'Continuar'
                 )}
             </button>
+
+            <BotonesPreguntasYContactos
+                primerTexto={
+                    <>
+                        Acerca de las<br /> Sociedades Anónimas
+                    </>
+                }
+                primerHref="https://panamalegalgroup.com/sociedades-anonimas-en-panama/"
+                preguntasHref="/faqs-sociedades"
+            />
 
         </div>
     );

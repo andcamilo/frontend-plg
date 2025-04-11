@@ -120,6 +120,8 @@ const NavBar = () => {
     }
   };
 
+  const navLinkClass = "text-xl font-bold hover:text-profile";
+
   return (
     <nav className="w-full bg-[#1C1A1F] text-white">
       <div className="hidden md:flex items-center justify-between px-8 py-4">
@@ -127,14 +129,14 @@ const NavBar = () => {
         <div className="flex items-center space-x-8">
           <Image src={Logo} alt="Logo" width={210} height={82} className="mr-8" />
 
-          <Link href="/home" className="text-xl font-bold hover:text-profile">
+          <Link href="/home" className={navLinkClass}>
             Inicio
           </Link>
 
           {/* Solicitudes Dropdown */}
           <IconButton
             onClick={handleSolicitudesMenuClick}
-            className="text-xl text-white font-bold hover:text-profile"
+            className={navLinkClass}
             style={{ padding: 0 }}
             sx={{
               color: 'white !important',
@@ -178,7 +180,7 @@ const NavBar = () => {
           {/* FAQs Dropdown */}
           <IconButton
             onClick={handleFaqsMenuClick}
-            className="text-xl text-white font-bold hover:text-profile"
+            className={navLinkClass}
             style={{ padding: 0 }}
             sx={{
               color: 'white !important',
@@ -229,11 +231,11 @@ const NavBar = () => {
 
           <button
             onClick={handleMiCuentaClick}
-            className="text-xl font-bold hover:text-profile focus:outline-none"
+            className={navLinkClass}
           >
             Mi Cuenta
           </button>
-          <a href="#" className="text-xl font-bold hover:text-profile">
+          <a href="#" className={navLinkClass}>
             Ayuda
           </a>
         </div>

@@ -1,41 +1,44 @@
-import Image from 'next/image'
-import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+// src/components/processCarousel.tsx
 
-export default function TramitesPopulares({ 
-  tramites,
-  title = "Trámites Populares" 
-}) {
-  return (
-    <div className="w-full bg-[#1C1C1C] px-4 py-8 md:py-12">
-      <div className="mx-auto max-w-7xl">
-        <h2 className="mb-8 text-3xl font-bold text-white">{title}</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {tramites.map((tramite: any) => (
-            <Link
-              key={tramite.title}
-              href={tramite.redirect}
-              className="group relative overflow-hidden rounded-lg"
-            >
-              <div className="aspect-[4/3] w-full">
-                <Image
-                  src={tramite.imageUrl || "/placeholder.svg"}
-                  alt={tramite.title}
-                  fill
-                  className="object-cover brightness-80 transition-all duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between p-6">
-                <h3 className="text-xl font-medium text-white">{tramite.title}</h3>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B0228C] text-white transition-transform duration-300 group-hover:translate-x-2">
-                  <ChevronRight className="h-6 w-6" />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+
+interface Tramite {
+  title: string;
+  description: string;
+  imageUrl: string;
+  redirect: string;
 }
 
+interface Props {
+  tramites: Tramite[];
+}
+
+const TramitesPopulares: React.FC<Props> = ({ tramites }) => {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-wrap justify-center gap-x-4 gap-y-4 px-4 max-w-[1000px] mx-auto">
+      {tramites.map((tramite, index) => (
+        <button
+          key={index}
+          onClick={() => router.push(tramite.redirect)}
+          className="flex items-center justify-between bg-profile text-white px-4 py-2 rounded-full font-bold text-base shadow-md hover:bg-opacity-90 hover:scale-105 transform transition-all w-[300px] min-h-[60px]"
+        >
+          <div
+            className="text-center w-full leading-tight"
+            title={tramite.title}
+          >
+            {tramite.title}
+          </div>
+          <div className="bg-black rounded-full w-8 h-8 flex items-center justify-center ml-3">
+            <ArrowForwardIosIcon style={{ color: 'white', fontSize: '18px' }} />
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+export default TramitesPopulares;

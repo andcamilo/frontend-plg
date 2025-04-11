@@ -210,7 +210,7 @@ const Fundacion: React.FC = () => {
                                 onClick={() => store.solicitudAdicional && setActiveStep(15)}
                                 disabled={!store.solicitudAdicional}
                             >
-                                Solicitud adicional
+                                Solicitud Adicional
                             </button>
 
                             <button

@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import Pension1 from '@public/images/pension 1.svg';
-import Pension2 from '@public/images/pension 2.svg';
-import Pension3 from '@public/images/pension 3.svg';
-import Pension4 from '@public/images/pension 4.svg';
+import Pension1 from '@public/images/pension 1.webp';
+import Pension2 from '@public/images/pension 2.webp';
+import Pension3 from '@public/images/pension 3.webp';
+import Pension4 from '@public/images/pension 4.webp';
 
 const opciones = [
     {
@@ -35,7 +35,9 @@ export default function BannerOpciones() {
 
     return (
         <div className="w-full p-4">
-            <h2 className="text-white text-2xl font-bold mb-4">¿Qué puedes solicitar en este trámite?</h2>
+            <h2 className="text-white text-2xl font-bold mb-4 text-center">
+                ¿Cómo te vamos a facilitar la apertura de tu empresa?
+            </h2>
 
             {/* Vista escritorio */}
             <div className="hidden md:grid grid-cols-4 gap-4">

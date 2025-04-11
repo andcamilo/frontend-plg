@@ -181,7 +181,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
       {/* Header Section */}
-      <h1 className="text-white text-4xl font-bold flex items-center">
+      <h1 className="text-white text-3xl font-bold flex items-center">
         Información sobre la Firma y Entrega
         <button
           className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
