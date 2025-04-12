@@ -49,6 +49,11 @@ const HomeFooter: React.FC = () => {
               </Link>
             </li>
             <li>
+              <Link href="/request/menores-extranjero" className="hover:underline block">
+                Salida de Menores al Extranjero
+              </Link>
+            </li>
+            <li>
               <Link href="/request/sociedad-empresa" className="hover:underline block">
                 Sociedades / Empresas
               </Link>

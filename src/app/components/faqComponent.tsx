@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Accordion, AccordionSummary, AccordionDetails, Typography, Button } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Link from 'next/link';
 
 interface FaqItem {
   question: string;
@@ -158,10 +159,20 @@ const FaqComponent: React.FC<FaqComponentProps> = ({
 
       <div style={{ textAlign: 'center', marginTop: '40px' }}>
         <Typography variant="body1" sx={{ color: 'white', mb: 2 }}>
-          Estamos aquí para responder a tus preguntas y hacer que el proceso de solicitud de sociedad anónima sea lo más sencillo posible. ¡Contáctanos si necesitas más información 
-          <a href="mailto:info@legix.net" style={{ color: '#D81B60', fontWeight: 'bold', textDecoration: 'none' }}> AQUÍ</a> o al 
-          <a href="https://api.whatsapp.com/send/?phone=50769853352&text&type=phone_number&app_absent=0" style={{ color: '#D81B60', fontWeight: 'bold', textDecoration: 'none' }}> WHATSAPP</a>!
+          Estamos aquí para responder a tus preguntas y hacer que el proceso de solicitud de sociedad anónima sea lo más sencillo posible. ¡Contáctanos si necesitas más información!
+          {/* <a href="mailto:info@legix.net" style={{ color: '#D81B60', fontWeight: 'bold', textDecoration: 'none' }}> AQUÍ</a> o al 
+          <a href="https://api.whatsapp.com/send/?phone=50769853352&text&type=phone_number&app_absent=0" style={{ color: '#D81B60', fontWeight: 'bold', textDecoration: 'none' }}> WHATSAPP</a>! */}
         </Typography>
+      </div>
+      <div style={{ textAlign: 'center', marginTop: '40px' }}>
+        <Link
+          href="/contacts"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center"
+        >
+          Contáctanos
+        </Link>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import axios from "axios";
 import AppStateContext from "@context/menoresContext";
 import { checkAuthToken } from "@utils/checkAuthToken";
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import WidgetLoader from '@/src/app/components/widgetLoader';
@@ -14,6 +14,8 @@ import SaleComponent from '@/src/app/components/saleComponent';
 import CountrySelect from '@components/CountrySelect';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Modal, Box, Button } from "@mui/material";
+import BotonesPreguntasYContactos from '@components/botonesPreguntasYContactos';
+import Link from 'next/link';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -40,7 +42,7 @@ const storage = getStorage(app);
 const MenoresAlExtranjero: React.FC = () => {
     const router = useRouter();
     const params = useParams();
-  
+
     const id = params?.id as string | undefined;
     const [solicitudData, setSolicitudData] = useState<any>(null);
 
@@ -1527,7 +1529,7 @@ const MenoresAlExtranjero: React.FC = () => {
                     autorizante: {
                         nombreCompletoAutorizante: formData.nombreCompletoAutorizante,
                         emailAutorizante: formData.emailAutorizante,
-                        telefonoAutorizante:  `${formData.telefonoCodigoAutorizante} ${formData.telefonoAutorizante}`.trim(),
+                        telefonoAutorizante: `${formData.telefonoCodigoAutorizante} ${formData.telefonoAutorizante}`.trim(),
                         cedulaPasaporteAutorizante: formData.cedulaPasaporteAutorizante,
                         parentescoConMenor: formData.parentescoConMenor,
                         ...(formData.parentescoConMenor === "Otros" && {
@@ -1558,7 +1560,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                 nombreCompletoPadre: formData.nombreCompletoPadre,
                                 emailPadre: formData.emailPadre,
                                 telefonoPadre: `${formData.telefonoCodigoPadre} ${formData.telefonoPadre}`.trim(),
-                                cedulaPasaportePadre: formData.cedulaPasaportePadre, 
+                                cedulaPasaportePadre: formData.cedulaPasaportePadre,
                             }
                         }),
 
@@ -1833,7 +1835,7 @@ const MenoresAlExtranjero: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <i className="fa-solid fa-play text-lg"></i> 
+                        <i className="fa-solid fa-play text-lg"></i>
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>
@@ -1843,7 +1845,7 @@ const MenoresAlExtranjero: React.FC = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-gray-800 rounded-lg w-11/12 md:w-3/4 lg:w-1/2">
                         <div className="p-4 border-b border-gray-600 flex justify-between items-center">
-                            <h2 className="text-white text-xl">¡Bienvenido a la Solicitud de Autorización de Salida de Menores al Extranjero!</h2>
+                            <h2 className="text-white text-xl">¡Bienvenido a la Solicitud de Salida de Menores al Extranjero en Línea!</h2>
                             <button
                                 className="text-white"
                                 onClick={toggleModal} // Cierra el modal
@@ -1882,9 +1884,33 @@ const MenoresAlExtranjero: React.FC = () => {
                 </div>
             )}
             <hr className='mt-4 mb-2' />
-            <label className="block text-white mb-4">En esta sección podrás Gestionar la autorizar de salida de un menor del país ya sea con alguno de los padres o un tercero, podrás hacerlo de forma rápida y sencilla, luego que completes la información solicitada serás contactado por uno de nuestros Abogados para Firmar ante notario.</label>
-            <h2 className="text-white text-2xl font-semibold">Información Personal</h2>
+            <p className="text-white mt-4 texto_justificado">
+                En este formulario podrás completar la información necesaria para solicitar la autorización de salida de un menor del país.
+            </p>
 
+            <p className="text-white mt-4 texto_justificado">
+                La solicitud puede ser completada por cualquier persona, incluso si no está directamente involucrada en el trámite, pero deberá ingresar correctamente los datos de los padres o  del tutor legal del menor, seguido de los datos de la persona a quien se dirigirá la autorización.
+            </p>
+
+            <p className="text-white mt-4 texto_justificado">
+                A continuación, te mostramos las distintas opciones disponibles para gestionar esta solicitud.
+            </p>
+
+            <p className="text-white mt-4 texto_justificado">
+                <strong className="text-red-500">IMPORTANTE:</strong> Este trámite es exclusivo para permisos de salida del país. Para otros procesos legales como custodia, patria potestad o conflictos judiciales, se debe solicitar asesoría legal especializada.
+            </p>
+
+            <p className="text-white mt-4 texto_justificado">
+                Si tienes dudas sobre tu caso, consulta con nuestros abogados aquí:&nbsp;
+                <Link href="/request/consulta-propuesta" style={{ color: '#D81B60', fontWeight: 'bold', textDecoration: 'none' }}>
+                    consultas y propuestas
+                </Link>.
+            </p>
+
+            <h2 className="text-white text-2xl mt-4 font-semibold">Información Personal</h2>
+            <p className="text-white mt-2 texto_justificado">
+                En este espacio, ingresa los datos de la persona que gestionará esta solicitud en la plataforma. Puede ser tu asistente, un familiar o tú mismo. Esta persona será responsable de verificar el avance del trámite, aunque no sea quien autoriza la salida del menor.
+            </p>
             <form onSubmit={handleSubmit} className="mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="relative w-full">
@@ -1969,7 +1995,10 @@ const MenoresAlExtranjero: React.FC = () => {
                 </div>
 
                 <div className="mb-6 mt-4">
-                    <h2 className="block text-white text-lg font-semibold mb-2">Es usted Quien Autoriza:</h2>
+                    <h2 className="block text-white text-lg font-semibold mb-2">¿Indica si eres el autorizante de la salida del menor?</h2>
+                    <p className="text-white mt-2 texto_justificado">
+                        Elige sí, en caso de autorizar la salida, si no lo eres, proporciona los datos del Papá, Mamá, tutor legal, Padres en caso que la autorización sea dirigida a un tercero .
+                    </p>
                     <select
                         name="ustedAutoriza"
                         value={formData.ustedAutoriza}
@@ -2062,8 +2091,8 @@ const MenoresAlExtranjero: React.FC = () => {
                             className="w-full p-4 bg-gray-800 text-white rounded-lg"
                             disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                         >
-                            <option value="Padre">Padre</option>
-                            <option value="Madre">Madre</option>
+                            <option value="Padre">Papá</option>
+                            <option value="Madre">Mamá</option>
                             <option value="Tutor Legal">Tutor Legal</option>
                             <option value="Otros">Otros</option>
                         </select>
@@ -2412,7 +2441,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                                 onChange={(value) => handleCountryChange('telefonoCodigoPadre', value)}
                                                                 className="w-contain"
                                                             />
-                                                            
+
                                                             <input
                                                                 ref={telefonoPadreRef}
                                                                 type="text"
@@ -2909,7 +2938,7 @@ const MenoresAlExtranjero: React.FC = () => {
                             zIndex: 1000,
                         }}
                     >
-           
+
                         <div className="mt-8">
                             <WidgetLoader />
                         </div>
@@ -2935,6 +2964,16 @@ const MenoresAlExtranjero: React.FC = () => {
                         </Button>
                     </Box>
                 </Modal>
+
+                <BotonesPreguntasYContactos
+                    primerTexto={
+                        <>
+                            Acerca de las<br /> Salidas de Menores al Extranjero
+                        </>
+                    }
+                    primerHref="https://panamalegalgroup.com/abogadosdefamiliapanama/"
+                    preguntasHref="/NoMostrarBoton"
+                />
             </form>
         </div >
 

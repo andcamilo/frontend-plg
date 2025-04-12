@@ -1,13 +1,13 @@
 import '@app/globals.css';
 import Logo from '@public/images/legix.png';
 import React, { useState } from 'react';
-import { slide as BurgerMenu } from 'react-burger-menu';
 import { Menu, MenuItem, IconButton } from '@mui/material';
-import { useRouter } from "next/navigation"; 
+import { useRouter } from 'next/navigation';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Image from 'next/image';
 import Link from 'next/link';
-import { checkAuthToken } from "@utils/checkAuthToken";
+import { checkAuthToken } from '@utils/checkAuthToken';
+import { MessageCircle, Home, Menu as MenuIcon, User } from 'lucide-react';
 
 interface Tramite {
   tramite: string;
@@ -15,74 +15,38 @@ interface Tramite {
 }
 
 const tramites: Tramite[] = [
-  {
-    tramite: "Consulta - Propuesta legal",
-    redirect: "/request/consulta-propuesta",
-  },
-  {
-    tramite: "Pensión Alimenticia",
-    redirect: "/request/pension-alimenticia",
-  },
-  {
-    tramite: "Salida de Menores al Extranjero",
-    redirect: "/request/menores-extranjero",
-  },
-  {
-    tramite: "Sociedades / Empresas",
-    redirect: "/request/sociedad-empresa",
-  },
-  {
-    tramite: "Fundaciones de Interés Privado",
-    redirect: "/request/fundacion",
-  },
+  { tramite: 'Consulta - Propuesta legal', redirect: '/request/consulta-propuesta' },
+  { tramite: 'Pensión Alimenticia', redirect: '/request/pension-alimenticia' },
+  { tramite: 'Salida de Menores al Extranjero', redirect: '/request/menores-extranjero' },
+  { tramite: 'Sociedades / Empresas', redirect: '/request/sociedad-empresa' },
+  { tramite: 'Fundaciones de Interés Privado', redirect: '/request/fundacion' },
 ];
 
 const NavBar = () => {
   const [solicitudesAnchorEl, setSolicitudesAnchorEl] = useState<null | HTMLElement>(null);
   const [faqsAnchorEl, setFaqsAnchorEl] = useState<null | HTMLElement>(null);
-
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredTramites, setFilteredTramites] = useState<Tramite[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const router = useRouter();
 
-  /* ---------------------------
-     SOLICITUDES MENU HANDLERS
-  --------------------------- */
   const handleSolicitudesMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setSolicitudesAnchorEl(event.currentTarget);
   };
 
-  const handleSolicitudesClose = () => {
-    setSolicitudesAnchorEl(null);
-  };
+  const handleSolicitudesClose = () => setSolicitudesAnchorEl(null);
+  const handleFaqsMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => setFaqsAnchorEl(event.currentTarget);
+  const handleFaqsMenuClose = () => setFaqsAnchorEl(null);
 
-  /* ---------------------------
-     FAQ MENU HANDLERS
-  --------------------------- */
-  const handleFaqsMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setFaqsAnchorEl(event.currentTarget);
-  };
-
-  const handleFaqsMenuClose = () => {
-    setFaqsAnchorEl(null);
-  };
-
-  /* ---------------------------
-     SEARCH & NAVIGATION LOGIC
-  --------------------------- */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setSearchTerm(term);
-
     if (term) {
-      const filtered = tramites.filter((item) =>
-        item.tramite.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredTramites(filtered);
-      setActiveIndex(-1); // Reset active index when the input changes
+      setFilteredTramites(tramites.filter((item) => item.tramite.toLowerCase().includes(term.toLowerCase())));
+      setActiveIndex(-1);
     } else {
       setFilteredTramites([]);
     }
@@ -91,12 +55,11 @@ const NavBar = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActiveIndex((prevIndex) => Math.min(prevIndex + 1, filteredTramites.length - 1));
+      setActiveIndex((prev) => Math.min(prev + 1, filteredTramites.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setActiveIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+      setActiveIndex((prev) => Math.max(prev - 1, 0));
     } else if (e.key === 'Enter' && activeIndex >= 0) {
-      e.preventDefault();
       handleTramiteClick(filteredTramites[activeIndex].redirect);
     }
   };
@@ -107,240 +70,176 @@ const NavBar = () => {
       await router.push(redirectUrl);
     } finally {
       setIsLoading(false);
+      setIsMobileMenuOpen(false);
     }
   };
-  
 
   const handleMiCuentaClick = () => {
     const auth = checkAuthToken();
-    if (auth) {
-      router.push('/dashboard/home');
-    } else {
-      router.push('/login');
-    }
+    router.push(auth ? '/dashboard/home' : '/login');
+    setIsMobileMenuOpen(false);
   };
 
-  const navLinkClass = "text-xl font-bold hover:text-profile";
+  const navLinkClass = 'text-xl font-bold hover:text-profile';
 
   return (
     <nav className="w-full bg-[#1C1A1F] text-white">
+      {/* Desktop Navbar */}
       <div className="hidden md:flex items-center justify-between px-8 py-4">
-        {/* Left Section: Logo & Main Links */}
         <div className="flex items-center space-x-8">
-          <Image src={Logo} alt="Logo" width={210} height={82} className="mr-8" />
-
-          <Link href="/home" className={navLinkClass}>
-            Inicio
+          <Link href="/home">
+            <Image src={Logo} alt="Logo" width={210} height={82} className="mr-8" />
           </Link>
-
-          {/* Solicitudes Dropdown */}
-          <IconButton
-            onClick={handleSolicitudesMenuClick}
-            className={navLinkClass}
-            style={{ padding: 0 }}
-            sx={{
-              color: 'white !important',
-              padding: 0,
-              '&:hover': {
-                color: 'white !important',
-              },
-            }}
-          >
+          <Link href="/home" className={navLinkClass}>Inicio</Link>
+          <IconButton onClick={handleSolicitudesMenuClick} className={navLinkClass} sx={{ color: 'white' }}>
             Solicitudes <ArrowDropDownIcon />
           </IconButton>
-          <Menu
-            id="solicitudes-menu"
-            anchorEl={solicitudesAnchorEl}
-            keepMounted
-            open={Boolean(solicitudesAnchorEl)}
-            onClose={handleSolicitudesClose}
-            MenuListProps={{ onMouseLeave: handleSolicitudesClose }}
-            sx={{ px: 3, color: 'white !important' }}
-            PaperProps={{
-              style: {
-                backgroundColor: '#1F1F2E',
-                color: 'white',
-              },
-            }}
-          >
-            {tramites.map((tramite, index) => (
-              <MenuItem
-                key={index}
-                sx={{ px: 3, color: 'white !important' }}
-                onClick={() => {
-                  handleTramiteClick(tramite.redirect);
-                  handleSolicitudesClose();
-                }}
-              >
-                {tramite.tramite}
-              </MenuItem>
+          <Menu anchorEl={solicitudesAnchorEl} open={Boolean(solicitudesAnchorEl)} onClose={handleSolicitudesClose}
+            PaperProps={{ style: { backgroundColor: '#1F1F2E', color: 'white' } }}>
+            {tramites.map((t, i) => (
+              <MenuItem key={i} onClick={() => handleTramiteClick(t.redirect)}>{t.tramite}</MenuItem>
             ))}
           </Menu>
-
-          {/* FAQs Dropdown */}
-          <IconButton
-            onClick={handleFaqsMenuClick}
-            className={navLinkClass}
-            style={{ padding: 0 }}
-            sx={{
-              color: 'white !important',
-              padding: 0,
-              '&:hover': {
-                color: 'white !important',
-              },
-            }}
-          >
+          <IconButton onClick={handleFaqsMenuClick} className={navLinkClass} sx={{ color: 'white' }}>
             FAQs <ArrowDropDownIcon />
           </IconButton>
-          <Menu
-            id="faqs-menu"
-            anchorEl={faqsAnchorEl}
-            keepMounted
-            open={Boolean(faqsAnchorEl)}
-            onClose={handleFaqsMenuClose}
-            MenuListProps={{ onMouseLeave: handleFaqsMenuClose }}
-            sx={{ px: 3, color: 'white !important' }}
-            PaperProps={{
-              style: {
-                backgroundColor: '#1F1F2E',
-                color: 'white',
-              },
-            }}
-          >
-            {/* Option 1: Generales */}
-            <MenuItem
-              sx={{ px: 3, color: 'white !important' }}
-              onClick={() => {
-                router.push('/faqs');
-                handleFaqsMenuClose();
-              }}
-            >
-              Generales
-            </MenuItem>
-            {/* Option 2: Sociedades */}
-            <MenuItem
-              sx={{ px: 3, color: 'white !important' }}
-              onClick={() => {
-                router.push('/faqs-sociedades');
-                handleFaqsMenuClose();
-              }}
-            >
-              Sociedades
-            </MenuItem>
+          <Menu anchorEl={faqsAnchorEl} open={Boolean(faqsAnchorEl)} onClose={handleFaqsMenuClose}
+            PaperProps={{ style: { backgroundColor: '#1F1F2E', color: 'white' } }}>
+            <MenuItem onClick={() => router.push('/faqs')}>Generales</MenuItem>
+            <MenuItem onClick={() => router.push('/faqs-sociedades')}>Sociedades</MenuItem>
           </Menu>
-
+          <button onClick={handleMiCuentaClick} className={navLinkClass}>Mi Cuenta</button>
           <button
-            onClick={handleMiCuentaClick}
+            onClick={() => window.open('https://wa.me/50769853352', '_blank')}
             className={navLinkClass}
           >
-            Mi Cuenta
-          </button>
-          <a href="#" className={navLinkClass}>
             Ayuda
-          </a>
-        </div>
-
-        {/* Right Section: Corporativo & Search */}
-        <div className="flex items-center space-x-4">
-          <button
-            className="text-xl font-bold bg-profile rounded-lg px-4 py-2 text-white hover:bg-opacity-90"
-            onClick={() => (window.location.href = '/request/corporativo')}
-          >
-            Corporativo
           </button>
+        </div>
+        <div className="flex items-center space-x-4">
+          <button className="text-xl font-bold bg-profile rounded-lg px-4 py-2 text-white"
+            onClick={() => router.push('/request/corporativo')}>Corporativo</button>
           <div className="flex items-center bg-[#292929] px-3 py-1 rounded-full relative">
-            <input
-              type="text"
-              placeholder="Buscar Trámite"
-              value={searchTerm}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              className="bg-transparent text-white placeholder-gray-400 pl-2 w-full"
-            />
-            <button type="submit" className="p-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                className="w-4 h-4 text-[#9A0069]"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-4.35-4.35m0 0a7.5 7.5 0 111.5-1.5L21 21z"
-                />
-              </svg>
-            </button>
-            {filteredTramites.length > 0 && (
-              <ul
-                className="absolute bg-white text-black mt-1 left-0 w-full rounded shadow-lg z-50"
-                style={{ top: '100%' }}
-              >
-                {filteredTramites.map((item, index) => (
-                  <li
-                    key={index}
-                    onClick={() => handleTramiteClick(item.redirect)}
-                    className={`px-3 py-2 cursor-pointer hover:bg-gray-200 ${
-                      index === activeIndex ? 'bg-gray-200' : ''
-                    }`}
-                  >
-                    {item.tramite}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <input type="text" placeholder="Buscar Trámite" value={searchTerm} onChange={handleInputChange}
+              onKeyDown={handleKeyDown} className="bg-transparent text-white placeholder-gray-400 pl-2 w-full" />
           </div>
         </div>
       </div>
 
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="text-white text-xl">Loading...</div>
-        </div>
-      )}
+      {/* Mobile Top Logo */}
+      <div className="md:hidden pt-1 pb-0 flex justify-center items-start">
+        <Link href="/home">
+          <Image src={Logo} alt="Logo" width={170} height={55} className="cursor-pointer" />
+        </Link>
+      </div>
 
-      {/* Mobile Menu */}
-      <div className="md:hidden">
-        <BurgerMenu right>
-          <Link href="/home" className="menu-item">
-            Inicio
-          </Link>
-          {tramites.map((tramite, index) => (
-            <a
-              key={index}
-              className="menu-item"
-              onClick={() => handleTramiteClick(tramite.redirect)}
-            >
-              {tramite.tramite}
-            </a>
-          ))}
-          {/* Mobile menu items for FAQs */}
-          <p className="menu-item font-bold mt-4">FAQs</p>
-          <Link href="/faqs" className="menu-item pl-4">
-            Generales
-          </Link>
-          <Link href="/faqs-sociedades" className="menu-item pl-4">
-            Sociedades
-          </Link>
-
-          <Link href="/login" className="menu-item">
-            Mi Cuenta
-          </Link>
-          <a href="#" className="menu-item">
-            Ayuda
-          </a>
+      {/* Mobile Side Menu */}
+      {isMobileMenuOpen && (
+        <div className="fixed top-0 left-0 w-full h-full bg-profile z-[1000] text-white p-6 overflow-y-auto">
+          <button className="text-2xl mb-4" onClick={() => setIsMobileMenuOpen(false)}>✕</button>
           <button
-            className="menu-item bg-profile text-white px-4 py-2 rounded-lg"
-            onClick={() => router.push('/request/corporativo')}
+            type="button"
+            onClick={() => {
+              router.push('/home');
+              setIsMobileMenuOpen(false);
+            }}
+            className="block py-2"
+          >
+            Inicio
+          </button>
+          {tramites.map((t, i) => (
+            <button key={i} className="block py-2" onClick={() => handleTramiteClick(t.redirect)}>{t.tramite}</button>
+          ))}
+          <hr className="my-4 border-white/30" />
+          <button
+            type="button"
+            onClick={() => {
+              router.push('/faqs');
+              setIsMobileMenuOpen(false);
+            }}
+            className="block py-2"
+          >
+            FAQs
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              router.push('/faqs-sociedades');
+              setIsMobileMenuOpen(false);
+            }}
+            className="block py-2"
+          >
+            FAQs Sociedades
+          </button>
+          <button className="block py-2" onClick={handleMiCuentaClick}>Mi Cuenta</button>
+          <button
+            onClick={() => window.open('https://wa.me/50769853352', '_blank')}
+            className="block py-2"
+          >
+            Ayuda
+          </button>
+
+          <button
+            type="button"
+            className="mt-4 bg-white text-black px-4 py-2 rounded-lg"
+            onClick={() => {
+              router.push('/request/corporativo');
+              setIsMobileMenuOpen(false);
+            }}
           >
             Corporativo
           </button>
-        </BurgerMenu>
+        </div>
+      )}
+
+      {/* Mobile Bottom Nav */}
+      <div className="fixed bottom-0 w-full bg-[#1C1A1F] border-t border-gray-700 flex justify-around items-center py-2 md:hidden z-40">
+        <button
+          type="button"
+          onClick={() => router.push('/home')}
+          className="flex flex-col items-center text-white"
+        >
+          <Home size={20} />
+          <span className="text-xs">Inicio</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="flex flex-col items-center text-white"
+        >
+          <MenuIcon size={20} />
+          <span className="text-xs">Menú</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => window.open('https://wa.me/50769853352', '_blank')}
+          className="flex flex-col items-center text-white"
+        >
+          <MessageCircle size={20} />
+          <span className="text-xs">WhatsApp</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleMiCuentaClick}
+          className="flex flex-col items-center text-white"
+        >
+          <User size={20} />
+          <span className="text-xs">Cuenta</span>
+        </button>
       </div>
-    </nav>
+
+      {
+        isLoading && (
+          <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-[999]">
+            <div className="text-white text-xl">Cargando...</div>
+          </div>
+        )
+      }
+    </nav >
   );
 };
 
