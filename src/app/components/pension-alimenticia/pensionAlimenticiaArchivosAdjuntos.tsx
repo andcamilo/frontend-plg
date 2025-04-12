@@ -155,7 +155,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
       newErrors.cedula = true;
       isValid = false;
 
-      Swal.fire({  
+      Swal.fire({
         title: 'Es necesario adjuntar la copia de la cédula o pasaporte.',
         position: "top-end",
         icon: "warning",
@@ -275,15 +275,16 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
       <h1 className="text-white text-3xl font-bold flex items-center">
         Información sobre los Archivos Adjuntos
-        <button
-          className="ml-2 flex items-center justify-center w-10 h-10 bg-white text-black rounded-md border border-gray-300"
-          type="button"
-          onClick={toggleModal}
-        >
-          <span className="flex items-center justify-center w-7 h-7 bg-black text-white rounded-full">
-            <i className="fa-solid fa-info text-sm"></i>
-          </span>
-        </button>
+        <div className="flex flex-col items-center">
+          <button
+            className="w-10 h-10 bg-white text-black rounded-md border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+            type="button"
+            onClick={toggleModal}
+          >
+            <i className="fa-solid fa-play text-lg"></i>
+          </button>
+          <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
+        </div>
       </h1>
 
       {showModal && (

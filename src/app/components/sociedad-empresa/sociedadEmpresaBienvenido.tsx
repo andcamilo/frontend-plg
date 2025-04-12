@@ -2,8 +2,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import AppStateContext from '@context/sociedadesContext';
 import ClipLoader from 'react-spinners/ClipLoader';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import EmailIcon from '@mui/icons-material/Email';
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
@@ -11,7 +9,6 @@ import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import get from 'lodash/get';
 import BannerOpcionesSociedad from "../BannerOpcionesSociedad";
-import Link from 'next/link';
 import BotonesPreguntasYContactos from '@components/botonesPreguntasYContactos';
 
 const SociedadEmpresaBienvenido: React.FC = () => {
@@ -135,85 +132,6 @@ const SociedadEmpresaBienvenido: React.FC = () => {
             <p className="text-white mt-4 texto_justificado">
                 Iniciemos con la información general de la persona que está llenando el formulario, y es a quien le vamos a notificar avances. Puede ser cualquier persona mayor de edad, que no necesariamente será parte de la sociedad. Podrás iniciar el trámite, guardarlo, y continuar cuando desees. Cada formulario tendrá un video de guía.
             </p>
-            {/* <p className="text-white mt-4 texto_justificado">
-                Si necesitas más información sobre las sociedades anónimas puedes ir{' '}
-                <Link
-                    href="https://www.panamalegalgroup.com/sociedades-anonimas-en-panama/#"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 underline hover:text-blue-600 transition-colors"
-                >
-                    aquí
-                </Link>.
-            </p>
-            <p className="text-white mt-4">
-                También puedes obtener información <a href="/pag/faqs-sociedades" target="_blank">aquí</a>.
-            </p>
-            <p className="text-white mt-4 texto_justificado">
-                Puedes solicitar tu consulta escrita, virtual o presencial ir{' '}
-                <Link
-                    href="/request/consulta-propuesta"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 underline hover:text-blue-600 transition-colors"
-                >
-                    aquí
-                </Link>.
-            </p>
-            <p className="text-white mt-4 texto_justificado">
-                Si necesitas asistencia previa o tienes dudas adicionales, también puedes contactarnos:
-            </p>
-            <p className="text-white mt-4">
-                <a href="https://wa.me/50769853352" target="_blank" rel="nofollow" style={{ display: 'flex', alignItems: 'center', color: 'green', textDecoration: 'none' }}>
-                    <WhatsAppIcon style={{ color: '#25D366', fontSize: '24px', marginRight: '8px' }} />
-                    <span>WhatsApp</span>
-                </a>
-            </p>
-            <p className="text-white mt-4">
-                <a
-                    href="mailto:info@panamalegalgroup.com"
-                    target="_blank"
-                    rel="nofollow"
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        color: 'blue',
-                        textDecoration: 'none',
-                    }}
-                >
-                    <EmailIcon style={{ color: '#0000EE', fontSize: '24px', marginRight: '8px' }} />
-                    <span>Email</span>
-                </a>
-            </p>
-            <hr className="text-white mt-4"></hr>
-            <p className="text-white mt-4">
-                <strong>¿Cómo te vamos a facilitar la apertura?</strong>
-            </p>
-
-            <ol className="text-white mt-4 texto_justificado">
-                <li>
-                    <b>Completa el Formulario:</b> ¡Dinos lo que quieres! Proporciona información básica sobre la empresa que quieres crear, como el nombre, dirección y actividad principal. Te guiamos en el formulario.
-                </li>
-                <li>
-                    <b>Documentos Necesarios:</b> Te facilitamos la presentación de documentación para que lo realices de forma electrónica. Carga los documentos requeridos, como identificaciones de los socios, comprobante de domicilio, y otros documentos importantes.
-                </li>
-                <li>
-                    <b>Realiza el pago:</b> Sabemos que no tienes tiempo de hacer filas, por esto habilitamos un servicio seguro de pagos en línea. Podrás realizar el pago con tarjeta de crédito, depósito o pago directo. Toma en cuenta que en caso de no ser pago con tarjeta, el proceso inicia desde el momento en que se realiza el pago y subes la información.
-                </li>
-                <li>
-                    <b>Revisión Profesional:</b> No te preocupes si sientes que no has llenado bien la información. Nuestros abogados expertos revisarán tus documentos y te asesorarán en caso de necesitar ajustes.
-                </li>
-                <li>
-                    <b>Proceso de Registro:</b> ¡En un click! Una vez aprobada tu solicitud, procederemos con la creación legal de tu sociedad anónima.
-                </li>
-                <li>
-                    <b>Actualizaciones en Tiempo Real:</b> Nosotros vamos a ti, sin que tengas que preguntar por tu trámite. Te mantenemos al tanto del progreso de tu solicitud a través de nuestra plataforma en línea.
-                </li>
-            </ol>
-
-            <p className="text-white mt-4 texto_justificado">
-                Estamos aquí para ayudarte a hacer realidad tus planes empresariales. Si tienes alguna pregunta, no dudes en contactarnos. ¡Estamos emocionados de ser parte de tu éxito empresarial!
-            </p> */}
 
             <button
                 className="bg-profile text-white w-full py-3 rounded-lg mt-4"
