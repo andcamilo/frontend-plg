@@ -17,12 +17,14 @@ import SolicitudAdicional from '@components/sociedad-empresa/solicitudAdicional'
 import SociedadEmpresaResumen from '@components/sociedad-empresa/sociedadEmpresaResumen';
 import WidgetLoader from '@/src/app/components/widgetLoader';
 import SaleComponent from '@/src/app/components/saleComponent';
+import { useRouter } from 'next/navigation';
 
 const SociedadEmpresa: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(1);
     console.log("🚀 ~ activeStep:", activeStep)
     const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+        const router = useRouter();
 
     // Access the context values
     const context = useContext(AppStateContext);
@@ -236,7 +238,7 @@ const SociedadEmpresa: React.FC = () => {
                         )}
 
                         <div className="mt-8">
-                            <button className="bg-gray-500 text-white w-full py-3 rounded-lg">Salir</button>
+                         <button className="bg-gray-500 text-white w-full py-3 rounded-lg" onClick={() => router.push('/home')}>Salir</button>
                         </div>
                     </div>
                 </div>

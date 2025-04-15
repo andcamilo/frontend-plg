@@ -23,6 +23,8 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
   }
 
   const { state, setState } = context;
+  console.log("🚀 ~ state:", state)
+
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -156,7 +158,14 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
         <hr className="my-6" />
         <DisbursementPaidDisbursementDetails />
 
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-end gap-4">
+          <button
+            onClick={() => router.push('/dashboard/see')}
+            className="px-6 py-2 font-semibold rounded-lg bg-profile text-white hover:bg-blue-500 transition"
+          >
+            Salir
+          </button>
+
           <button
             onClick={handleSave}
             className={`px-6 py-2 font-semibold rounded-lg transition ${
@@ -169,6 +178,9 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
             {isLoading ? 'Cargando...' : 'Guardar'}
           </button>
         </div>
+
+
+
       </div>
     </div>
   );

@@ -13,12 +13,15 @@ import PensionAlimenticiaResumen from '@components/pension-alimenticia/pensionAl
 import WidgetLoader from '@/src/app/components/widgetLoader';
 import SaleComponent from '@/src/app/components/saleComponent';
 import AppStateContext from '@context/context';
+import { useRouter } from 'next/navigation';
 
 const PensionAlimenticia: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
   console.log("🚀 ~ activeStep:", activeStep)
   const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const router = useRouter();
+  
 
   const context = useContext(AppStateContext);
 
@@ -106,7 +109,7 @@ const PensionAlimenticia: React.FC = () => {
       )}
 
       <div className="mt-8">
-        <button className="bg-gray-500 text-white w-full py-3 rounded-lg">Salir</button>
+        <button className="bg-gray-500 text-white w-full py-3 rounded-lg" onClick={() => router.push('/home')}>Salir</button>
       </div>
     </div>
   );
