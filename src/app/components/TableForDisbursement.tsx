@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getSpanishTitle } from '../utils/translateColumnTitle';
 
 interface TableForDisbursementProps {
@@ -41,10 +41,29 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   buttonText = 'Editar',
   loading = false,
 }) => {
-  // Exclude 'id' from columns to render, but keep it in row data
   const columns = data.length > 0 ? Object.keys(data[0]).filter(col => col !== 'id') : [];
   const [selectedRows, setSelectedRows] = useState<{ [key: number]: boolean }>({});
   const [selectAll, setSelectAll] = useState(false);
+
+  // 👇 Filtros
+  const [lawyerFilter, setLawyerFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
+
+  const lawyerValues = useMemo(() => {
+    return Array.from(new Set(data.map(row => row['lawyer']).filter(val => val)));
+  }, [data]);
+
+  const statusValues = useMemo(() => {
+    return Array.from(new Set(data.map(row => row['status']).filter(val => val)));
+  }, [data]);
+
+  const filteredData = useMemo(() => {
+    return data.filter(row => {
+      const matchesLawyer = lawyerFilter ? row['lawyer'] === lawyerFilter : true;
+      const matchesStatus = statusFilter ? row['status'] === statusFilter : true;
+      return matchesLawyer && matchesStatus;
+    });
+  }, [data, lawyerFilter, statusFilter]);
 
   useEffect(() => {
     setSelectedRows({});
@@ -62,7 +81,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
     const allSelected = !selectAll;
     setSelectAll(allSelected);
 
-    const newSelectedRows = data.reduce<{ [key: number]: boolean }>((acc, _, index) => {
+    const newSelectedRows = filteredData.reduce<{ [key: number]: boolean }>((acc, _, index) => {
       acc[index] = allSelected;
       return acc;
     }, {});
@@ -71,19 +90,64 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
 
   const handleGetSelectedIds = () => {
     const selectedIndexes = Object.keys(selectedRows).filter((key) => selectedRows[Number(key)]);
-    const selectedIds = selectedIndexes.map((key) => data[Number(key)].invoice_id ?? data[Number(key)].id);
+    const selectedIds = selectedIndexes.map((key) => filteredData[Number(key)].invoice_id ?? filteredData[Number(key)].id);
     onGetSelectedIds(selectedIds);
   };
 
   return (
     <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-8xl mb-4">
-      <h2 className="text-lg font-bold text-white mb-4">
-        {getSpanishTitle(title)}
-      </h2>
+      <div className="mb-4">
+        <h2 className="text-lg font-bold text-white mb-2">
+          {getSpanishTitle(title)}
+        </h2>
+
+        {/* Filtros */}
+        <div className="flex flex-wrap items-center gap-4 text-white">
+          {/* Filtro por abogado */}
+          {lawyerValues.length > 0 && (
+            <div className="flex items-center gap-2">
+              <label htmlFor="lawyer-filter" className="text-sm">Filtrar por Abogado:</label>
+              <select
+                id="lawyer-filter"
+                value={lawyerFilter}
+                onChange={(e) => setLawyerFilter(e.target.value)}
+                className="bg-gray-700 text-white px-2 py-1 rounded"
+              >
+                <option value="">Todos</option>
+                {lawyerValues.map((val, idx) => (
+                  <option key={idx} value={val}>
+                    {val}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Filtro por estado */}
+          {statusValues.length > 0 && (
+            <div className="flex items-center gap-2">
+              <label htmlFor="status-filter" className="text-sm">Filtrar por Estado:</label>
+              <select
+                id="status-filter"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-gray-700 text-white px-2 py-1 rounded"
+              >
+                <option value="">Todos</option>
+                {statusValues.map((val, idx) => (
+                  <option key={idx} value={val}>
+                    {val}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+      </div>
 
       {loading ? (
         <p className="text-gray-300">Cargando desembolsos...</p>
-      ) : data.length > 0 ? (
+      ) : filteredData.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-gray-400 table-auto">
             <thead>
@@ -105,7 +169,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
               </tr>
             </thead>
             <tbody>
-              {data.map((row, rowIndex) => (
+              {filteredData.map((row, rowIndex) => (
                 <tr key={rowIndex} className="border-t border-gray-700">
                   <td className="py-2 px-2">
                     <input

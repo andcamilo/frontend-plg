@@ -20,9 +20,11 @@ import FundacionSolicitudAdicional from '@components/fundacion/solicitudAdiciona
 import FundacionResumen from '@components/fundacion/fundacionResumen';
 import WidgetLoader from '@/src/app/components/widgetLoader';
 import SaleComponent from '@/src/app/components/saleComponent';
+import { useRouter } from 'next/navigation';
 
 const Fundacion: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(1);
+    const router = useRouter();
 
     // Access the context values
     const context = useContext(AppStateContext);
@@ -241,7 +243,7 @@ const Fundacion: React.FC = () => {
                             </div>
                         )}
                         <div className="mt-8">
-                            <button className="bg-gray-500 text-white w-full py-3 rounded-lg">Salir</button>
+                          <button className="bg-gray-500 text-white w-full py-3 rounded-lg" onClick={() => router.push('/home')}>Salir</button>
                         </div>
                     </div>
                 </div>
