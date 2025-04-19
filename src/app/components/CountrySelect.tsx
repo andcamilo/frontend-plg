@@ -36,9 +36,14 @@ function getDisplayName(country: any): string {
 
 
 const options: Option[] = countries.map((country) => {
-  const root = country.idd?.root ?? "";
-  const suffix = country.idd?.suffixes?.[0] ?? "";
-  const dialCode = root && suffix ? `${root}${suffix}` : "";
+  const root = country.idd?.root ?? '';
+  const suffixes = country.idd?.suffixes ?? [];
+  
+  // Si el root es +1 (USA, Canadá, etc), usamos solo root
+  const dialCode = root === '+1' ? root : (suffixes.length > 0 ? `${root}${suffixes[0]}` : root);
+  
+  
+
   const displayName = getDisplayName(country);
 
   return {

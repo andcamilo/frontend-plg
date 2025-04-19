@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useContext, useEffect, useState } from 'react';
 import Select from 'react-select';
 import DesembolsoContext from '@context/desembolsoContext';
@@ -32,12 +32,11 @@ const DisbursementGastosOficina: React.FC = () => {
         const fetchVendors = async () => {
             try {
                 const response = await fetch("/api/list-vendors");
-                console.log("🚀 ~ fetchVendors ~ response:", response)
                 const data = await response.json();
 
                 const formattedVendors = data?.data?.map((vendor: any) => ({
                     label: vendor.nombre,
-                    value: vendor.nombre,
+                    value: vendor.id,
                 })) || [];
 
                 setVendors(formattedVendors);
@@ -49,9 +48,7 @@ const DisbursementGastosOficina: React.FC = () => {
         fetchVendors();
     }, []);
 
-    if (!context) {
-        return <div>Context is not available.</div>;
-    }
+    if (!context) return <div>Context is not available.</div>;
 
     const { state, setState } = context;
 
@@ -81,7 +78,6 @@ const DisbursementGastosOficina: React.FC = () => {
             otherExpenseType: '',
             expenseDetail: '',
             amount: 0,
-            lawyer: '',
             invoiceNumber: '',
             status: true,
         };
@@ -100,25 +96,80 @@ const DisbursementGastosOficina: React.FC = () => {
 
     const handleSelectChange = (selectedOption: any, index: number, name: string) => {
         const value = typeof selectedOption === 'string' ? selectedOption : selectedOption?.value || '';
-      
+
         setState((prevState) => ({
-          ...prevState,
-          desemboloOficina: prevState.desemboloOficina.map((item, i) =>
-            i === index
-              ? {
-                  ...item,
-                  [name]: value,
-                }
-              : item
-          ),
+            ...prevState,
+            desemboloOficina: prevState.desemboloOficina.map((item, i) =>
+                i === index
+                    ? {
+                        ...item,
+                        [name]: value,
+                    }
+                    : item
+            ),
         }));
-      };
-      
+    };
 
     return (
         <div className="p-1">
             <div className="p-1 rounded-lg shadow-lg">
                 <h2 className="text-xl font-semibold text-white mb-6">Gastos de Oficina</h2>
+
+                {/* ✅ solicita Select (Global) */}
+                <div className="mb-6">
+                    <label htmlFor="solicita" className="block text-gray-300 mb-2">
+                        Abogado 
+                    </label>
+                    {vendors.length === 0 ? (
+                        <div className="text-gray-400">Cargando proveedores...</div>
+                    ) : (
+                        <Select
+                            inputId="solicita"
+                            options={vendors}
+                            value={vendors.find(v => v.value === state.solicita) || null}
+                            onChange={(selectedOption) =>
+                                setState((prevState) => ({
+                                    ...prevState,
+                                    solicita: selectedOption?.value || '',
+                                }))
+                            }
+                            placeholder="Selecciona un abogado"
+                            classNamePrefix="react-select"
+                            styles={{
+                                control: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: '#374151',
+                                    borderColor: '#4B5563',
+                                    color: '#FFFFFF',
+                                    padding: '4px',
+                                    borderRadius: '0.5rem',
+                                    boxShadow: 'none',
+                                    '&:hover': {
+                                        borderColor: '#3B82F6',
+                                    },
+                                }),
+                                singleValue: (provided) => ({
+                                    ...provided,
+                                    color: '#FFFFFF',
+                                }),
+                                placeholder: (provided) => ({
+                                    ...provided,
+                                    color: '#9CA3AF',
+                                }),
+                                menu: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: '#374151',
+                                    borderRadius: '0.5rem',
+                                }),
+                                option: (provided, state) => ({
+                                    ...provided,
+                                    backgroundColor: state.isFocused ? '#1F2937' : '#374151',
+                                    color: '#FFFFFF',
+                                }),
+                            }}
+                        />
+                    )}
+                </div>
 
                 {state.desemboloOficina.map((expense, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -194,65 +245,17 @@ const DisbursementGastosOficina: React.FC = () => {
                         </div>
 
                         <div className="mb-4">
-                            <label htmlFor={`lawyer-${index}`} className="block text-gray-300 mb-2">
-                                A quién se le realiza el desembolso
-                            </label>
-                            <Select
-                                options={vendors}
-                                value={vendors.find(vendor => vendor.value === expense.lawyer) || null}
-                                onChange={(selectedOption) => handleSelectChange(selectedOption, index, 'lawyer')}
-                                placeholder="Selecciona un proveedor"
-                                classNamePrefix="react-select"
-                                styles={{
-                                    control: (provided) => ({
-                                    ...provided,
-                                    backgroundColor: '#374151', // bg-gray-700
-                                    borderColor: '#4B5563', // border-gray-600
-                                    color: '#FFFFFF', // text-white
-                                    padding: '4px', // Match padding
-                                    borderRadius: '0.5rem', // rounded-lg
-                                    boxShadow: 'none',
-                                    '&:hover': {
-                                        borderColor: '#3B82F6', // focus:border-blue-500
-                                    },
-                                    }),
-                                    singleValue: (provided) => ({
-                                    ...provided,
-                                    color: '#FFFFFF', // text-white
-                                    }),
-                                    placeholder: (provided) => ({
-                                    ...provided,
-                                    color: '#9CA3AF', // text-gray-400
-                                    }),
-                                    menu: (provided) => ({
-                                    ...provided,
-                                    backgroundColor: '#374151', // bg-gray-700
-                                    borderRadius: '0.5rem', // rounded-lg
-                                    }),
-                                    option: (provided, state) => ({
-                                    ...provided,
-                                    backgroundColor: state.isFocused ? '#1F2937' : '#374151', // bg-gray-800 on hover
-                                    color: '#FFFFFF', // text-white
-                                    }),
-                                }}
-                                />
-
-                        </div>
-
-                        <div className="mb-4">
                             <label htmlFor={`invoiceNumber-${index}`} className="block text-gray-300 mb-2">
                                 Número de factura asociada
                             </label>
-
-                                <input
+                            <input
                                 id={`invoiceNumber-${index}`}
                                 type="text"
-                                value={expense.invoiceNumber || ''}  // <- asegúrate que siempre sea string
+                                value={expense.invoiceNumber || ''}
                                 onChange={(e) => handleSelectChange(e.target.value, index, 'invoiceNumber')}
                                 placeholder="Buscar número de factura"
                                 className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-
+                            />
                         </div>
                     </div>
                 ))}

@@ -5,7 +5,6 @@ type DesembolsoOficina = {
     otherExpenseType?: string;
     expenseDetail: string; 
     amount: number;
-    lawyer: string;
     invoiceNumber?: string;
     status: boolean;
 };
@@ -18,12 +17,10 @@ type DesembolsoCliente = {
     billedExpensesSent: string; 
     clientPaidExpensesSent: string;
     associatedExpenseDetail: string;
-    lawyer: string;
     status: boolean;
 };
 
 type DesembolsoCajaChica = {
-    lawyer: string; 
     date: string;
     amount: number; 
     invoiceNumber: string; 
@@ -52,6 +49,7 @@ type FormDataType = {
     disbursementType: string;
     expenseType: string;
     status: string;
+    solicita: string;
     desemboloOficina: DesembolsoOficina[];
     desembolsoCliente: DesembolsoCliente[];
     desembolsoCajaChica: DesembolsoCajaChica[];
@@ -62,6 +60,7 @@ type FormDataType = {
 // Initial state for formData
 const initialFormData: FormDataType = {
     disbursementType: 'desembolso-gastos',
+    solicita: '',
     expenseType: 'de-oficina',
     status: 'creada',
     desemboloOficina: [
@@ -70,7 +69,6 @@ const initialFormData: FormDataType = {
             otherExpenseType: '',
             expenseDetail: '', 
             amount: 0,
-            lawyer: '',
             invoiceNumber: '',
             status: false,
         },
@@ -83,13 +81,11 @@ const initialFormData: FormDataType = {
             otherExpenses: '', 
             billedExpensesSent: '', 
             clientPaidExpensesSent:'',
-            lawyer: '',
             associatedExpenseDetail: '',
             status: false,
         },
     ],
     desembolsoCajaChica: [{
-        lawyer:'',
         date: '',
         amount: 0,
         invoiceNumber: '',
@@ -148,7 +144,7 @@ export const mapDisbursementToFormData = (raw: any): FormDataType => {
       disbursementType: raw.disbursementType || raw.tipo_desembolso || 'desembolso-gastos',
       expenseType: raw.expenseType || (raw.isGasto ? 'de-cliente' : 'de-oficina'),
       status: raw.status || 'creada',
-  
+      solicita: raw.solicita || '',
       desemboloOficina: raw.desemboloOficina?.length
         ? raw.desemboloOficina.map((item: any) => ({
             expenseType: item.expenseType || '',

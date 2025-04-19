@@ -8,12 +8,6 @@ const DisbursementCajaChica: React.FC = () => {
     const [invoices, setInvoices] = useState<any[]>([]);
 
     useEffect(() => {
-        if (context) {
-
-        }
-    }, [context?.state]);
-
-    useEffect(() => {
         const fetchInvoices = async () => {
             try {
                 const response = await fetch("/api/list-invoices");
@@ -41,7 +35,7 @@ const DisbursementCajaChica: React.FC = () => {
 
                 const formattedVendors = data?.data?.map((vendor: any) => ({
                     label: vendor.nombre,
-                    value: vendor.nombre,
+                    value: vendor.id,
                 })) || [];
 
                 setVendors(formattedVendors);
@@ -53,38 +47,32 @@ const DisbursementCajaChica: React.FC = () => {
         fetchVendors();
     }, []);
 
-
-    if (!context) {
-        return <div>Context is not available.</div>;
-    }
+    if (!context) return <div>Context is not available.</div>;
 
     const { state, setState } = context;
-    console.log("🚀 ~ state:", state)
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
         index: number
-      ) => {
+    ) => {
         const { name, value } = e.target;
-      
+
         setState((prevState) => ({
-          ...prevState,
-          desembolsoCajaChica: prevState.desembolsoCajaChica.map((item, i) =>
-            i === index
-              ? {
-                  ...item,
-                  [name]: value,
-                  status: true,
-                }
-              : item
-          ),
+            ...prevState,
+            desembolsoCajaChica: prevState.desembolsoCajaChica.map((item, i) =>
+                i === index
+                    ? {
+                        ...item,
+                        [name]: value,
+                        status: true,
+                    }
+                    : item
+            ),
         }));
-      };
-      
+    };
 
     const handleAddExpense = () => {
         const newExpense = {
-            lawyer: '',
             date: '',
             amount: 0,
             invoiceNumber: '',
@@ -106,51 +94,68 @@ const DisbursementCajaChica: React.FC = () => {
         }));
     };
 
-    const handleSelectChange = (selectedOption: any, index: number, name: string) => {
-        setState((prevState) => ({
-            ...prevState,
-            desemboloOficina: prevState.desemboloOficina.map((item, i) =>
-                i === index
-                    ? {
-                        ...item,
-                        [name]: selectedOption?.value || '',
-                    }
-                    : item
-            ),
-        }));
-    };
-
     return (
         <div className="p-1">
             <div className="p-1 rounded-lg shadow-lg">
                 <h2 className="text-xl font-semibold text-white mb-6">Caja Chica</h2>
 
+                <div className="mb-6">
+                    <label htmlFor="solicita" className="block text-gray-300 mb-2">
+                        Abogado
+                    </label>
+                    {vendors.length === 0 ? (
+                        <div className="text-gray-400">Cargando proveedores...</div>
+                    ) : (
+                        <Select
+                            inputId="solicita"
+                            options={vendors}
+                            value={vendors.find(v => v.value === state.solicita) || null}
+                            onChange={(selectedOption) =>
+                                setState((prevState) => ({
+                                    ...prevState,
+                                    solicita: selectedOption?.value || '',
+                                }))
+                            }
+                            placeholder="Selecciona un abogado"
+                            classNamePrefix="react-select"
+                            styles={{
+                                control: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: '#374151',
+                                    borderColor: '#4B5563',
+                                    color: '#FFFFFF',
+                                    padding: '4px',
+                                    borderRadius: '0.5rem',
+                                    boxShadow: 'none',
+                                    '&:hover': {
+                                        borderColor: '#3B82F6',
+                                    },
+                                }),
+                                singleValue: (provided) => ({
+                                    ...provided,
+                                    color: '#FFFFFF',
+                                }),
+                                placeholder: (provided) => ({
+                                    ...provided,
+                                    color: '#9CA3AF',
+                                }),
+                                menu: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: '#374151',
+                                    borderRadius: '0.5rem',
+                                }),
+                                option: (provided, state) => ({
+                                    ...provided,
+                                    backgroundColor: state.isFocused ? '#1F2937' : '#374151',
+                                    color: '#FFFFFF',
+                                }),
+                            }}
+                        />
+                    )}
+                </div>
+
                 {state.desembolsoCajaChica.map((expense, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div className="mb-4">
-                            <label htmlFor={`lawyer-${index}`} className="block text-gray-300 mb-2">
-                                A quién se le realiza el desembolso
-                            </label>
-                            {vendors.length === 0 ? (
-                                <div className="text-gray-400">Cargando proveedores...</div>
-                            ) : (
-                                <select
-                                    id={`lawyer-${index}`}
-                                    name="lawyer"
-                                    value={expense.lawyer}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="">Selecciona un abogado</option>
-                                    {vendors.map((vendor, i) => (
-                                        <option key={i} value={vendor.value}>
-                                            {vendor.label}
-                                        </option>
-                                    ))}
-
-                                </select>
-                            )}
-                        </div>
 
                         <div className="mb-4">
                             <label htmlFor={`date-${index}`} className="block text-gray-300 mb-2">
@@ -192,8 +197,7 @@ const DisbursementCajaChica: React.FC = () => {
                                 onChange={(e) => handleChange(e, index)}
                                 placeholder="Buscar número de factura"
                                 className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-
+                            />
                         </div>
 
                         <div className="mb-4">
