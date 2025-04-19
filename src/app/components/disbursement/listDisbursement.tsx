@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import TableForDisbursement from '../TableForDisbursement';
 import axios from 'axios';
+import { auth } from "@configuration/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 
 const ListDisbursement: React.FC = () => {
   const router = useRouter();
@@ -11,22 +14,57 @@ const ListDisbursement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [role, setRole] = useState<string | number | null>(null);
+
+  // Auth listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser && firebaseUser.email) {
+        setEmail(firebaseUser.email);
+        try {
+          const db = getFirestore();
+          const q = query(collection(db, "usuarios"), where("email", "==", firebaseUser.email));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            setRole(doc.data().rol || null);
+          } else {
+            setRole(null);
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+        }
+      } else {
+        setEmail(null);
+        setRole(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const fetchDisbursements = async (page: number, limit: number) => {
     try {
+      if (!email || role === null) return;
+      console.log("🚀 ~ fetchDisbursements ~ email:", email)
+
       setLoading(true);
+
+
+      console.log("🚀 ~ fetchDisbursements ~ email:", email)
+      console.log("🚀 ~ fetchDisbursements ~ role:", role)
 
       const response = await axios.get('/api/list-disbursements', {
         params: {
           limit,
           page,
+          email,
+          role,
         },
       });
 
       const { disbursements, totalPages: backendTotalPages } = response.data;
-
-      const cleanedDisbursements = disbursements.map(({ id, ...rest }) => rest);
-      console.log("🚀 ~ fetchDisbursements ~ disbursements:", cleanedDisbursements)
 
       setData(disbursements || []);
       setTotalPages(backendTotalPages || 1);
@@ -38,8 +76,10 @@ const ListDisbursement: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchDisbursements(currentPage, rowsPerPage);
-  }, [currentPage, rowsPerPage]);
+    if (email && role !== null) {
+      fetchDisbursements(currentPage, rowsPerPage);
+    }
+  }, [currentPage, rowsPerPage, email, role]);
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -67,7 +107,6 @@ const ListDisbursement: React.FC = () => {
         ids: selectedIds,
       });
 
-      console.log('🚀 ~ handleGetSelectedIds ~ Update Response:', response.data);
       alert('Desembolsos actualizados correctamente.');
       fetchDisbursements(currentPage, rowsPerPage);
     } catch (error) {
