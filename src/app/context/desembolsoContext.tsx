@@ -28,6 +28,7 @@ type DesembolsoCajaChica = {
     reason: string; 
     observation?: string; 
     status: boolean;
+    fileRef?: string;
 };
 
 type DetalleDesembolsoPagado = {
@@ -93,6 +94,7 @@ const initialFormData: FormDataType = {
         reason: '',
         observation: '',
         status: false,
+        fileRef: '',
     }],
     detalleDesembolsoPagado: {
         paymentDate: '',
