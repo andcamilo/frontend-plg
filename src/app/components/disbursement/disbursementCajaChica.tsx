@@ -1,11 +1,80 @@
 import React, { useContext, useEffect, useState } from 'react';
 import DesembolsoContext from '@context/desembolsoContext';
 import Select from 'react-select';
+import axios from 'axios';
+import { ref, uploadBytes, getStorage } from 'firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
 
 const DisbursementCajaChica: React.FC = () => {
     const context = useContext(DesembolsoContext);
     const [vendors, setVendors] = useState<any[]>([]);
     const [invoices, setInvoices] = useState<any[]>([]);
+    const [isLoadingVendor, setIsLoadingVendor] = useState(false);
+    const [uploading, setUploading] = useState<{ [key: number]: boolean }>({});
+    const storage = getStorage();
+
+    console.log("Context state:", context?.state);
+    console.log("Current vendors:", vendors);
+
+    // First, fetch the vendor name if it exists in context
+    useEffect(() => {
+        const fetchVendorName = async () => {
+            if (!context?.state.solicita) {
+                console.log("No solicita in context");
+                return;
+            }
+
+            console.log("Fetching vendor name for ID:", context.state.solicita);
+            setIsLoadingVendor(true);
+            try {
+                const response = await axios.get('/api/get-user-id', {
+                    params: { userId: context.state.solicita }
+                });
+                
+                console.log("Vendor response:", response.data);
+                if (response.data.user && response.data.user.nombre) {
+                    setVendors([{
+                        label: response.data.user.nombre,
+                        value: context.state.solicita
+                    }]);
+                }
+            } catch (error) {
+                console.error('Error fetching vendor name:', error);
+            } finally {
+                setIsLoadingVendor(false);
+            }
+        };
+
+        fetchVendorName();
+    }, [context?.state.solicita]);
+
+    // Then, fetch all vendors if no vendor in context
+    useEffect(() => {
+        const fetchVendors = async () => {
+            if (context?.state.solicita) {
+                console.log("Skipping vendors fetch because we have a solicita in context");
+                return;
+            }
+
+            console.log("Fetching all vendors");
+            try {
+                const response = await fetch("/api/list-vendors");
+                const data = await response.json();
+                console.log("All vendors response:", data);
+
+                const formattedVendors = data?.data?.map((vendor: any) => ({
+                    label: vendor.nombre,
+                    value: vendor.cuenta,
+                })) || [];
+
+                setVendors(formattedVendors);
+            } catch (error) {
+                console.error("Error fetching vendors:", error);
+            }
+        };
+
+        fetchVendors();
+    }, [context?.state.solicita]);
 
     useEffect(() => {
         const fetchInvoices = async () => {
@@ -25,26 +94,6 @@ const DisbursementCajaChica: React.FC = () => {
         };
 
         fetchInvoices();
-    }, []);
-
-    useEffect(() => {
-        const fetchVendors = async () => {
-            try {
-                const response = await fetch("/api/list-vendors");
-                const data = await response.json();
-
-                const formattedVendors = data?.data?.map((vendor: any) => ({
-                    label: vendor.nombre,
-                    value: vendor.id,
-                })) || [];
-
-                setVendors(formattedVendors);
-            } catch (error) {
-                console.error("Error fetching vendors:", error);
-            }
-        };
-
-        fetchVendors();
     }, []);
 
     if (!context) return <div>Context is not available.</div>;
@@ -94,6 +143,41 @@ const DisbursementCajaChica: React.FC = () => {
         }));
     };
 
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(prev => ({ ...prev, [index]: true }));
+
+        try {
+            // Create a reference to the file in Firebase Storage
+            const fileName = `${uuidv4()}_${file.name}`;
+            const storageRef = ref(storage, `paid_disbursements/${fileName}`);
+
+            // Upload the file
+            await uploadBytes(storageRef, file);
+
+            // Update the state with the file reference
+            setState((prevState) => ({
+                ...prevState,
+                desembolsoCajaChica: prevState.desembolsoCajaChica.map((item, i) =>
+                    i === index
+                        ? {
+                            ...item,
+                            fileRef: `paid_disbursements/${fileName}`,
+                            status: true,
+                        }
+                        : item
+                ),
+            }));
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert('Error al subir el archivo. Por favor, intente de nuevo.');
+        } finally {
+            setUploading(prev => ({ ...prev, [index]: false }));
+        }
+    };
+
     return (
         <div className="p-1">
             <div className="p-1 rounded-lg shadow-lg">
@@ -103,8 +187,8 @@ const DisbursementCajaChica: React.FC = () => {
                     <label htmlFor="solicita" className="block text-gray-300 mb-2">
                         Abogado
                     </label>
-                    {vendors.length === 0 ? (
-                        <div className="text-gray-400">Cargando proveedores...</div>
+                    {isLoadingVendor ? (
+                        <div className="text-gray-400">Cargando proveedor...</div>
                     ) : (
                         <Select
                             inputId="solicita"
@@ -116,6 +200,7 @@ const DisbursementCajaChica: React.FC = () => {
                                     solicita: selectedOption?.value || '',
                                 }))
                             }
+                            isDisabled={!!state.solicita}
                             placeholder="Selecciona un abogado"
                             classNamePrefix="react-select"
                             styles={{
@@ -156,7 +241,6 @@ const DisbursementCajaChica: React.FC = () => {
 
                 {state.desembolsoCajaChica.map((expense, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-
                         <div className="mb-4">
                             <label htmlFor={`date-${index}`} className="block text-gray-300 mb-2">
                                 Fecha
@@ -242,6 +326,30 @@ const DisbursementCajaChica: React.FC = () => {
                                 onChange={(e) => handleChange(e, index)}
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                             ></textarea>
+                        </div>
+
+                        <div className="mb-4">
+                            <label htmlFor={`file-${index}`} className="block text-gray-300 mb-2">
+                                Adjuntar comprobante
+                            </label>
+                            <input
+                                type="file"
+                                id={`file-${index}`}
+                                accept="image/*,.pdf"
+                                onChange={(e) => handleFileUpload(e, index)}
+                                className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+                                disabled={uploading[index]}
+                            />
+                            {uploading[index] && (
+                                <div className="text-sm text-gray-400 mt-1">
+                                    Subiendo archivo...
+                                </div>
+                            )}
+                            {expense.fileRef && !uploading[index] && (
+                                <div className="text-sm text-green-400 mt-1">
+                                    ✓ Archivo subido
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}

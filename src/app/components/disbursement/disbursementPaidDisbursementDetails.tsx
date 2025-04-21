@@ -12,6 +12,7 @@ import {
   firebaseAppId 
 } from '@utils/env';
 
+// Initialize Firebase
 const firebaseConfig = {
   apiKey: firebaseApiKey,
   authDomain: firebaseAuthDomain,
@@ -21,18 +22,16 @@ const firebaseConfig = {
   appId: firebaseAppId,
 };
 
-
+// Initialize Firebase app if it hasn't been initialized yet
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
 const DisbursementPaidDisbursementDetails: React.FC = () => {
   const context = useContext(DesembolsoContext);
-  const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
   }, [context?.state]);
-
 
   if (!context) {
     return <div>Context is not available.</div>;
@@ -51,8 +50,10 @@ const DisbursementPaidDisbursementDetails: React.FC = () => {
     }));
   };
 
-  const handleFileUpload = async () => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
+    
     setUploading(true);
     const filePath = `paid_disbursements/${file.name}_${Date.now()}`;
     const storageRef = ref(storage, filePath);
@@ -69,15 +70,20 @@ const DisbursementPaidDisbursementDetails: React.FC = () => {
         setUploading(false);
       },
       async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        setState(prevState => ({
-          ...prevState,
-          detalleDesembolsoPagado: {
-            ...prevState.detalleDesembolsoPagado,
-            attachedFile: downloadURL,
-          }
-        }));
-        setUploading(false);
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          setState(prevState => ({
+            ...prevState,
+            detalleDesembolsoPagado: {
+              ...prevState.detalleDesembolsoPagado,
+              attachedFile: downloadURL,
+            }
+          }));
+        } catch (error) {
+          console.error("Error getting download URL:", error);
+        } finally {
+          setUploading(false);
+        }
       }
     );
   };
@@ -123,22 +129,15 @@ const DisbursementPaidDisbursementDetails: React.FC = () => {
             <input
               type="file"
               id="attachedFile"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              onChange={handleFileChange}
               className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+              disabled={uploading}
             />
-            {uploading ? (
+            {uploading && (
               <div className="flex items-center mt-2">
                 <ClipLoader size={20} color="#ffffff" />
                 <span className="ml-2 text-sm text-gray-400">Subiendo archivo...</span>
               </div>
-            ) : (
-              <button
-                onClick={handleFileUpload}
-                className="mt-2 bg-profile text-white py-1 px-3 rounded-lg hover:bg-purple-800 transition-colors duration-300"
-                disabled={!file}
-              >
-                Subir archivo
-              </button>
             )}
             {state.detalleDesembolsoPagado.attachedFile && (
               <p className="mt-2 text-sm text-blue-500">
