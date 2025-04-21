@@ -1,11 +1,76 @@
 import React, { useContext, useEffect, useState } from 'react';
 import DesembolsoContext from '@context/desembolsoContext';
 import Select from 'react-select';
+import axios from 'axios';
 
 const DisbursementGastosCliente: React.FC = () => {
     const context = useContext(DesembolsoContext);
     const [vendors, setVendors] = useState<any[]>([]);
     const [invoices, setInvoices] = useState<any[]>([]);
+    const [isLoadingVendor, setIsLoadingVendor] = useState(false);
+
+    console.log("Context state:", context?.state);
+    console.log("Current vendors:", vendors);
+
+    // First, fetch the vendor name if it exists in context
+    useEffect(() => {
+        const fetchVendorName = async () => {
+            if (!context?.state.solicita) {
+                console.log("No solicita in context");
+                return;
+            }
+
+            console.log("Fetching vendor name for ID:", context.state.solicita);
+            setIsLoadingVendor(true);
+            try {
+                const response = await axios.get('/api/get-user-id', {
+                    params: { userId: context.state.solicita }
+                });
+                
+                console.log("Vendor response:", response.data);
+                if (response.data.user && response.data.user.nombre) {
+                    setVendors([{
+                        label: response.data.user.nombre,
+                        value: context.state.solicita
+                    }]);
+                }
+            } catch (error) {
+                console.error('Error fetching vendor name:', error);
+            } finally {
+                setIsLoadingVendor(false);
+            }
+        };
+
+        fetchVendorName();
+    }, [context?.state.solicita]);
+
+    // Then, fetch all vendors if no vendor in context
+    useEffect(() => {
+        const fetchVendors = async () => {
+            if (context?.state.solicita) {
+                console.log("Skipping vendors fetch because we have a solicita in context");
+                return;
+            }
+
+            console.log("Fetching all vendors");
+            try {
+                const response = await fetch("/api/list-vendors");
+                const data = await response.json();
+                console.log("All vendors response:", data);
+
+                const formattedVendors = data?.data?.map((vendor: any) => ({
+                    label: vendor.nombre,
+                    value: vendor.cuenta,
+                })) || [];
+
+                setVendors(formattedVendors);
+            } catch (error) {
+                console.error("Error fetching vendors:", error);
+            }
+        };
+
+        fetchVendors();
+    }, [context?.state.solicita]);
 
     useEffect(() => {
         const fetchInvoices = async () => {
@@ -25,26 +90,6 @@ const DisbursementGastosCliente: React.FC = () => {
         };
 
         fetchInvoices();
-    }, []);
-
-    useEffect(() => {
-        const fetchVendors = async () => {
-            try {
-                const response = await fetch("/api/list-vendors");
-                const data = await response.json();
-
-                const formattedVendors = data?.data?.map((vendor: any) => ({
-                    label: vendor.nombre,
-                    value: vendor.id,
-                })) || [];
-
-                setVendors(formattedVendors);
-            } catch (error) {
-                console.error("Error fetching vendors:", error);
-            }
-        };
-
-        fetchVendors();
     }, []);
 
     if (!context) return <div>Context is not available.</div>;
@@ -104,8 +149,8 @@ const DisbursementGastosCliente: React.FC = () => {
                     <label htmlFor="solicita" className="block text-gray-300 mb-2">
                         Abogado
                     </label>
-                    {vendors.length === 0 ? (
-                        <div className="text-gray-400">Cargando proveedores...</div>
+                    {isLoadingVendor ? (
+                        <div className="text-gray-400">Cargando proveedor...</div>
                     ) : (
                         <Select
                             inputId="solicita"
@@ -117,6 +162,7 @@ const DisbursementGastosCliente: React.FC = () => {
                                     solicita: selectedOption?.value || '',
                                 }))
                             }
+                            isDisabled={!!state.solicita}
                             placeholder="Selecciona un abogado"
                             classNamePrefix="react-select"
                             styles={{

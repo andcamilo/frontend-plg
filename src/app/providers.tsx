@@ -13,6 +13,7 @@ import { DesembolsoStateProvider } from "@context/desembolsoContext";
 import { ExpenseProvider } from "@context/expenseContext";
 import { TramiteStateProvider } from "@context/tramiteContext";
 import { CorporativoStateProvider } from "@context/corporativoContext";
+import { OldDesembolsoProvider } from "@context/oldDesembolsoContext";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Because we have `"use client"`, we can use or define React contexts/providers.
@@ -28,8 +29,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                   <CorporativoStateProvider>
                     <PaymentStateProvider>
                       <ExpenseProvider>
-                        {/* The entire app (all pages) get these providers. */}
-                        {children}
+                        <OldDesembolsoProvider>
+                          {/* The entire app (all pages) get these providers. */}
+                          {children}
+                        </OldDesembolsoProvider>
                       </ExpenseProvider>
                     </PaymentStateProvider>
                   </CorporativoStateProvider>

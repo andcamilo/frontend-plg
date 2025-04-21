@@ -10,6 +10,8 @@ import { SociedadesStateProvider } from "@context/sociedadesContext";
 import { FundacionStateProvider } from "@context/fundacionContext";
 import { ConsultaStateProvider } from "@context/consultaContext";
 import { MenoresStateProvider } from "@context/menoresContext";
+import { OldDesembolsoProvider } from "@context/oldDesembolsoContext";
+
 import { PaymentStateProvider } from "@context/paymentContext";
 import { DesembolsoStateProvider } from "@context/desembolsoContext";
 import { ExpenseProvider } from "@context/expenseContext";
@@ -26,6 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <ConsultaStateProvider>
             <MenoresStateProvider>
               <DesembolsoStateProvider>
+                <OldDesembolsoProvider>
                 <TramiteStateProvider>
                   <CorporativoStateProvider>
                     <PaymentStateProvider>
@@ -55,6 +58,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </PaymentStateProvider>
                   </CorporativoStateProvider>
                 </TramiteStateProvider>
+                </OldDesembolsoProvider>
               </DesembolsoStateProvider>
             </MenoresStateProvider>
           </ConsultaStateProvider>
