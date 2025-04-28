@@ -1,188 +1,164 @@
-import React, { useEffect, useContext, useState } from 'react';
+'use client';
+
+import React, { useEffect, useContext, useState, useCallback } from 'react';
 import AppStateContext from '@context/context';
 import AppStateContextFundacion from '@context/fundacionContext';
 import MenoresContext from '@context/menoresContext';
 import SociedadContext from '@context/sociedadesContext';
 import ConsultaContext from "@context/consultaContext";
 import PaymentContext from '@context/paymentContext';
-import axios from "axios";
-import Swal from "sweetalert2";
-
 import { Loader2 } from 'lucide-react';
 
+// We'll still get the context but won't require solicitudId
+function usePaymentContext() {
+  const pension    = useContext(AppStateContext);
+  const fundacion  = useContext(AppStateContextFundacion);
+  const sociedad   = useContext(SociedadContext);
+  const menores    = useContext(MenoresContext);
+  const consulta   = useContext(ConsultaContext);
+  const payment    = useContext(PaymentContext);
+
+  // Return the first available context for token updates
+  return pension || fundacion || sociedad || menores || consulta || payment;
+}
+
 const WidgetLoader: React.FC = () => {
-  const pensionContext = useContext(AppStateContext);
-  const sociedadContext = useContext(SociedadContext);
-  const fundacionContext = useContext(AppStateContextFundacion);
-  const menoresContext = useContext(MenoresContext);
-  const consultaContext = useContext(ConsultaContext);
-  const pagoContext = useContext(PaymentContext);
+  const ctx = usePaymentContext();
+  const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [widgetReady, setWidgetReady] = useState(false);
+  const [jQueryLoaded, setJQueryLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const context = pensionContext?.store.solicitudId
-    ? pensionContext
-    : fundacionContext?.store.solicitudId
-      ? fundacionContext
-      : sociedadContext?.store.solicitudId
-        ? sociedadContext
-        : menoresContext?.store.solicitudId
-          ? menoresContext
-          : consultaContext?.store.solicitudId
-            ? consultaContext
-            : pagoContext;
-
-  /* const solicitudData = context?.store?.request as Record<string, any> || {}; */
-  // @ts-ignore
-  const solicitudData = context?.store?.request || {};
-
-  const [isLoading, setIsLoading] = useState(false);
-  console.log("CONTEX ", context)
-  console.log("solicitudData :", solicitudData);
-
+  // Mount check
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
-      script.async = true;
-      script.onload = () => console.log('jQuery loaded');
-      document.body.appendChild(script);
+    setMounted(true);
+    return () => {
+      // Cleanup jQuery elements on unmount
+      const container = document.getElementById('creditcard-container');
+      if (container) {
+        container.innerHTML = '';
+      }
+    };
+  }, []);
+
+  // Load jQuery
+  useEffect(() => {
+    if (!mounted) return;
+
+    const existingScript = document.querySelector('script[src*="jquery"]');
+    if (existingScript) {
+      setJQueryLoaded(true);
+      return;
     }
 
+    const script = document.createElement('script');
+    script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+    script.async = true;
+    script.onload = () => setJQueryLoaded(true);
+    script.onerror = () => setError('Failed to load jQuery');
+    document.body.appendChild(script);
 
-    if (typeof window !== 'undefined') {
-      (window as any).SaveCreditCard_SuccessCallback = function (response: any) {
-        console.log('Tokenization successful:', response.TokenDetails.AccountToken);
-        if (context) {
-          context.setStore((prevState) => ({
-            ...prevState,
-            token: response.TokenDetails.AccountToken,
-          }));
-        }
-        setIsLoading(false);
-      };
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, [mounted]);
 
-      (window as any).SaveCreditCard_FailureCallback = function (response: any) {
-        console.error('Tokenization failed:', response);
-        setIsLoading(false);
-      };
+  // Load widget
+  const loadWidget = useCallback(() => {
+    if (!mounted || !jQueryLoaded) return;
 
-      (window as any).SaveCreditCard_CancelCallback = function () {
-        console.log('Tokenization canceled.');
-        setIsLoading(false);
-      };
+    const $ = (window as any).$;
+    if (!$) {
+      setError('jQuery not available');
+      return;
     }
-  }, [context]);
+
+    const container = $('#creditcard-container');
+    if (!container.length) {
+      setError('Widget container not found');
+      return;
+    }
+
+    $.ajax({
+      type: 'GET',
+      url: process.env.NEXT_PUBLIC__PAYMENT_WIDGET_URL,
+      data: {
+        APIKey: process.env.NEXT_PUBLIC__PAYMENT_API_KEY,
+        Culture: 'es',
+      },
+      success(html: string) {
+        if (!mounted) return;
+        container.html(html);
+        setWidgetReady(true);
+        setIsLoading(false);
+        setError(null);
+      },
+      error(err: any) {
+        if (!mounted) return;
+        console.error('Error loading payment widget:', err);
+        setError('Failed to load payment widget');
+        setIsLoading(false);
+      }
+    });
+  }, [mounted, jQueryLoaded]);
+
+  // Auto-load widget when ready
   useEffect(() => {
-    console.log("Updated token:", context?.store.token);
-  }, [context?.store.token]);
+    if (jQueryLoaded && mounted) {
+      loadWidget();
+    }
+  }, [jQueryLoaded, mounted, loadWidget]);
 
-  const loadWidget = () => {
-    if (isLoading) return;
+  // Set up widget callbacks
+  useEffect(() => {
+    if (!jQueryLoaded || !mounted) return;
 
-    setIsLoading(true);
-    if (typeof window !== 'undefined' && (window as any).$) {
-      const $ = (window as any).$;
-      $('#creditcard-container').slideUp(500);
-      $.ajax({
-        type: 'GET',
-        url: process.env.NEXT_PUBLIC__PAYMENT_WIDGET_URL,
-        data: {
-          APIKey: process.env.NEXT_PUBLIC__PAYMENT_API_KEY,
-          Culture: 'es',
-        },
-        success: function (jsonResponse: any) {
-          $('#creditcard-container').html(jsonResponse);
-          $('#creditcard-container').slideDown(500);
-          setIsLoading(false);
-        },
-        error: function (err: any) {
-          console.error('Error loading widget:', err);
-          setIsLoading(false);
-        },
-      });
-    } else {
+    (window as any).SaveCreditCard_SuccessCallback = (resp: any) => {
+      if (!mounted) return;
+      console.log('Token OK:', resp.TokenDetails.AccountToken);
+      // Only update token if we have a context
+      if (ctx?.setStore) {
+        ctx.setStore(prev => ({ ...prev, token: resp.TokenDetails.AccountToken }));
+      }
       setIsLoading(false);
-    }
-  };
+    };
 
-  const updateRequest = async () => {
-    try {
+    (window as any).SaveCreditCard_FailureCallback = (resp: any) => {
+      if (!mounted) return;
+      console.error('Token FAIL:', resp);
+      setError('Payment token generation failed');
+      setIsLoading(false);
+    };
 
-      const updatePayload = {
-        solicitudId: context?.store.solicitudId,
-        status: 10,
-      };
+    (window as any).SaveCreditCard_CancelCallback = () => {
+      if (!mounted) return;
+      console.log('Token CANCEL');
+      setIsLoading(false);
+    };
+  }, [jQueryLoaded, ctx, mounted]);
 
-      await axios.post('/api/update-request-all', updatePayload);
+  if (!mounted) {
+    return null;
+  }
 
-      Swal.fire({
-        title: "Espera...",
-        text: "Usted no ha realizado el pago del trámite, podrá realizar el pago con tarjeta de crédito en línea, o podrá realizar una transferencia o depósito bancario, para la cual puede subir el comprobante. Mientras no realice el pago, su trámite quedará pendiente por un periodo de 72 horas, o será archivado. Puede realizar el pago posteriormente a través de su perfil en www.legix.net, entrando con la clave enviada a su correo, y posteriormente escoger la opción 'Pagar'.",
-        width: "600px",
-        showDenyButton: false,
-        showCancelButton: false,
-        confirmButtonText: "Continuar",
-        confirmButtonColor: "#8B1C62",
-        allowOutsideClick: true,
-        background: "#2c2c3e",
-        color: "#fff",
-        customClass: {
-          popup: "custom-swal-popup",
-          title: "custom-swal-title",
-          icon: "custom-swal-icon",
-          timerProgressBar: "custom-swal-timer-bar"
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = "/dashboard/requests";
-        }
-      });
-
-    } catch (error) {
-      console.error("Error creating request:", error);
-    }
-  };
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   return (
-    <div>
-      {solicitudData !== undefined && solicitudData?.status <= 10 && (
-      <button
-        className={`bg-profile text-white w-full py-3 rounded-lg flex items-center justify-center mb-4 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-        onClick={loadWidget}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Cargando...
-          </>
-        ) : (
-          'Pagar en Línea'
-        )}
-      </button>
-      )}
-      {solicitudData !== undefined && solicitudData?.status < 10 && ( 
-      <button
-        className={`bg-profile text-white w-full py-3 rounded-lg flex items-center justify-center ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-        onClick={updateRequest}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Cargando...
-          </>
-        ) : (
-          'Enviar y pagar más tarde'
-        )}
-      </button>
-      )} 
-
-      <div id="creditcard-container" style={{ marginTop: '20px' }}></div>
+    <div className="w-full">
+      <div className="relative">
+        <div
+          id="creditcard-container"
+          className={`transition-opacity duration-300 ${widgetReady ? 'opacity-100' : 'opacity-0'}`}
+          style={{ minHeight: widgetReady ? 'auto' : '200px' }}
+        />
+      </div>
     </div>
   );
 };
 
 export default WidgetLoader;
-

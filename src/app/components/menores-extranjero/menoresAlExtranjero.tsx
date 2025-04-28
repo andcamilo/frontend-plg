@@ -67,6 +67,7 @@ const MenoresAlExtranjero: React.FC = () => {
         notificaciones: "",
         pago: false,
         cuenta: "",
+        tipoConsulta: "Menores al Extranjero|",
 
         //Autorizante
         nombreCompletoAutorizante: "",
@@ -204,6 +205,7 @@ const MenoresAlExtranjero: React.FC = () => {
                 cedulaPasaporte: solicitudData.cedulaPasaporte || "",
                 telefono: solicitudData.telefonoSolicita || "",
                 telefonoCodigo: 'PA',
+                tipoConsulta: "Menores al Extranjero|",
                 nacionalidad: solicitudData.nacionalidad || "",
                 terminosAceptados: false,
                 ustedAutoriza: solicitudData.ustedAutoriza || "",
@@ -316,11 +318,17 @@ const MenoresAlExtranjero: React.FC = () => {
                     console.log(`Upload is ${progress}% done`);
                 },
                 (error) => {
+                    console.error("File upload error:", error);
                     reject(error);
                 },
                 async () => {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    resolve(downloadURL);
+                    try {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        resolve(downloadURL);
+                    } catch (urlError) {
+                        console.error("Error fetching download URL:", urlError);
+                        reject(urlError);
+                    }
                 }
             );
         });
@@ -1523,6 +1531,7 @@ const MenoresAlExtranjero: React.FC = () => {
                 telefonoSolicita: `${formData.telefonoCodigo} ${formData.telefono}`.trim(),
                 cedulaPasaporte: formData.cedulaPasaporte || "",
                 emailSolicita: formData.email,
+                tipoConsulta: formData.tipoConsulta,
                 nacionalidad: formData.nacionalidad,
                 actualizarPorCorreo: formData.notificaciones === "yes",
                 ...(formData.ustedAutoriza === "No" && {
@@ -2913,7 +2922,7 @@ const MenoresAlExtranjero: React.FC = () => {
                     </>
                 )}
 
-                {/* Modal */}
+                {/* Modal for payment widget
                 <Modal
                     open={open}
                     onClose={handleClose}
@@ -2926,10 +2935,10 @@ const MenoresAlExtranjero: React.FC = () => {
                             top: "50%",
                             left: "50%",
                             transform: "translate(-50%, -50%)",
-                            width: "600px", // Ancho del modal
-                            maxWidth: "90%", // Ancho máximo en pantallas pequeñas
-                            maxHeight: "90vh", // Limita la altura al 90% del viewport
-                            overflowY: "auto", // Activa el desplazamiento vertical
+                            width: "600px", // Modal width
+                            maxWidth: "90%", // Max width on small screens
+                            maxHeight: "90vh", // Limit height to 90% viewport
+                            overflowY: "auto", // Enable vertical scrolling
                             bgcolor: "background.paper",
                             border: "2px solid #000",
                             boxShadow: 24,
@@ -2953,7 +2962,6 @@ const MenoresAlExtranjero: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Botón para cerrar el modal */}
                         <Button
                             variant="outlined"
                             color="secondary"
@@ -2964,6 +2972,7 @@ const MenoresAlExtranjero: React.FC = () => {
                         </Button>
                     </Box>
                 </Modal>
+                */}
 
                 <BotonesPreguntasYContactos
                     primerTexto={

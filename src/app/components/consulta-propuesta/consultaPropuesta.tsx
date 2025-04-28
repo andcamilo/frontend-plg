@@ -13,8 +13,6 @@ import { useRouter } from "next/navigation";
 import AppStateContext from "@context/consultaContext";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import WidgetLoader from '@/src/app/components/widgetLoader';
-import SaleComponent from '@/src/app/components/saleComponent';
 import CountrySelect from '@components/CountrySelect';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Modal, Box, Button } from "@mui/material";
@@ -137,7 +135,6 @@ const ConsultaPropuesta: React.FC = () => {
                 areaLegal: solicitudData.areaLegal || solicitudData.areasLegales || "Migración",
                 detallesPropuesta: solicitudData.detallesPropuesta || solicitudData.descripcionConsulta || "",
                 preguntasEspecificas: solicitudData.preguntasEspecificas || solicitudData.preguntasConsulta || "",
-                /* notificaciones: solicitudData.notificaciones || "", */
                 notificaciones: solicitudData.actualizarPorCorreo === "si" ? "yes" : (solicitudData.actualizarPorCorreo || "No"),
                 terminosAceptados: false,
                 archivoURL: solicitudData.adjuntoDocumentoConsulta || "",
@@ -859,6 +856,31 @@ const ConsultaPropuesta: React.FC = () => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Add new useEffect for store updates
+    useEffect(() => {
+        if (store.solicitudId) {
+            console.log("SolicitudId updated in store:", store.solicitudId);
+            // Ensure the modal only opens after we have the solicitudId
+            if (!open) {
+                handleOpen();
+            }
+        }
+    }, [store.solicitudId, open]);
+
+    // Keep existing useEffect for logging
+    useEffect(() => {
+        console.log("Modal open state:", open);
+        console.log("Store context:", store);
+        console.log("Form data:", formData);
+        console.log("Solicitud data:", solicitudData);
+        console.log("Is logged in:", isLoggedIn);
+    }, [open, store, formData, solicitudData, isLoggedIn]);
 
     const prepararDatos = () => {
         return disponibilidad.map((item) => ({
@@ -1125,7 +1147,7 @@ const ConsultaPropuesta: React.FC = () => {
                         value={formData.tipoConsulta}
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                     >
                         <option value="Propuesta Legal">Propuesta Legal</option>
                         <option value="Consulta Escrita">Consulta Escrita</option>
@@ -1137,16 +1159,11 @@ const ConsultaPropuesta: React.FC = () => {
 
                 <div className="mb-6">
                     <h2 className="text-white text-2xl font-semibold">Información Personal</h2>
-                    {formData.tipoConsulta === "Propuesta Legal" && (
                         <>
                             <p className="text-white text-sm">* Coméntanos tu información como solicitante de la propuesta para poder contactarte.</p>
                         </>
-                    )}
-                    {formData.tipoConsulta !== "Propuesta Legal" && (
-                        <>
-                            <p className="text-white text-sm texto_justificado">* Indícanos la información de quien solicita la consulta para poder contactarnos en cualquier caso. Si estás representando a la persona que necesita asistir a la consulta virtual o presencial, puedes establecer en el detalle del caso la información de la misma.</p>
-                        </>
-                    )}
+
+  
                 </div>
                 <hr className="mb-4" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1159,7 +1176,7 @@ const ConsultaPropuesta: React.FC = () => {
                             value={formData.nombreCompleto}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
-                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                            disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                         />
                     </div>
 
@@ -1172,7 +1189,7 @@ const ConsultaPropuesta: React.FC = () => {
                             value={formData.email}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
-                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                            disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                         />
                     </div>
                 </div>
@@ -1187,7 +1204,7 @@ const ConsultaPropuesta: React.FC = () => {
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
                             placeholder="Número de cédula o Pasaporte"
-                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                            disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                         />
                     </div>
                     <div className="flex flex-col col-span-1">
@@ -1207,7 +1224,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 value={formData.telefono}
                                 onChange={handleInputChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
-                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                             />
                         </div>
                     </div>
@@ -1226,7 +1243,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 value={formData.celular}
                                 onChange={handleInputChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.celular ? 'border-2 border-red-500' : ''}`}
-                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                             />
                         </div>
                     </div>
@@ -1261,7 +1278,7 @@ const ConsultaPropuesta: React.FC = () => {
                                         onChange={handleInputChange}
                                         className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errors.emailRespuesta ? 'border-2 border-red-500' : ''}`}
                                         placeholder="Correo electrónico adicional para envío de propuesta:"
-                                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                     />
                                 </div>
                             )}
@@ -1275,7 +1292,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 value={formData.empresa}
                                 onChange={handleInputChange}
                                 className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                             />
                         </div>
                     </>
@@ -1292,7 +1309,7 @@ const ConsultaPropuesta: React.FC = () => {
                         value={formData.areaLegal || ""}
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                     >
                         <option value="Migración">Migración</option>
                         <option value="Sociedades">Sociedades</option>
@@ -1315,7 +1332,7 @@ const ConsultaPropuesta: React.FC = () => {
                         onChange={handleInputChange}
                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.detallesPropuesta ? 'border-2 border-red-500' : ''}`}
                         rows={4}
-                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                     ></textarea>
                 </div>
 
@@ -1327,7 +1344,7 @@ const ConsultaPropuesta: React.FC = () => {
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
                         rows={4}
-                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                     ></textarea>
                 </div>
 
@@ -1340,7 +1357,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 name="adjuntoDocumentoConsulta"
                                 onChange={handleFileChange}
                                 className="w-full p-2 bg-gray-800 text-white rounded-lg"
-                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                             />
                             {formData.archivoURL && (
                             <p className="text-sm text-blue-500">
@@ -1413,7 +1430,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                 value={formData.consultaOficina || ""}
                                                 onChange={handleInputChange}
                                                 className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                             >
                                                 <option value="Si">Sí, en las oficinas de Panamá Legal Group.</option>
                                                 <option value="No">No, otra dirección.</option>
@@ -1429,7 +1446,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                         value={formData.buscarCliente || ""}
                                                         onChange={handleInputChange}
                                                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                                                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                                     >
                                                         <option value="Si">Sí</option>
                                                         <option value="No">No</option>
@@ -1449,7 +1466,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                                 value={formData.direccionBuscar}
                                                                 onChange={handleInputChange}
                                                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.direccionBuscar ? 'border-2 border-red-500' : ''}`}
-                                                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                                             />
                                                         </div>
 
@@ -1475,7 +1492,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                         value={formData.direccionIr}
                                                         onChange={handleInputChange}
                                                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.direccionIr ? 'border-2 border-red-500' : ''}`}
-                                                        disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                                     />
                                                 </div>
                                             </>
@@ -1572,7 +1589,7 @@ const ConsultaPropuesta: React.FC = () => {
                 </div>
                 {formData.tipoConsulta === "Propuesta Legal" && (
                     <>
-                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && store.rol > 19)) && (
+                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) > 19)) && (
                             <>
                                 <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                                     {isLoading ? (
@@ -1635,7 +1652,7 @@ const ConsultaPropuesta: React.FC = () => {
                             </>
                         )}
 
-                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && store.rol > 19)) && (
+                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) > 19)) && (
                             <>
                                 <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                                     {isLoading ? (
@@ -1666,57 +1683,6 @@ const ConsultaPropuesta: React.FC = () => {
                     </>
                 )}
 
-                {/* Modal */}
-                <Modal
-                    open={open}
-                    onClose={handleClose}
-                    aria-labelledby="modal-title"
-                    aria-describedby="modal-description"
-                >
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            width: "600px", // Ancho del modal
-                            maxWidth: "90%", // Ancho máximo en pantallas pequeñas
-                            maxHeight: "90vh", // Limita la altura al 90% del viewport
-                            overflowY: "auto", // Activa el desplazamiento vertical
-                            bgcolor: "background.paper",
-                            border: "2px solid #000",
-                            boxShadow: 24,
-                            p: 4,
-                            borderRadius: 2,
-                            zIndex: 1000,
-                        }}
-                    >
-                    
-                        <div className="mt-8">
-                            <WidgetLoader />
-                        </div>
-
-                        {store.token ? (
-                            <div className="mt-8">
-                                <SaleComponent saleAmount={100} />
-                            </div>
-                        ) : (
-                            <div className="mt-8 text-gray-400">
-                                Por favor, complete el widget de pago para continuar.
-                            </div>
-                        )}
-
-                        {/* Botón para cerrar el modal */}
-                        <Button
-                            variant="outlined"
-                            color="secondary"
-                            onClick={handleClose}
-                            style={{ marginTop: "20px" }}
-                        >
-                            Cerrar
-                        </Button>
-                    </Box>
-                </Modal>
             </form>
         </div>
     );
