@@ -1147,7 +1147,7 @@ const ConsultaPropuesta: React.FC = () => {
                         value={formData.tipoConsulta}
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                        disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                     >
                         <option value="Propuesta Legal">Propuesta Legal</option>
                         <option value="Consulta Escrita">Consulta Escrita</option>
@@ -1176,7 +1176,7 @@ const ConsultaPropuesta: React.FC = () => {
                             value={formData.nombreCompleto}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
-                            disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                            disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                         />
                     </div>
 
@@ -1189,7 +1189,7 @@ const ConsultaPropuesta: React.FC = () => {
                             value={formData.email}
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
-                            disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                            disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                         />
                     </div>
                 </div>
@@ -1204,7 +1204,7 @@ const ConsultaPropuesta: React.FC = () => {
                             onChange={handleInputChange}
                             className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
                             placeholder="Número de cédula o Pasaporte"
-                            disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                            disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                         />
                     </div>
                     <div className="flex flex-col col-span-1">
@@ -1224,7 +1224,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 value={formData.telefono}
                                 onChange={handleInputChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
-                                disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                             />
                         </div>
                     </div>
@@ -1243,7 +1243,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 value={formData.celular}
                                 onChange={handleInputChange}
                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.celular ? 'border-2 border-red-500' : ''}`}
-                                disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                             />
                         </div>
                     </div>
@@ -1278,7 +1278,7 @@ const ConsultaPropuesta: React.FC = () => {
                                         onChange={handleInputChange}
                                         className={`w-full mt-8 p-4 bg-gray-800 text-white rounded-lg ${errors.emailRespuesta ? 'border-2 border-red-500' : ''}`}
                                         placeholder="Correo electrónico adicional para envío de propuesta:"
-                                        disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                     />
                                 </div>
                             )}
@@ -1292,7 +1292,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 value={formData.empresa}
                                 onChange={handleInputChange}
                                 className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                                disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                             />
                         </div>
                     </>
@@ -1309,7 +1309,7 @@ const ConsultaPropuesta: React.FC = () => {
                         value={formData.areaLegal || ""}
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                        disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                     >
                         <option value="Migración">Migración</option>
                         <option value="Sociedades">Sociedades</option>
@@ -1332,7 +1332,7 @@ const ConsultaPropuesta: React.FC = () => {
                         onChange={handleInputChange}
                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.detallesPropuesta ? 'border-2 border-red-500' : ''}`}
                         rows={4}
-                        disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                     ></textarea>
                 </div>
 
@@ -1344,7 +1344,7 @@ const ConsultaPropuesta: React.FC = () => {
                         onChange={handleInputChange}
                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
                         rows={4}
-                        disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                     ></textarea>
                 </div>
 
@@ -1357,7 +1357,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 name="adjuntoDocumentoConsulta"
                                 onChange={handleFileChange}
                                 className="w-full p-2 bg-gray-800 text-white rounded-lg"
-                                disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                             />
                             {formData.archivoURL && (
                             <p className="text-sm text-blue-500">
@@ -1430,7 +1430,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                 value={formData.consultaOficina || ""}
                                                 onChange={handleInputChange}
                                                 className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                                                disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                             >
                                                 <option value="Si">Sí, en las oficinas de Panamá Legal Group.</option>
                                                 <option value="No">No, otra dirección.</option>
@@ -1446,7 +1446,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                         value={formData.buscarCliente || ""}
                                                         onChange={handleInputChange}
                                                         className="w-full p-4 bg-gray-800 text-white rounded-lg"
-                                                        disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                                                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                                     >
                                                         <option value="Si">Sí</option>
                                                         <option value="No">No</option>
@@ -1466,7 +1466,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                                 value={formData.direccionBuscar}
                                                                 onChange={handleInputChange}
                                                                 className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.direccionBuscar ? 'border-2 border-red-500' : ''}`}
-                                                                disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                                                                disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                                             />
                                                         </div>
 
@@ -1492,7 +1492,7 @@ const ConsultaPropuesta: React.FC = () => {
                                                         value={formData.direccionIr}
                                                         onChange={handleInputChange}
                                                         className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.direccionIr ? 'border-2 border-red-500' : ''}`}
-                                                        disabled={solicitudData && solicitudData.status >= 10 && store!.rol < 20}
+                                                        disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                                                     />
                                                 </div>
                                             </>
@@ -1589,7 +1589,7 @@ const ConsultaPropuesta: React.FC = () => {
                 </div>
                 {formData.tipoConsulta === "Propuesta Legal" && (
                     <>
-                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && store!.rol > 19)) && (
+                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) > 19)) && (
                             <>
                                 <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                                     {isLoading ? (
@@ -1652,7 +1652,7 @@ const ConsultaPropuesta: React.FC = () => {
                             </>
                         )}
 
-                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && store!.rol > 19)) && (
+                        {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) > 19)) && (
                             <>
                                 <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                                     {isLoading ? (
