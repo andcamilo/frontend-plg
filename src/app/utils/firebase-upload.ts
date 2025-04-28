@@ -23,7 +23,7 @@ const storage = getStorage(app);
 
 export const uploadFile = async (file: File): Promise<string> => {
   try {
-    const storageRef = ref(storage, `paid_disbursements//${file.name}`);
+    const storageRef = ref(storage, `uploads/${file.name}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     return new Promise((resolve, reject) => {

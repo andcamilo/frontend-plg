@@ -100,9 +100,7 @@ const PensionAlimenticia: React.FC = () => {
         <button className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.resumen ? (activeStep === 9 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`} onClick={() => handleStepChange(9, store.resumen)} disabled={!store.resumen}>Resumen</button>
       </div>
 
-      {(activeStep >= 8 || store.firmaYEntrega || !store.token) && (
-        <div className="mt-8"><WidgetLoader /></div>
-      )}
+      {!store.token && (activeStep >= 8 || store.firmaYEntrega) && <WidgetLoader />}
 
       {store.token && (
         <div className="mt-8"><SaleComponent saleAmount={150} /></div>

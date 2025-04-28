@@ -13,8 +13,6 @@ import { useRouter } from "next/navigation";
 import AppStateContext from "@context/consultaContext";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import WidgetLoader from '@/src/app/components/widgetLoader';
-import SaleComponent from '@/src/app/components/saleComponent';
 import CountrySelect from '@components/CountrySelect';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Modal, Box, Button } from "@mui/material";
@@ -137,7 +135,6 @@ const ConsultaPropuesta: React.FC = () => {
                 areaLegal: solicitudData.areaLegal || solicitudData.areasLegales || "Migración",
                 detallesPropuesta: solicitudData.detallesPropuesta || solicitudData.descripcionConsulta || "",
                 preguntasEspecificas: solicitudData.preguntasEspecificas || solicitudData.preguntasConsulta || "",
-                /* notificaciones: solicitudData.notificaciones || "", */
                 notificaciones: solicitudData.actualizarPorCorreo === "si" ? "yes" : (solicitudData.actualizarPorCorreo || "No"),
                 terminosAceptados: false,
                 archivoURL: solicitudData.adjuntoDocumentoConsulta || "",
@@ -859,6 +856,31 @@ const ConsultaPropuesta: React.FC = () => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Add new useEffect for store updates
+    useEffect(() => {
+        if (store.solicitudId) {
+            console.log("SolicitudId updated in store:", store.solicitudId);
+            // Ensure the modal only opens after we have the solicitudId
+            if (!open) {
+                handleOpen();
+            }
+        }
+    }, [store.solicitudId, open]);
+
+    // Keep existing useEffect for logging
+    useEffect(() => {
+        console.log("Modal open state:", open);
+        console.log("Store context:", store);
+        console.log("Form data:", formData);
+        console.log("Solicitud data:", solicitudData);
+        console.log("Is logged in:", isLoggedIn);
+    }, [open, store, formData, solicitudData, isLoggedIn]);
 
     const prepararDatos = () => {
         return disponibilidad.map((item) => ({
@@ -1137,16 +1159,11 @@ const ConsultaPropuesta: React.FC = () => {
 
                 <div className="mb-6">
                     <h2 className="text-white text-2xl font-semibold">Información Personal</h2>
-                    {formData.tipoConsulta === "Propuesta Legal" && (
                         <>
                             <p className="text-white text-sm">* Coméntanos tu información como solicitante de la propuesta para poder contactarte.</p>
                         </>
-                    )}
-                    {formData.tipoConsulta !== "Propuesta Legal" && (
-                        <>
-                            <p className="text-white text-sm texto_justificado">* Indícanos la información de quien solicita la consulta para poder contactarnos en cualquier caso. Si estás representando a la persona que necesita asistir a la consulta virtual o presencial, puedes establecer en el detalle del caso la información de la misma.</p>
-                        </>
-                    )}
+
+  
                 </div>
                 <hr className="mb-4" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1666,57 +1683,6 @@ const ConsultaPropuesta: React.FC = () => {
                     </>
                 )}
 
-                {/* Modal */}
-                <Modal
-                    open={open}
-                    onClose={handleClose}
-                    aria-labelledby="modal-title"
-                    aria-describedby="modal-description"
-                >
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            width: "600px", // Ancho del modal
-                            maxWidth: "90%", // Ancho máximo en pantallas pequeñas
-                            maxHeight: "90vh", // Limita la altura al 90% del viewport
-                            overflowY: "auto", // Activa el desplazamiento vertical
-                            bgcolor: "background.paper",
-                            border: "2px solid #000",
-                            boxShadow: 24,
-                            p: 4,
-                            borderRadius: 2,
-                            zIndex: 1000,
-                        }}
-                    >
-                    
-                        <div className="mt-8">
-                            <WidgetLoader />
-                        </div>
-
-                        {store.token ? (
-                            <div className="mt-8">
-                                <SaleComponent saleAmount={100} />
-                            </div>
-                        ) : (
-                            <div className="mt-8 text-gray-400">
-                                Por favor, complete el widget de pago para continuar.
-                            </div>
-                        )}
-
-                        {/* Botón para cerrar el modal */}
-                        <Button
-                            variant="outlined"
-                            color="secondary"
-                            onClick={handleClose}
-                            style={{ marginTop: "20px" }}
-                        >
-                            Cerrar
-                        </Button>
-                    </Box>
-                </Modal>
             </form>
         </div>
     );

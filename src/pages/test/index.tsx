@@ -4,312 +4,393 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import xml2js from 'xml2js';
 import Swal from 'sweetalert2';
+import dynamic from 'next/dynamic';
+import { uploadFile } from '@utils/firebase-upload';
 
-// **************************
-// 1) PAYMENT WIDGET COMPONENT
-// **************************
-const PaymentTestWidget: React.FC<{ onTokenSuccess: (token: string) => void }> = ({
-  onTokenSuccess,
-}) => {
-  const [isLoading, setIsLoading] = useState(false);
+// File Upload Component
+const FileUploadComponent = ({ onFileUploaded }: { onFileUploaded: (fileUrl: string) => void }) => {
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  useEffect(() => {
-    // Dynamically load jQuery
-    if (typeof window !== 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
-      script.async = true;
-      script.onload = () => console.log('jQuery loaded');
-      document.body.appendChild(script);
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // Upload to Firebase
+      const downloadURL = await uploadFile(file);
+      
+      onFileUploaded(downloadURL);
+      setUploadProgress(100);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'File uploaded successfully!',
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Upload Failed',
+        text: 'Failed to upload file. Please try again.',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="mb-4">
+      <label className="block text-gray-200 mb-2">
+        Upload Documents
+      </label>
+      <div className="relative">
+        <input
+          type="file"
+          onChange={handleFileChange}
+          disabled={uploading}
+          className="block w-full text-sm text-gray-400
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-lg file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-600 file:text-white
+                    hover:file:bg-blue-700
+                    disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+        {uploading && (
+          <div className="mt-2">
+            <div className="w-full bg-gray-700 rounded-full h-2.5">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-400 mt-1">
+              Uploading: {uploadProgress}%
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Ensure jQuery is loaded only once globally
+const loadJQuery = async (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if ((window as any).jQuery) {
+      console.log('jQuery already available');
+      resolve();
+      return;
     }
 
-    // Define the global callbacks the widget expects
-    if (typeof window !== 'undefined') {
-      (window as any).SaveCreditCard_SuccessCallback = function (response: any) {
-        console.log('>>> SaveCreditCard_SuccessCallback triggered');
-        console.log('Tokenization successful:', response.TokenDetails.AccountToken);
+    const script = document.createElement('script');
+    script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+    script.async = true;
+    script.onload = () => {
+      console.log('jQuery loaded successfully');
+      resolve();
+    };
+    script.onerror = () => reject(new Error('Failed to load jQuery'));
+    document.head.appendChild(script);
+  });
+};
 
-     
+// Client-side only components
+const PaymentTestWidget = dynamic(
+  () => Promise.resolve(({ onTokenSuccess }: { onTokenSuccess: (token: string) => void }) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [jQueryReady, setJQueryReady] = useState(false);
+    const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
+
+    useEffect(() => {
+      loadJQuery()
+        .then(() => setJQueryReady(true))
+        .catch(error => {
+          console.error('Error loading jQuery:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to load payment dependencies.',
+          });
+        });
+
+      return () => {
+        const container = document.getElementById('creditcard-container');
+        if (container) {
+          container.innerHTML = '';
+        }
+        document.querySelectorAll('.ui-dialog, .ui-widget-overlay').forEach(el => el.remove());
+      };
+    }, []);
+
+    useEffect(() => {
+      if (!jQueryReady) return;
+
+      (window as any).SaveCreditCard_SuccessCallback = (response: any) => {
+        console.log('Token generated:', response.TokenDetails.AccountToken);
         onTokenSuccess(response.TokenDetails.AccountToken);
         setIsLoading(false);
       };
 
-      (window as any).SaveCreditCard_FailureCallback = function (response: any) {
-        console.error('Tokenization failed:', response);
+      (window as any).SaveCreditCard_FailureCallback = (response: any) => {
+        console.error('Token generation failed:', response);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'Tokenization failed. Please try again.',
+          text: 'Payment tokenization failed. Please try again.',
         });
         setIsLoading(false);
       };
 
-      (window as any).SaveCreditCard_CancelCallback = function () {
-        console.log('Tokenization canceled.');
+      (window as any).SaveCreditCard_CancelCallback = () => {
+        console.log('Token generation cancelled');
         setIsLoading(false);
       };
-    }
-  }, [onTokenSuccess]);
+    }, [jQueryReady, onTokenSuccess]);
 
-  const loadWidget = () => {
-    if (isLoading) return;
-    setIsLoading(true);
+    const loadWidget = async () => {
+      if (isLoading || !jQueryReady) return;
+      setIsLoading(true);
 
-    if (typeof window !== 'undefined' && (window as any).$) {
-      const $ = (window as any).$;
-      $('#creditcard-container').slideUp(500);
+      const $ = (window as any).jQuery;
+      const container = $('#creditcard-container');
+      container.slideUp(500);
 
-      $.ajax({
-        type: 'GET',
-        url: process.env.NEXT_PUBLIC__PAYMENT_WIDGET_URL, // e.g. "https://bacgateway.merchantprocess.net/SecureComponent/v2/UIComponent/CreditCard"
-        data: {
-          APIKey: process.env.NEXT_PUBLIC__PAYMENT_API_KEY, // e.g. "AgR2KqHC7mPl"
-          Culture: 'es',
-        },
-        success: function (jsonResponse: any) {
-          // Insert the widget's HTML into our container
-          $('#creditcard-container').html(jsonResponse);
-          $('#creditcard-container').slideDown(500);
-          setIsLoading(false);
-        },
-        error: function (err: any) {
-          console.error('Error loading widget:', err);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Unable to load the payment widget. Please try again later.',
-          });
-          setIsLoading(false);
-        },
-      });
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'jQuery not loaded yet or browser environment not available.',
-      });
-      setIsLoading(false);
-    }
-  };
+      try {
+        const response = await $.ajax({
+          type: 'GET',
+          url: "https://apicomponentv2-test.merchantprocess.net/UIComponent/CreditCard",
+          data: {
+            APIKey: "EhrqwakURmYS",
+            Culture: 'es',
+          },
+        });
 
-  return (
-    <div>
-      <button
-        onClick={loadWidget}
-        disabled={isLoading}
-        className={`bg-blue-600 text-white w-full py-3 rounded-lg flex items-center justify-center mb-4 ${
-          isLoading ? 'opacity-50 cursor-not-allowed' : ''
-        }`}
-      >
-        {isLoading ? 'Cargando...' : 'Pagar en Línea'}
-      </button>
-
-      {/* Container where the widget HTML is injected */}
-      <div id="creditcard-container" style={{ marginTop: '20px' }} />
-    </div>
-  );
-};
-
-// **************************
-// 2) SALE COMPONENT (CVV FORM)
-// **************************
-const PaymentTestSale: React.FC<{ token: string }> = ({ token }) => {
-  const [cvv, setCvv] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleProcessSale = async () => {
-    if (!token) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No token found. Please load the payment widget first.',
-      });
-      return;
-    }
-
-    if (!cvv) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'CVV is required to proceed.',
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    const saleAmount = 1;
-    const xmlData = `<?xml version="1.0" encoding="utf-8"?>
-      <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-                     xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-        <soap:Body>
-          <Sale xmlns="http://tempuri.org/">
-            <APIKey>AgR2KqHC7mPl</APIKey>
-            <accountToken>${token}</accountToken>
-            <accessCode>123123</accessCode>
-            <merchantAccountNumber>103333</merchantAccountNumber>
-            <terminalName>103333001</terminalName>
-            <clientTracking>SALE-TRACKING-01</clientTracking>
-            <amount>${saleAmount}</amount>
-            <currencyCode>840</currencyCode>
-            <emailAddress>example@test.com</emailAddress>
-            <shippingName>Testing</shippingName>
-            <shippingDate>2025-12-31</shippingDate>
-            <shippingAddress>Some Street</shippingAddress>
-            <shippingCity>Some City</shippingCity>
-            <shippingState>Some State</shippingState>
-            <shippingCountry>US</shippingCountry>
-            <shippingZipCode>12345</shippingZipCode>
-            <shippingPhoneNumber>+10123456789</shippingPhoneNumber>
-            <billingAddress>Billing Address</billingAddress>
-            <billingCity>Billing City</billingCity>
-            <billingState>Billing State</billingState>
-            <billingCountry>US</billingCountry>
-            <billingZipCode>67890</billingZipCode>
-            <billingPhoneNumber>+10123456789</billingPhoneNumber>
-            <itemDetails>
-              <ItemDetails>
-                <ExtensionData/>
-                <Code>65</Code>
-                <Name>Test Product</Name>
-                <Description>Paying 1 USD</Description>
-                <Quantity>1</Quantity>
-                <UnitPrice>${saleAmount}</UnitPrice>
-              </ItemDetails>
-            </itemDetails>
-            <systemTracking>TEST</systemTracking>
-            <cvv>${cvv}</cvv>
-          </Sale>
-        </soap:Body>
-      </soap:Envelope>`;
-
-    try {
-      const response = await axios.post('/api/sale', xmlData, {
-        headers: {
-          'Content-Type': 'text/xml; charset=utf-8',
-        },
-      });
-
-      const xmlResponse = response.data;
-      xml2js.parseString(xmlResponse, { explicitArray: false }, (err, result) => {
-        if (err) {
-          throw new Error('Error parsing XML response.');
-        }
-        const body = result['soap:Envelope']['soap:Body'];
-        const saleResult = body['SaleResponse']['SaleResult'];
-        const transactionId = saleResult?.TransactionId;
-
+        container.html(response);
+        container.slideDown(500);
+      } catch (error) {
+        console.error('Widget loading error:', error);
         Swal.fire({
-          icon: 'success',
-          title: 'Sale Successful',
-          text: `Transaction ID: ${transactionId || 'N/A'}`,
+          icon: 'error',
+          title: 'Error',
+          text: 'Unable to load the payment widget. Please try again.',
         });
-      });
-      setCvv('');
-    } catch (error: any) {
-      console.error('Error processing the sale:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Sale Error',
-        text: error.message || 'Something went wrong while processing the sale.',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  return (
-    <div className="p-4 bg-gray-800 rounded">
-      <h2 className="text-xl font-semibold mb-4">Process Test Sale (1 USD)</h2>
+    return (
+      <div className="max-w-md mx-auto">
+        <FileUploadComponent 
+          onFileUploaded={(fileUrl) => {
+            setAttachedFiles(prev => [...prev, fileUrl]);
+            console.log('File uploaded:', fileUrl);
+          }}
+        />
 
-      <div className="mb-4">
-        <label htmlFor="cvv" className="block text-gray-200 mb-2">
-          CVV
-        </label>
-        <input
-          type="text"
-          id="cvv"
-          name="cvv"
-          value={cvv}
-          onChange={(e) => setCvv(e.target.value)}
-          maxLength={4}
-          className="w-full p-2 bg-gray-700 text-white rounded"
-          placeholder="Enter CVV"
+        {attachedFiles.length > 0 && (
+          <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-200 mb-2">
+              Attached Files:
+            </h3>
+            <ul className="space-y-1">
+              {attachedFiles.map((url, index) => (
+                <li key={index} className="text-sm text-gray-400 flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  {decodeURIComponent(url.split('/').pop() || '')}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <button
+          onClick={loadWidget}
+          disabled={isLoading || !jQueryReady}
+          className={`bg-blue-600 text-white w-full py-3 rounded-lg flex items-center justify-center mb-4
+                    ${(isLoading || !jQueryReady) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+        >
+          {isLoading ? 'Cargando...' : !jQueryReady ? 'Inicializando...' : 'Pagar en Línea'}
+        </button>
+
+        <div 
+          id="creditcard-container"
+          className="bg-white rounded-lg shadow-lg p-4"
+          style={{ display: 'none' }}
         />
       </div>
+    );
+  }),
+  { ssr: false }
+);
 
-      <button
-        onClick={handleProcessSale}
-        disabled={!token || !cvv || loading}
-        className="w-full bg-blue-600 text-white py-2 rounded flex items-center justify-center"
-      >
-        {loading ? 'Processing...' : 'Process Sale'}
-      </button>
+const PaymentTestSale = dynamic(
+  () => Promise.resolve(({ token }: { token: string }) => {
+    const [cvv, setCvv] = useState('');
+    const [loading, setLoading] = useState(false);
 
-      {!token && (
-        <p className="mt-2 text-yellow-500">
-          Please load the payment widget and obtain a token first.
-        </p>
-      )}
-    </div>
-  );
-};
-
-// **************************
-// 3) PAGE CONTAINER
-// **************************
-const PaymentTestPage: React.FC = () => {
-  const [token, setToken] = useState<string>('');
-
-  /**
-   * Whenever token changes, forcibly remove leftover widget UI (if any),
-   * such as dialogs or overlays that may still be lingering.
-   */
-  useEffect(() => {
-    if (token) {
-      console.log('>>> PaymentTestPage: token state changed to:', token);
-
-      // Hide / clear out the widget container
-      const widgetContainer = document.getElementById('creditcard-container');
-      if (widgetContainer) {
-        widgetContainer.innerHTML = '';
-        widgetContainer.style.display = 'none';
+    const handleProcessSale = async () => {
+      if (!cvv) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Please enter the CVV to proceed.',
+        });
+        return;
       }
-      // Also remove any possible leftover jQuery UI overlays/dialogs
-      document.querySelectorAll('.ui-dialog, .ui-widget-overlay').forEach((el) => {
-        el.remove();
-      });
-    }
-  }, [token]);
 
-  return (
-    <div className="min-h-screen bg-[#13131A] text-white p-6">
-      <h1 className="text-2xl font-semibold mb-6">Payment Test Page</h1>
+      setLoading(true);
 
-      {/* 
-        If there's a token, show the "Sale" form (CVV input).
-        If there's no token, show the PaymentTestWidget + "please complete" message.
-      */}
-      {token ? (
-        <div className="mt-6">
-          <PaymentTestSale token={token} />
-        </div>
-      ) : (
-        <div>
-          <PaymentTestWidget
-            onTokenSuccess={(newToken) => {
-              console.log('>>> onTokenSuccess in parent:', newToken);
-              setToken(newToken);
-            }}
+      try {
+        const saleAmount = 1;
+        const xmlData = `<?xml version="1.0" encoding="utf-8"?>
+          <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                        xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+            <soap:Body>
+              <Sale xmlns="http://tempuri.org/">
+                <APIKey>EhrqwakURmYS</APIKey>
+                <accountToken>${token}</accountToken>
+                <accessCode>123123</accessCode>
+                <merchantAccountNumber>103333</merchantAccountNumber>
+                <terminalName>103333001</terminalName>
+                <clientTracking>SALE-TRACKING-01</clientTracking>
+                <amount>${saleAmount}</amount>
+                <currencyCode>840</currencyCode>
+                <emailAddress>example@test.com</emailAddress>
+                <shippingName>Testing</shippingName>
+                <shippingDate>2025-12-31</shippingDate>
+                <shippingAddress>Some Street</shippingAddress>
+                <shippingCity>Some City</shippingCity>
+                <shippingState>Some State</shippingState>
+                <shippingCountry>US</shippingCountry>
+                <shippingZipCode>12345</shippingZipCode>
+                <shippingPhoneNumber>+10123456789</shippingPhoneNumber>
+                <billingAddress>Billing Address</billingAddress>
+                <billingCity>Billing City</billingCity>
+                <billingState>Billing State</billingState>
+                <billingCountry>US</billingCountry>
+                <billingZipCode>67890</billingZipCode>
+                <billingPhoneNumber>+10123456789</billingPhoneNumber>
+                <itemDetails>
+                  <ItemDetails>
+                    <ExtensionData/>
+                    <Code>65</Code>
+                    <Name>Test Product</Name>
+                    <Description>Paying 1 USD</Description>
+                    <Quantity>1</Quantity>
+                    <UnitPrice>${saleAmount}</UnitPrice>
+                  </ItemDetails>
+                </itemDetails>
+                <systemTracking>TEST</systemTracking>
+                <cvv>${cvv}</cvv>
+              </Sale>
+            </soap:Body>
+          </soap:Envelope>`;
+
+        const response = await axios.post('/api/sale', xmlData, {
+          headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+        });
+
+        xml2js.parseString(response.data, { explicitArray: false }, (err, result) => {
+          if (err) throw new Error('Failed to parse sale response');
+          
+          const saleResult = result['soap:Envelope']['soap:Body']['SaleResponse']['SaleResult'];
+          const transactionId = saleResult?.TransactionId;
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Payment Successful',
+            text: `Transaction ID: ${transactionId || 'N/A'}`,
+          });
+        });
+        
+        setCvv('');
+      } catch (error: any) {
+        console.error('Sale processing error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Payment Failed',
+          text: error.message || 'Failed to process payment. Please try again.',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    return (
+      <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-xl">
+        <h2 className="text-xl font-semibold mb-4 text-white">Process Test Payment (1 USD)</h2>
+
+        <div className="mb-4">
+          <label htmlFor="cvv" className="block text-gray-200 mb-2">
+            CVV
+          </label>
+          <input
+            type="text"
+            id="cvv"
+            value={cvv}
+            onChange={(e) => setCvv(e.target.value)}
+            maxLength={4}
+            className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            placeholder="Enter CVV"
           />
-          <p className="mt-4 text-gray-400">
-            Please complete the payment widget to proceed with the sale.
-          </p>
         </div>
-      )}
-    </div>
-  );
-};
+
+        <button
+          onClick={handleProcessSale}
+          disabled={!cvv || loading}
+          className={`w-full bg-blue-600 text-white py-3 rounded-lg flex items-center justify-center
+                     ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+        >
+          {loading ? 'Processing...' : 'Process Payment'}
+        </button>
+      </div>
+    );
+  }),
+  { ssr: false }
+);
+
+// Main page component with no server-side rendering
+const PaymentTestPage = dynamic(
+  () => Promise.resolve(() => {
+    const [token, setToken] = useState<string>('');
+
+    return (
+      <div className="min-h-screen bg-[#13131A] text-white p-6">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8 text-center">Payment Test Page</h1>
+
+          {token ? (
+            <PaymentTestSale token={token} />
+          ) : (
+            <div className="space-y-4">
+              <PaymentTestWidget
+                onTokenSuccess={(newToken) => {
+                  console.log('Payment token generated:', newToken);
+                  setToken(newToken);
+                }}
+              />
+              <div className="text-center">
+                <p className="text-gray-400">
+                  Please complete the payment widget to proceed with the test payment.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }),
+  { ssr: false }
+);
 
 export default PaymentTestPage;
