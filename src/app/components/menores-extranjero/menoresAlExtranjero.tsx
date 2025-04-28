@@ -1591,6 +1591,7 @@ const MenoresAlExtranjero: React.FC = () => {
                 },
                 cuenta: cuenta || "",
                 precio: precio,
+                tipoConsulta: "Menores al Extranjero",
                 subtotal: subtotal,
                 total: total,
                 accion: "Creación de solicitud",
@@ -1723,19 +1724,18 @@ const MenoresAlExtranjero: React.FC = () => {
                 adjuntoIdentificacionAutorizado: archivoAutorizadoURL || '',
                 adjuntoBoletosViaje: archivoBoletosViajeURL || '',
             };
+            await axios.post('/api/update-request-all', updatePayload);
+            if (status === "success" && solicitudId) {
+                handleOpen();
+                setStore((prevState) => ({
+                    ...prevState,
+                    solicitudId,
+                }));
+            }
 
-            // await axios.post('/api/update-request-all', updatePayload);
-            // if (status === "success" && solicitudId) {
-            //     handleOpen();
-            //     setStore((prevState) => ({
-            //         ...prevState,
-            //         solicitudId,
-            //     }));
-            // }
-
-            /* if (status === "success" && solicitudId) {
+            if (status === "success" && solicitudId) {
                 Swal.fire({
-                    icon: "success",
+                    icon: "success", 
                     title: "Solicitud enviada correctamente",
                     timer: 2500,
                     showConfirmButton: false,
@@ -1753,7 +1753,7 @@ const MenoresAlExtranjero: React.FC = () => {
                     solicitudId,
                 }));
                 window.location.href = "/dashboard/requests";
-            } */
+            }
         } catch (error) {
             Swal.fire({
                 position: "top-end",
