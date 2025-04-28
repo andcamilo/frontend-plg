@@ -67,7 +67,7 @@ const MenoresAlExtranjero: React.FC = () => {
         notificaciones: "",
         pago: false,
         cuenta: "",
-        tipoConsulta: "Menores al Extranjero|",
+        tipoConsulta: "Menores al Extranjero",
 
         //Autorizante
         nombreCompletoAutorizante: "",
@@ -205,7 +205,7 @@ const MenoresAlExtranjero: React.FC = () => {
                 cedulaPasaporte: solicitudData.cedulaPasaporte || "",
                 telefono: solicitudData.telefonoSolicita || "",
                 telefonoCodigo: 'PA',
-                tipoConsulta: "Menores al Extranjero|",
+                tipoConsulta: "Menores al Extranjero",
                 nacionalidad: solicitudData.nacionalidad || "",
                 terminosAceptados: false,
                 ustedAutoriza: solicitudData.ustedAutoriza || "",
@@ -1531,7 +1531,7 @@ const MenoresAlExtranjero: React.FC = () => {
                 telefonoSolicita: `${formData.telefonoCodigo} ${formData.telefono}`.trim(),
                 cedulaPasaporte: formData.cedulaPasaporte || "",
                 emailSolicita: formData.email,
-                tipoConsulta: formData.tipoConsulta,
+    
                 nacionalidad: formData.nacionalidad,
                 actualizarPorCorreo: formData.notificaciones === "yes",
                 ...(formData.ustedAutoriza === "No" && {
@@ -1724,14 +1724,14 @@ const MenoresAlExtranjero: React.FC = () => {
                 adjuntoBoletosViaje: archivoBoletosViajeURL || '',
             };
 
-            await axios.post('/api/update-request-all', updatePayload);
-            if (status === "success" && solicitudId) {
-                handleOpen();
-                setStore((prevState) => ({
-                    ...prevState,
-                    solicitudId,
-                }));
-            }
+            // await axios.post('/api/update-request-all', updatePayload);
+            // if (status === "success" && solicitudId) {
+            //     handleOpen();
+            //     setStore((prevState) => ({
+            //         ...prevState,
+            //         solicitudId,
+            //     }));
+            // }
 
             /* if (status === "success" && solicitudId) {
                 Swal.fire({
