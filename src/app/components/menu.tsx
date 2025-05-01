@@ -32,6 +32,7 @@ interface MenuProps {
 const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, closeMenu, showSettings }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownOpenCC, setDropdownOpenCC] = useState(false);
+  const [dropdownOpenRequest, setDropdownOpenRequest] = useState(false);
   const pathname = usePathname();
 
   const [formData, setFormData] = useState<{
@@ -43,6 +44,30 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
     email: "",
     rol: "",
   });
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (menuOpen && isMobile) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [menuOpen, isMobile]);
 
   useEffect(() => {
     const userData = checkAuthToken();
@@ -102,6 +127,10 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
     setDropdownOpenCC(!dropdownOpenCC);
   };
 
+  const toggleDropdownRequest = () => {
+    setDropdownOpenRequest(!dropdownOpenRequest);
+  };
+
   const isActive = (path: string) => pathname === path ? 'bg-profile text-white rounded-xl' : '';
 
   return (
@@ -112,9 +141,26 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
       customCrossIcon={false}
       disableAutoFocus
       styles={{
+        bmMenuWrap: {
+          position: isMobile ? 'fixed' : 'sticky',
+          top: 0,
+          left: 0,
+          width: isMobile ? '100vw' : '18rem',
+          height: '100vh',
+          zIndex: 9999,
+          backgroundColor: '#1E1E2D', // importante en móvil para que no sea transparente
+        },
         bmMenu: {
           background: '#1E1E2D',
-        }
+          padding: '2rem 1rem 0',
+          fontSize: '1.15em',
+          height: '100vh',
+          overflowY: 'auto',
+        },
+        bmOverlay: {
+          background: isMobile ? 'rgba(0, 0, 0, 0.8)' : 'transparent',
+          zIndex: 9998,
+        },
       }}
     >
       <div className="flex justify-between items-center mb-1">
@@ -133,12 +179,37 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           Dashboard
         </Link>
       </div>
-      <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/requests')}`}>
+      {/* Solicitudes con submenú */}
+      <div
+        className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/requests')}`}
+        onClick={toggleDropdownRequest}
+      >
         <FeedIcon className="mr-2" />
-        <Link href="/dashboard/requests" className='font-semibold' onClick={closeMenu}>
-          Solicitudes
-        </Link>
+        <span className="flex-grow font-semibold">Solicitudes</span>
+        {dropdownOpenRequest ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
       </div>
+
+      {dropdownOpenRequest && (
+        <div className="ml-6 transition-all">
+          <Link
+            href="/dashboard/requests"
+            className={`block mb-2 px-4 py-2 rounded-xl font-semibold ${isActive('/dashboard/requests') ? 'bg-profile text-white' : 'text-gray-300'
+              }`}
+            onClick={closeMenu}
+          >
+            Generales
+          </Link>
+          <Link
+            href="/dashboard/requestsDraft"
+            className={`block mb-2 px-4 py-2 rounded-xl font-semibold ${isActive('/dashboard/requestsDraft') ? 'bg-profile text-white' : 'text-gray-300'
+              }`}
+            onClick={closeMenu}
+          >
+            Borrador
+          </Link>
+        </div>
+      )}
+
       {/* <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/requestsCasos')}`}>
         <FeedIcon className="mr-2" />
         <Link href="/dashboard/requestsCasos" className='font-semibold' onClick={closeMenu}>

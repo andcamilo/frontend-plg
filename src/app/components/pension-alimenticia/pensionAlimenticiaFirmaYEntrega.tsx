@@ -6,7 +6,7 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
 import CountrySelect from '@components/CountrySelect';
-
+import { FaPlay } from 'react-icons/fa';
 
 const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>('office');
@@ -188,7 +188,7 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
             type="button"
             onClick={toggleModal}
           >
-            <i className="fa-solid fa-play text-lg"></i>
+            <FaPlay className="text-sm" />
           </button>
           <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
         </div>

@@ -51,13 +51,18 @@ const Request: React.FC = () => {
     const [observation, setObservation] = useState('');
     const router = useRouter();
     const params = useParams();
+    const [isAssigning, setIsAssigning] = useState(false);
+    const [isRemoving, setIsRemoving] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const id = params?.id as string | undefined;
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const [statusName, setStatusName] = useState("");
     const [lawyers, setLawyers] = useState<any[]>([]);
+    const [alreadyAssigned, setAlreadyAssigned] = useState<any[]>([]);
     const [assignedLawyers, setAssignedLawyers] = useState<any[]>([]);
     const [peopleData, setPeopleData] = useState<any[]>([]);
+    const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<{
         cuenta: string;
@@ -77,7 +82,7 @@ const Request: React.FC = () => {
         switch (status) {
             case 0: return "Rechazada";
             case 1: return "Borrador";
-            case 10: return "Enviada, pendiente de pago";
+            case 10: return "Pendiente de pago";
             case 12: return "Aprobada";
             case 19: return "Confirmando pago";
             case 20: return "Pagada";
@@ -167,6 +172,7 @@ const Request: React.FC = () => {
             let currentPage = 1;
             const limitPerPage = 10;
             let hasMore = true;
+            let allAlreadyAssigned: any[] = [];
 
             try {
                 // Obtener los IDs de los abogados ya asignados en la solicitud
@@ -192,9 +198,13 @@ const Request: React.FC = () => {
                         user.rol >= 35 && !assignedLawyerIds.includes(user.id)
                     );
 
+                    const alreadyAssigned = usuarios.filter((user: any) =>
+                        user.rol >= 35 && assignedLawyerIds.includes(user.id)
+                    );
+
                     // Añadir los resultados filtrados al array total
                     allLawyers = [...allLawyers, ...filteredLawyers];
-
+                    allAlreadyAssigned = [...allAlreadyAssigned, ...alreadyAssigned];
                     // Verificar si hay más páginas
                     const totalUsers = response.data.totalUsers;
                     const totalPages = Math.ceil(totalUsers / limitPerPage);
@@ -204,13 +214,15 @@ const Request: React.FC = () => {
                 }
 
                 setLawyers(allLawyers); // Almacenar todos los abogados en el estado
+                setAlreadyAssigned(allAlreadyAssigned);
                 setAssignedLawyers(assignedLawyers);
+                console.log("Abogados asignados ", allAlreadyAssigned)
             } catch (error) {
                 console.error('Error fetching all lawyers:', error);
             }
         };
 
-        if (solicitudData) {
+        if (solicitudData && solicitudData.abogados) {
             fetchAllLawyers();
         }
     }, [solicitudData]);
@@ -296,8 +308,11 @@ const Request: React.FC = () => {
     };
 
     const handleUpdate = async () => {
+        if (isUpdating) return; // ⬅️ Bloquea múltiples clics
         if (!handleValidation()) return;
-        // Lógica para actualizar el estatus o realizar alguna acción
+
+        setIsUpdating(true); // ⬅️ Marca que empezó el proceso
+
         try {
             let archivoURL = "";
             if (archivoFile) {
@@ -316,7 +331,7 @@ const Request: React.FC = () => {
             if (responseData.status === 200) {
                 Swal.fire({
                     icon: "success",
-                    title: "Bitacora actualizada correctamente",
+                    title: "Bitácora actualizada correctamente",
                     timer: 2500,
                     showConfirmButton: false,
                     background: '#2c2c3e',
@@ -330,33 +345,27 @@ const Request: React.FC = () => {
                 }).then(() => {
                     window.location.reload();
                 });
-                console.log("Los datos han sido guardados correctamente.");
             } else {
                 Swal.fire({
-                    icon: "success",
-                    title: "Error al actualizar la bitacora",
+                    icon: "error",
+                    title: "Error al actualizar la bitácora",
                     timer: 2500,
                     showConfirmButton: false,
                     background: '#2c2c3e',
                     color: '#fff',
-                    customClass: {
-                        popup: 'custom-swal-popup',
-                        title: 'custom-swal-title-main',
-                        icon: 'custom-swal-icon',
-                        timerProgressBar: 'custom-swal-timer-bar'
-                    }
                 });
-                console.log("Error al actualizar la solicitud.")
             }
         } catch (error) {
             Swal.fire({
                 position: "top-end",
                 icon: "error",
-                title: "Hubo un problema enviando la actualizacion de la bitacora. Por favor, inténtalo de nuevo más tarde.",
+                title: "Hubo un problema enviando la actualización de la bitácora. Por favor, inténtalo de nuevo más tarde.",
                 showConfirmButton: false,
                 timer: 1500,
             });
             console.error("Error creating request:", error);
+        } finally {
+            setIsUpdating(false); // ⬅️ Termina el proceso
         }
     };
 
@@ -373,6 +382,7 @@ const Request: React.FC = () => {
     }, []);
 
     const handleAssignLawyer = async () => {
+        if (isAssigning) return; // ⬅️ Si ya está asignando, no volver a ejecutar
         if (!selectedLawyer) {
             Swal.fire({
                 position: "top-end",
@@ -386,14 +396,14 @@ const Request: React.FC = () => {
             return;
         }
 
+        setIsAssigning(true); // ⬅️ Empieza el proceso: bloquea
+
         try {
             const updatePayload = {
                 solicitudId: id,
                 id: selectedLawyer.id,
                 nombre: selectedLawyer.nombre,
             };
-
-            console.log('🚀 ~ handler ~ dataFront:', updatePayload);
 
             const responseData = await axios.post('/api/update-request-abogados', updatePayload);
 
@@ -427,10 +437,13 @@ const Request: React.FC = () => {
                 position: 'top-end'
             });
             console.error("Error assigning lawyer:", error);
+        } finally {
+            setIsAssigning(false); // ⬅️ Finaliza el proceso: desbloquea
         }
     };
 
     const handleRemoveLawyer = async () => {
+        if (isRemoving) return; // ⬅️ Evita múltiples clics mientras elimina
         if (!selectedAssignedLawyer) {
             Swal.fire({
                 position: "top-end",
@@ -443,6 +456,8 @@ const Request: React.FC = () => {
             });
             return;
         }
+
+        setIsRemoving(true); // ⬅️ Comienza a eliminar: bloquea botón
 
         try {
             const removePayload = {
@@ -482,6 +497,8 @@ const Request: React.FC = () => {
                 position: 'top-end'
             });
             console.error("Error removing lawyer:", error);
+        } finally {
+            setIsRemoving(false); // ⬅️ Termina el proceso: desbloquea botón
         }
     };
 
@@ -1762,8 +1779,17 @@ const Request: React.FC = () => {
                                 <p className="text-gray-400 mt-2">{archivoFile ? archivoFile.name : "Sin archivos seleccionados"}</p>
                             </div>
                             <div className="flex space-x-4 mt-2">
-                                <button className="bg-gray-500 text-white px-4 py-2 rounded mt-2" onClick={handleBack}>Volver</button>
-                                <button className="bg-profile text-white px-4 py-2 rounded mt-2" onClick={handleUpdate}>Actualizar</button>
+                                <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={handleBack}>Volver</button>
+                                <button
+                                    onClick={handleUpdate}
+                                    disabled={isUpdating}
+                                    className={`bg-profile text-white px-4 py-2 rounded ${isUpdating
+                                        ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                                        : 'bg-green-500 text-white hover:bg-green-600'
+                                        }`}
+                                >
+                                    {isUpdating ? 'Actualizando...' : 'Actualizar'}
+                                </button>
                             </div>
                         </div>
                     </>
@@ -1794,7 +1820,16 @@ const Request: React.FC = () => {
                                 </select>
                                 <div className="flex space-x-4 mt-2">
                                     <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={handleBack}>Volver</button>
-                                    <button className="bg-profile text-white px-4 py-2 rounded" onClick={handleAssignLawyer}>Asignar</button>
+                                    <button
+                                        onClick={handleAssignLawyer}
+                                        disabled={isAssigning}
+                                        className={`bg-profile text-white px-4 py-2 rounded ${isAssigning
+                                            ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                                            : 'bg-blue-500 text-white hover:bg-blue-600'
+                                            }`}
+                                    >
+                                        {isAssigning ? 'Asignando...' : 'Asignar'}
+                                    </button>
                                 </div>
                             </div>
 
@@ -1817,7 +1852,16 @@ const Request: React.FC = () => {
                                 </select>
                                 <div className="flex space-x-4 mt-2">
                                     <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={handleBack}>Volver</button>
-                                    <button className="bg-profile text-white px-4 py-2 rounded" onClick={handleRemoveLawyer}>Eliminar</button>
+                                    <button
+                                        onClick={handleRemoveLawyer}
+                                        disabled={isRemoving}
+                                        className={`bg-profile text-white px-4 py-2 rounded ${isRemoving
+                                            ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                                            : 'bg-red-500 text-white hover:bg-red-600'
+                                            }`}
+                                    >
+                                        {isRemoving ? 'Eliminando...' : 'Eliminar'}
+                                    </button>
                                 </div>
                             </div>
                         </>
@@ -1874,15 +1918,19 @@ const Request: React.FC = () => {
             <div className="flex flex-col gap-8 md:w-1/2">
                 <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
                     <h3 className="text-lg font-bold text-white mb-4">Información del solicitante</h3>
-                    <p className="text-gray-300">
-                        <strong>Nombre del solicitante:</strong> {solicitudData ? solicitudData.nombreSolicita : "Cargando..."}
-                    </p>
-                    <p className="text-gray-300">
-                        <strong>Teléfono:</strong> {solicitudData ? solicitudData.telefonoSolicita : "Cargando..."}
-                    </p>
-                    <p className="text-gray-300">
-                        <strong>Correo electrónico:</strong> {solicitudData ? solicitudData.emailSolicita : "Cargando..."}
-                    </p>
+                    {solicitudData && (
+                        <>
+                            <p className="text-gray-300">
+                                <strong>Nombre del solicitante:</strong> {solicitudData ? solicitudData.nombreSolicita : "Cargando..."}
+                            </p>
+                            <p className="text-gray-300">
+                                <strong>Teléfono:</strong> {solicitudData ? solicitudData.telefonoSolicita : "Cargando..."}
+                            </p>
+                            <p className="text-gray-300">
+                                <strong>Correo electrónico:</strong> {solicitudData ? solicitudData.emailSolicita : "Cargando..."}
+                            </p>
+                        </>
+                    )}
                     <hr className='mt-2 mb-2' />
                     <p
                         className="text-purple-400 cursor-pointer mt-2 hover:underline"
@@ -1892,9 +1940,38 @@ const Request: React.FC = () => {
                     </p>
 
                     <hr className='mt-2 mb-2' />
-                    <p className="text-gray-300">
-                        <strong>Estatus Actual:</strong> {solicitudData ? statusName : "Cargando..."}
+                    {solicitudData && (
+                        <>
+                            <p className="text-gray-300">
+                                <strong>Estatus Actual:</strong> {solicitudData ? statusName : "Cargando..."}
+                            </p>
+                        </>
+                    )}
+                    <p className="text-gray-300 mt-2">
+                        <strong>Abogados asignados:</strong>
                     </p>
+
+                    <div className="">
+                        {alreadyAssigned.length > 0 ? (
+                            <ul className="space-y-2">
+                                {alreadyAssigned.map((lawyer, index) => (
+                                    <li key={index} className="text-white text-base flex items-center justify-between">
+                                        <span>{lawyer.nombre}</span>
+                                        {lawyer.fotoPerfil && (
+                                            <button
+                                                onClick={() => setSelectedPhotoUrl(lawyer.fotoPerfil)}
+                                                className="text-blue-400 underline hover:text-blue-200 ml-2 text-base"
+                                            >
+                                                Ver foto
+                                            </button>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-400 text-sm mt-2">No hay abogados asignados.</p>
+                        )}
+                    </div>
 
                     <h3 className="text-lg font-bold text-white mt-6">Costos</h3>
                     <table className="w-full text-gray-300 mt-2">
@@ -1924,17 +2001,17 @@ const Request: React.FC = () => {
                             <tr className="border-b border-gray-600">
                                 <td colSpan={2} className="text-right">Subtotal</td>
                                 <td className="text-right">
-                                    ${solicitudData
-                                        ? solicitudData?.canasta?.subtotal.toFixed(2) ?? "Cargando..."
-                                        : solicitudData?.canasta?.items[0]?.subtotal.toFixed(2) ?? "Cargando..."}
+                                    {typeof solicitudData?.canasta?.subtotal === "number"
+                                        ? `$${solicitudData.canasta.subtotal.toFixed(2)}`
+                                        : "Cargando..."}
                                 </td>
                             </tr>
                             <tr className="border-b border-gray-600">
                                 <td colSpan={2} className="text-right">Total</td>
                                 <td className="text-right">
-                                    ${solicitudData
-                                        ? solicitudData?.canasta?.total.toFixed(2) ?? "Cargando..."
-                                        : solicitudData?.canasta?.items[0]?.total.toFixed(2) ?? "Cargando..."}
+                                    {typeof solicitudData?.canasta?.total === "number"
+                                        ? `$${solicitudData.canasta.total.toFixed(2)}`
+                                        : "Cargando..."}
                                 </td>
                             </tr>
                         </tfoot>
@@ -1996,6 +2073,23 @@ const Request: React.FC = () => {
                     )}
             </div>
 
+            {selectedPhotoUrl && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                    <div className="bg-white p-4 rounded-lg max-w-sm w-full relative">
+                        <button
+                            onClick={() => setSelectedPhotoUrl(null)}
+                            className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
+                        >
+                            ✕
+                        </button>
+                        <img
+                            src={selectedPhotoUrl}
+                            alt="Foto del abogado"
+                            className="w-full h-auto rounded-lg object-cover"
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

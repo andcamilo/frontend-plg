@@ -8,6 +8,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 import DeleteIcon from '@mui/icons-material/Delete';
 import '@fortawesome/fontawesome-free/css/all.css';
+import { FaPlay } from 'react-icons/fa';
 
 // Define el tipo de datos que manejarás en el estado `data`
 interface DirectorNominalData {
@@ -253,7 +254,7 @@ const SociedadEmpresaDirectores: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <i className="fa-solid fa-play text-lg"></i> 
+                        <FaPlay className="text-sm" /> 
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>

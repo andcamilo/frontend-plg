@@ -3,12 +3,15 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { checkAuthToken } from "@/src/app/utils/checkAuthToken"
 import axios from "axios"
 import ChangePasswordModal from "@components/ChangePasswordModal"
 import { getRoleName } from "@/src/app/utils/roleSelector"
 import { backendBaseUrl, backendEnv } from "@utils/env"
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { uploadFile } from "@/src/app/utils/firebase-upload";
+import Swal from 'sweetalert2';
 
 interface UserData {
   id: string
@@ -30,6 +33,12 @@ const AccountPage: React.FC = () => {
   const [isFetching, setIsFetching] = useState(true)
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false)
   const [userId, setUserId] = useState("")
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
+
+  const handleProfilePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setProfilePhotoFile(file);
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -71,38 +80,68 @@ const AccountPage: React.FC = () => {
   }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
+
     try {
-      const tokenChecked = checkAuthToken()
+      const tokenChecked = checkAuthToken();
       if (!tokenChecked?.user_id) {
-        throw new Error("User ID not found")
+        throw new Error("User ID not found");
       }
 
-      const updateData = {
+      let profilePhotoUrl = "";
+
+      if (profilePhotoFile) {
+        profilePhotoUrl = await uploadFile(profilePhotoFile);
+      }
+
+      const updateData: any = {
+        userId,
         nombre: formData.name,
         email: formData.email,
         telefonoSolicita: formData.phone,
+      };
+
+      if (profilePhotoUrl) {
+        updateData.fotoPerfil = profilePhotoUrl; // ⬅️ Aquí mandamos la foto si existe
       }
 
-      const response = await axios.patch(`${backendBaseUrl}/${backendEnv}/update-user/${userId}`, updateData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+      const response = await axios.post(`/api/update-user`, updateData,);
 
       if (response.status === 200) {
-        alert("Perfil actualizado exitosamente")
+        Swal.fire({
+          icon: "success",
+          title: "Perfil actualizado exitosamente",
+          timer: 2500,
+          showConfirmButton: false,
+          background: '#2c2c3e',
+          color: '#fff',
+          customClass: {
+            popup: 'custom-swal-popup',
+            title: 'custom-swal-title-main',
+            icon: 'custom-swal-icon',
+            timerProgressBar: 'custom-swal-timer-bar'
+          }
+        }).then(() => {
+          window.location.reload();
+        });
       } else {
-        throw new Error("Failed to update profile")
+        Swal.fire({
+          icon: "error",
+          title: "Error al actualizar el perfil",
+          timer: 2500,
+          showConfirmButton: false,
+          background: '#2c2c3e',
+          color: '#fff',
+        });
       }
     } catch (error) {
-      console.error("Error updating profile:", error)
-      alert("Error al actualizar el perfil: " + (error instanceof Error ? error.message : "Unknown error"))
+      console.error("Error updating profile:", error);
+      alert("Error al actualizar el perfil: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -139,7 +178,7 @@ const AccountPage: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   className="w-fit min-w-[33ch] max-w-[50ch] bg-[#2a2a3b] rounded p-3 text-white block"
-                  
+
                   required
                 />
               </div>
@@ -176,6 +215,16 @@ const AccountPage: React.FC = () => {
                   className="w-fit min-w-[33ch] max-w-[50ch] bg-[#2a2a3b] rounded p-3 text-white block cursor-not-allowed"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block mb-2">Adjuntar Foto de Perfil</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePhotoChange}
+                className="w-fit min-w-[33ch] max-w-[50ch] bg-[#2a2a3b] rounded p-3 text-white block"
+              />
             </div>
 
             <button

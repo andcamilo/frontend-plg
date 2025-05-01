@@ -10,6 +10,7 @@ import get from 'lodash/get';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import { FaPlay } from 'react-icons/fa';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -384,7 +385,7 @@ const FundacionObjetivos: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <i className="fa-solid fa-play text-lg"></i> 
+                        <FaPlay className="text-sm" /> 
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>

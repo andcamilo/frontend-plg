@@ -2,27 +2,27 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import Pension1 from '@public/images/pension 1.webp';
-import Pension2 from '@public/images/pension 2.webp';
-import Pension3 from '@public/images/pension 3.webp';
-import Pension4 from '@public/images/pension 4.webp';
+import Consulta1 from '@public/images/consulta1.webp';
+import Consulta2 from '@public/images/consulta2.webp';
+import Consulta3 from '@public/images/consulta3.webp';
+import Consulta4 from '@public/images/consulta4.webp';
 
 const opciones = [
     {
-        image: Pension1
+        image: Consulta1
     },
     {
-        image: Pension2
+        image: Consulta2
     },
     {
-        image: Pension3
+        image: Consulta3
     },
     {
-        image: Pension4
+        image: Consulta4
     },
 ];
 
-export default function BannerOpciones() {
+export default function BannerOpcionesConsulta() {
     const [index, setIndex] = useState(0);
 
     const nextSlide = () => {

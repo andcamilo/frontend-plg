@@ -2,27 +2,31 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import Pension1 from '@public/images/pension 1.webp';
-import Pension2 from '@public/images/pension 2.webp';
-import Pension3 from '@public/images/pension 3.webp';
-import Pension4 from '@public/images/pension 4.webp';
+import Menores1 from '@public/images/menoresAlExtranjero 1.webp';
+import Menores2 from '@public/images/menoresAlExtranjero 2.webp';
+import Menores3 from '@public/images/menoresAlExtranjero 3.webp';
+import Menores4 from '@public/images/menoresAlExtranjero 4.webp';
+import Menores5 from '@public/images/menoresAlExtranjero 5.webp';
 
 const opciones = [
     {
-        image: Pension1
+        image: Menores1
     },
     {
-        image: Pension2
+        image: Menores2
     },
     {
-        image: Pension3
+        image: Menores3
     },
     {
-        image: Pension4
+        image: Menores4
+    },
+    {
+        image: Menores5
     },
 ];
 
-export default function BannerOpciones() {
+export default function BannerOpcionesMenores() {
     const [index, setIndex] = useState(0);
 
     const nextSlide = () => {
@@ -40,7 +44,7 @@ export default function BannerOpciones() {
             </h2>
 
             {/* Vista escritorio */}
-            <div className="hidden md:grid grid-cols-4 gap-4">
+            <div className="hidden md:grid grid-cols-5 gap-4">
                 {opciones.map((opcion, idx) => (
                     <motion.div
                         key={idx}

@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 import '@fortawesome/fontawesome-free/css/all.css';
+import { FaPlay } from 'react-icons/fa';
 
 const SociedadEmpresaEmpresa: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -289,7 +290,7 @@ const SociedadEmpresaEmpresa: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <i className="fa-solid fa-play text-lg"></i> 
+                        <FaPlay className="text-sm" /> 
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>

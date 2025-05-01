@@ -8,6 +8,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 import '@fortawesome/fontawesome-free/css/all.css';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { FaPlay } from 'react-icons/fa';
 
 interface PoderData {
     nombre: React.ReactNode;
@@ -175,7 +176,7 @@ const FundacionPoder: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <i className="fa-solid fa-play text-lg"></i> 
+                        <FaPlay className="text-sm" /> 
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>

@@ -8,6 +8,7 @@ import Link from 'next/link';
 import PensionCategoryMessage from './PensionCategoryMessage'
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
+import { FaPlay } from 'react-icons/fa';
 
 interface FormData {
   pensionType: string;          // 'Primera vez' or other pension types
@@ -834,16 +835,16 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   disabled={store.request.status >= 10 && store.rol < 20}
                 >
                   <option value="">Seleccione una opción</option>
-                  <option value="Bocas del Toro">Bocas del Toro</option>
+                  {/* <option value="Bocas del Toro">Bocas del Toro</option> */}
                   <option value="Chiriquí">Chiriquí</option>
-                  <option value="Coclé">Coclé</option>
+                  {/* <option value="Coclé">Coclé</option>
                   <option value="Colón">Colón</option>
                   <option value="Darién">Darién</option>
                   <option value="Herrera">Herrera</option>
-                  <option value="Los Santos">Los Santos</option>
+                  <option value="Los Santos">Los Santos</option> */}
                   <option value="Panamá">Panamá</option>
                   <option value="Panamá Oeste">Panamá Oeste</option>
-                  <option value="Veraguas">Veraguas</option>
+                  {/* <option value="Veraguas">Veraguas</option> */}
                 </select>
               </div>
             )}
@@ -1003,16 +1004,16 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                   disabled={store.request.status >= 10 && store.rol < 20}
                 >
                   <option value="">Seleccione una opción</option>
-                  <option value="Bocas del Toro">Bocas del Toro</option>
+                  {/* <option value="Bocas del Toro">Bocas del Toro</option> */}
                   <option value="Chiriquí">Chiriquí</option>
-                  <option value="Coclé">Coclé</option>
+                  {/* <option value="Coclé">Coclé</option>
                   <option value="Colón">Colón</option>
                   <option value="Darién">Darién</option>
                   <option value="Herrera">Herrera</option>
-                  <option value="Los Santos">Los Santos</option>
+                  <option value="Los Santos">Los Santos</option> */}
                   <option value="Panamá">Panamá</option>
                   <option value="Panamá Oeste">Panamá Oeste</option>
-                  <option value="Veraguas">Veraguas</option>
+                  {/* <option value="Veraguas">Veraguas</option> */}
                 </select>
               </div>
             )}
@@ -1158,16 +1159,16 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                       disabled={store.request.status >= 10 && store.rol < 20}
                     >
                       <option value="">Seleccione una opción</option>
-                      <option value="Bocas del Toro">Bocas del Toro</option>
+                      {/* <option value="Bocas del Toro">Bocas del Toro</option> */}
                       <option value="Chiriquí">Chiriquí</option>
-                      <option value="Coclé">Coclé</option>
+                      {/* <option value="Coclé">Coclé</option>
                       <option value="Colón">Colón</option>
                       <option value="Darién">Darién</option>
                       <option value="Herrera">Herrera</option>
-                      <option value="Los Santos">Los Santos</option>
+                      <option value="Los Santos">Los Santos</option> */}
                       <option value="Panamá">Panamá</option>
                       <option value="Panamá Oeste">Panamá Oeste</option>
-                      <option value="Veraguas">Veraguas</option>
+                      {/* <option value="Veraguas">Veraguas</option> */}
                     </select>
                     <div className="mt-6">
                       <label className="block font-bold">Indique las fechas de pago</label>
@@ -1232,16 +1233,16 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                           disabled={store.request.status >= 10 && store.rol < 20}
                         >
                           <option value="">Seleccione una opción</option>
-                          <option value="Bocas del Toro">Bocas del Toro</option>
+                          {/* <option value="Bocas del Toro">Bocas del Toro</option> */}
                           <option value="Chiriquí">Chiriquí</option>
-                          <option value="Coclé">Coclé</option>
+                          {/* <option value="Coclé">Coclé</option>
                           <option value="Colón">Colón</option>
                           <option value="Darién">Darién</option>
                           <option value="Herrera">Herrera</option>
-                          <option value="Los Santos">Los Santos</option>
+                          <option value="Los Santos">Los Santos</option> */}
                           <option value="Panamá">Panamá</option>
                           <option value="Panamá Oeste">Panamá Oeste</option>
-                          <option value="Veraguas">Veraguas</option>
+                          {/* <option value="Veraguas">Veraguas</option> */}
                         </select>
                         <div className="mt-6">
                           <label className="block font-bold">Indique las fechas de pago</label>
@@ -1384,25 +1385,25 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
                     >
                       <option value="">Seleccione una opción</option>
                       <optgroup label="Provincias">
-                        <option value="Bocas del Toro">Bocas del Toro</option>
+                        {/* <option value="Bocas del Toro">Bocas del Toro</option> */}
                         <option value="Chiriquí">Chiriquí</option>
-                        <option value="Coclé">Coclé</option>
+                        {/* <option value="Coclé">Coclé</option>
                         <option value="Colón">Colón</option>
                         <option value="Darién">Darién</option>
                         <option value="Herrera">Herrera</option>
-                        <option value="Los Santos">Los Santos</option>
+                        <option value="Los Santos">Los Santos</option> */}
                         <option value="Panamá">Panamá</option>
                         <option value="Panamá Oeste">Panamá Oeste</option>
-                        <option value="Veraguas">Veraguas</option>
+                        {/* <option value="Veraguas">Veraguas</option> */}
                       </optgroup>
-                      <optgroup label="Comarcas Indígenas">
+                      {/* <optgroup label="Comarcas Indígenas">
                         <option value="Guna Yala">Guna Yala</option>
                         <option value="Emberá-Wounaan">Emberá-Wounaan</option>
                         <option value="Ngäbe-Buglé">Ngäbe-Buglé</option>
                         <option value="Naso Tjër Di">Naso Tjër Di</option>
                         <option value="Guna de Madugandí">Guna de Madugandí</option>
                         <option value="Guna de Wargandí">Guna de Wargandí</option>
-                      </optgroup>
+                      </optgroup> */}
                     </select>
                   </>
                 )}
@@ -1437,7 +1438,7 @@ const PensionAlimenticiaSolicitud: React.FC = () => {
             type="button"
             onClick={toggleModal}
           >
-            <i className="fa-solid fa-play text-lg"></i>
+            <FaPlay className="text-sm" />
           </button>
           <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
         </div>

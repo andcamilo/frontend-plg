@@ -16,6 +16,8 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import CountrySelect from '@components/CountrySelect';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Modal, Box, Button } from "@mui/material";
+import BannerOpcionesConsulta from '@components/BannerOpcionesConsulta';
+import { FaPlay } from 'react-icons/fa';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -1036,7 +1038,7 @@ const ConsultaPropuesta: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <i className="fa-solid fa-play text-lg"></i> 
+                        <FaPlay className="text-sm" />
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>
@@ -1090,7 +1092,9 @@ const ConsultaPropuesta: React.FC = () => {
                 <strong>Sabemos que puedes tener muchas dudas antes de realizar un trámite, o sólo requieres información de alguna situación o alguna propuesta de los servicios que ofrecemos, por ello, este trámite te permite hacer alguna de las siguientes solicitudes:</strong>
             </p>
 
-            <ul className="text-white mt-4 list-disc list-inside space-y-4 texto_justificado">
+            <BannerOpcionesConsulta />
+
+            {/* <ul className="text-white mt-4 list-disc list-inside space-y-4 texto_justificado">
                 <li>
                     <strong>Propuesta Legal:</strong> al escoger propuesta legal, nos podrás detallar tu necesidad y te estaríamos enviando una cotización con los requisitos. Podrás comentarnos dudas adicionales de la misma, y te estaríamos guiando sobre los próximos pasos una vez aprobada la propuesta. Solicitar una propuesta legal no tiene costo.
                 </li>
@@ -1103,7 +1107,7 @@ const ConsultaPropuesta: React.FC = () => {
                 <li>
                     <strong>Consulta presencial:</strong> sabemos que para algunos es muy importante explicarnos su requerimiento en persona, por ello, estamos siempre dispuestos a recibirlos en nuestra casa. Puedes solicitar una consulta presencial según tu disponibilidad. Escoge 3 fechas disponibles que tengas, y estarás recibiendo la confirmación de una de las fechas para tu visita a nuestras oficinas.
                 </li>
-            </ul>
+            </ul> */}
 
             <p className="text-white mt-4 texto_justificado">
                 <strong className="text-red-500">IMPORTANTE:</strong> Si elige la opción de Consultas (Escrita, Presencial o Virtual) debe tener en cuenta que la misma tiene una duración máxima de 1 hora y 30 minutos, en caso que se extienda por más tiempo esto incurrirá en aumento en su tarifa que deberán ser cancelados al momento de finalizar dicha consulta. Por lo tanto le pedimos que sea bien específico al momento de enviar el formulario para que sus dudas sean aclaradas en el tiempo propuesto y no incurrir en gastos adicionales.
