@@ -32,7 +32,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, setIsOpen }) => {
       />
 
       <button
-        className="fixed top-4 left-14 border-none bg-transparent cursor-pointer z-50"
+        className="fixed top-4 left-4 md:left-6 border-none bg-transparent cursor-pointer z-30"
         onClick={() => handleStateChange({ isOpen: !isOpen })}
       >
         <MenuIcon className="text-profile" />

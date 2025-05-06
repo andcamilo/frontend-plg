@@ -5,6 +5,7 @@ import AppStateContext from '@context/context';
 import ClipLoader from 'react-spinners/ClipLoader'; // Import spinner
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
+import { FaPlay } from 'react-icons/fa';
 
 const PensionAlimenticiaGastosPensionado: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -274,7 +275,7 @@ const PensionAlimenticiaGastosPensionado: React.FC = () => {
             type="button"
             onClick={toggleModal}
           >
-            <i className="fa-solid fa-play text-lg"></i>
+            <FaPlay className="text-sm" />
           </button>
           <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
         </div>
