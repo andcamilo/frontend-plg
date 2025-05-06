@@ -148,30 +148,8 @@ const RequestsStatistics: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [filterExpediente, setFilterExpediente] = useState('');
-  const [filtroContador, setFiltroContador] = useState<string>('');
 
   const hayFiltrosActivos = filterTipo || filterStatus || filterDate || filterExpediente;
-
-  // ✅ Agrega aquí esta función ↓↓↓↓↓↓↓↓↓↓
-  const getSolicitudesVisiblesPorRol = () => {
-    return solicitudes.filter((solicitud) => {
-      const esCliente = formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente';
-      const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
-
-      if (esCliente) {
-        return solicitud.cuenta === formData.cuenta;
-      }
-
-      if (esAsistenteOAbogado) {
-        const abogadoAsignado = (solicitud.abogados || []).some((abogado: any) =>
-          abogado.id === formData.userId || abogado._id === formData.userId
-        );
-        return solicitud.cuenta === formData.cuenta || abogadoAsignado;
-      }
-      
-      return true;
-    });
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -238,6 +216,7 @@ const RequestsStatistics: React.FC = () => {
   // ---- Helper function for filtering ----
   const getSolicitudesFiltradas = (array: any[]) => {
     return array
+      // If user is "Cliente" or "Cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
       .filter((solicitud) => {
         const esCliente = formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente';
         const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
@@ -253,9 +232,11 @@ const RequestsStatistics: React.FC = () => {
           return solicitud.cuenta === formData.cuenta || abogadoAsignado;
         }
 
+        // Para todos los demás roles (Admin, etc.)
         return true;
       })
-      .filter(({ tipo, date, status, expediente, abogados }) => {
+      // apply local filters
+      .filter(({ tipo, date, status, expediente }) => {
         const tipoMapping: { [key: string]: string } = {
           'propuesta-legal': 'Propuesta Legal',
           'consulta-legal': 'Propuesta Legal',
@@ -277,45 +258,23 @@ const RequestsStatistics: React.FC = () => {
         const formattedDate = formatDate(date);
         const inputDate = filterDate ? filterDate.split('-').reverse().join('/') : '';
 
-        const pasaFiltrosNormales =
+        return (
           (filterTipo ? tipoTexto === filterTipo : true) &&
           (filterStatus ? status.toString() === filterStatus : true) &&
           (filterDate ? formattedDate === inputDate : true) &&
           (filterExpediente
             ? expediente?.toLowerCase().includes(filterExpediente.toLowerCase())
-            : true);
-
-        const pasaFiltroContador =
-          filtroContador === ''
-          || (filtroContador === 'nuevas' && (!abogados || abogados.length === 0) && status >= 2 && status !== 70)
-          || (filtroContador === 'pagadas' && status === 20)
-          || (filtroContador === 'pendiente' && status === 10)
-          || (filtroContador === 'tramite' && status === 30);
-
-        return pasaFiltrosNormales && pasaFiltroContador;
+            : true)
+        );
       })
+      // sort descending by date
       .sort((a, b) => b.date._seconds - a.date._seconds);
   };
 
   // ---- Memoized filtering so the arrays are stable if data/filters haven't changed ----
   const solicitudesFiltradasEnProceso = useMemo(() => {
     return getSolicitudesFiltradas(
-      solicitudes.filter((solicitud) => ![70, 1].includes(solicitud.status))
-    );
-  }, [
-    solicitudes,
-    formData.rol,
-    formData.cuenta,
-    filterTipo,
-    filterStatus,
-    filterDate,
-    filterExpediente,
-    filtroContador,
-  ]);
-
-  const solicitudesFiltradasFinalizadas = useMemo(() => {
-    return getSolicitudesFiltradas(
-      solicitudes.filter((solicitud) => solicitud.status === 70)
+      solicitudes.filter((solicitud) => solicitud.status === 1)
     );
   }, [
     solicitudes,
@@ -332,38 +291,22 @@ const RequestsStatistics: React.FC = () => {
     (currentPageEnProceso - 1) * rowsPerPage,
     currentPageEnProceso * rowsPerPage
   );
-  const paginatedSolicitudesFinalizadas = solicitudesFiltradasFinalizadas.slice(
-    (currentPageFinalizadas - 1) * rowsPerPage,
-    currentPageFinalizadas * rowsPerPage
-  );
 
-  // ---- Effects to update pagination states ----
+  const totalPagesEnProceso = useMemo(() => {
+    return Math.max(1, Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage));
+  }, [solicitudesFiltradasEnProceso, rowsPerPage]);  
+
   useEffect(() => {
+    if (solicitudesFiltradasEnProceso.length === 0) return;
+  
+    const totalPages = Math.max(1, Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage));
     setPaginationEnProceso({
       hasPrevPage: currentPageEnProceso > 1,
-      hasNextPage:
-        currentPageEnProceso <
-        Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage),
-      totalPages: Math.max(
-        1,
-        Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage)
-      ),
+      hasNextPage: currentPageEnProceso < totalPages,
+      totalPages,
     });
-  }, [currentPageEnProceso, solicitudesFiltradasEnProceso, rowsPerPage]);
-
-  useEffect(() => {
-    setPaginationFinalizadas({
-      hasPrevPage: currentPageFinalizadas > 1,
-      hasNextPage:
-        currentPageFinalizadas <
-        Math.ceil(solicitudesFiltradasFinalizadas.length / rowsPerPage),
-      totalPages: Math.max(
-        1,
-        Math.ceil(solicitudesFiltradasFinalizadas.length / rowsPerPage)
-      ),
-    });
-  }, [currentPageFinalizadas, solicitudesFiltradasFinalizadas, rowsPerPage]);
-
+  }, [solicitudesFiltradasEnProceso, currentPageEnProceso, rowsPerPage]);  
+  
   // ---- Format the data for <TableWithRequests> ----
   const transformData = (solicitudes: any[]) => {
     return solicitudes.map(
@@ -440,13 +383,13 @@ const RequestsStatistics: React.FC = () => {
 
   const estatusDisponibles = [
     { value: 0, label: 'Rechazada' },
-    /* { value: 1, label: 'Borrador' }, */
+    { value: 1, label: 'Borrador' },
     { value: 10, label: 'Pendiente de pago' },
     { value: 12, label: 'Aprobada' },
     { value: 19, label: 'Confirmando pago' },
     { value: 20, label: 'Pagada' },
     { value: 30, label: 'En proceso' },
-    /* { value: 70, label: 'Finalizada' }, */
+    { value: 70, label: 'Finalizada' },
   ];
 
   return (
@@ -476,23 +419,6 @@ const RequestsStatistics: React.FC = () => {
               ))}
             </select>
 
-            <select
-              className="w-full p-2 bg-gray-800 text-white rounded-lg"
-              value={filterStatus}
-              onChange={(e) => {
-                setFilterStatus(e.target.value);
-                setCurrentPageEnProceso(1);
-                setCurrentPageFinalizadas(1);
-              }}
-            >
-              <option value="">Todos los estatus</option>
-              {estatusDisponibles.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
-
             <input
               type="date"
               className="w-full p-2 bg-gray-800 text-white rounded-lg"
@@ -517,59 +443,6 @@ const RequestsStatistics: React.FC = () => {
             />
           </div>
 
-          {/* --- Contadores de solicitudes --- */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <button
-              onClick={() => {
-                setFiltroContador('nuevas');
-                setCurrentPageEnProceso(1);
-              }}
-              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${filtroContador === 'nuevas' ? 'ring-2 ring-white' : ''
-                }`}
-            >
-              <div className="text-sm md:text-base">
-                Nuevas Solicitudes: <strong>
-                  {
-                    getSolicitudesVisiblesPorRol().filter(s => (!s.abogados || s.abogados.length === 0) && s.status > 1 && s.status !== 70).length
-                  }
-                </strong>
-              </div>
-            </button>
-
-            <button
-              onClick={() => {
-                setFiltroContador('pagadas');
-                setCurrentPageEnProceso(1);
-              }}
-              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${filtroContador === 'pagadas' ? 'ring-2 ring-white' : ''
-                }`}
-            >
-              <div className="text-sm md:text-base">Pagadas: <strong>{getSolicitudesVisiblesPorRol().filter(s => s.status === 20).length}</strong></div>
-            </button>
-
-            <button
-              onClick={() => {
-                setFiltroContador('pendiente');
-                setCurrentPageEnProceso(1);
-              }}
-              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${filtroContador === 'pendiente' ? 'ring-2 ring-white' : ''
-                }`}
-            >
-              <div className="text-sm md:text-base">Enviadas, pendiente de pago: <strong>{getSolicitudesVisiblesPorRol().filter(s => s.status === 10).length}</strong></div>
-            </button>
-
-            <button
-              onClick={() => {
-                setFiltroContador('tramite');
-                setCurrentPageEnProceso(1);
-              }}
-              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${filtroContador === 'tramite' ? 'ring-2 ring-white' : ''
-                }`}
-            >
-              <div className="text-sm md:text-base">En trámite: <strong>{getSolicitudesVisiblesPorRol().filter(s => s.status === 30).length}</strong></div>
-            </button>
-          </div>
-
           {/* --- Table of “En Proceso” --- */}
           <TableWithRequests
             data={transformData(paginatedSolicitudesEnProceso)}
@@ -580,18 +453,6 @@ const RequestsStatistics: React.FC = () => {
             hasPrevPage={paginationEnProceso.hasPrevPage}
             hasNextPage={paginationEnProceso.hasNextPage}
             onPageChange={setCurrentPageEnProceso}
-          />
-
-          {/* --- Table of “Finalizadas” --- */}
-          <TableWithRequests
-            data={transformData(paginatedSolicitudesFinalizadas)}
-            rowsPerPage={rowsPerPage}
-            title="Solicitudes Finalizadas"
-            currentPage={currentPageFinalizadas}
-            totalPages={paginationFinalizadas.totalPages}
-            hasPrevPage={paginationFinalizadas.hasPrevPage}
-            hasNextPage={paginationFinalizadas.hasNextPage}
-            onPageChange={setCurrentPageFinalizadas}
           />
         </>
       )}

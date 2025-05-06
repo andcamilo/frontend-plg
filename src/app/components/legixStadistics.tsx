@@ -248,7 +248,7 @@ const LegixStatistics: React.FC = () => {
   const statusMapping: { [key: number]: string } = {
     0: "Rechazada",
     1: "Borrador",
-    10: "Enviada, pendiente de pago",
+    10: "Pendiente de pago",
     12: "Aprobada",
     19: "Confirmando pago",
     20: "Pagada",

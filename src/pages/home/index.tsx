@@ -26,7 +26,7 @@ const Home: React.FC = () => {
       redirect: '/request/fundacion'
     },
     {
-      title: 'Permiso de Salidade Menores al Extranjero',
+      title: 'Permiso de Salida de Menores al Extranjero',
       imageUrl: '/images/process3.jpg',
       description: 'Descripción de las permiso de salidade menores al extranjero.',
       redirect: '/request/menores-extranjero'
@@ -53,7 +53,7 @@ const Home: React.FC = () => {
     <HomeLayout>
       <div className="relative w-full min-h-screen overflow-hidden">
         <video
-          className="absolute top-0 left-0 w-full h-full object-cover z-10"
+          className="absolute top-0 left-0 w-full h-full object-cover object-[center_20%] z-10"
           autoPlay
           loop
           muted

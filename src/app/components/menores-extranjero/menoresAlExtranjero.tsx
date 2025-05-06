@@ -16,6 +16,8 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { Modal, Box, Button } from "@mui/material";
 import BotonesPreguntasYContactos from '@components/botonesPreguntasYContactos';
 import Link from 'next/link';
+import BannerOpcionesMenores from '@components/BannerOpcionesMenores'; 
+import { FaPlay } from 'react-icons/fa';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -80,7 +82,7 @@ const MenoresAlExtranjero: React.FC = () => {
 
         //Autorizacion a tercero
         autorizacionTercero: "No",
-        quienesAutorizan: "Tutor Legal",
+        quienesAutorizan: "Padres",
 
         //Tutor
         nombreCompletoTutor: "",
@@ -119,20 +121,32 @@ const MenoresAlExtranjero: React.FC = () => {
         //Adjuntos
         adjuntoIdentificacionAutorizante: null as File | null,
         archivoAutorizanteURL: "",
+        adjuntoPasaporteAutorizante: null as File | null,
+        archivoPasaporteAutorizanteURL: "",
         adjuntoTutelaMenor: null as File | null,
         archivoTutelaURL: "",
         adjuntoIdentificacionTutor: null as File | null,
         archivoTutorURL: "",
+        adjuntoPasaporteTutor: null as File | null,
+        archivoPasaporteTutorURL: "",
         adjuntoTutorTutelaMenor: null as File | null,
         archivoTutorTutelaURL: "",
         adjuntoIdentificacionPadre: null as File | null,
         archivoPadreURL: "",
+        adjuntoPasaportePadre: null as File | null,
+        archivoPasaportePadreURL: "",
         adjuntoIdentificacionMadre: null as File | null,
         archivoMadreURL: "",
+        adjuntoPasaporteMadre: null as File | null,
+        archivoPasaporteMadreURL: "",
         adjuntoIdentificacionAutorizado: null as File | null,
         archivoAutorizadoURL: "",
+        adjuntoPasaporteAutorizado: null as File | null,
+        archivoPasaporteAutorizadoURL: "",
         adjuntoBoletosViaje: null as File | null,
         archivoBoletosViajeURL: "",
+        adjuntoCustodiaTotal: null as File | null,
+        archivoCustodiaTotalURL: "",
     });
 
     useEffect(() => {
@@ -269,6 +283,8 @@ const MenoresAlExtranjero: React.FC = () => {
                 //Adjuntos
                 adjuntoIdentificacionAutorizante: null as File | null,
                 archivoAutorizanteURL: solicitudData?.adjuntoIdentificacionAutorizante || "",
+                adjuntoPasaporteAutorizante: null as File | null,
+                archivoPasaporteAutorizanteURL: solicitudData?.adjuntoPasaporteAutorizante || "",
                 adjuntoTutelaMenor: null as File | null,
                 archivoTutelaURL: solicitudData?.adjuntoTutelaMenor || "",
                 adjuntoIdentificacionTutor: null as File | null,
@@ -289,7 +305,9 @@ const MenoresAlExtranjero: React.FC = () => {
                 const menoresData = solicitudData.menores.map((menor: any) => ({
                     nombreCompletoMenor: menor.nombreCompletoMenor || "",
                     cedulaPasaporteMenor: menor.cedulaPasaporteMenor || "",
-                    AdjuntoIdentificacionMenor: menor.AdjuntoIdentificacionMenorURL || ""
+                    AdjuntoIdentificacionMenor: menor.AdjuntoIdentificacionMenorURL || "",
+                    AdjuntoPasaporteMenor: menor.AdjuntoPasaporteMenorURL || "",
+                    AdjuntoCertificadoNacimientoMenor: menor.AdjuntoCertificadoNacimientoMenorURL || ""
                 }));
                 setMenores(menoresData);
             }
@@ -345,6 +363,7 @@ const MenoresAlExtranjero: React.FC = () => {
         cedulaPasaporteAutorizante: false,
         parentescoConMenorOtros: false,
         adjuntoIdentificacionAutorizante: false,
+        adjuntoPasaporteAutorizante: false,
         adjuntoTutelaMenor: false,
         nombreCompletoTutor: false,
         emailTutor: false,
@@ -352,9 +371,12 @@ const MenoresAlExtranjero: React.FC = () => {
         cedulaPasaporteTutor: false,
         telefonoAutorizanteTutor: false,
         adjuntoIdentificacionTutor: false,
+        adjuntoPasaporteTutor: false,
         adjuntoTutorTutelaMenor: false,
         adjuntoIdentificacionPadre: false,
+        adjuntoPasaportePadre: false,
         adjuntoIdentificacionMadre: false,
+        adjuntoPasaporteMadre: false,
         nombreCompletoMadre: false,
         emailMadre: false,
         telefonoMadre: false,
@@ -363,7 +385,13 @@ const MenoresAlExtranjero: React.FC = () => {
         emailPadre: false,
         telefonoPadre: false,
         cedulaPasaportePadre: false,
-        menores: [{ nombreCompletoMenor: false, cedulaPasaporteMenor: false, AdjuntoIdentificacionMenor: false }],
+        menores: [{
+            nombreCompletoMenor: false,
+            cedulaPasaporteMenor: false,
+            AdjuntoIdentificacionMenor: false,
+            AdjuntoPasaporteMenor: false,
+            AdjuntoCertificadoNacimientoMenor: false,
+        }],
         nombreCompletoAutorizado: false,
         telefonoAutorizado: false,
         emailAutorizado: false,
@@ -371,6 +399,7 @@ const MenoresAlExtranjero: React.FC = () => {
         parentescoConMenorAutorizado: false,
         parentescoAutorizadoOtros: false,
         adjuntoIdentificacionAutorizado: false,
+        adjuntoPasaporteAutorizado: false,
         fechaSalidaMenor: false,
         fechaRetornoMenor: false,
         fechaFirmaNotaria: false,
@@ -379,16 +408,27 @@ const MenoresAlExtranjero: React.FC = () => {
 
     // Estado para almacenar múltiples menores
     const [menores, setMenores] = useState<Menor[]>([
-        { nombreCompletoMenor: "", cedulaPasaporteMenor: "", AdjuntoIdentificacionMenor: null }
+        {
+            nombreCompletoMenor: "",
+            cedulaPasaporteMenor: "",
+            AdjuntoIdentificacionMenor: null,
+            AdjuntoPasaporteMenor: null,
+            AdjuntoCertificadoNacimientoMenor: null
+        }
     ]);
 
-    const menoresRefs = useRef<Array<{ nombreCompletoMenor: HTMLInputElement | null; cedulaPasaporteMenor: HTMLInputElement | null; AdjuntoIdentificacionMenor: HTMLInputElement | null }>>([]);
+    const menoresRefs = useRef<Array<{
+        nombreCompletoMenor: HTMLInputElement | null; cedulaPasaporteMenor: HTMLInputElement | null; AdjuntoIdentificacionMenor: HTMLInputElement | null;
+        AdjuntoPasaporteMenor: HTMLInputElement | null; AdjuntoCertificadoNacimientoMenor: HTMLInputElement | null
+    }>>([]);
     useEffect(() => {
         // Aseguramos que el array de referencias tenga el mismo tamaño que el número de menores
         menoresRefs.current = menores.map((_, index) => ({
             nombreCompletoMenor: menoresRefs.current[index]?.nombreCompletoMenor || null,
             cedulaPasaporteMenor: menoresRefs.current[index]?.cedulaPasaporteMenor || null,
             AdjuntoIdentificacionMenor: menoresRefs.current[index]?.AdjuntoIdentificacionMenor || null,
+            AdjuntoPasaporteMenor: menoresRefs.current[index]?.AdjuntoPasaporteMenor || null,
+            AdjuntoCertificadoNacimientoMenor: menoresRefs.current[index]?.AdjuntoCertificadoNacimientoMenor || null,
         }));
     }, [menores]);
 
@@ -397,12 +437,18 @@ const MenoresAlExtranjero: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isEmailNew, setIsEmailNew] = useState(true);
     const [archivoFile, setArchivoFile] = useState<File | null>(null);
+    const [archivoPasaporteAutorizanteFile, setArchivoPasaporteAutorizanteFile] = useState<File | null>(null);
     const [archivoTutelaFile, setArchivoTutelaFile] = useState<File | null>(null);
     const [archivoTutorFile, setArchivoTutorFile] = useState<File | null>(null);
+    const [archivoPasaporteTutorFile, setArchivoPasaporteTutorFile] = useState<File | null>(null);
     const [archivoTutorTutelaFile, setArchivoTutorTutelaFile] = useState<File | null>(null);
     const [archivoPadreFile, setArchivoPadreFile] = useState<File | null>(null);
+    const [archivoPasaportePadreFile, setArchivoPasaportePadreFile] = useState<File | null>(null);
     const [archivoMadreFile, setArchivoMadreFile] = useState<File | null>(null);
+    const [archivoPasaporteMadreFile, setArchivoPasaporteMadreFile] = useState<File | null>(null);
+    const [archivoCustodiaTotalFile, setArchivoCustodiaTotalFile] = useState<File | null>(null);
     const [archivoAutorizadoFile, setArchivoAutorizadoFile] = useState<File | null>(null);
+    const [archivoPasaporteAutorizadoFile, setArchivoPasaporteAutorizadoFile] = useState<File | null>(null);
     const [archivoBoletosViajeFile, setArchivoBoletosViajeFile] = useState<File | null>(null);
 
     const [item, setItem] = useState("Salida de Menores al Extranjero");
@@ -420,15 +466,20 @@ const MenoresAlExtranjero: React.FC = () => {
     const cedulaPasaporteAutorizanteRef = useRef<HTMLInputElement>(null);
     const parentescoConMenorOtrosRef = useRef<HTMLInputElement>(null);
     const adjuntoIdentificacionAutorizanteRef = useRef<HTMLInputElement>(null);
+    const adjuntoPasaporteAutorizanteRef = useRef<HTMLInputElement>(null);
     const adjuntoTutelaMenorRef = useRef<HTMLInputElement>(null);
     const nombreCompletoTutorRef = useRef<HTMLInputElement>(null);
     const emailTutorRef = useRef<HTMLInputElement>(null);
     const cedulaPasaporteTutorRef = useRef<HTMLInputElement>(null);
     const telefonoTutorRef = useRef<HTMLInputElement>(null);
     const adjuntoIdentificacionTutorRef = useRef<HTMLInputElement>(null);
+    const adjuntoPasaporteTutorRef = useRef<HTMLInputElement>(null);
     const adjuntoTutorTutelaMenorRef = useRef<HTMLInputElement>(null);
     const adjuntoIdentificacionPadreRef = useRef<HTMLInputElement>(null);
+    const adjuntoPasaportePadreRef = useRef<HTMLInputElement>(null);
     const adjuntoIdentificacionMadreRef = useRef<HTMLInputElement>(null);
+    const adjuntoPasaporteMadreRef = useRef<HTMLInputElement>(null);
+    const adjuntoCustodiaTotalRef = useRef<HTMLInputElement>(null);
     const nombreCompletoMadreRef = useRef<HTMLInputElement>(null);
     const emailMadreRef = useRef<HTMLInputElement>(null);
     const cedulaPasaporteMadreRef = useRef<HTMLInputElement>(null);
@@ -443,6 +494,7 @@ const MenoresAlExtranjero: React.FC = () => {
     const cedulaPasaporteAutorizadoRef = useRef<HTMLInputElement>(null);
     const parentescoAutorizadoOtrosRef = useRef<HTMLInputElement>(null);
     const adjuntoIdentificacionAutorizadoRef = useRef<HTMLInputElement>(null);
+    const adjuntoPasaporteAutorizadoRef = useRef<HTMLInputElement>(null);
     const fechaSalidaMenorRef = useRef<HTMLInputElement>(null);
     const fechaRetornoMenorRef = useRef<HTMLInputElement>(null);
     const fechaFirmaNotariaRef = useRef<HTMLInputElement>(null);
@@ -471,6 +523,12 @@ const MenoresAlExtranjero: React.FC = () => {
                 ...prevErrors,
                 adjuntoIdentificacionAutorizante: false,
             }));
+        } else if (fieldName === "AdjuntoPasaporteAutorizante") {
+            setArchivoPasaporteAutorizanteFile(file);
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                adjuntoPasaporteAutorizante: false,
+            }));
         } else if (fieldName === "adjuntoTutelaMenor") {
             setArchivoTutelaFile(file);
             setErrors((prevErrors) => ({
@@ -482,6 +540,12 @@ const MenoresAlExtranjero: React.FC = () => {
             setErrors((prevErrors) => ({
                 ...prevErrors,
                 adjuntoIdentificacionTutor: false,
+            }));
+        } else if (fieldName === "adjuntoPasaporteTutor") {
+            setArchivoPasaporteTutorFile(file);
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                adjuntoPasaporteTutor: false,
             }));
         } else if (fieldName === "adjuntoTutorTutelaMenor") {
             setArchivoTutorTutelaFile(file);
@@ -495,16 +559,44 @@ const MenoresAlExtranjero: React.FC = () => {
                 ...prevErrors,
                 adjuntoIdentificacionPadre: false,
             }));
+        } else if (fieldName === "adjuntoPasaportePadre") {
+            setArchivoPasaportePadreFile(file);
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                adjuntoPasaportePadre: false,
+            }));
         } else if (fieldName === "adjuntoIdentificacionMadre") {
             setArchivoMadreFile(file);
             setErrors((prevErrors) => ({
                 ...prevErrors,
                 adjuntoIdentificacionMadre: false,
             }));
+        } else if (fieldName === "adjuntoPasaporteMadre") {
+            setArchivoPasaporteMadreFile(file);
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                adjuntoPasaporteMadre: false,
+            }));
+        } else if (fieldName === "adjuntoCustodiaTotal") {
+            setArchivoCustodiaTotalFile(file);
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                adjuntoCustodiaTotal: false,
+            }));
         } else if (fieldName.startsWith("AdjuntoIdentificacionMenor")) {
             const index = parseInt(fieldName.replace("AdjuntoIdentificacionMenor", ""));
             const updatedMenores = [...menores];
             updatedMenores[index] = { ...updatedMenores[index], AdjuntoIdentificacionMenor: file };
+            setMenores(updatedMenores);
+        } else if (fieldName.startsWith("AdjuntoPasaporteMenor")) {
+            const index = parseInt(fieldName.replace("AdjuntoPasaporteMenor", ""));
+            const updatedMenores = [...menores];
+            updatedMenores[index] = { ...updatedMenores[index], AdjuntoPasaporteMenor: file };
+            setMenores(updatedMenores);
+        } else if (fieldName.startsWith("AdjuntoCertificadoNacimientoMenor")) {
+            const index = parseInt(fieldName.replace("AdjuntoCertificadoNacimientoMenor", ""));
+            const updatedMenores = [...menores];
+            updatedMenores[index] = { ...updatedMenores[index], AdjuntoCertificadoNacimientoMenor: file };
             setMenores(updatedMenores);
         } else if (fieldName === "adjuntoIdentificacionAutorizado") {
             setArchivoAutorizadoFile(file);
@@ -512,6 +604,12 @@ const MenoresAlExtranjero: React.FC = () => {
             setErrors((prevErrors) => ({
                 ...prevErrors,
                 adjuntoIdentificacionAutorizado: false,
+            }));
+        } else if (fieldName === "adjuntoPasaporteAutorizado") {
+            setArchivoPasaporteAutorizadoFile(file);
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                adjuntoPasaporteAutorizado: false,
             }));
         } else if (fieldName === "adjuntoBoletosViaje") {
             setArchivoBoletosViajeFile(file);
@@ -768,6 +866,30 @@ const MenoresAlExtranjero: React.FC = () => {
             return false;
         }
 
+        if (!archivoPasaporteAutorizanteFile) {
+            setErrors((prevErrors) => ({ ...prevErrors, adjuntoPasaporteAutorizante: true }));
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Es necesario Adjuntar el pasaporte del Autorizante.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
+            adjuntoPasaporteAutorizanteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            adjuntoPasaporteAutorizanteRef.current?.focus();
+            return false;
+        }
+
         if (formData.parentescoConMenor === "Otros") {
             fieldValidations.push(
                 { field: "parentescoConMenorOtros", ref: parentescoConMenorOtrosRef, errorMessage: "Por favor, Indique el Parentesco con el Menor." },
@@ -777,7 +899,7 @@ const MenoresAlExtranjero: React.FC = () => {
         if (formData.parentescoConMenor === "Tutor Legal") {
             if (!archivoTutelaFile) {
                 fieldValidations.push(
-                    { field: "adjuntoTutelaMenor", ref: adjuntoTutelaMenorRef, errorMessage: "Es necesario Adjuntar Copia de Resolución que designa la tutela total del menor." },
+                    { field: "adjuntoTutelaMenor", ref: adjuntoTutelaMenorRef, errorMessage: "Es necesario Adjuntar Copia de Resolución o Declaración Jurada que designa la tutela total del menor." },
                 );
             }
         }
@@ -900,9 +1022,15 @@ const MenoresAlExtranjero: React.FC = () => {
                     );
                 }
 
+                if (!archivoPasaporteTutorFile) {
+                    fieldValidations.push(
+                        { field: "adjuntoPasaporteTutor", ref: adjuntoPasaporteTutorRef, errorMessage: "Es necesario Adjuntar el pasaporte del Tutor." },
+                    );
+                }
+
                 if (!archivoTutorTutelaFile) {
                     fieldValidations.push(
-                        { field: "adjuntoTutorTutelaMenor", ref: adjuntoTutorTutelaMenorRef, errorMessage: "Es necesario Adjuntar Copia de Resolución que designa la tutela total del menor." },
+                        { field: "adjuntoTutorTutelaMenor", ref: adjuntoTutorTutelaMenorRef, errorMessage: "Es necesario Adjuntar Copia de Resolución o Declaración Jurada que designa la tutela total del menor." },
                     );
                 }
 
@@ -1025,6 +1153,50 @@ const MenoresAlExtranjero: React.FC = () => {
                     );
                 }
 
+                if (!archivoPasaporteMadreFile) {
+                    fieldValidations.push(
+                        { field: "adjuntoPasaporteMadre", ref: adjuntoPasaporteMadreRef, errorMessage: "Es necesario Adjuntar el pasaporte de la Madre." },
+                    );
+                }
+
+
+                for (const { field, ref, errorMessage } of fieldValidations) {
+                    if (!formData[field]) {
+                        setErrors((prevErrors) => ({ ...prevErrors, [field]: true }));
+                        Swal.fire({
+                            position: "top-end",
+                            icon: "warning",
+                            title: errorMessage,
+                            showConfirmButton: false,
+                            timer: 2500,
+                            timerProgressBar: true,
+                            toast: true,
+                            background: '#2c2c3e',
+                            color: '#fff',
+                            customClass: {
+                                popup: 'custom-swal-popup',
+                                title: 'custom-swal-title',
+                                icon: 'custom-swal-icon',
+                                timerProgressBar: 'custom-swal-timer-bar'
+                            }
+                        });
+                        if (ref.current) {
+                            ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+                            ref.current.focus();
+                        }
+                        return false;
+                    }
+                }
+            }
+
+            if ((formData.quienesAutorizan === "Madre" || formData.quienesAutorizan === "Padre")) {
+
+                if (!archivoCustodiaTotalFile) {
+                    fieldValidations.push(
+                        { field: "adjuntoCustodiaTotal", ref: adjuntoCustodiaTotalRef, errorMessage: "Es necesario Adjuntar la custodia total del menor." },
+                    );
+                }
+
                 for (const { field, ref, errorMessage } of fieldValidations) {
                     if (!formData[field]) {
                         setErrors((prevErrors) => ({ ...prevErrors, [field]: true }));
@@ -1144,6 +1316,12 @@ const MenoresAlExtranjero: React.FC = () => {
                     );
                 }
 
+                if (!archivoPasaportePadreFile) {
+                    fieldValidations.push(
+                        { field: "adjuntoPasaportePadre", ref: adjuntoPasaportePadreRef, errorMessage: "Es necesario Adjuntar el pasaporte del Padre." },
+                    );
+                }
+
                 for (const { field, ref, errorMessage } of fieldValidations) {
                     if (!formData[field]) {
                         setErrors((prevErrors) => ({ ...prevErrors, [field]: true }));
@@ -1172,6 +1350,12 @@ const MenoresAlExtranjero: React.FC = () => {
                     }
                 }
             }
+        }
+
+        // Validar datos del menor 
+        const validacionMenores = validateMenores();
+        if (!validacionMenores) {
+            return false;
         }
 
         if (!formData.nombreCompletoAutorizado) {
@@ -1262,6 +1446,12 @@ const MenoresAlExtranjero: React.FC = () => {
             );
         }
 
+        if (!archivoPasaporteAutorizadoFile) {
+            fieldValidations.push(
+                { field: "adjuntoPasaporteAutorizado", ref: adjuntoPasaporteAutorizadoRef, errorMessage: "Es necesario Adjuntar el pasaporte del Autorizado." },
+            );
+        }
+
         if (formData.parentescoConMenorAutorizado === "Otros") {
             fieldValidations.push(
                 { field: "parentescoAutorizadoOtros", ref: parentescoAutorizadoOtrosRef, errorMessage: "Por favor, Indique el Parentesco con el Menor." },
@@ -1328,6 +1518,8 @@ const MenoresAlExtranjero: React.FC = () => {
             nombreCompletoMenor: false,
             cedulaPasaporteMenor: false,
             AdjuntoIdentificacionMenor: false,
+            AdjuntoPasaporteMenor: false,
+            AdjuntoCertificadoNacimientoMenor: false,
         }));
 
         for (let index = 0; index < menores.length; index++) {
@@ -1413,6 +1605,61 @@ const MenoresAlExtranjero: React.FC = () => {
             } else {
                 newErrors[index].AdjuntoIdentificacionMenor = false;
             }
+
+            // Validación del Pasaporte del Menor
+            if (!menor.AdjuntoPasaporteMenor) {
+                newErrors[index].AdjuntoPasaporteMenor = true;
+                Swal.fire({
+                    position: "top-end",
+                    icon: "warning",
+                    title: `Por favor, adjunte el pasaporte del menor ${index + 1}.`,
+                    showConfirmButton: false,
+                    timer: 2500,
+                    toast: true,
+                    background: '#2c2c3e',
+                    color: '#fff',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        icon: 'custom-swal-icon',
+                        timerProgressBar: 'custom-swal-timer-bar'
+                    }
+                });
+                menoresRefs.current[index].AdjuntoPasaporteMenor?.scrollIntoView({ behavior: "smooth", block: "center" });
+                menoresRefs.current[index].AdjuntoPasaporteMenor?.focus();
+                isValid = false;
+                break;
+            } else {
+                newErrors[index].AdjuntoPasaporteMenor = false;
+            }
+
+            // Validación del Certificado de Nacimiento del Menor
+            if (!menor.AdjuntoCertificadoNacimientoMenor) {
+                newErrors[index].AdjuntoCertificadoNacimientoMenor = true;
+                Swal.fire({
+                    position: "top-end",
+                    icon: "warning",
+                    title: `Por favor, adjunte el certificado de nacimiento del menor ${index + 1}.`,
+                    showConfirmButton: false,
+                    timer: 2500,
+                    toast: true,
+                    background: '#2c2c3e',
+                    color: '#fff',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        icon: 'custom-swal-icon',
+                        timerProgressBar: 'custom-swal-timer-bar'
+                    }
+                });
+                menoresRefs.current[index].AdjuntoCertificadoNacimientoMenor?.scrollIntoView({ behavior: "smooth", block: "center" });
+                menoresRefs.current[index].AdjuntoCertificadoNacimientoMenor?.focus();
+                isValid = false;
+                break;
+            } else {
+                newErrors[index].AdjuntoCertificadoNacimientoMenor = false;
+            }
+
         }
 
         setErrors((prevErrors) => ({ ...prevErrors, menores: newErrors }));
@@ -1436,18 +1683,12 @@ const MenoresAlExtranjero: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!recaptchaToken) {
-            alert('Please complete the reCAPTCHA');
-            return;
-        }
-
-
-        setIsLoading(true);
-
         if (!validateFields() || !validateMenores()) {
             setIsLoading(false);
             return;
         }
+
+        setIsLoading(true);
 
         if (!formData.terminosAceptados) {
             Swal.fire({
@@ -1468,6 +1709,28 @@ const MenoresAlExtranjero: React.FC = () => {
                 }
             });
 
+            setIsLoading(false);
+            return;
+        }
+
+        if (!recaptchaToken) {
+            Swal.fire({
+                position: "top-end",
+                icon: "warning",
+                title: "Por favor, complete el reCAPTCHA.",
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                toast: true,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            });
             setIsLoading(false);
             return;
         }
@@ -1606,18 +1869,29 @@ const MenoresAlExtranjero: React.FC = () => {
             });
 
             const { solicitudId, status } = response.data;
+            console.log("🔍 solicitudId recibido:", solicitudId);
 
             let archivoURL = formData.archivoAutorizanteURL;
+            let archivoPasaporteAutotizanteURL = formData.archivoPasaporteAutorizanteURL;
             let archivoTutelaURL = formData.archivoTutelaURL;
             let archivoTutorURL = formData.archivoTutorURL;
+            let archivoPasaporteTutorURL = formData.archivoPasaporteTutorURL;
             let archivoTutorTutelaURL = formData.archivoTutorTutelaURL;
             let archivoPadreURL = formData.archivoPadreURL;
+            let archivoPasaportePadreURL = formData.archivoPasaportePadreURL;
             let archivoMadreURL = formData.archivoMadreURL;
+            let archivoPasaporteMadreURL = formData.archivoPasaporteMadreURL;
             let archivoAutorizadoURL = formData.archivoAutorizadoURL;
+            let archivoPasaporteAutorizadoURL = formData.archivoPasaporteAutorizadoURL;
             let archivoBoletosViajeURL = formData.archivoBoletosViajeURL;
+            let archivoCustodiaTotalURL = formData.archivoCustodiaTotalURL;
 
             if (archivoFile) {
                 archivoURL = await uploadFileToFirebase(archivoFile, `uploads/${solicitudId}/AdjuntoIdentificacionAutorizante`);
+            }
+
+            if (archivoPasaporteAutorizanteFile) {
+                archivoPasaporteAutotizanteURL = await uploadFileToFirebase(archivoPasaporteAutorizanteFile, `uploads/${solicitudId}/AdjuntoPasaporteAutorizante`);
             }
 
             if (archivoTutelaFile && formData.parentescoConMenor === "Tutor Legal") {
@@ -1628,6 +1902,10 @@ const MenoresAlExtranjero: React.FC = () => {
                 archivoTutorURL = await uploadFileToFirebase(archivoTutorFile, `uploads/${solicitudId}/AdjuntoIdentificacionTutor`);
             }
 
+            if (archivoPasaporteTutorFile) {
+                archivoPasaporteTutorURL = await uploadFileToFirebase(archivoPasaporteTutorFile, `uploads/${solicitudId}/AdjuntoPasaporteTutor`);
+            }
+
             if (archivoTutorTutelaFile) {
                 archivoTutorTutelaURL = await uploadFileToFirebase(archivoTutorTutelaFile, `uploads/${solicitudId}/AdjuntoTutorTutela`);
             }
@@ -1636,24 +1914,41 @@ const MenoresAlExtranjero: React.FC = () => {
                 archivoPadreURL = await uploadFileToFirebase(archivoPadreFile, `uploads/${solicitudId}/AdjuntoIdentificacionPadre`);
             }
 
+            if (archivoPasaportePadreFile) {
+                archivoPasaportePadreURL = await uploadFileToFirebase(archivoPasaportePadreFile, `uploads/${solicitudId}/AdjuntoPasaportePadre`);
+            }
+
             if (archivoMadreFile) {
                 archivoMadreURL = await uploadFileToFirebase(archivoMadreFile, `uploads/${solicitudId}/AdjuntoIdentificacionMadre`);
+            }
+
+            if (archivoPasaporteMadreFile) {
+                archivoPasaporteMadreURL = await uploadFileToFirebase(archivoPasaporteMadreFile, `uploads/${solicitudId}/AdjuntoPasaporteMadre`);
+            }
+
+            if (archivoPasaporteAutorizanteFile) {
+                archivoCustodiaTotalURL = await uploadFileToFirebase(archivoPasaporteAutorizanteFile, `uploads/${solicitudId}/AdjuntoCustodiaTotal`);
             }
 
             if (archivoAutorizadoFile) {
                 archivoAutorizadoURL = await uploadFileToFirebase(archivoAutorizadoFile, `uploads/${solicitudId}/AdjuntoIdentificacionAutorizado`);
             }
 
+            if (archivoPasaporteAutorizadoFile) {
+                archivoPasaporteAutorizadoURL = await uploadFileToFirebase(archivoPasaporteAutorizadoFile, `uploads/${solicitudId}/AdjuntoPasaporteAutorizado`);
+            }
+
             if (archivoBoletosViajeFile) {
                 archivoBoletosViajeURL = await uploadFileToFirebase(archivoBoletosViajeFile, `uploads/${solicitudId}/AdjuntoBoletosViaje`);
             }
 
-
             setFormData((prevData) => ({
                 ...prevData,
                 archivoAutorizanteURL: archivoURL,
+                archivoPasaporteAutotizanteURL: archivoPasaporteAutotizanteURL,
                 ...(formData.parentescoConMenor === "Tutor Legal" && {
                     archivoTutelaURL: archivoTutelaURL,
+                    archivoPasaporteTutorURL: archivoPasaporteTutorURL,
                 }),
                 ...(formData.autorizacionTercero === "Si" && {
                     ...(formData.quienesAutorizan === "Tutor Legal" && {
@@ -1665,26 +1960,41 @@ const MenoresAlExtranjero: React.FC = () => {
                     ...((formData.quienesAutorizan === "Padres" &&
                         (formData.parentescoConMenor === "Padre" || formData.parentescoConMenor === "Otros")) && {
                         archivoMadreURL: archivoMadreURL,
+                        archivoPasaporteMadreURL: archivoPasaporteMadreURL,
                     }),
                     ...((formData.quienesAutorizan === "Padres" &&
                         (formData.parentescoConMenor === "Madre" || formData.parentescoConMenor === "Otros")) && {
                         archivoPadreURL: archivoPadreURL,
+                        archivoPasaportePadreURL: archivoPasaportePadreURL,
                     }),
                 }),
                 archivoAutorizadoURL: archivoAutorizadoURL,
+                archivoPasaporteAutorizadoURL: archivoPasaporteAutorizadoURL,
                 archivoBoletosViajeURL: archivoBoletosViajeURL,
             }));
 
-            const menoresURLs = await Promise.all(menores.map(async (menor, index) => {
-                if (menor.AdjuntoIdentificacionMenor) {
-                    const archivoMenorURL = await uploadFileToFirebase(
-                        menor.AdjuntoIdentificacionMenor,
-                        `uploads/${solicitudId}/AdjuntoIdentificacionMenor${index}`
-                    );
-                    return { ...menor, AdjuntoIdentificacionMenorURL: archivoMenorURL };
-                }
-                return menor;
-            }));
+            const menoresURLs = await Promise.all(
+                menores.map(async (menor, index) => {
+                    const identificacionURL = menor.AdjuntoIdentificacionMenor
+                        ? await uploadFileToFirebase(menor.AdjuntoIdentificacionMenor, `uploads/${solicitudId}/AdjuntoIdentificacionMenor${index}`)
+                        : "";
+
+                    const pasaporteURL = menor.AdjuntoPasaporteMenor
+                        ? await uploadFileToFirebase(menor.AdjuntoPasaporteMenor, `uploads/${solicitudId}/AdjuntoPasaporteMenor${index}`)
+                        : "";
+
+                    const certificadoNacimientoURL = menor.AdjuntoCertificadoNacimientoMenor
+                        ? await uploadFileToFirebase(menor.AdjuntoCertificadoNacimientoMenor, `uploads/${solicitudId}/AdjuntoCertificadoNacimientoMenor${index}`)
+                        : "";
+
+                    return {
+                        ...menor,
+                        AdjuntoIdentificacionMenorURL: identificacionURL,
+                        AdjuntoPasaporteMenorURL: pasaporteURL,
+                        AdjuntoCertificadoNacimientoMenorURL: certificadoNacimientoURL,
+                    };
+                })
+            );
 
             // Actualiza el estado de menores con las URLs de Firebase
             setMenores(menoresURLs);
@@ -1697,12 +2007,17 @@ const MenoresAlExtranjero: React.FC = () => {
             const updatePayload = {
                 solicitudId: solicitudId,
                 adjuntoIdentificacionAutorizante: archivoURL || '',
+                adjuntoPasaporteAutorizante: archivoPasaporteAutotizanteURL || '',
+                ...((formData.quienesAutorizan === "Padre" || formData.quienesAutorizan === "Madre") && {
+                    archivoCustodiaTotalURL: archivoCustodiaTotalURL,
+                }),
                 ...(formData.parentescoConMenor === "Tutor Legal" && {
                     adjuntoTutelaMenor: archivoTutelaURL,
                 }),
                 ...(formData.autorizacionTercero === "Si" && {
                     ...(formData.quienesAutorizan === "Tutor Legal" && {
                         archivoTutorURL: archivoTutorURL,
+                        archivoPasaporteTutorURL: archivoPasaporteTutorURL,
                         archivoTutorTutelaURL: archivoTutorTutelaURL,
                     }),
                 }),
@@ -1710,18 +2025,23 @@ const MenoresAlExtranjero: React.FC = () => {
                     ...((formData.quienesAutorizan === "Padres" &&
                         (formData.parentescoConMenor === "Padre" || formData.parentescoConMenor === "Otros")) && {
                         archivoMadreURL: archivoMadreURL,
+                        adjuntoPasaporteMadre: archivoPasaporteMadreURL,
                     }),
                     ...((formData.quienesAutorizan === "Padres" &&
                         (formData.parentescoConMenor === "Madre" || formData.parentescoConMenor === "Otros")) && {
                         archivoPadreURL: archivoPadreURL,
+                        archivoPasaportePadreURL: archivoPasaportePadreURL,
                     }),
                 }),
                 menores: menoresURLs.map((menor) => ({
                     nombreCompletoMenor: menor.nombreCompletoMenor,
                     cedulaPasaporteMenor: menor.cedulaPasaporteMenor,
                     AdjuntoIdentificacionMenorURL: menor.AdjuntoIdentificacionMenorURL || "",
+                    AdjuntoPasaporteMenorURL: menor.AdjuntoPasaporteMenorURL || "",
+                    AdjuntoCertificadoNacimientoMenorURL: menor.AdjuntoCertificadoNacimientoMenorURL || "",
                 })),
                 adjuntoIdentificacionAutorizado: archivoAutorizadoURL || '',
+                archivoPasaporteAutorizadoURL: archivoPasaporteAutorizadoURL || "",
                 adjuntoBoletosViaje: archivoBoletosViajeURL || '',
             };
             await axios.post('/api/update-request-all', updatePayload);
@@ -1807,11 +2127,15 @@ const MenoresAlExtranjero: React.FC = () => {
         cedulaPasaporteMenor: string;
         AdjuntoIdentificacionMenor: File | null;
         AdjuntoIdentificacionMenorURL?: string;
+        AdjuntoPasaporteMenor: File | null;
+        AdjuntoPasaporteMenorURL?: string;
+        AdjuntoCertificadoNacimientoMenor: File | null;
+        AdjuntoCertificadoNacimientoMenorURL?: string;
     }
 
     // Función para agregar un menor
     const handleAddMenor = () => {
-        setMenores([...menores, { nombreCompletoMenor: "", cedulaPasaporteMenor: "", AdjuntoIdentificacionMenor: null }]);
+        setMenores([...menores, { nombreCompletoMenor: "", cedulaPasaporteMenor: "", AdjuntoIdentificacionMenor: null, AdjuntoPasaporteMenor: null, AdjuntoCertificadoNacimientoMenor: null, }]);
     };
 
     // Función para eliminar un menor
@@ -1844,7 +2168,7 @@ const MenoresAlExtranjero: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <i className="fa-solid fa-play text-lg"></i>
+                        <FaPlay className="text-sm" />
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>
@@ -1904,6 +2228,8 @@ const MenoresAlExtranjero: React.FC = () => {
             <p className="text-white mt-4 texto_justificado">
                 A continuación, te mostramos las distintas opciones disponibles para gestionar esta solicitud.
             </p>
+
+            <BannerOpcionesMenores />
 
             <p className="text-white mt-4 texto_justificado">
                 <strong className="text-red-500">IMPORTANTE:</strong> Este trámite es exclusivo para permisos de salida del país. Para otros procesos legales como custodia, patria potestad o conflictos judiciales, se debe solicitar asesoría legal especializada.
@@ -2106,7 +2432,9 @@ const MenoresAlExtranjero: React.FC = () => {
                             <option value="Otros">Otros</option>
                         </select>
                     </div>
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div className="relative w-full">
                         <label className="text-white block mb-2">Adjuntar identificación del Autorizante:</label>
                         <input
@@ -2125,13 +2453,32 @@ const MenoresAlExtranjero: React.FC = () => {
                             </p>
                         )}
                     </div>
+
+                    <div className="relative w-full">
+                        <label className="text-white block mb-2">Adjuntar pasaporte del Autorizante:</label>
+                        <input
+                            ref={adjuntoPasaporteAutorizanteRef}
+                            type="file"
+                            name="AdjuntoPasaporteAutorizante"
+                            onChange={handleFileChange}
+                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoPasaporteAutorizante ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                        />
+                        {formData.archivoPasaporteAutorizanteURL && (
+                            <p className="text-sm text-blue-500">
+                                <a href={formData.archivoPasaporteAutorizanteURL} target="_blank" rel="noopener noreferrer">
+                                    Ver documento actual
+                                </a>
+                            </p>
+                        )}
+                    </div>
                 </div>
 
                 {formData.parentescoConMenor === "Tutor Legal" && (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div className="relative w-full">
-                                <label className="text-white block mb-2">Adjuntar Copia de Resolución que designa la tutela total del menor:</label>
+                                <label className="text-white block mb-2">Adjuntar Copia de Resolución o Declaración Jurada que designa la tutela total del menor:</label>
                                 <input
                                     ref={adjuntoTutelaMenorRef}
                                     type="file"
@@ -2197,13 +2544,39 @@ const MenoresAlExtranjero: React.FC = () => {
                                         <label className="block text-white mb-2">Quienes autorizan la salida del menor:</label>
                                         <select
                                             name="quienesAutorizan"
-                                            value={formData.quienesAutorizan || "Tutor Legal"}
-                                            onChange={handleInputChange}
+                                            value={formData.quienesAutorizan || "Padres"}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                if (e.target.value === "Padre" || e.target.value === "Madre") {
+                                                    Swal.fire({
+                                                        icon: "warning",
+                                                        title: "Importante",
+                                                        html: `<p class="texto_justificado text-base leading-relaxed">Se debe comprobar que posees la custodia total del menor, en caso de muerte de alguno de los padres adjunta acta de defunción, de lo contrario ambos padres deben firmar la autorización.</p>`,
+                                                        confirmButtonText: "Entendido",
+                                                        background: '#2c2c3e',
+                                                        color: '#fff',
+                                                        customClass: {
+                                                            popup: 'custom-swal-popup w-[600px] h-auto py-10 px-8', 
+                                                            title: 'custom-swal-title',
+                                                            icon: 'custom-swal-icon',
+                                                            confirmButton: 'bg-profile text-white px-4 py-2 rounded-lg'
+                                                        }
+                                                    });
+                                                }
+                                            }}
                                             className="w-full p-4 bg-gray-800 text-white rounded-lg"
                                             disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                         >
-                                            <option value="Tutor Legal">Tutor Legal</option>
                                             <option value="Padres">Padres</option>
+                                            {(formData.parentescoConMenor === "Padre") && (
+                                                <option value="Padre">Papá</option>
+                                            )}
+
+                                            {(formData.parentescoConMenor === "Madre") && (
+                                                <option value="Madre">Mamá</option>
+                                            )}
+
+                                            <option value="Tutor Legal">Tutor Legal</option>
                                         </select>
                                     </div>
                                 </div>
@@ -2296,7 +2669,27 @@ const MenoresAlExtranjero: React.FC = () => {
                                                 )}
                                             </div>
                                             <div className="relative w-full">
-                                                <label className="text-white block mb-2">Adjuntar Copia de Resolución que designa la tutela total del menor:</label>
+                                                <label className="text-white block mb-2">Adjuntar pasaporte del Tutor:</label>
+                                                <input
+                                                    ref={adjuntoPasaporteTutorRef}
+                                                    type="file"
+                                                    name="adjuntoPasaporteTutor"
+                                                    onChange={handleFileChange}
+                                                    className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoPasaporteTutor ? 'border-2 border-red-500' : ''}`}
+                                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                                />
+                                                {formData.archivoPasaporteTutorURL && (
+                                                    <p className="text-sm text-blue-500">
+                                                        <a href={formData.archivoPasaporteTutorURL} target="_blank" rel="noopener noreferrer">
+                                                            Ver documento actual
+                                                        </a>
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                            <div className="relative w-full">
+                                                <label className="text-white block mb-2">Adjuntar Copia de Resolución o Declaración Jurada que designa la tutela total del menor:</label>
                                                 <input
                                                     ref={adjuntoTutorTutelaMenorRef}
                                                     type="file"
@@ -2351,7 +2744,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                                     <div className="flex flex-col w-full">
                                                         <label className="block text-white">Número de teléfono de la Madre:</label>
                                                         <div className="flex gap-2 mt-2">
@@ -2385,7 +2778,9 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                     </div>
+                                                </div>
 
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                                     <div className="relative w-full">
                                                         <label className="text-white block mb-2">Adjuntar identificación de la Madre:</label>
                                                         <input
@@ -2399,6 +2794,25 @@ const MenoresAlExtranjero: React.FC = () => {
                                                         {formData.archivoMadreURL && (
                                                             <p className="text-sm text-blue-500">
                                                                 <a href={formData.archivoMadreURL} target="_blank" rel="noopener noreferrer">
+                                                                    Ver documento actual
+                                                                </a>
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="relative w-full">
+                                                        <label className="text-white block mb-2">Adjuntar pasaporte de la Madre:</label>
+                                                        <input
+                                                            ref={adjuntoPasaporteMadreRef}
+                                                            type="file"
+                                                            name="adjuntoPasaporteMadre"
+                                                            onChange={handleFileChange}
+                                                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoPasaporteMadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                                        />
+                                                        {formData.archivoPasaporteMadreURL && (
+                                                            <p className="text-sm text-blue-500">
+                                                                <a href={formData.archivoPasaporteMadreURL} target="_blank" rel="noopener noreferrer">
                                                                     Ver documento actual
                                                                 </a>
                                                             </p>
@@ -2440,7 +2854,7 @@ const MenoresAlExtranjero: React.FC = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                                     <div className="flex flex-col w-full">
                                                         <label className="block text-white">Número de teléfono del Padre:</label>
                                                         <div className="flex gap-2 mt-2">
@@ -2475,7 +2889,9 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                                                         />
                                                     </div>
+                                                </div>
 
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                                     <div className="relative w-full">
                                                         <label className="text-white block mb-2">Adjuntar identificación del Padre:</label>
                                                         <input
@@ -2494,9 +2910,54 @@ const MenoresAlExtranjero: React.FC = () => {
                                                             </p>
                                                         )}
                                                     </div>
+
+                                                    <div className="relative w-full">
+                                                        <label className="text-white block mb-2">Adjuntar pasaporte del Padre:</label>
+                                                        <input
+                                                            ref={adjuntoPasaportePadreRef}
+                                                            type="file"
+                                                            name="adjuntoPasaportePadre"
+                                                            onChange={handleFileChange}
+                                                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoPasaportePadre ? 'border-2 border-red-500' : ''}`}
+                                                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                                        />
+                                                        {formData.archivoPasaportePadreURL && (
+                                                            <p className="text-sm text-blue-500">
+                                                                <a href={formData.archivoPasaportePadreURL} target="_blank" rel="noopener noreferrer">
+                                                                    Ver documento actual
+                                                                </a>
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </>
                                         )}
+                                    </>
+                                )}
+
+                                {(formData.quienesAutorizan === "Madre" || formData.quienesAutorizan === "Padre") && (
+                                    <>
+                                        {/* CONTENIDO DE CUSTODIA */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 z-10 relative">
+                                            <div className="relative w-full">
+                                                <label className="text-white block mb-2">Adjuntar la custodia total del menor:</label>
+                                                <input
+                                                    ref={adjuntoCustodiaTotalRef}
+                                                    type="file"
+                                                    name="adjuntoCustodiaTotal"
+                                                    onChange={handleFileChange}
+                                                    className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoIdentificacionMadre ? 'border-2 border-red-500' : ''}`}
+                                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                                />
+                                                {formData.archivoCustodiaTotalURL && (
+                                                    <p className="text-sm text-blue-500">
+                                                        <a href={formData.archivoCustodiaTotalURL} target="_blank" rel="noopener noreferrer">
+                                                            Ver documento actual
+                                                        </a>
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </>
                                 )}
                             </>
@@ -2507,79 +2968,139 @@ const MenoresAlExtranjero: React.FC = () => {
                 <hr className='mb-2 mt-4' />
                 <h2 className="text-white text-2xl font-semibold mb-2">Información del Menor</h2>
                 {menores.map((menor, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                        <div className="relative w-full">
-                            <label className="block text-white mb-2">Nombre completo del Menor:</label>
-                            <input
-                                ref={(el) => {
-                                    if (menoresRefs.current[index]) {
-                                        menoresRefs.current[index].nombreCompletoMenor = el;
-                                    }
-                                }}
-                                type="text"
-                                name="nombreCompletoMenor"
-                                value={menor.nombreCompletoMenor}
-                                onChange={(e) => handleMenorChange(index, e)}
-                                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.nombreCompletoMenor ? 'border-2 border-red-500' : ''}`}
-                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
-                            />
+                    <div key={index} className="mt-4">
+
+                        {/* Primera línea: nombre y cédula/pasaporte */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="relative w-full">
+                                <label className="block text-white mb-2">Nombre completo del Menor:</label>
+                                <input
+                                    ref={(el) => {
+                                        if (menoresRefs.current[index]) {
+                                            menoresRefs.current[index].nombreCompletoMenor = el;
+                                        }
+                                    }}
+                                    type="text"
+                                    name="nombreCompletoMenor"
+                                    value={menor.nombreCompletoMenor}
+                                    onChange={(e) => handleMenorChange(index, e)}
+                                    className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.nombreCompletoMenor ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                />
+                            </div>
+
+                            <div className="relative w-full">
+                                <label className="block text-white mb-2">Cédula o pasaporte del Menor:</label>
+                                <input
+                                    ref={(el) => {
+                                        if (menoresRefs.current[index]) {
+                                            menoresRefs.current[index].cedulaPasaporteMenor = el;
+                                        }
+                                    }}
+                                    type="text"
+                                    name="cedulaPasaporteMenor"
+                                    value={menor.cedulaPasaporteMenor}
+                                    onChange={(e) => handleMenorChange(index, e)}
+                                    className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.cedulaPasaporteMenor ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                />
+                            </div>
                         </div>
 
-                        <div className="relative w-full">
-                            <label className="block text-white mb-2">Cédula o pasaporte del Menor:</label>
-                            <input
-                                ref={(el) => {
-                                    if (menoresRefs.current[index]) {
-                                        menoresRefs.current[index].cedulaPasaporteMenor = el;
-                                    }
-                                }}
-                                type="text"
-                                name="cedulaPasaporteMenor"
-                                value={menor.cedulaPasaporteMenor}
-                                onChange={(e) => handleMenorChange(index, e)}
-                                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.cedulaPasaporteMenor ? 'border-2 border-red-500' : ''}`}
-                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
-                            />
-                        </div>
+                        {/* Segunda línea: archivos */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
 
-                        <div className="relative w-full">
-                            <label className="text-white block mb-2">Adjuntar identificación del Menor:</label>
-                            <input
-                                ref={(el) => {
-                                    if (menoresRefs.current[index]) {
-                                        menoresRefs.current[index].AdjuntoIdentificacionMenor = el;
-                                    }
-                                }}
-                                type="file"
-                                name={`AdjuntoIdentificacionMenor${index}`}
-                                onChange={handleFileChange}
-                                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.AdjuntoIdentificacionMenor ? 'border-2 border-red-500' : ''}`}
-                                disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
-                            />
-                            {(typeof menor.AdjuntoIdentificacionMenor === "string" && menor.AdjuntoIdentificacionMenor) ? (
-                                // Renderiza el enlace si `AdjuntoIdentificacionMenor` es una URL
-                                <p className="text-sm text-blue-500">
-                                    <a href={menor.AdjuntoIdentificacionMenor} target="_blank" rel="noopener noreferrer">
-                                        Ver documento
-                                    </a>
-                                </p>
-                            ) : (
-                                // Renderiza el enlace de vista previa si es un archivo de tipo `File`
-                                menor.AdjuntoIdentificacionMenor && (
+                            {/* Identificación */}
+                            <div className="relative w-full">
+                                <label className="text-white block mb-2">Adjuntar identificación del Menor:</label>
+                                <input
+                                    ref={(el) => {
+                                        if (menoresRefs.current[index]) {
+                                            menoresRefs.current[index].AdjuntoIdentificacionMenor = el;
+                                        }
+                                    }}
+                                    type="file"
+                                    name={`AdjuntoIdentificacionMenor${index}`}
+                                    onChange={handleFileChange}
+                                    className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.AdjuntoIdentificacionMenor ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                />
+                                {menor.AdjuntoIdentificacionMenor && (
                                     <p className="text-sm text-blue-500">
-                                        <a href={URL.createObjectURL(menor.AdjuntoIdentificacionMenor)} target="_blank" rel="noopener noreferrer">
+                                        <a
+                                            href={typeof menor.AdjuntoIdentificacionMenor === "string" ? menor.AdjuntoIdentificacionMenor : URL.createObjectURL(menor.AdjuntoIdentificacionMenor)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
                                             Ver documento
                                         </a>
                                     </p>
-                                )
-                            )}
+                                )}
+                            </div>
+
+                            {/* Pasaporte */}
+                            <div className="relative w-full">
+                                <label className="text-white block mb-2">Adjuntar pasaporte del Menor:</label>
+                                <input
+                                    ref={(el) => {
+                                        if (menoresRefs.current[index]) {
+                                            menoresRefs.current[index].AdjuntoPasaporteMenor = el;
+                                        }
+                                    }}
+                                    type="file"
+                                    name={`AdjuntoPasaporteMenor${index}`}
+                                    onChange={handleFileChange}
+                                    className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.AdjuntoPasaporteMenor ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                />
+                                {menor.AdjuntoPasaporteMenor && (
+                                    <p className="text-sm text-blue-500">
+                                        <a
+                                            href={typeof menor.AdjuntoPasaporteMenor === "string" ? menor.AdjuntoPasaporteMenor : URL.createObjectURL(menor.AdjuntoPasaporteMenor)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Ver documento
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Certificado de nacimiento */}
+                            <div className="relative w-full">
+                                <label className="text-white block mb-2">Adjuntar certificado de nacimiento del Menor:</label>
+                                <input
+                                    ref={(el) => {
+                                        if (menoresRefs.current[index]) {
+                                            menoresRefs.current[index].AdjuntoCertificadoNacimientoMenor = el;
+                                        }
+                                    }}
+                                    type="file"
+                                    name={`AdjuntoCertificadoNacimientoMenor${index}`}
+                                    onChange={handleFileChange}
+                                    className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.menores[index]?.AdjuntoCertificadoNacimientoMenor ? 'border-2 border-red-500' : ''}`}
+                                    disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                                />
+                                {menor.AdjuntoCertificadoNacimientoMenor && (
+                                    <p className="text-sm text-blue-500">
+                                        <a
+                                            href={typeof menor.AdjuntoCertificadoNacimientoMenor === "string" ? menor.AdjuntoCertificadoNacimientoMenor : URL.createObjectURL(menor.AdjuntoCertificadoNacimientoMenor)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Ver documento
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
+                        {/* Botón eliminar menor */}
                         {index > 0 && (
                             <button
                                 type="button"
                                 onClick={() => handleRemoveMenor(index)}
-                                className="bg-red-600 text-white p-2 rounded-lg mt-4 md:col-span-3"
+                                className="bg-red-600 text-white p-2 rounded-lg mt-4"
                                 disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
                             >
                                 Eliminar Menor
@@ -2683,7 +3204,7 @@ const MenoresAlExtranjero: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div className="relative w-full">
-                        <label className="text-white block mb-2">Adjuntar identificación del Autorizante:</label>
+                        <label className="text-white block mb-2">Adjuntar identificación del Autorizado:</label>
                         <input
                             ref={adjuntoIdentificacionAutorizadoRef}
                             type="file"
@@ -2695,6 +3216,24 @@ const MenoresAlExtranjero: React.FC = () => {
                         {formData.archivoAutorizadoURL && (
                             <p className="text-sm text-blue-500">
                                 <a href={formData.archivoAutorizadoURL} target="_blank" rel="noopener noreferrer">
+                                    Ver documento actual
+                                </a>
+                            </p>
+                        )}
+                    </div>
+                    <div className="relative w-full">
+                        <label className="text-white block mb-2">Adjuntar pasaporte del Autorizado:</label>
+                        <input
+                            ref={adjuntoPasaporteAutorizadoRef}
+                            type="file"
+                            name="adjuntoPasaporteAutorizado"
+                            onChange={handleFileChange}
+                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.adjuntoPasaporteAutorizado ? 'border-2 border-red-500' : ''}`}
+                            disabled={solicitudData && solicitudData.status >= 10 && store.rol < 20}
+                        />
+                        {formData.archivoPasaporteAutorizadoURL && (
+                            <p className="text-sm text-blue-500">
+                                <a href={formData.archivoPasaporteAutorizadoURL} target="_blank" rel="noopener noreferrer">
                                     Ver documento actual
                                 </a>
                             </p>

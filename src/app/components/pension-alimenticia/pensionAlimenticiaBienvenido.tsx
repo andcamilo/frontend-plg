@@ -13,11 +13,10 @@ import get from 'lodash/get';
 import ReCAPTCHA from 'react-google-recaptcha';
 import CountrySelect from '@components/CountrySelect'; // Adjust the path accordingly
 import { backendBaseUrl, backendEnv } from '@utils/env';
-import PensionInfoImage from '@public/images/Imagen bienvenido pensiones version extendida transparente.svg';
-import Image from 'next/image';
 import Link from 'next/link';
 import BannerOpciones from '@components/BannerOpciones';
 import BotonesPreguntasYContactos from '@components/botonesPreguntasYContactos';
+import { FaPlay } from 'react-icons/fa';
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -56,6 +55,28 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
     email: false,
     confirmEmail: false
   });
+
+  useEffect(() => {
+    Swal.fire({
+      title: 'AVISO',
+      html: `
+        <p class="texto_justificado">
+          Estimado usuario, actualmente solo estamos tramitando solicitudes de pensiones alimenticias para las provincias de 
+          <strong>Panamá</strong>, <strong>Panamá Oeste</strong> y <strong>Chiriquí</strong>.<br /><br />
+          El resto de las provincias se irán incorporando de forma progresiva, y estaremos anunciando cuando estén disponibles.
+        </p>
+        <br />
+        <p class="text-center font-semibold">¡Gracias por tu comprensión!</p>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Entendido',
+      customClass: {
+        popup: 'bg-[#1e1e2d] text-white',
+        confirmButton: 'bg-profile text-white px-4 py-2 rounded focus:outline-none focus:ring-0 shadow-none'
+      }
+    });
+  }, []);
+
 
   const solicitudId = store.solicitudId || (Array.isArray(id) ? id[0] : id);
   const { fetchSolicitud } = useFetchSolicitud(solicitudId);
@@ -439,14 +460,14 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
       <h1 className="text-white text-3xl font-bold flex items-center">
-        ¡Bienvenido a la Solicitud de Pensión Alimenticia en Línea!
+        ¡Bienvenido a la Solicitud de Pensión Alimenticia en línea!
         <div className="flex flex-col items-center">
           <button
             className="w-10 h-10 bg-white text-black rounded-md border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
             type="button"
             onClick={toggleModal}
           >
-            <i className="fa-solid fa-play text-lg"></i>
+            <FaPlay className="text-sm" />
           </button>
           <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
         </div>
@@ -494,8 +515,8 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           </div>
         </div>
       )}
-      <p className="text-white mt-4 mb-4">
-        Estimado cliente, por favor asegúrese de leer la descripción a continuación antes de solicitar el trámite y para aclarar dudas.
+      <p className="text-white mt-4 mb-4 texto_justificado">
+        Podrás iniciar la solicitud del trámite de Pensión Alimenticia aquí. Según tus necesidades, podrás comenzar el proceso para solicitar una pensión por primera vez, modificar una pensión existente o reportar el incumplimiento de una pensión, según corresponda y bajo ciertas condiciones.
       </p>
 
       <BannerOpciones />
@@ -545,10 +566,10 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         />
       </div> */}
 
-      <p className="text-white mt-6 text-justify">
+      <p className="text-white mt-6 texto_justificado">
         <span className="text-red-500 font-bold">Importante: </span>
-        Este formulario se limita a trámites de pensión alimenticia, para servicios adicionales como apelaciones, divorcios o guarda y crianza, se requieren trámites separados. <br />
-        Si no estás seguro si aplicas a la Pensión Alimenticia o tienes dudas, solicita una consulta con nuestros abogados,&nbsp;
+        Este formulario se limita a trámites de pensión alimenticia, para servicios adicionales, como apelaciones, divorcios o guarda y crianza, se requieren trámites separados. <br />
+        Si no estas seguro si aplicas a la Pensión Alimenticia o tienes dudas solicita una consulta con nuestros abogados,&nbsp;
         <Link href="/request/consulta-propuesta" className="text-blue-400 hover:text-blue-500">
           consultas y propuestas
         </Link>.

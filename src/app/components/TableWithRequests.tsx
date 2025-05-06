@@ -28,33 +28,44 @@ const TableWithRequests: React.FC<TableWithPaginationProps> = ({
             <h2 className="text-lg font-bold text-white mb-4">{title}</h2>
             <div className="overflow-x-auto">
                 {data.length > 0 ? (
-                    <table className="min-w-full text-left text-gray-400">
-                        <thead>
-                            <tr>
-                                {columns.map((column, index) => (
-                                    <th key={index} className="py-2 capitalize text-white">
-                                        {column}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map((row, rowIndex) => (
-                                <tr key={rowIndex} className="border-t border-gray-700">
-                                    {columns.map((column, colIndex) => (
-                                        <td key={colIndex} className="py-2">
-                                            {React.isValidElement(row[column])
-                                                ? row[column] // Si es JSX, renderízalo directamente
-                                                : typeof row[column] === 'object' && row[column] !== null
-                                                    ? JSON.stringify(row[column]) // Si es objeto, conviértelo en string
-                                                    : row[column] // Si es un valor simple, muéstralo directamente
-                                            }
-                                        </td>
+                    <div className="w-full overflow-x-auto">
+                        <div className="min-w-[900px]">
+                            <table className="w-full text-left text-gray-400 border-collapse">
+                                <thead>
+                                    <tr>
+                                        {columns.map((column, index) => (
+                                            <th
+                                                key={index}
+                                                className="py-2 px-4 capitalize text-white whitespace-nowrap"
+                                            >
+                                                {column}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.map((row, rowIndex) => (
+                                        <tr key={rowIndex} className="border-t border-gray-700">
+                                            {columns.map((column, colIndex) => (
+                                                <td
+                                                    key={colIndex}
+                                                    className="py-2 px-4 align-top whitespace-nowrap"
+                                                >
+                                                    {column.toLowerCase() === 'abogado' && typeof row[column] === 'string'
+                                                        ? row[column]
+                                                            .split(',')
+                                                            .map((lawyer: string, idx: number) => (
+                                                                <div key={idx}>{lawyer.trim()}</div>
+                                                            ))
+                                                        : row[column]}
+                                                </td>
+                                            ))}
+                                        </tr>
                                     ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 ) : (
                     <p className="text-gray-400">No data available</p>
                 )}

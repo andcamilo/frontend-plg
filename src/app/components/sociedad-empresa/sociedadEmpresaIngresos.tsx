@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 import '@fortawesome/fontawesome-free/css/all.css';
+import { FaPlay } from 'react-icons/fa';
 
 const FuentesDeIngresos: React.FC = () => {
     const context = useContext(AppStateContext);
@@ -202,7 +203,7 @@ const FuentesDeIngresos: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <i className="fa-solid fa-play text-lg"></i> 
+                        <FaPlay className="text-sm" /> 
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>

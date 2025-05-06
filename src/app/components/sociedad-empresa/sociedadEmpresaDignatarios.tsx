@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 import '@fortawesome/fontawesome-free/css/all.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { FaPlay } from 'react-icons/fa';
 
 interface DignatarioNominalData {
     tipo: string;
@@ -288,7 +289,7 @@ const SociedadEmpresaDignatarios: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <i className="fa-solid fa-play text-lg"></i> 
+                        <FaPlay className="text-sm" /> 
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>

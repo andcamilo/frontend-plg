@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaPlay } from 'react-icons/fa';
 
 const InformacionDelDemandante: React.FC = () => {
   const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
@@ -17,7 +18,7 @@ const InformacionDelDemandante: React.FC = () => {
             type="button"
             onClick={toggleModal}
           >
-            <i className="fa-solid fa-play text-lg"></i>
+            <FaPlay className="text-sm" />
           </button>
           <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
         </div>
