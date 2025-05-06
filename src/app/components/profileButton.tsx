@@ -87,7 +87,13 @@ const ProfileButton: React.FC = () => {
         className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-700 focus:outline-none overflow-hidden"
       >
         {profilePhoto ? (
-          <img src={profilePhoto} alt="Foto de perfil" className="w-full h-full object-cover" />
+          <Image
+            src={profilePhoto}
+            alt="Foto de perfil"
+            width={40}
+            height={40}
+            className="w-full h-full object-cover"
+          />
         ) : (
           initials
         )}

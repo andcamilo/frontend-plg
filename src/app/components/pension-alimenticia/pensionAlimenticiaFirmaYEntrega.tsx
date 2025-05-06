@@ -7,6 +7,7 @@ import { useFetchSolicitud } from '@utils/fetchCurrentRequest'
 import get from 'lodash/get';
 import CountrySelect from '@components/CountrySelect';
 import { FaPlay } from 'react-icons/fa';
+import Image from 'next/image';
 
 const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>('office');
@@ -298,10 +299,12 @@ const PensionAlimenticiaFirmaYEntrega: React.FC = () => {
 
           <div className="flex items-center mb-6">
             <button className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded inline-flex items-center">
-              <img
+              <Image
                 src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
                 alt="WhatsApp"
-                className="w-5 h-5 mr-2"
+                width={20}
+                height={20}
+                className="mr-2"
               />
               WhatsApp
             </button>

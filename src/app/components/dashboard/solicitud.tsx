@@ -19,6 +19,7 @@ import {
 } from '@utils/env';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import Image from 'next/image';
 
 const roleMapping: { [key: number]: string } = {
     99: "Super Admin",
@@ -2082,9 +2083,11 @@ const Request: React.FC = () => {
                         >
                             ✕
                         </button>
-                        <img
+                        <Image
                             src={selectedPhotoUrl}
                             alt="Foto del abogado"
+                            width={400}
+                            height={400}
                             className="w-full h-auto rounded-lg object-cover"
                         />
                     </div>

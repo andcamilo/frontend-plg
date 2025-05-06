@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaPlay } from 'react-icons/fa';
 
 const DemandadoInfo: React.FC = () => {
   const [showModal, setShowModal] = useState(false); // Estado para manejar el modal
@@ -78,7 +79,5 @@ const DemandadoInfo: React.FC = () => {
     </div>
   );
 };
-
-
 
 export default DemandadoInfo;
