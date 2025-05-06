@@ -26,7 +26,7 @@ const Home: React.FC = () => {
       redirect: '/request/fundacion'
     },
     {
-      title: 'Permiso de Salidade Menores al Extranjero',
+      title: 'Permiso de Salida de Menores al Extranjero',
       imageUrl: '/images/process3.jpg',
       description: 'Descripción de las permiso de salidade menores al extranjero.',
       redirect: '/request/menores-extranjero'
