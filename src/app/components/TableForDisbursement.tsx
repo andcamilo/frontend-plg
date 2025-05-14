@@ -17,7 +17,7 @@ interface TableForDisbursementProps {
   buttonText?: string;
   deleteButtonText?: string;
   loading?: boolean;
-  onDelete: (row: { [key: string]: any }) => void;
+  onDelete?: (row: { [key: string]: any }) => void;
 }
 
 const formatCellValue = (value: any) => {
@@ -211,12 +211,14 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                     >
                       {buttonText}
                     </button>
-                    <button
-                      onClick={() => onDelete(row)}
-                      className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 ml-2"
-                    >
-                      {deleteButtonText}
-                    </button>
+                    {onDelete && (
+                      <button
+                        onClick={() => onDelete(row)}
+                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 ml-2"
+                      >
+                        {deleteButtonText}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
