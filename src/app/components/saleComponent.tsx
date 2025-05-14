@@ -94,11 +94,11 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
                      xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
         <soap:Body>
           <Sale xmlns="http://tempuri.org/">
-            <APIKey>EhrqwakURmYS</APIKey>
+            <APIKey>${process.env.NEXT_PUBLIC_PAYMENT_API_KEY}</APIKey>
             <accountToken>${context.store.token}</accountToken>
-            <accessCode>123123</accessCode>
-            <merchantAccountNumber>112549</merchantAccountNumber>
-            <terminalName>112549001</terminalName>
+            <accessCode>${process.env.NEXT_PUBLIC_PAYMENT_ACCESS_CODE}</accessCode>
+            <merchantAccountNumber>${process.env.NEXT_PUBLIC_PAYMENT_MERCHANT_ACCOUNT}</merchantAccountNumber>
+            <terminalName>${process.env.NEXT_PUBLIC_PAYMENT_TERMINAL_NAME}</terminalName>
             <clientTracking>SALE-TRACKING-01</clientTracking>
             <amount>${precioTotal}</amount>
             <currencyCode>840</currencyCode>
