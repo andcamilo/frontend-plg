@@ -24,27 +24,32 @@ const ModalMiembros: React.FC<ModalMiembrosProps> = ({  onClose }) => {
         seleccionar: '', // Campo vacío por defecto
     });
 
+    console.log("ModalFundadores mounted");
+
     // Función para obtener personas desde la base de datos
     const fetchPersonas = async () => {
+        console.log("Calling fetchPersonas");
         try {
-            const response = await axios.get('/api/client', {
-                params: {
-                    solicitudId, // Pasamos el ID de la solicitud como filtro
-                },
+            const response = await axios.get('/api/get-people-id', {
+                params: { solicitudId },
             });
+            // Log the response to debug
+            console.log('Modal personas response:', response.data);
 
-            const { personas } = response.data;
-            setPersonas(personas.filter((persona: any) =>
+            // If response.data is an array:
+            setPersonas(response.data.filter((persona: any) =>
                 persona.solicitudId === solicitudId && (!persona.miembro)
             ));
         } catch (error) {
             console.error('Error fetching personas:', error);
+        } finally {
+            console.log("fetchPersonas finished");
         }
     };
 
     useEffect(() => {
             fetchPersonas();
-    }, [ solicitudId]);
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target;
