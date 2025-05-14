@@ -133,6 +133,7 @@ const FundacionFundadores: React.FC = () => {
             });
 
             const people = response.data;
+            console.log("🚀 ~ fetchData ~ people:", people)
 
             if (!people || people.length === 0) {
                 setData([]);
@@ -192,7 +193,7 @@ const FundacionFundadores: React.FC = () => {
             }
 
             const combinedData: FundadorData[] = [...formattedData, ...formattedRequestData];
-
+            console.log("🚀 ~ fetchData ~ combinedData:", combinedData)
             setData(combinedData);
             setTotalRecords(combinedData.length);
             setTotalPages(Math.ceil(combinedData.length / rowsPerPage));
