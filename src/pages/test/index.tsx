@@ -164,9 +164,9 @@ const PaymentTestWidget = dynamic(
       try {
         const response = await $.ajax({
           type: 'GET',
-          url: "https://apicomponentv2-test.merchantprocess.net/UIComponent/CreditCard",
+          url: process.env.NEXT_PUBLIC_PAYMENT_WIDGET_URL,
           data: {
-            APIKey: "EhrqwakURmYS",
+            APIKey: process.env.NEXT_PUBLIC_PAYMENT_API_KEY,
             Culture: 'es',
           },
         });
@@ -257,11 +257,11 @@ const PaymentTestSale = dynamic(
                         xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
             <soap:Body>
               <Sale xmlns="http://tempuri.org/">
-                <APIKey>EhrqwakURmYS</APIKey>
+                <APIKey>${process.env.NEXT_PUBLIC_PAYMENT_API_KEY}</APIKey>
                 <accountToken>${token}</accountToken>
-                <accessCode>123123</accessCode>
-                <merchantAccountNumber>103333</merchantAccountNumber>
-                <terminalName>103333001</terminalName>
+                <accessCode>${process.env.NEXT_PUBLIC_PAYMENT_ACCESS_CODE}</accessCode>
+                <merchantAccountNumber>${process.env.NEXT_PUBLIC_PAYMENT_MERCHANT_ACCOUNT}</merchantAccountNumber>
+                <terminalName>${process.env.NEXT_PUBLIC_PAYMENT_TERMINAL_NAME}</terminalName>
                 <clientTracking>SALE-TRACKING-01</clientTracking>
                 <amount>${saleAmount}</amount>
                 <currencyCode>840</currencyCode>
