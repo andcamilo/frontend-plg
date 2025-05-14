@@ -216,13 +216,15 @@ const RequestsStatistics: React.FC = () => {
           userId: get(user, 'solicitud.id', ''),
         }));
 
-        // Fetch the “big chunk” of requests once
+        // Fetch the "big chunk" of requests once
         const { solicitudes: entireSolicitudes } = await getRequests(
           userData.email, // though you never use email on the server?
           1000,           // large limit
-          1               // always page 1
+          1,              // always page 1
+          stringRole      // pass the user's role
         );
 
+        console.log("🚀 ~ fetchData ~ solicitudes:", entireSolicitudes)
         setSolicitudes(entireSolicitudes);
       } catch (err: any) {
         console.error('Error fetching data:', err);
@@ -234,7 +236,7 @@ const RequestsStatistics: React.FC = () => {
 
     fetchData();
   }, []);
-
+    
   // ---- Helper function for filtering ----
   const getSolicitudesFiltradas = (array: any[]) => {
     return array
@@ -570,7 +572,7 @@ const RequestsStatistics: React.FC = () => {
             </button>
           </div>
 
-          {/* --- Table of “En Proceso” --- */}
+          {/* --- Table of "En Proceso" --- */}
           <TableWithRequests
             data={transformData(paginatedSolicitudesEnProceso)}
             rowsPerPage={rowsPerPage}
@@ -582,7 +584,7 @@ const RequestsStatistics: React.FC = () => {
             onPageChange={setCurrentPageEnProceso}
           />
 
-          {/* --- Table of “Finalizadas” --- */}
+          {/* --- Table of "Finalizadas" --- */}
           <TableWithRequests
             data={transformData(paginatedSolicitudesFinalizadas)}
             rowsPerPage={rowsPerPage}

@@ -227,7 +227,7 @@ const Fundacion: React.FC = () => {
                         <p className="my-8 text-center">
                             * Para poder enviar o pagar la solicitud todos los campos deben estar llenos.
                         </p>
-                        {activeStep >= 15 || store.activos&& (
+                        {store.activos&& (
                             <div className="mt-8">
                                 <WidgetLoader />
                             </div>

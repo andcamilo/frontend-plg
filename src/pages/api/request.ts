@@ -2,15 +2,15 @@ import axios from 'axios';
 import { backendBaseUrl, backendEnv } from '@utils/env';
 import get from 'lodash/get';
 
-const getRequestsUrl = `${backendBaseUrl}/${backendEnv}/get-requests`;
 const getRequestsByEmailUrl = `${backendBaseUrl}/${backendEnv}/get-requests-by-email`;
 
-export const getRequests = async (email, limit = 10, page = 1) => {
+export const getRequests = async (email, limit = 10, page = 1, role = 'admin') => {
 
   try {
     console.log("🚀 ~ getRequests ~ email:", email)
-    const response = await axios.get(getRequestsUrl, {
-        params: { limit, page },
+    console.log("🚀 ~ getRequests ~ role:", role)
+    const response = await axios.get(getRequestsByEmailUrl, {
+        params: { email, limit, page, role },
       });
 
 
