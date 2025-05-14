@@ -95,23 +95,54 @@ const ListDisbursement: React.FC = () => {
     router.push(`/dashboard/see/${id}`);
   };
 
-  const handleGetSelectedIds = async (selectedIds: string[]) => {
+  const handleDelete = async (row: { [key: string]: any }) => {
+    try {
+      await axios.post('/api/delete-disbursements', { ids: [row.id] });
+      alert('Desembolso eliminado correctamente.');
+      fetchDisbursements(currentPage, rowsPerPage);
+    } catch (error) {
+      console.error('Error deleting disbursement:', error);
+      alert('Error al eliminar el desembolso.');
+    }
+  };
+
+  const handleBulkDelete = async (selectedIds: string[]) => {
+    if (selectedIds.length === 0) {
+      alert('No se han seleccionado desembolsos para eliminar.');
+      return;
+    }
+
+    try {
+      await axios.post('/api/delete-disbursements', { ids: selectedIds });
+      alert('Desembolsos eliminados correctamente.');
+      fetchDisbursements(currentPage, rowsPerPage);
+    } catch (error) {
+      console.error('Error deleting disbursements:', error);
+      alert('Error al eliminar los desembolsos.');
+    }
+  };
+
+  const handleGetSelectedIds = async (selectedIds: string[], action: 'update' | 'delete' = 'update') => {
     if (selectedIds.length === 0) {
       alert('No se han seleccionado desembolsos.');
       return;
     }
 
     try {
-      const response = await axios.patch('/api/update-disbursements', {
-        fieldUpdate: { status: 'pre-aprobada' },
-        ids: selectedIds,
-      });
-
-      alert('Desembolsos actualizados correctamente.');
+      if (action === 'delete') {
+        await axios.post('/api/delete-disbursements', { ids: selectedIds });
+        alert('Desembolsos eliminados correctamente.');
+      } else {
+        const response = await axios.patch('/api/update-disbursements', {
+          fieldUpdate: { status: 'pre-aprobada' },
+          ids: selectedIds,
+        });
+        alert('Desembolsos actualizados correctamente.');
+      }
       fetchDisbursements(currentPage, rowsPerPage);
     } catch (error) {
-      console.error('Error updating disbursements:', error);
-      alert('Error al actualizar los desembolsos.');
+      console.error(`Error ${action === 'delete' ? 'deleting' : 'updating'} disbursements:`, error);
+      alert(`Error al ${action === 'delete' ? 'eliminar' : 'actualizar'} los desembolsos.`);
     }
   };
 
@@ -131,6 +162,7 @@ const ListDisbursement: React.FC = () => {
         hasNextPage={currentPage < totalPages}
         onPageChange={handlePageChange}
         onEdit={handleEdit}
+        onDelete={handleDelete}
         onGetSelectedIds={handleGetSelectedIds}
         loading={loading}
       />
