@@ -28,16 +28,16 @@ const ListDisbursement: React.FC = () => {
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const doc = querySnapshot.docs[0];
-            setRole(doc.data().rol || null);
+            setRole(doc.data().rol || 0);
           } else {
-            setRole(null);
+            setRole(0);
           }
         } catch (error) {
           console.error("Error fetching user role:", error);
         }
       } else {
         setEmail(null);
-        setRole(null);
+        setRole(0);
       }
     });
 
