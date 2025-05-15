@@ -110,16 +110,16 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
         </h2>
 
         {/* Filtros */}
-        <div className="flex flex-wrap items-center gap-4 text-white">
+        <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4 text-white w-full">
           {/* Filtro por abogado */}
           {lawyerValues.length > 0 && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
               <label htmlFor="lawyer-filter" className="text-sm">Filtrar por Abogado:</label>
               <select
                 id="lawyer-filter"
                 value={lawyerFilter}
                 onChange={(e) => setLawyerFilter(e.target.value)}
-                className="bg-gray-700 text-white px-2 py-1 rounded"
+                className="bg-gray-700 text-white px-2 py-1 rounded w-full sm:w-auto"
               >
                 <option value="">Todos</option>
                 {lawyerValues.map((val, idx) => (
@@ -133,13 +133,13 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
 
           {/* Filtro por estado */}
           {statusValues.length > 0 && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
               <label htmlFor="status-filter" className="text-sm">Filtrar por Estado:</label>
               <select
                 id="status-filter"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-gray-700 text-white px-2 py-1 rounded"
+                className="bg-gray-700 text-white px-2 py-1 rounded w-full sm:w-auto"
               >
                 <option value="">Todos</option>
                 {statusValues.map((val, idx) => (
@@ -193,7 +193,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                     {getSpanishTitle(column)}
                   </th>
                 ))}
-                <th className="py-2 px-2 text-white">Acciones</th>
+                <th className="py-2 px-2 text-white min-w-[160px]">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -214,21 +214,23 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                       {formatCellValue(row[column])}
                     </td>
                   ))}
-                  <td className="py-2 px-2">
-                    <button
-                      onClick={() => onEdit(row)}
-                      className="bg-profile text-white px-3 py-1 rounded-lg hover:bg-blue-500"
-                    >
-                      {buttonText}
-                    </button>
-                    {canDelete && onDelete && (
+                  <td className="py-2 px-2 min-w-[160px]">
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => onDelete(row)}
-                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 ml-2"
+                        onClick={() => onEdit(row)}
+                        className="bg-profile text-white px-3 py-1 rounded-lg hover:bg-blue-500"
                       >
-                        {deleteButtonText}
+                        {buttonText}
                       </button>
-                    )}
+                      {canDelete && onDelete && (
+                        <button
+                          onClick={() => onDelete(row)}
+                          className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+                        >
+                          {deleteButtonText}
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -239,8 +241,8 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
         <p className="text-gray-400">No hay datos disponibles.</p>
       )}
 
-      <div className="flex justify-between items-center mt-6">
-        <div className="flex items-center gap-2 text-white">
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4 w-full">
+        <div className="flex items-center gap-2 text-white w-full sm:w-auto">
           <label htmlFor="limit" className="text-sm">Resultados por página:</label>
           <select
             id="limit"
@@ -256,7 +258,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
           </select>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={!hasPrevPage}
