@@ -15,7 +15,7 @@ const ListDisbursement: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
-  const [role, setRole] = useState<string | number | null>(null);
+  const [role, setRole] = useState<number>(0);
 
   // Auth listener
   useEffect(() => {
@@ -28,16 +28,16 @@ const ListDisbursement: React.FC = () => {
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const doc = querySnapshot.docs[0];
-            setRole(doc.data().rol || null);
+            setRole(doc.data().rol || 0);
           } else {
-            setRole(null);
+            setRole(0);
           }
         } catch (error) {
           console.error("Error fetching user role:", error);
         }
       } else {
         setEmail(null);
-        setRole(null);
+        setRole(0);
       }
     });
 
@@ -162,6 +162,7 @@ const ListDisbursement: React.FC = () => {
         hasNextPage={currentPage < totalPages}
         onPageChange={handlePageChange}
         onEdit={handleEdit}
+        role={role}
         onDelete={handleDelete}
         onGetSelectedIds={handleGetSelectedIds}
         loading={loading}
