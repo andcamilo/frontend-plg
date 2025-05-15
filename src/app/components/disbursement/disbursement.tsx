@@ -65,13 +65,10 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
 
   const handleSave = async () => {
     // Check if at least one amount is different from 0
-    const hasNonZeroAmount = Object.entries(state).some(([key, value]) => {
-      // Check if the key contains 'amount' and the value is a number
-      if (key.toLowerCase().includes('amount') && typeof value === 'number') {
-        return value !== 0;
-      }
-      return false;
-    });
+    const hasNonZeroAmount =
+      (state.desemboloOficina && state.desemboloOficina.some(item => Number(item.amount) !== 0)) ||
+      (state.desembolsoCliente && state.desembolsoCliente.some(item => Number(item.amount) !== 0)) ||
+      (state.desembolsoCajaChica && state.desembolsoCajaChica.some(item => Number(item.amount) !== 0));
 
     if (!hasNonZeroAmount) {
       Swal.fire({

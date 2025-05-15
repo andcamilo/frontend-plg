@@ -221,7 +221,7 @@ const RequestsStatistics: React.FC = () => {
           userData.email, // though you never use email on the server?
           1000,           // large limit
           1,              // always page 1
-          stringRole      // pass the user's role
+          rawRole      // pass the user's role
         );
 
         console.log("🚀 ~ fetchData ~ solicitudes:", entireSolicitudes)
