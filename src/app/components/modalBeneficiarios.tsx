@@ -26,15 +26,10 @@ const ModalBeneficiario: React.FC<ModalBeneficiarioProps> = ({ onClose }) => {
     // Función para obtener personas desde la base de datos
     const fetchPersonas = async () => {
         try {
-            const response = await axios.get('/api/client', {
-                params: {
-                    solicitudId, // Pasamos el ID de la solicitud como filtro
-                },
+            const response = await axios.get('/api/get-people-id', {
+                params: { solicitudId },
             });
-
-            // Filtrar las personas que NO son beneficiarios ya asignados
-            const { personas } = response.data;
-            setPersonas(personas.filter((persona: any) =>
+            setPersonas(response.data.filter((persona: any) =>
                 persona.solicitudId === solicitudId && (!persona.beneficiariosFundacion)
             ));
         } catch (error) {
@@ -45,7 +40,7 @@ const ModalBeneficiario: React.FC<ModalBeneficiarioProps> = ({ onClose }) => {
     useEffect(() => {
         // Llamada a la API cuando se abre el modal
         fetchPersonas();
-    }, [solicitudId]);
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;

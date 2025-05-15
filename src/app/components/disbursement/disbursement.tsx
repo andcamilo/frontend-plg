@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import DesembolsoContext from '@context/desembolsoContext';
 import DisbursementGastosOficina from './disbursementGastosOficina';
 import DisbursementGastosCliente from './disbursementGastosCliente';
@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 import DisbursementTransferOrPaymentDetails from './disbursementTransferOrPaymentDetails';
 import DisbursementPaidDisbursementDetails from './disbursementPaidDisbursementDetails';
 import Swal from 'sweetalert2';
+import { onAuthStateChanged } from "firebase/auth";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import { auth } from "@configuration/firebase";
 
 interface DisbursementProps {
   id: string; 
@@ -17,6 +20,41 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
   const context = useContext(DesembolsoContext);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!context) {
+      return;
+    }
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser && firebaseUser.email) {
+        try {
+          const db = getFirestore();
+          const q = query(collection(db, "usuarios"), where("email", "==", firebaseUser.email));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            const data = doc.data();
+            setRole(data.rol || null);
+          } else {
+            setRole(null);
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+        }
+      } else {
+        setRole(null);
+      }
+    });
+    return () => unsubscribe();
+  }, [context]);
+
+  useEffect(() => {
+    if (role) {
+     console.log("🚀 ~ useEffect ~ role:", role)
+     
+    }
+  }, [role]);
 
   if (!context) {
     return <div>Context is not available.</div>;
@@ -25,8 +63,25 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
   const { state, setState } = context;
   console.log("🚀 ~ state:", state)
 
-
   const handleSave = async () => {
+    // Check if at least one amount is different from 0
+    const hasNonZeroAmount = Object.entries(state).some(([key, value]) => {
+      // Check if the key contains 'amount' and the value is a number
+      if (key.toLowerCase().includes('amount') && typeof value === 'number') {
+        return value !== 0;
+      }
+      return false;
+    });
+
+    if (!hasNonZeroAmount) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El monto debe ser diferente de 0 para guardar el desembolso.',
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const endpoint = id 
@@ -82,6 +137,9 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
     }));
   };
 
+  // Convert role to a number for comparison
+  const numericRole = role ? Number(role) : null;
+
   return (
     <div className="w-full p-6 bg-gray-900 min-h-screen">
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
@@ -129,12 +187,20 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
             <select
               id="status"
               name="status"
-              value={state.status || 'creada'}
+              value={numericRole === 50 || numericRole === 99 || numericRole === 90 ? state.status : 'Creada'}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
-              disabled
+              disabled={!(numericRole === 50 || numericRole === 99 || numericRole === 90)}
             >
-              <option value="creada">Creada</option>
+              <option value="Creada">Creada</option>
+              <option value="Rechazada">Rechazada</option>
+              <option value="Borrador">Borrador</option>
+              <option value="Enviada">Enviada</option>
+              <option value="Aprobada">Aprobada</option>
+              <option value="Confirmando pago">Confirmando pago</option>
+              <option value="Pagada">Pagada</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Finalizada">Finalizada</option>
             </select>
           </div>
 
@@ -178,8 +244,6 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
             {isLoading ? 'Cargando...' : 'Guardar'}
           </button>
         </div>
-
-
 
       </div>
     </div>
