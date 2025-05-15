@@ -4,7 +4,7 @@ import get from 'lodash/get';
 
 const getRequestsByEmailUrl = `${backendBaseUrl}/${backendEnv}/get-requests-by-email`;
 
-export const getRequests = async (email, limit = 10, page = 1, role = 'admin') => {
+export const getRequests = async (email, limit = 10, page = 1, role = 90) => {
 
   try {
     console.log("🚀 ~ getRequests ~ email:", email)
