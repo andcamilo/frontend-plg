@@ -18,6 +18,7 @@ interface TableForDisbursementProps {
   deleteButtonText?: string;
   loading?: boolean;
   onDelete?: (row: { [key: string]: any }) => void;
+  role?: number;
 }
 
 const formatCellValue = (value: any) => {
@@ -41,6 +42,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   onEdit,
   onGetSelectedIds,
   buttonText = 'Editar',
+  role,
   deleteButtonText = 'Eliminar',
   loading = false,
   onDelete,
@@ -98,6 +100,8 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
     onGetSelectedIds(selectedIds, action);
   };
 
+  const canDelete = role !== undefined && [50, 90, 99].includes(role);
+
   return (
     <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-8xl mb-4">
       <div className="mb-4">
@@ -149,20 +153,22 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
         </div>
 
         {/* Bulk action buttons */}
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={() => handleGetSelectedIds('update')}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Actualizar seleccionados
-          </button>
-          <button
-            onClick={() => handleGetSelectedIds('delete')}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            Eliminar seleccionados
-          </button>
-        </div>
+        {canDelete && (
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() => handleGetSelectedIds('update')}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Actualizar seleccionados
+            </button>
+            <button
+              onClick={() => handleGetSelectedIds('delete')}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              Eliminar seleccionados
+            </button>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -172,14 +178,16 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
           <table className="min-w-full text-left text-gray-400 table-auto">
             <thead>
               <tr>
-                <th className="py-2 px-2">
-                  <input
-                    type="checkbox"
-                    checked={selectAll}
-                    onChange={handleSelectAll}
-                    className="w-4 h-4"
-                  />
-                </th>
+                {canDelete && (
+                  <th className="py-2 px-2">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4"
+                    />
+                  </th>
+                )}
                 {columns.map((column, index) => (
                   <th key={index} className="py-2 px-2 text-white whitespace-nowrap">
                     {getSpanishTitle(column)}
@@ -191,14 +199,16 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
             <tbody>
               {filteredData.map((row, rowIndex) => (
                 <tr key={rowIndex} className="border-t border-gray-700">
-                  <td className="py-2 px-2">
-                    <input
-                      type="checkbox"
-                      checked={!!selectedRows[rowIndex]}
-                      onChange={() => handleRowSelect(rowIndex)}
-                      className="w-4 h-4"
-                    />
-                  </td>
+                  {canDelete && (
+                    <td className="py-2 px-2">
+                      <input
+                        type="checkbox"
+                        checked={!!selectedRows[rowIndex]}
+                        onChange={() => handleRowSelect(rowIndex)}
+                        className="w-4 h-4"
+                      />
+                    </td>
+                  )}
                   {columns.map((column, colIndex) => (
                     <td key={colIndex} className="py-2 px-2 whitespace-nowrap">
                       {formatCellValue(row[column])}
@@ -211,7 +221,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                     >
                       {buttonText}
                     </button>
-                    {onDelete && (
+                    {canDelete && onDelete && (
                       <button
                         onClick={() => onDelete(row)}
                         className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 ml-2"

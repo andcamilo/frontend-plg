@@ -15,7 +15,7 @@ const ListDisbursement: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
-  const [role, setRole] = useState<string | number | null>(null);
+  const [role, setRole] = useState<number>(0);
 
   // Auth listener
   useEffect(() => {
@@ -162,6 +162,7 @@ const ListDisbursement: React.FC = () => {
         hasNextPage={currentPage < totalPages}
         onPageChange={handlePageChange}
         onEdit={handleEdit}
+        role={role}
         onDelete={handleDelete}
         onGetSelectedIds={handleGetSelectedIds}
         loading={loading}
