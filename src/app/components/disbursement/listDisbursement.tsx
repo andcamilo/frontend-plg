@@ -16,6 +16,11 @@ const ListDisbursement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [role, setRole] = useState<number>(0);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [lastDate, setLastDate] = useState<string | null>(null);
+  const [lastDateStack, setLastDateStack] = useState<string[]>([]);
+  const [lawyerFilter, setLawyerFilter] = useState<string>('');
+  const [hasMorePages, setHasMorePages] = useState<boolean>(false);
 
   // Auth listener
   useEffect(() => {
@@ -44,30 +49,32 @@ const ListDisbursement: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  const fetchDisbursements = async (page: number, limit: number) => {
+  const fetchDisbursements = async (
+    limit: number,
+    lastDateParam?: string,
+    filterEmail?: string,
+    filterActive?: boolean
+  ) => {
     try {
       if (!email || role === null) return;
-      console.log("🚀 ~ fetchDisbursements ~ email:", email)
-
       setLoading(true);
 
+      let params: any = { limit, role };
+      if (lastDateParam !== undefined && lastDateParam !== null) params.lastDate = lastDateParam;
+      if (filterEmail) {
+        params.email = filterEmail;
+        if (filterActive) params.filter = true;
+      } else {
+        params.email = email;
+      }
 
-      console.log("🚀 ~ fetchDisbursements ~ email:", email)
-      console.log("🚀 ~ fetchDisbursements ~ role:", role)
-
-      const response = await axios.get('/api/list-disbursements', {
-        params: {
-          limit,
-          page,
-          email,
-          role,
-        },
-      });
-
-      const { disbursements, totalPages: backendTotalPages } = response.data;
+      console.log("🚀 ~ fetchDisbursements ~ params:", params);
+      const response = await axios.get('/api/list-disbursements', { params });
+      const { disbursements, nextCursor: backendNextCursor, hasMorePages: backendHasMorePages } = response.data;
 
       setData(disbursements || []);
-      setTotalPages(backendTotalPages || 1);
+      setNextCursor(backendNextCursor || null);
+      setHasMorePages(backendHasMorePages !== undefined ? backendHasMorePages : !!backendNextCursor);
     } catch (error) {
       console.error('Error fetching disbursements:', error);
     } finally {
@@ -77,9 +84,13 @@ const ListDisbursement: React.FC = () => {
 
   useEffect(() => {
     if (email && role !== null) {
-      fetchDisbursements(currentPage, rowsPerPage);
+      if (lawyerFilter) {
+        fetchDisbursements(rowsPerPage, lastDate ?? undefined, lawyerFilter, true);
+      } else {
+        fetchDisbursements(rowsPerPage, lastDate ?? undefined);
+      }
     }
-  }, [currentPage, rowsPerPage, email, role]);
+  }, [rowsPerPage, email, role, lastDate, lawyerFilter]);
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -99,7 +110,11 @@ const ListDisbursement: React.FC = () => {
     try {
       await axios.post('/api/delete-disbursements', { ids: [row.id] });
       alert('Desembolso eliminado correctamente.');
-      fetchDisbursements(currentPage, rowsPerPage);
+      if (lawyerFilter) {
+        fetchDisbursements(rowsPerPage, lastDate ?? undefined, lawyerFilter, true);
+      } else {
+        fetchDisbursements(rowsPerPage, lastDate ?? undefined);
+      }
     } catch (error) {
       console.error('Error deleting disbursement:', error);
       alert('Error al eliminar el desembolso.');
@@ -115,7 +130,11 @@ const ListDisbursement: React.FC = () => {
     try {
       await axios.post('/api/delete-disbursements', { ids: selectedIds });
       alert('Desembolsos eliminados correctamente.');
-      fetchDisbursements(currentPage, rowsPerPage);
+      if (lawyerFilter) {
+        fetchDisbursements(rowsPerPage, lastDate ?? undefined, lawyerFilter, true);
+      } else {
+        fetchDisbursements(rowsPerPage, lastDate ?? undefined);
+      }
     } catch (error) {
       console.error('Error deleting disbursements:', error);
       alert('Error al eliminar los desembolsos.');
@@ -139,10 +158,30 @@ const ListDisbursement: React.FC = () => {
         });
         alert('Desembolsos actualizados correctamente.');
       }
-      fetchDisbursements(currentPage, rowsPerPage);
+      if (lawyerFilter) {
+        fetchDisbursements(rowsPerPage, lastDate ?? undefined, lawyerFilter, true);
+      } else {
+        fetchDisbursements(rowsPerPage, lastDate ?? undefined);
+      }
     } catch (error) {
       console.error(`Error ${action === 'delete' ? 'deleting' : 'updating'} disbursements:`, error);
       alert(`Error al ${action === 'delete' ? 'eliminar' : 'actualizar'} los desembolsos.`);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (nextCursor) {
+      setLastDateStack(prev => [...prev, lastDate || '']);
+      setLastDate(nextCursor);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (lastDateStack.length > 0) {
+      const prevStack = [...lastDateStack];
+      const prevLastDate = prevStack.pop();
+      setLastDateStack(prevStack);
+      setLastDate(prevLastDate || null);
     }
   };
 
@@ -156,16 +195,17 @@ const ListDisbursement: React.FC = () => {
         onChangeRowsPerPage={handleRowsPerPageChange}
         title="Desembolsos"
         showActionButtons={false}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        hasPrevPage={currentPage > 1}
-        hasNextPage={currentPage < totalPages}
-        onPageChange={handlePageChange}
+        hasPrevPage={lastDateStack.length > 0}
+        hasNextPage={hasMorePages}
+        onPageChangeNext={handleNextPage}
+        onPageChangePrev={handlePrevPage}
         onEdit={handleEdit}
         role={role}
         onDelete={handleDelete}
         onGetSelectedIds={handleGetSelectedIds}
         loading={loading}
+        lawyerFilter={lawyerFilter}
+        setLawyerFilter={setLawyerFilter}
       />
     </div>
   );
