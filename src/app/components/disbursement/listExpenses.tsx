@@ -87,7 +87,7 @@ const ListExpenses: React.FC = () => {
   return (
     <div className="w-full p-6 bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-white mb-6">Listado de Gastos</h1>
-      <TableForDisbursement
+      {/* <TableForDisbursement
         data={visibleData}
         rowsPerPage={rowsPerPage}
         onChangeRowsPerPage={handleChangeRowsPerPage}
@@ -102,7 +102,7 @@ const ListExpenses: React.FC = () => {
         showActionButtons={false}
         loading={loading}
         buttonText="Ver"
-      />
+      /> */}
     </div>
   );
 };
