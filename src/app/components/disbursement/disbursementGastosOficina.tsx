@@ -32,7 +32,7 @@ const DisbursementGastosOficina: React.FC = () => {
                 if (response.data.user && response.data.user.nombre) {
                     setVendors([{
                         label: response.data.user.nombre,
-                        value: context.state.solicita
+                        value: response.data.user.email
                     }]);
                 }
             } catch (error) {
@@ -61,7 +61,7 @@ const DisbursementGastosOficina: React.FC = () => {
 
                 const formattedVendors = data?.data?.map((vendor: any) => ({
                     label: vendor.nombre,
-                    value: vendor.cuenta,
+                    value: vendor.email,
                 })) || [];
 
                 setVendors(formattedVendors);

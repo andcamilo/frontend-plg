@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getSpanishTitle } from '../utils/translateColumnTitle';
+import { LAWYERS_EMAILS } from '../utils/lawyers';
 
 interface TableForDisbursementProps {
   data: { [key: string]: any }[];
   rowsPerPage: number;
   onChangeRowsPerPage: (value: number) => void;
   title: string;
-  currentPage: number;
-  totalPages: number;
   hasPrevPage: boolean;
   hasNextPage: boolean;
   showActionButtons: boolean;
-  onPageChange: (pageNumber: number) => void;
+  onPageChangeNext: () => void;
+  onPageChangePrev: () => void;
   onEdit: (row: { [key: string]: any }) => void;
   onGetSelectedIds: (selectedIds: string[], action?: 'update' | 'delete') => void;
   buttonText?: string;
@@ -19,6 +19,8 @@ interface TableForDisbursementProps {
   loading?: boolean;
   onDelete?: (row: { [key: string]: any }) => void;
   role?: number;
+  lawyerFilter: string;
+  setLawyerFilter: (value: string) => void;
 }
 
 const formatCellValue = (value: any) => {
@@ -33,12 +35,11 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   rowsPerPage,
   onChangeRowsPerPage,
   title,
-  currentPage,
-  totalPages,
   hasPrevPage,
   hasNextPage,
   showActionButtons,
-  onPageChange,
+  onPageChangeNext,
+  onPageChangePrev,
   onEdit,
   onGetSelectedIds,
   buttonText = 'Editar',
@@ -46,18 +47,17 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   deleteButtonText = 'Eliminar',
   loading = false,
   onDelete,
+  lawyerFilter,
+  setLawyerFilter,
 }) => {
   const columns = data.length > 0 ? Object.keys(data[0]).filter(col => col !== 'id') : [];
   const [selectedRows, setSelectedRows] = useState<{ [key: number]: boolean }>({});
   const [selectAll, setSelectAll] = useState(false);
 
   // 👇 Filtros
-  const [lawyerFilter, setLawyerFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
 
-  const lawyerValues = useMemo(() => {
-    return Array.from(new Set(data.map(row => row['lawyer']).filter(val => val)));
-  }, [data]);
+  const lawyerValues = LAWYERS_EMAILS;
 
   const statusValues = useMemo(() => {
     return Array.from(new Set(data.map(row => row['status']).filter(val => val)));
@@ -260,17 +260,14 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
 
         <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
           <button
-            onClick={() => onPageChange(currentPage - 1)}
+            onClick={onPageChangePrev}
             disabled={!hasPrevPage}
             className="bg-gray-700 text-white px-4 py-2 rounded-lg disabled:opacity-50"
           >
             Anterior
           </button>
-          <span className="text-gray-300">
-            Página {currentPage} de {totalPages}
-          </span>
           <button
-            onClick={() => onPageChange(currentPage + 1)}
+            onClick={onPageChangeNext}
             disabled={!hasNextPage}
             className="bg-gray-700 text-white px-4 py-2 rounded-lg disabled:opacity-50"
           >

@@ -259,9 +259,9 @@ const PaymentTestSale = dynamic(
               <Sale xmlns="http://tempuri.org/">
                 <APIKey>${process.env.NEXT_PUBLIC_PAYMENT_API_KEY}</APIKey>
                 <accountToken>${token}</accountToken>
-                <accessCode>123123</accessCode>
-                <merchantAccountNumber>103333</merchantAccountNumber>
-                <terminalName>103333001</terminalName>
+                <accessCode>${process.env.NEXT_PUBLIC_PAYMENT_ACCESS_CODE}</accessCode>
+                <merchantAccountNumber>${process.env.NEXT_PUBLIC_PAYMENT_MERCHANT_ACCOUNT}</merchantAccountNumber>
+                <terminalName>${process.env.NEXT_PUBLIC_PAYMENT_TERMINAL_NAME}</terminalName>
                 <clientTracking>SALE-TRACKING-01</clientTracking>
                 <amount>${saleAmount}</amount>
                 <currencyCode>840</currencyCode>

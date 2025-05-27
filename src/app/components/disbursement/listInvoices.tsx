@@ -107,6 +107,8 @@ const ListInvoices: React.FC = () => {
     <div className="w-full p-6 bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-white mb-6">Listado de Facturas</h1>
 
+      {/* Table component for displaying invoice data with pagination, row selection,
+          and action buttons for viewing/editing individual invoices 
       <TableForDisbursement
         data={data}
         rowsPerPage={rowsPerPage}
@@ -122,7 +124,7 @@ const ListInvoices: React.FC = () => {
         showActionButtons={true}
         loading={loading}
         buttonText="Ver"
-      />
+      />*/}
     </div>
   );
 };

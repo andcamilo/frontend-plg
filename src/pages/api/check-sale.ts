@@ -24,8 +24,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
       <soap:Body>
         <GetTransactionResult xmlns="http://tempuri.org/">
-          <APIKey>EhrqwakURmYS</APIKey>
-          <accountNumber>112549</accountNumber>
+          <APIKey>${process.env.PAYMENT_API_KEY}</APIKey>
+          <accountNumber>${process.env.PAYMENT_MERCHANT_ACCOUNT}</accountNumber>
           <clientTracking>SALE-TRACKING-01</clientTracking>
           <transactionId>${transactionId}</transactionId>
           <amount>${amount}</amount>
