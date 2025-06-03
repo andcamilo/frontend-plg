@@ -56,12 +56,12 @@ const MyRecordsTable: React.FC = () => {
     Fecha: row.createdAt?._seconds ? new Date(row.createdAt._seconds * 1000).toLocaleDateString() : '',
     Email: row.email || '',
     Estatus: row.status || '',
-    Expediente: row.solicitudId || row.solicitud || '',
+    Expediente: row.id  || '',
     Abogado: row.lawyer || '',
     Opciones: (
       <button
         className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition-colors"
-        onClick={() => router.push(`/dashboard/record/${row.solicitudId || row.solicitud || ''}`)}
+        onClick={() => router.push(`/dashboard/record/${row.id || ''}`)}
       >
         Actualizar
       </button>
