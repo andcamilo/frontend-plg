@@ -448,21 +448,21 @@ const SociedadEmpresaResumen: React.FC = () => {
             doc.setFontSize(16);
             addLine('Costos:');
             doc.setFontSize(12);
-        
+
             // **Recorrer los ítems y agregarlos como texto**
             solicitudData.canasta.items.forEach((item, index) => {
                 addLine(`${index + 1}. ${item.item}: $${(item.precio || 0).toFixed(2)}`);
             });
-        
+
             // **Subtotal y Total**
             addLine(`Subtotal: $${(solicitudData.canasta.subtotal || 0).toFixed(2)}`);
             addLine(`Total: $${(solicitudData.canasta.total || 0).toFixed(2)}`);
-        
+
             y += 10; // Espacio después de los costos
         } else {
             addLine('No hay costos registrados.');
         }
-        
+
         // Guardar el PDF
         doc.save('Resumen_Solicitud.pdf');
     };
@@ -810,14 +810,14 @@ const SociedadEmpresaResumen: React.FC = () => {
                             )}
 
                         {/* Si la opción es "No" y es "offshore", mostrar las actividades offshore */}
-                        {(solicitudData.actividades?.actividadesDentroPanama === 'No' && solicitudData.actividades?.actividadesOffshore) ||
-                            (solicitudData?.dentroPanama === 'No' && solicitudData?.fueraPanama) && (
+                        {((solicitudData.actividades?.actividadesDentroPanama === 'No' && solicitudData.actividades?.actividadesOffshore) ||
+                            (solicitudData?.dentroPanama === 'No' && solicitudData?.fueraPanama)) && (
                                 <>
                                     <h3 className="text-xl font-bold mt-2 mb-4">Actividades Offshore</h3>
                                     <div className="ml-6">
-                                        {renderField('Actividad Offshore #1', solicitudData.actividades?.actividadesOffshore?.actividadOffshore1 || solicitudData.fueraPanama.aCF_1)}
-                                        {renderField('Actividad Offshore #2', solicitudData.actividades?.actividadesOffshore?.actividadOffshore2 || solicitudData.fueraPanama.aCF_2)}
-                                        {renderField('Países donde se ejecutarán las actividades', solicitudData.actividades?.actividadesOffshore?.paisesActividadesOffshore || solicitudData.fueraPanama.aCF_paises)}
+                                        {renderField('Actividad Offshore #1', get(solicitudData, 'actividades.actividadesOffshore.actividadOffshore1', get(solicitudData, 'fueraPanama.aCF_1', 'N/A')))}
+                                        {renderField('Actividad Offshore #2', get(solicitudData, 'actividades.actividadesOffshore.actividadOffshore2', get(solicitudData, 'fueraPanama.aCF_2', 'N/A')))}
+                                        {renderField('Países donde se ejecutarán las actividades', get(solicitudData, 'actividades.actividadesOffshore.paisesActividadesOffshore', get(solicitudData, 'fueraPanama.aCF_paises', 'N/A')))}
                                     </div>
                                 </>
                             )}

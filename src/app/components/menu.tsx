@@ -95,6 +95,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           console.log("Usuario ", user)
 
           const rawRole = get(user, 'solicitud.rol', 0);
+          console.log("Raw role number:", rawRole);
           const roleMapping: { [key: number]: string } = {
             99: "Super Admin",
             90: "Administrador",
@@ -106,6 +107,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
             10: "Cliente",
           };
           const stringRole = typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || "Desconocido";
+          console.log("Mapped role:", stringRole);
 
           setFormData((prevData) => ({
             ...prevData,

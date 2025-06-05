@@ -8,6 +8,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import get from 'lodash/get';
 import { backendBaseUrl, backendEnv } from '@utils/env';
 import { checkAuthToken } from "@utils/checkAuthToken";
+import ModalAgregarDirectoresDignatarios from '@components/modalAgregarDirectoresDignatarios';
 import Link from 'next/link';
 import {
     firebaseApiKey,
@@ -64,6 +65,13 @@ const Request: React.FC = () => {
     const [assignedLawyers, setAssignedLawyers] = useState<any[]>([]);
     const [peopleData, setPeopleData] = useState<any[]>([]);
     const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => {
+        setIsModalOpen(false);
+        /* fetchData(); */
+    };
 
     const [formData, setFormData] = useState<{
         cuenta: string;
@@ -1798,8 +1806,7 @@ const Request: React.FC = () => {
 
 
                 {/* Sección de Asignar abogado */}
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && formData.rol !== "Asistente"
-                    && formData.rol !== "Abogados" && formData.rol !== "Auditor"
+                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && formData.rol !== "Auditor"
                 ) && (
                         <>
                             <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
@@ -2072,6 +2079,27 @@ const Request: React.FC = () => {
                             </div>
                         </>
                     )}
+
+                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa"
+                    || solicitudData?.tipo === "new-fundacion")
+                ) && (
+                        <>
+                            <button
+                                className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                onClick={openModal}
+                            >
+                                Agregar Directores y Dignatarios Nominales
+                            </button>
+                        </>
+                    )}
+
+                {isModalOpen
+                    && <ModalAgregarDirectoresDignatarios
+                        onClose={closeModal}
+                        abogadosDisponibles={lawyers}
+                        solicitudData={solicitudData}
+                    />
+                }
             </div>
 
             {selectedPhotoUrl && (
@@ -2093,6 +2121,8 @@ const Request: React.FC = () => {
                     </div>
                 </div>
             )}
+
+
         </div>
     );
 };
