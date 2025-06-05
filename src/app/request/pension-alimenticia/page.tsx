@@ -21,7 +21,7 @@ const PensionAlimenticia: React.FC = () => {
   const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
-  
+
 
   const context = useContext(AppStateContext);
 
