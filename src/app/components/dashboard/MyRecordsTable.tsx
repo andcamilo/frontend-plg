@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@configuration/firebase';
 import axios from 'axios';
 import { onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, collection, query, where, getDocs, DocumentData } from 'firebase/firestore';
 
 const rowsPerPage = 10;
 
@@ -12,6 +13,7 @@ const MyRecordsTable: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState<DocumentData | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -48,15 +50,20 @@ const MyRecordsTable: React.FC = () => {
     fetchRecords();
   }, [userEmail]);
 
+  useEffect(() => {
+    if (!userEmail) return;
+    fetchUserByEmail(userEmail).then(user => setUserData(user));
+  }, [userEmail]);
+
   const totalPages = Math.ceil(records.length / rowsPerPage);
   const hasPrevPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const paginatedData = records.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage).map(row => ({
+    id: row.id || '',
     Tipo: row.tipoServicio || '',
     Fecha: row.createdAt?._seconds ? new Date(row.createdAt._seconds * 1000).toLocaleDateString() : '',
     Email: row.email || '',
-    Estatus: row.status || '',
-    Expediente: row.id  || '',
+    Expediente: row.solicitudId || row.solicitud || '',
     Abogado: row.lawyer || '',
     Opciones: (
       <button
@@ -85,5 +92,18 @@ const MyRecordsTable: React.FC = () => {
     />
   );
 };
+
+async function fetchUserByEmail(email: string) {
+  console.log("fetchUserByEmail input email:", email);
+  const db = getFirestore();
+  const usuariosRef = collection(db, 'usuarios');
+  const q = query(usuariosRef, where('email', '==', email));
+  const querySnapshot = await getDocs(q);
+  console.log("🚀 ~ fetchUserByEmail ~ querySnapshot:", querySnapshot)
+  if (!querySnapshot.empty) {
+    return querySnapshot.docs[0].data();
+  }
+  return null;
+}
 
 export default MyRecordsTable; 
