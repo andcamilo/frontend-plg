@@ -7,6 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 import Link from 'next/link';
 import { auth } from "@configuration/firebase";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 
 const Actions: React.FC<{ id: string }> = ({ id }) => {
   const handleDelete = async () => {
@@ -73,6 +74,8 @@ const CreateProcessForm: React.FC = () => {
   const [isDigitalizado, setIsDigitalizado] = useState('SI');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEmergentFieldVisible, setIsEmergentFieldVisible] = useState(false);
+  const [solicitudes, setSolicitudes] = useState<any[]>([]);
+  const [selectedSolicitudId, setSelectedSolicitudId] = useState('');
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setIsDigitalizado(e.target.value);
@@ -110,12 +113,15 @@ const CreateProcessForm: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      // Use selectedSolicitudId from state
       const response = await axios.post('/api/create-record', {
         name: form.nombre,
         lastName: form.apellido,
         email: form.email,
         phone: '',
-        tipoTramite: form.tipoTramite
+        tipoTramite: form.tipoTramite,
+        lawyer: auth.currentUser?.email || '',
+        solicitud: selectedSolicitudId // <-- use the selected one
       });
 
       if (response.data) {
@@ -197,7 +203,6 @@ const CreateProcessForm: React.FC = () => {
       const solicitudId = tramiteResponse.data?.uid;
       if (!solicitudId) throw new Error("No se recibió solicitudId");
 
-      // 2. Send all required fields to /api/create-record
       const recordData = {
         solicitudId,
         solicitud: solicitudId,
@@ -209,7 +214,7 @@ const CreateProcessForm: React.FC = () => {
         nivelUrgencia: form2.nivelUrgencia,
         descripcion: form2.descripcion,
         ...(form2.descripcionExtra && { descripcionExtra: form2.descripcionExtra }),
-        lawyer: auth.currentUser?.email || ''
+        lawyer: auth.currentUser?.email || '',
       };
 
       const recordResponse = await axios.post("/api/create-record", recordData, {
@@ -247,6 +252,33 @@ const CreateProcessForm: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    const fetchSolicitudes = async () => {
+      if (form.email && form.tipoTramite) {
+        const db = getFirestore();
+        const solicitudesRef = collection(db, "solicitudes");
+        const q = query(
+          solicitudesRef,
+          where("emailSolicita", "==", form.email),
+          where("tipo", "==", form.tipoTramite)
+        );
+        const querySnapshot = await getDocs(q);
+        const results = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setSolicitudes(results);
+        setSelectedSolicitudId(results[0]?.id || '');
+        // Optional: log for debugging
+        console.log("🚀 ~ fetchSolicitudes ~ querySnapshot:", querySnapshot);
+      } else {
+        setSolicitudes([]);
+        setSelectedSolicitudId('');
+      }
+    };
+    fetchSolicitudes();
+  }, [form.email, form.tipoTramite]);
 
   return (
     <>
@@ -302,47 +334,35 @@ const CreateProcessForm: React.FC = () => {
                 required
               >
                 <option value="">Seleccione un tipo de trámite</option>
-                <optgroup label="Corporativo">
-                  <option value="Sociedades XXXX">Sociedades XXXX</option>
-                  <option value="Sociedades ABC">Sociedades ABC</option>
-                  <option value="Fundación 123">Fundación 123</option>
-                  <option value="Solicitud de Cambios sociedades">Solicitud de Cambios sociedades</option>
-                  <option value="Fundación gfd">Fundación gfd</option>
-                  <option value="Trámite marca">Trámite marca</option>
-                </optgroup>
-                <optgroup label="Propiedad Intelectual">
-                  <option value="Trámite marca">Trámite marca</option>
-                  <option value="Patente xyz">Patente xyz</option>
-                  <option value="Derecho de autor">Derecho de autor</option>
-                </optgroup>
-                <optgroup label="Dirección General de ingresos">
-                  <option value="Registro de Ruc">Registro de Ruc</option>
-                  <option value="Paz y Salvos">Paz y Salvos</option>
-                  <option value="Actualización de correos">Actualización de correos</option>
-                  <option value="Solicitud de vivienda Principal">Solicitud de vivienda Principal</option>
-                </optgroup>
-                <optgroup label="Familia">
-                  <option value="Pensión andrea">Pensión andrea</option>
-                  <option value="Pensión xyz">Pensión xyz</option>
-                  <option value="Desacato">Desacato</option>
-                  <option value="pension">Pension</option>
-                </optgroup>
-                <optgroup label="Laboral">
-                  <option value="Contrato">Contrato</option>
-                  <option value="Permiso de menor abc">Permiso de menor abc</option>
-                  <option value="Conciliaciones">Conciliaciones</option>
-                  <option value="Citaciones XYX">Citaciones XYX</option>
-                </optgroup>
-                <optgroup label="Migración">
-                  <option value="Salidas de menores">Salidas de menores</option>
-                  <option value="Residencias">Residencias</option>
-                  <option value="Visas">Visas</option>
-                  <option value="Naturalización">Naturalización</option>
-                </optgroup>
-                <option value="Propiedades">Propiedades</option>
-                <option value="Consultas y Propuestas">Consultas y Propuestas</option>
-                <option value="Otros">Otros</option>
+                <option value="propuesta-legal">Propuesta Legal</option>
+                <option value="consulta-escrita">Consulta Escrita</option>
+                <option value="consulta-virtual">Consulta Virtual</option>
+                <option value="consulta-presencial">Consulta Presencial</option>
+                <option value="new-fundacion-interes-privado">Fundación de Interés Privado</option>
+                <option value="new-sociedad-empresa">Sociedad / Empresa</option>
+                <option value="menores-al-extranjero">Salida de Menores al Extranjero</option>
+                <option value="pension-alimenticia">Pensión Alimenticia</option>
+                <option value="tramite-general">Trámite General</option>
+                <option value="pension">Pensión</option>
+                <option value="solicitud-cliente-recurrente">Solicitud Cliente Recurrente</option>
               </select>
+              {solicitudes.length > 0 && (
+                <>
+                  <label className="font-bold text-white">Seleccionar Solicitud:</label>
+                  <select
+                    value={selectedSolicitudId}
+                    onChange={e => setSelectedSolicitudId(e.target.value)}
+                    className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2"
+                    required
+                  >
+                    {solicitudes.map(s => (
+                      <option key={s.id} value={s.id}>
+                        {s.id}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -404,17 +424,18 @@ const CreateProcessForm: React.FC = () => {
                 className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2"
                 required
               >
-                <option value="">Seleccione un tipo de servicio</option>
-                <option value="Revisión o Elaboración de Contrato">Revisión o Elaboración de Contrato</option>
-                <option value="Laboral">Laboral</option>
-                <option value="Consulta o Investigación Legal">Consulta o Investigación Legal</option>
-                <option value="DGI">DGI</option>
-                <option value="Caja de Seguro Social">Caja de Seguro Social</option>
-                <option value="Municipio">Municipio</option>
-                <option value="Migración">Migración</option>
-                <option value="Temas Bancarios">Temas Bancarios</option>
-                <option value="Varios">Varios</option>
-                <option value="Otros">Otros</option>
+                <option value="">Seleccione un tipo de trámite</option>
+                <option value="propuesta-legal">Propuesta Legal</option>
+                <option value="consulta-escrita">Consulta Escrita</option>
+                <option value="consulta-virtual">Consulta Virtual</option>
+                <option value="consulta-presencial">Consulta Presencial</option>
+                <option value="new-fundacion-interes-privado">Fundación de Interés Privado</option>
+                <option value="new-sociedad-empresa">Sociedad / Empresa</option>
+                <option value="menores-al-extranjero">Salida de Menores al Extranjero</option>
+                <option value="pension-alimenticia">Pensión Alimenticia</option>
+                <option value="tramite-general">Trámite General</option>
+                <option value="pension">Pensión</option>
+                <option value="solicitud-cliente-recurrente">Solicitud Cliente Recurrente</option>
               </select>
 
               <label className="font-bold text-white">Nivel de Urgencia:</label>

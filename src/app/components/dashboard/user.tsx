@@ -74,6 +74,7 @@ const User: React.FC = () => {
                     40: "Abogado",
                     35: "Asistente",
                     17: "Cliente recurrente",
+                    10: "Cliente",
                 };
                 // Mapear el rol numérico al valor de rolLabels
                 const mappedRol = rolLabels[user.rol] || '';
@@ -144,6 +145,7 @@ const User: React.FC = () => {
                     "Abogado": 40,
                     "Asistente": 35,
                     "Cliente recurrente": 17,
+                    "Cliente": 10,
                 };
 
                 let archivoURL = formData.archivoURL;
@@ -200,6 +202,7 @@ const User: React.FC = () => {
                     "Abogado": 40,
                     "Asistente": 35,
                     "Cliente recurrente": 17,
+                    "Cliente": 10,
                 };
 
                 const responseData = {
@@ -216,7 +219,7 @@ const User: React.FC = () => {
                     },
                 }); */
                 const response = await axios.post(
-                    `${backendBaseUrl}/${backendEnv}/create-users`,
+                    `${backendBaseUrl}/${backendEnv}/create-only-user`,
                     responseData,
                     { headers: { 'Content-Type': 'application/json' } }
                 );
@@ -360,6 +363,7 @@ const User: React.FC = () => {
                         <option value="Abogado">Abogados</option>
                         <option value="Asistente">Asistente</option>
                         <option value="Cliente recurrente">Cliente recurrente</option>
+                        <option value="Cliente">Cliente</option>
                     </select>
                 </div>
 
