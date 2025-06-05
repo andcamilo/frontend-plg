@@ -152,7 +152,7 @@ const PensionAlimenticiaArchivosAdjuntos: React.FC = () => {
     let isValid = true;
     const newErrors = { ...errors };
 
-    if (!formData.archivosAdjuntos.cedula) {
+    if (!formData.archivosAdjuntos.cedula && !cedulaFile) {
       newErrors.cedula = true;
       isValid = false;
 

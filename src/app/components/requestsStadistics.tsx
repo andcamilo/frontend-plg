@@ -84,8 +84,10 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
     (rol !== 'Cliente recurrente' && rol !== 'Cliente' && rol !== 'Asistente' && rol !== 'Abogados');
 
   const canShowPagar =
-    (status < 19 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-    (rol !== 'Cliente recurrente' && rol !== 'Cliente');
+    ![12, 20, 30, 70].includes(status) && (
+      (status < 19 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
+      (rol !== 'Cliente recurrente' && rol !== 'Cliente')
+    );
 
   return (
     <div className="flex gap-2">
@@ -168,7 +170,7 @@ const RequestsStatistics: React.FC = () => {
         );
         return solicitud.cuenta === formData.cuenta || abogadoAsignado;
       }
-      
+
       return true;
     });
   };
@@ -236,7 +238,7 @@ const RequestsStatistics: React.FC = () => {
 
     fetchData();
   }, []);
-    
+
   // ---- Helper function for filtering ----
   const getSolicitudesFiltradas = (array: any[]) => {
     return array
