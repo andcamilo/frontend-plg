@@ -6,9 +6,7 @@ const getRequestsByEmailUrl = `${backendBaseUrl}/${backendEnv}/get-requests-by-e
 
 export const getRequests = async (email, limit = 10, page = 1, role = 90, tipo = '') => {
   try {
-    console.log("🚀 ~ getRequests ~ email:", email);
-    console.log("🚀 ~ getRequests ~ role:", role);
-    console.log("🚀 ~ getRequests ~ tipo:", tipo);
+ 
 
     const params = { email, limit, page, role };
 
