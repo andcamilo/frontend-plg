@@ -38,9 +38,8 @@ const CreateProcessFormNO = ({
         <option value="new-sociedad-empresa">Sociedad / Empresa</option>
         <option value="menores-al-extranjero">Salida de Menores al Extranjero</option>
         <option value="pension">Pensión Alimenticia</option>
-        <option value="tramite-general">Trámite General</option>
-        <option value="pension-desacato">Pensión Desacato</option>
         <option value="solicitud-cliente-recurrente">Solicitud Cliente Recurrente</option>
+        <option value="otro-tipo-de-solicitud">Otro tipo de Solicitud</option>
       </select>
       {form2.tipoSolicitud === 'propuesta-legal' && (
         <PropuestaLegalForm
@@ -106,16 +105,8 @@ const CreateProcessFormNO = ({
           isSubmitting={isSubmitting}
         />
       )}
-      {form2.tipoSolicitud === 'tramite-general' && (
+      {form2.tipoSolicitud === 'otro-tipo-de-solicitud' && (
         <TramiteGeneralForm
-          formData={form2}
-          setFormData={setForm2}
-          onSubmit={handleFormSubmitNo}
-          isSubmitting={isSubmitting}
-        />
-      )}
-      {form2.tipoSolicitud === 'pension-desacato' && (
-        <PensionDesacatoForm
           formData={form2}
           setFormData={setForm2}
           onSubmit={handleFormSubmitNo}
