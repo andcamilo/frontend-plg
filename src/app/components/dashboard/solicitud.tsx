@@ -8,7 +8,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import get from 'lodash/get';
 import { backendBaseUrl, backendEnv } from '@utils/env';
 import { checkAuthToken } from "@utils/checkAuthToken";
-import ModalAgregarDirectoresDignatarios from '@components/modalAgregarDirectoresDignatarios';
+import ModalNominales from '@/src/app/components/modalNominales';
 import Link from 'next/link';
 import {
     firebaseApiKey,
@@ -2094,10 +2094,11 @@ const Request: React.FC = () => {
                     )}
 
                 {isModalOpen
-                    && <ModalAgregarDirectoresDignatarios
+                    && <ModalNominales
                         onClose={closeModal}
                         abogadosDisponibles={lawyers}
                         solicitudData={solicitudData}
+                        email={formData.email}
                     />
                 }
             </div>
