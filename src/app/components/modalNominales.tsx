@@ -1,18 +1,21 @@
 import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 
-interface ModalAgregarDirectoresDignatariosProps {
+interface ModalNominalesProps {
     onClose: () => void;
     abogadosDisponibles: any[];
     solicitudData: any;
+    email: string;
 }
 
-
-const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatariosProps> = ({ onClose, abogadosDisponibles, solicitudData }) => {
+const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDisponibles, solicitudData, email }) => {
     const [abogados, setAbogados] = useState<any[]>(abogadosDisponibles);
     console.log("Solicitud recibida:", solicitudData);
-    const solicitudId = solicitudData.solicitudId;
+    console.log("abogadosDisponibles:", abogadosDisponibles);
+    const solicitudId = solicitudData.id;
+    const emailAbogado = email;
 
     const tipoSolicitudMap: Record<string, string> = {
         'propuesta-legal': 'Propuesta Legal',
@@ -36,12 +39,13 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
     const [formData, setFormData] = useState<any>({
         tipoSolicitud: tipoLegible || solicitudData.tipo,
         nombre: '',
-        tipoSociedad: '',
+        tipoSociedadFundacion: '',
         poseeNominales: 'No',
         poseeDirectoresNominales: 'No',
         directoresNominales: [],
         poseeDignatariosNominales: 'No',
         dignatariosNominales: [],
+        poseeMiembrosNominales: 'No',
         miembrosNominales: [],
         agenteResidente: '',
         agenteResidenteNombre: '',
@@ -55,6 +59,42 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
         correoAdicional: '',
         periodoPago: '',
     });
+
+    const [expedienteExiste, setExpedienteExiste] = useState<boolean | null>(null);
+    const [expedienteId, setExpedienteId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const verificarExpediente = async () => {
+            try {
+                const db = getFirestore();
+                const expedienteRef = collection(db, 'expediente');
+                const q = query(expedienteRef, where('solicitud', '==', solicitudId));
+                const querySnapshot = await getDocs(q);
+                const exists = !querySnapshot.empty;
+                setExpedienteExiste(exists);
+
+                if (exists) {
+                    const doc = querySnapshot.docs[0];
+                    const data = doc.data();
+                    setExpedienteId(doc.id);
+
+                    setFormData((prev: any) => ({
+                        ...prev,
+                        ...data,
+                        nombre: data.name,
+
+                    }));
+                }
+            } catch (error) {
+                console.error('Error al verificar expediente:', error);
+                Swal.fire('Error', 'No se pudo verificar ni cargar el expediente.', 'error');
+            }
+        };
+
+        verificarExpediente();
+    }, [solicitudId]);
+
+    console.log("EXPE ", expedienteExiste)
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -87,16 +127,47 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
+        e.preventDefault(); 
+
+        const {
+            rucFile,
+            nitFile,
+            escrituraFile,
+            ...otrosDatos
+        } = formData;
+
+        const payload = {
+            name: solicitudData?.nombreSolicita,
+            lastName: "",
+            email: solicitudData?.email,
+            solicitud: solicitudId,
+            lawyer: emailAbogado,
+            descripcion: '',
+            phone: "",
+            ...otrosDatos
+        };
+
         try {
-            const payload = { solicitudId, ...formData };
-            await axios.patch('/api/update-sociedad-fundacion', payload);
-            Swal.fire('¡Guardado!', 'Los datos se han guardado correctamente.', 'success');
-            onClose();
+            setIsLoading(true);
+
+            let endpoint = '';
+            if (expedienteExiste === true) {
+                endpoint = `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/update-record?id=${expedienteId}`;
+            } else {
+                endpoint = `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/create-record`;
+            }
+
+            const response = await axios.post(endpoint, payload);
+
+            if (response.data.status === 'success') {
+                Swal.fire('Éxito', expedienteExiste ? 'Expediente actualizado' : 'Expediente creado exitosamente', 'success');
+                onClose();
+            } else {
+                throw new Error(response.data.message);
+            }
         } catch (error) {
-            console.error(error);
-            Swal.fire('Error', 'Ocurrió un error al guardar.', 'error');
+            console.error('Error al enviar:', error);
+            Swal.fire('Error', 'No se pudo procesar el expediente.', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -123,7 +194,7 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
 
                     <div className="col-span-2">
                         <label className="text-white">Tipo de Sociedad/Fundación</label>
-                        <select name="tipoSociedad" value={formData.tipoSociedad} onChange={handleChange} className={styledInput}>
+                        <select name="tipoSociedadFundacion" value={formData.tipoSociedadFundacion} onChange={handleChange} className={styledInput}>
                             <option value="">Seleccione tipo</option>
                             <option>S.A.</option>
                             <option>INC</option>
@@ -163,7 +234,9 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
                                                     className={styledInput}
                                                 >
                                                     <option value="">Seleccione abogado</option>
-                                                    {abogados.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                                                    {abogados.map((a) => (
+                                                        <option key={a.id} value={a.nombre}>{a.nombre}</option>
+                                                    ))}
                                                     <option value="otros">Otros</option>
                                                 </select>
                                                 {dir.abogado === 'otros' && (
@@ -210,7 +283,7 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
                                                         className={styledInput}
                                                     >
                                                         <option value="">Seleccione abogado</option>
-                                                        {abogados.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                                                        {abogados.map((a) => <option key={a.id} value={a.nombre}>{a.nombre}</option>)}
                                                         <option value="otros">Otros</option>
                                                     </select>
                                                     {dig.abogado === 'otros' && (
@@ -279,7 +352,7 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
                                                     className={styledInput}
                                                 >
                                                     <option value="">Seleccione abogado</option>
-                                                    {abogados.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                                                    {abogados.map((a) => <option key={a.id} value={a.nombre}>{a.nombre}</option>)}
                                                     <option value="otros">Otros</option>
                                                 </select>
                                                 {mbr.abogado === 'otros' && (
@@ -396,4 +469,4 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
     );
 };
 
-export default ModalAgregarDirectoresDignatarios;
+export default ModalNominales;
