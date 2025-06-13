@@ -10,6 +10,7 @@ import StickyNote2Icon from '@mui/icons-material/StickyNote2';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import FeedIcon from '@mui/icons-material/Feed';
 import PaidIcon from '@mui/icons-material/Paid';
+import TopicIcon from '@mui/icons-material/Topic';
 import PeopleIcon from '@mui/icons-material/People';
 import SupportIcon from '@mui/icons-material/Support';
 import LanguageIcon from '@mui/icons-material/Language';
@@ -33,6 +34,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownOpenCC, setDropdownOpenCC] = useState(false);
   const [dropdownOpenRequest, setDropdownOpenRequest] = useState(false);
+  const [dropdownOpenTramites, setDropdownOpenTramites] = useState(false);
   const pathname = usePathname();
 
   const [formData, setFormData] = useState<{
@@ -90,9 +92,11 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           });
 
           const user = response.data;
-          console.log("Usuario ", user)
+          console.log("🚀 ~ fetchUser ~ user:", user)
 
           const rawRole = get(user, 'solicitud.rol', 0);
+          console.log("🚀 ~ fetchUser ~ rawRole:", rawRole)
+
           const roleMapping: { [key: number]: string } = {
             99: "Super Admin",
             90: "Administrador",
@@ -104,6 +108,8 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
             10: "Cliente",
           };
           const stringRole = typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || "Desconocido";
+          console.log("🚀 ~ fetchUser ~ stringRole:", stringRole)
+
 
           setFormData((prevData) => ({
             ...prevData,
@@ -129,6 +135,10 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
 
   const toggleDropdownRequest = () => {
     setDropdownOpenRequest(!dropdownOpenRequest);
+  };
+
+  const toggleDropdownTramites = () => {
+    setDropdownOpenTramites(!dropdownOpenTramites);
   };
 
   const isActive = (path: string) => pathname === path ? 'bg-profile text-white rounded-xl' : '';
@@ -210,12 +220,6 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         </div>
       )}
 
-      {/* <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/requestsCasos')}`}>
-        <FeedIcon className="mr-2" />
-        <Link href="/dashboard/requestsCasos" className='font-semibold' onClick={closeMenu}>
-          Casos Pensión
-        </Link>
-      </div> */}
       {formData?.rol && (formData.rol === "Cliente recurrente" || formData.rol === "Super Admin") && (
         <div
           className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/nuevo')}`}
@@ -226,6 +230,8 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           {dropdownOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
         </div>
       )}
+
+
 
       {dropdownOpen && (
         <div className="ml-6 transition-all">
@@ -281,30 +287,57 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
       ) && (
           <>
             <p className='font-bold'>Trámites internos</p>
-            <div className="flex items-center mb-2 cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
-              <StickyNote2Icon className="mr-2" />
-              <span className="flex-grow">Caja chica</span>
-              <ArrowDropDownIcon />
+            <div className="mb-2">
+              {/* Caja chica dropdown */}
+              <div className="flex items-center cursor-pointer p-2 rounded" onClick={toggleDropdownCC}>
+                <StickyNote2Icon className="mr-2" />
+                <span className="flex-grow">Caja chica</span>
+                <ArrowDropDownIcon />
+              </div>
+              {dropdownOpenCC && (
+                <div className="ml-6 transition-all">
+                  <Link href="/dashboard/disbursement" className={`block mb-2 ${isActive('/dashboard/disbursement')}`} onClick={closeMenu}>
+                    Solicitar Desembolso
+                  </Link>
+                  <Link href="/dashboard/see" className={`block mb-2 ${isActive('/dashboard/see')}`} onClick={closeMenu}>
+                    Ver Desembolsos
+                  </Link>
+                  <Link href="/dashboard/see-invoices" className={`block mb-2 ${isActive('/dashboard/see-invoices')}`} onClick={closeMenu}>
+                    Ver Facturas
+                  </Link>
+                  <Link href="/dashboard/see-expenses" className={`block mb-2 ${isActive('/dashboard/see-expenses')}`} onClick={closeMenu}>
+                    Ver Gastos
+                  </Link>
+                </div>
+              )}
+              <div className={`flex w-full items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}> 
+                <PaidIcon className="mr-2" />
+                <Link href="/dashboard/balances" className='font-semibold' onClick={closeMenu}>
+                  Balances
+                </Link>
+              </div>
+
+
+              <div className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/create-process') || isActive('/dashboard/my-records')}`}
+                onClick={toggleDropdownTramites}
+              >
+                <TopicIcon className="mr-2" />
+                <span className="flex-grow">Trámites</span>
+                {dropdownOpenTramites ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+              </div>
+              {dropdownOpenTramites && (
+                <div className="ml-6 mt-2 transition-all">
+                  <Link href="/dashboard/create-process" className={`block mb-2 ${isActive('/dashboard/create-process')}`} onClick={closeMenu}>
+                    Crear Trámite
+                  </Link>
+                  <Link href="/dashboard/my-records" className={`block mb-2 ${isActive('/dashboard/my-records')}`} onClick={closeMenu}>
+                    Mis Expedientes
+                  </Link>
+                </div>
+              )}
             </div>
           </>
         )}
-      {dropdownOpenCC && (
-        <div className="ml-6 transition-all">
-          <Link href="/dashboard/disbursement" className={`block mb-2  ${isActive('/dashboard/disbursement')}`} onClick={closeMenu}>
-            Solcitar Desembolso
-          </Link>
-
-          <Link href="/dashboard/see" className={`block mb-2 ${isActive('/dashboard/see')}`} onClick={closeMenu}>
-            Ver Desembolsos
-          </Link>
-          <Link href="/dashboard/see-invoices" className={`block mb-2 ${isActive('/dashboard/see-invoices')}`} onClick={closeMenu}>
-            Ver Facturas
-          </Link>
-          <Link href="/dashboard/see-expenses" className={`block mb-2 ${isActive('/dashboard/see-expenses')}`} onClick={closeMenu}>
-            Ver Gastos
-          </Link>
-        </div>
-      )}
       <p className='font-bold'>Otros enlaces</p>
       <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/faqs')}`}>
         <SupportIcon className="mr-2" />
