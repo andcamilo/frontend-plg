@@ -2,6 +2,25 @@ import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import {
+    firebaseApiKey,
+    firebaseAuthDomain,
+    firebaseProjectId,
+    firebaseStorageBucket,
+    firebaseMessagingSenderId,
+    firebaseAppId
+} from '@utils/env';
+
+const firebaseConfig = {
+    apiKey: firebaseApiKey,
+    authDomain: firebaseAuthDomain,
+    projectId: firebaseProjectId,
+    storageBucket: firebaseStorageBucket,
+    messagingSenderId: firebaseMessagingSenderId,
+    appId: firebaseAppId,
+};
 
 interface ModalNominalesProps {
     onClose: () => void;
@@ -10,8 +29,11 @@ interface ModalNominalesProps {
     email: string;
 }
 
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const storage = getStorage(app);
+
 const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDisponibles, solicitudData, email }) => {
-    const [abogados, setAbogados] = useState<any[]>(abogadosDisponibles);
+
     console.log("Solicitud recibida:", solicitudData);
     console.log("abogadosDisponibles:", abogadosDisponibles);
     const solicitudId = solicitudData.id;
@@ -51,11 +73,14 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
         agenteResidenteNombre: '',
         ruc: '',
         rucFile: null,
+        archivoRUC: '',
         nit: '',
         nitFile: null,
+        archivoNIT: '',
         fechaConstitucion: '',
         escrituraFile: null,
-        correoResponsable: solicitudData.email || '',
+        archivoEscritura: '',
+        correoResponsable: solicitudData.emailSolicita || '',
         correoAdicional: '',
         periodoPago: '',
     });
@@ -94,8 +119,6 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
         verificarExpediente();
     }, [solicitudId]);
 
-    console.log("EXPE ", expedienteExiste)
-
     const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -126,45 +149,100 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
         setFormData((prev: any) => ({ ...prev, [tipo]: copia }));
     };
 
+    const uploadFileToFirebase = (file: File, path: string): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const storageRef = ref(storage, path);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log(`Upload is ${progress}% done`);
+                },
+                (error) => {
+                    reject(error);
+                },
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                }
+            );
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault(); 
+        e.preventDefault();
+        setIsLoading(true);
+
+        let datosLimpios = { ...formData };
+
+        if (datosLimpios.tipoNominal === 'director' || datosLimpios.tipoNominal === 'miembro') {
+            delete datosLimpios.cargo;
+        }
 
         const {
             rucFile,
             nitFile,
             escrituraFile,
-            ...otrosDatos
-        } = formData;
+            ...restoDatos
+        } = datosLimpios;
 
-        const payload = {
-            name: solicitudData?.nombreSolicita,
-            lastName: "",
-            email: solicitudData?.email,
-            solicitud: solicitudId,
-            lawyer: emailAbogado,
-            descripcion: '',
-            phone: "",
-            ...otrosDatos
-        };
+        let otrosDatos = { ...restoDatos };
 
         try {
-            setIsLoading(true);
+            let expedienteIdFinal = expedienteId;
 
-            let endpoint = '';
-            if (expedienteExiste === true) {
-                endpoint = `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/update-record?id=${expedienteId}`;
-            } else {
-                endpoint = `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/create-record`;
+            if (!expedienteExiste) {
+                const createPayload = {
+                    name: solicitudData?.nombreSolicita,
+                    lastName: "",
+                    email: solicitudData?.emailSolicita,
+                    solicitud: solicitudId,
+                    lawyer: emailAbogado,
+                    descripcion: '',
+                    phone: "",
+                    ...otrosDatos
+                };
+
+                const createResponse = await axios.post('/api/create-record', createPayload);
+
+                if (createResponse.data.status !== 'success') {
+                    throw new Error(createResponse.data.message || 'No se pudo crear el expediente.');
+                }
+
+                expedienteIdFinal = createResponse.data.recordId;
             }
 
-            const response = await axios.post(endpoint, payload);
-
-            if (response.data.status === 'success') {
-                Swal.fire('Éxito', expedienteExiste ? 'Expediente actualizado' : 'Expediente creado exitosamente', 'success');
-                onClose();
-            } else {
-                throw new Error(response.data.message);
+            if (rucFile) {
+                otrosDatos.archivoRUC = await uploadFileToFirebase(rucFile, `uploads/${expedienteIdFinal}/ruc`);
             }
+
+            if (nitFile) {
+                otrosDatos.archivoNIT = await uploadFileToFirebase(nitFile, `uploads/${expedienteIdFinal}/nit`);
+            }
+
+            if (escrituraFile) {
+                otrosDatos.archivoEscritura = await uploadFileToFirebase(escrituraFile, `uploads/${expedienteIdFinal}/escritura`);
+            }
+
+            const finalPayload = {
+                name: solicitudData?.nombreSolicita,
+                lastName: "",
+                email: solicitudData?.emailSolicita,
+                solicitud: solicitudId,
+                lawyer: emailAbogado,
+                descripcion: '',
+                phone: "",
+                ...otrosDatos
+            };
+
+            console.log("✅ finalPayload:", finalPayload);
+            console.log("✅ EXPEDIENTE ID:", expedienteIdFinal);
+            await axios.post(`/api/update-record?id=${expedienteIdFinal}`, finalPayload);
+
+            Swal.fire('Éxito', expedienteExiste ? 'Expediente actualizado' : 'Expediente creado exitosamente', 'success');
+            onClose();
         } catch (error) {
             console.error('Error al enviar:', error);
             Swal.fire('Error', 'No se pudo procesar el expediente.', 'error');
@@ -234,8 +312,8 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                                                     className={styledInput}
                                                 >
                                                     <option value="">Seleccione abogado</option>
-                                                    {abogados.map((a) => (
-                                                        <option key={a.id} value={a.nombre}>{a.nombre}</option>
+                                                    {abogadosDisponibles.map((a) => (
+                                                        <option key={a.id} value={a.id}>{a.nombre}</option>
                                                     ))}
                                                     <option value="otros">Otros</option>
                                                 </select>
@@ -283,7 +361,9 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                                                         className={styledInput}
                                                     >
                                                         <option value="">Seleccione abogado</option>
-                                                        {abogados.map((a) => <option key={a.id} value={a.nombre}>{a.nombre}</option>)}
+                                                        {abogadosDisponibles.map((a) => (
+                                                            <option key={a.id} value={a.id}>{a.nombre}</option>
+                                                        ))}
                                                         <option value="otros">Otros</option>
                                                     </select>
                                                     {dig.abogado === 'otros' && (
@@ -352,7 +432,9 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                                                     className={styledInput}
                                                 >
                                                     <option value="">Seleccione abogado</option>
-                                                    {abogados.map((a) => <option key={a.id} value={a.nombre}>{a.nombre}</option>)}
+                                                    {abogadosDisponibles.map((a) => (
+                                                        <option key={a.id} value={a.id}>{a.nombre}</option>
+                                                    ))}
                                                     <option value="otros">Otros</option>
                                                 </select>
                                                 {mbr.abogado === 'otros' && (
@@ -394,13 +476,69 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                         <input name="agenteResidenteNombre" placeholder="Nombre agente" value={formData.agenteResidenteNombre} onChange={handleChange} className={styledInput} />
                     )}
 
-                    <label className="text-white col-span-2">Número RUC</label>
-                    <input name="ruc" value={formData.ruc} onChange={handleChange} className={styledInput} />
-                    <input type="file" name="rucFile" onChange={handleChange} className={styledInput} />
+                    <div className="col-span-1">
+                        <label className="text-white block mb-1">Número RUC</label>
+                        <input
+                            name="ruc"
+                            value={formData.ruc}
+                            onChange={handleChange}
+                            className={styledInput}
+                        />
+                    </div>
 
-                    <label className="text-white col-span-2">Número NIT</label>
-                    <input name="nit" value={formData.nit} onChange={handleChange} className={styledInput} />
-                    <input type="file" name="nitFile" onChange={handleChange} className={styledInput} />
+                    <div className="col-span-1">
+                        <label className="text-white block mb-1 invisible">Archivo RUC</label>
+                        <input
+                            type="file"
+                            className={styledInput}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    rucFile: file,
+                                }));
+                            }}
+                        />
+                        {formData.archivoRUC && (
+                            <p className="text-sm text-blue-500 mt-1">
+                                <a href={formData.archivoRUC} target="_blank" rel="noopener noreferrer">
+                                    Ver documento actual
+                                </a>
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="col-span-1">
+                        <label className="text-white block mb-1">Número NIT</label>
+                        <input
+                            name="nit"
+                            value={formData.nit}
+                            onChange={handleChange}
+                            className={styledInput}
+                        />
+                    </div>
+
+                    <div className="col-span-1">
+                        <label className="text-white block mb-1 invisible">Archivo NIT</label>
+                        <input
+                            type="file"
+                            className={styledInput}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    nitFile: file,
+                                }));
+                            }}
+                        />
+                        {formData.archivoNIT && (
+                            <p className="text-sm text-blue-500 mt-1">
+                                <a href={formData.archivoNIT} target="_blank" rel="noopener noreferrer">
+                                    Ver documento actual
+                                </a>
+                            </p>
+                        )}
+                    </div>
 
                     <div className="col-span-1">
                         <label className="text-white block mb-1">Fecha de constitución</label>
@@ -417,10 +555,22 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                         <label className="text-white block mb-1">Adjuntar escritura pública</label>
                         <input
                             type="file"
-                            name="escrituraFile"
-                            onChange={handleChange}
                             className={styledInput}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    escrituraFile: file,
+                                }));
+                            }}
                         />
+                        {formData.archivoEscritura && (
+                            <p className="text-sm text-blue-500 mt-1">
+                                <a href={formData.archivoEscritura} target="_blank" rel="noopener noreferrer">
+                                    Ver documento actual
+                                </a>
+                            </p>
+                        )}
                     </div>
 
                     <div className="col-span-1">
