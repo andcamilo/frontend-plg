@@ -1,14 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { backendBaseUrl,backendEnv } from '@utils/env';
-
-interface RequestData {
-  name: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  solicitud: string;
-}
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 const createRecordUrl = `${backendBaseUrl}/${backendEnv}/create-record`;
 
@@ -17,7 +9,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const requestData: RequestData = req.body;
+  const {
+    name,
+    lastName,
+    email,
+    phone,
+    solicitud,
+    ...otrosDatos
+  } = req.body;
+
+  const requestData = {
+    name,
+    lastName,
+    email,
+    phone,
+    solicitud,
+    ...otrosDatos, 
+  };
 
   try {
     console.log("🚀 ~ Sending request data:", requestData);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -32,7 +32,7 @@ const storage = getStorage(app);
 const User: React.FC = () => {
     const router = useRouter();
     const params = useParams();
-  
+
     const id = params?.id as string | undefined;
     const [puedeEditarEmail, setPuedeEditarEmail] = useState(false);
     const [archivoFile, setArchivoFile] = useState<File | null>(null);
@@ -192,7 +192,6 @@ const User: React.FC = () => {
             }
         } else {
             try {
-
                 const rolLabels = {
                     "Super Administrador": 99,
                     "Administrador": 90,
@@ -213,36 +212,26 @@ const User: React.FC = () => {
                     rol: rolLabels[formData.rol.trim()] || null,
                 };
 
-                /* const response = await axios.post("/api/create-user", responseData, {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }); */
-                const response = await axios.post(
-                    `${backendBaseUrl}/${backendEnv}/create-only-user`,
-                    responseData,
-                    { headers: { 'Content-Type': 'application/json' } }
-                );
+                const response = await axios.post('/api/create-only-user', responseData);
+                const { userId, status, message } = response.data;
 
-                if (response.status === 200) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Usuario creado correctamente',
-                        timer: 2000,
-                        showConfirmButton: false,
-                        background: '#2c2c3e',
-                        color: '#fff',
-                    });
-                   /*  router.reload(); */
+                // ✅ Validación segura ANTES de mostrar alertas
+                if (!userId || status !== 'success') {
+                    console.error("❌ El usuario no fue creado correctamente", response.data);
+                    throw { response: { data: { message: message || 'No se recibió un ID válido del usuario.' } } };
                 }
 
-                const { userId } = response.data;
-                console.log("User ID ",userId)
-                if (!userId) {
-                    console.error("El userId es undefined o inválido.");
-                    return;
-                }
+                // ✅ Aquí es seguro mostrar éxito
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Usuario creado correctamente',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    background: '#2c2c3e',
+                    color: '#fff',
+                });
 
+                // Subida de archivo si hay
                 let archivoURL = formData.archivoURL;
                 if (archivoFile) {
                     archivoURL = await uploadFileToFirebase(archivoFile, `uploads/${userId}/adjuntoFotoPerfil`);
@@ -252,8 +241,9 @@ const User: React.FC = () => {
                     }));
                 }
 
+                // Segunda llamada para actualizar con adjunto
                 const responseAdjunto = {
-                    userId: userId,
+                    userId,
                     nombre: formData.nombre,
                     email: formData.email,
                     telefonoSolicita: formData.telefono,
@@ -264,27 +254,31 @@ const User: React.FC = () => {
 
                 const responseDataUpdate = await axios.post('/api/update-user', responseAdjunto);
 
-                if (responseDataUpdate.status === 200) {
+                if (archivoFile && responseDataUpdate.status === 200) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Usuario creado correctamente',
+                        title: 'Usuario actualizado con adjunto',
                         timer: 2000,
                         showConfirmButton: false,
                         background: '#2c2c3e',
                         color: '#fff',
                     });
-                    /* router.reload(); */
                 }
-            } catch (error) {
+
+            } catch (error: any) {
+                console.error('❌ Error general en creación:', error);
+
+                // 🔍 Extraer mensaje personalizado si viene del backend
+                const backendMessage = error.response?.data?.message;
+
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error al crear el nuevo usuario',
-                    timer: 2000,
+                    title: backendMessage || 'Error al crear el nuevo usuario',
+                    timer: 3000,
                     showConfirmButton: false,
                     background: '#2c2c3e',
                     color: '#fff',
                 });
-                console.error('Error updating user:', error);
             }
         }
 
