@@ -8,6 +8,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import get from 'lodash/get';
 import { backendBaseUrl, backendEnv } from '@utils/env';
 import { checkAuthToken } from "@utils/checkAuthToken";
+import { auth } from "@configuration/firebase";
 import ModalAgregarDirectoresDignatarios from '@components/modalAgregarDirectoresDignatarios';
 import Link from 'next/link';
 import {
@@ -21,6 +22,8 @@ import {
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import Image from 'next/image';
+import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { onAuthStateChanged } from "firebase/auth";
 
 const roleMapping: { [key: number]: string } = {
     99: "Super Admin",
@@ -65,6 +68,7 @@ const Request: React.FC = () => {
     const [assignedLawyers, setAssignedLawyers] = useState<any[]>([]);
     const [peopleData, setPeopleData] = useState<any[]>([]);
     const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
+    const [expedienteRecord, setExpedienteRecord] = useState<any>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const openModal = () => setIsModalOpen(true);
@@ -87,6 +91,9 @@ const Request: React.FC = () => {
         comprobantePagoURL: '',
     });
 
+    const [userRole, setUserRole] = useState<number | null>(null);
+    const [roleLoading, setRoleLoading] = useState(true);
+
     const getStatusName = (status: number) => {
         switch (status) {
             case 0: return "Rechazada";
@@ -105,6 +112,26 @@ const Request: React.FC = () => {
         if (id) {
             // Usa el ID como necesites, por ejemplo, para obtener los detalles de la solicitud
             console.log('ID del registro:', id);
+            // Buscar expediente en Firestore donde solicitud == id
+            const fetchExpediente = async () => {
+                try {
+                    const db = getFirestore();
+                    const expedienteRef = collection(db, 'expediente');
+                    const q = query(expedienteRef, where('solicitud', '==', id));
+                    const querySnapshot = await getDocs(q);
+         
+                    if (!querySnapshot.empty) {
+                        console.log("🚀 ~ fetchExpediente ~ querySnapshot:", querySnapshot.docs[0].data())
+                        setExpedienteRecord(querySnapshot.docs[0].data());
+                    } else {
+                        setExpedienteRecord(null);
+                    }
+                } catch (err) {
+                    console.error('Error fetching expediente:', err);
+                    setExpedienteRecord(null);
+                }
+            };
+            fetchExpediente();
         }
     }, [id]);
 
@@ -1740,6 +1767,32 @@ const Request: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser && firebaseUser.email) {
+                try {
+                    const db = getFirestore();
+                    const q = query(collection(db, "usuarios"), where("email", "==", firebaseUser.email));
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        const doc = querySnapshot.docs[0];
+                        const data = doc.data();
+                        const roleInt = parseInt(data.rol, 10);
+                        setUserRole(isNaN(roleInt) ? null : roleInt);
+                    } else {
+                        setUserRole(null);
+                    }
+                } catch (error) {
+                    setUserRole(null);
+                }
+            } else {
+                setUserRole(null);
+            }
+            setRoleLoading(false);
+        });
+        return () => unsubscribe();
+    }, []);
+
     return (
         <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
             <div className="flex flex-col gap-8 md:w-1/2">
@@ -2044,8 +2097,7 @@ const Request: React.FC = () => {
                         )}
                     </div>
 
-                    {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData &&
-                        solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
+                    {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
                             <>
                                 <div className="flex space-x-4 ">
                                     <button
@@ -2100,6 +2152,56 @@ const Request: React.FC = () => {
                         solicitudData={solicitudData}
                     />
                 }
+
+                {/* Expediente Table */}
+                {roleLoading ? (
+                  <p className="text-gray-400 mt-2">Cargando permisos...</p>
+                ) : userRole !== null && userRole > 34 ? (
+                  <>
+                    <h3 className="text-lg font-bold text-white mt-6">Expediente relacionado</h3>
+                    {expedienteRecord && expedienteRecord.items ? (
+                      <table className="w-full text-gray-300 mt-2">
+                        <thead>
+                          <tr className="border-b border-gray-600">
+                            <th className="p-2 text-left">Título</th>
+                            <th className="p-2 text-left">Etapa</th>
+                            <th className="p-2 text-left">Descripción</th>
+                            <th className="p-2 text-left">Fecha</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.values(expedienteRecord.items).map((item: any, idx: number) => {
+                            let body = item.body;
+                            let date = item.date;
+                            if (typeof body === 'string') {
+                              try { body = JSON.parse(body); } catch {}
+                            }
+                            let dateStr = '';
+                            if (typeof date === 'string') {
+                              dateStr = date;
+                            } else if (date && date.seconds) {
+                              const d = new Date(date.seconds * 1000);
+                              dateStr = d.toLocaleString();
+                            }
+                            return (
+                              <tr key={idx} className="border-b border-gray-600">
+                                <td className="p-2">{body?.title || ''}</td>
+                                <td className="p-2">{body?.stage || ''}</td>
+                                <td className="p-2">{body?.descripcion || ''}</td>
+                                <td className="p-2">{dateStr}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p className="text-gray-400 mt-2">No se encontró expediente relacionado o no hay items.</p>
+                    )}
+                  </>
+                ) : null}
+                {!roleLoading && userRole !== null && userRole >= 100 && (
+                  <p className="text-gray-400 mt-2">No tienes permisos para ver el expediente relacionado.</p>
+                )}
             </div>
 
             {selectedPhotoUrl && (
