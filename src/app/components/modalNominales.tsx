@@ -1,18 +1,43 @@
 import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import {
+    firebaseApiKey,
+    firebaseAuthDomain,
+    firebaseProjectId,
+    firebaseStorageBucket,
+    firebaseMessagingSenderId,
+    firebaseAppId
+} from '@utils/env';
 
-interface ModalAgregarDirectoresDignatariosProps {
+const firebaseConfig = {
+    apiKey: firebaseApiKey,
+    authDomain: firebaseAuthDomain,
+    projectId: firebaseProjectId,
+    storageBucket: firebaseStorageBucket,
+    messagingSenderId: firebaseMessagingSenderId,
+    appId: firebaseAppId,
+};
+
+interface ModalNominalesProps {
     onClose: () => void;
     abogadosDisponibles: any[];
     solicitudData: any;
+    email: string;
 }
 
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const storage = getStorage(app);
 
-const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatariosProps> = ({ onClose, abogadosDisponibles, solicitudData }) => {
-    const [abogados, setAbogados] = useState<any[]>(abogadosDisponibles);
+const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDisponibles, solicitudData, email }) => {
+
     console.log("Solicitud recibida:", solicitudData);
-    const solicitudId = solicitudData.solicitudId;
+    console.log("abogadosDisponibles:", abogadosDisponibles);
+    const solicitudId = solicitudData.id;
+    const emailAbogado = email;
 
     const tipoSolicitudMap: Record<string, string> = {
         'propuesta-legal': 'Propuesta Legal',
@@ -36,25 +61,63 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
     const [formData, setFormData] = useState<any>({
         tipoSolicitud: tipoLegible || solicitudData.tipo,
         nombre: '',
-        tipoSociedad: '',
+        tipoSociedadFundacion: '',
         poseeNominales: 'No',
         poseeDirectoresNominales: 'No',
         directoresNominales: [],
         poseeDignatariosNominales: 'No',
         dignatariosNominales: [],
+        poseeMiembrosNominales: 'No',
         miembrosNominales: [],
         agenteResidente: '',
         agenteResidenteNombre: '',
         ruc: '',
         rucFile: null,
+        archivoRUC: '',
         nit: '',
         nitFile: null,
+        archivoNIT: '',
         fechaConstitucion: '',
         escrituraFile: null,
-        correoResponsable: solicitudData.email || '',
+        archivoEscritura: '',
+        correoResponsable: solicitudData.emailSolicita || '',
         correoAdicional: '',
         periodoPago: '',
     });
+
+    const [expedienteExiste, setExpedienteExiste] = useState<boolean | null>(null);
+    const [expedienteId, setExpedienteId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const verificarExpediente = async () => {
+            try {
+                const db = getFirestore();
+                const expedienteRef = collection(db, 'expediente');
+                const q = query(expedienteRef, where('solicitud', '==', solicitudId));
+                const querySnapshot = await getDocs(q);
+                const exists = !querySnapshot.empty;
+                setExpedienteExiste(exists);
+
+                if (exists) {
+                    const doc = querySnapshot.docs[0];
+                    const data = doc.data();
+                    setExpedienteId(doc.id);
+
+                    setFormData((prev: any) => ({
+                        ...prev,
+                        ...data,
+                        nombre: data.name,
+
+                    }));
+                }
+            } catch (error) {
+                console.error('Error al verificar expediente:', error);
+                Swal.fire('Error', 'No se pudo verificar ni cargar el expediente.', 'error');
+            }
+        };
+
+        verificarExpediente();
+    }, [solicitudId]);
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -86,17 +149,103 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
         setFormData((prev: any) => ({ ...prev, [tipo]: copia }));
     };
 
+    const uploadFileToFirebase = (file: File, path: string): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const storageRef = ref(storage, path);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log(`Upload is ${progress}% done`);
+                },
+                (error) => {
+                    reject(error);
+                },
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                }
+            );
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+
+        let datosLimpios = { ...formData };
+
+        if (datosLimpios.tipoNominal === 'director' || datosLimpios.tipoNominal === 'miembro') {
+            delete datosLimpios.cargo;
+        }
+
+        const {
+            rucFile,
+            nitFile,
+            escrituraFile,
+            ...restoDatos
+        } = datosLimpios;
+
+        let otrosDatos = { ...restoDatos };
+
         try {
-            const payload = { solicitudId, ...formData };
-            await axios.patch('/api/update-sociedad-fundacion', payload);
-            Swal.fire('¡Guardado!', 'Los datos se han guardado correctamente.', 'success');
+            let expedienteIdFinal = expedienteId;
+
+            if (!expedienteExiste) {
+                const createPayload = {
+                    name: solicitudData?.nombreSolicita,
+                    lastName: "",
+                    email: solicitudData?.emailSolicita,
+                    solicitud: solicitudId,
+                    lawyer: emailAbogado,
+                    descripcion: '',
+                    phone: "",
+                    ...otrosDatos
+                };
+
+                const createResponse = await axios.post('/api/create-record', createPayload);
+
+                if (createResponse.data.status !== 'success') {
+                    throw new Error(createResponse.data.message || 'No se pudo crear el expediente.');
+                }
+
+                expedienteIdFinal = createResponse.data.recordId;
+            }
+
+            if (rucFile) {
+                otrosDatos.archivoRUC = await uploadFileToFirebase(rucFile, `uploads/${expedienteIdFinal}/ruc`);
+            }
+
+            if (nitFile) {
+                otrosDatos.archivoNIT = await uploadFileToFirebase(nitFile, `uploads/${expedienteIdFinal}/nit`);
+            }
+
+            if (escrituraFile) {
+                otrosDatos.archivoEscritura = await uploadFileToFirebase(escrituraFile, `uploads/${expedienteIdFinal}/escritura`);
+            }
+
+            const finalPayload = {
+                name: solicitudData?.nombreSolicita,
+                lastName: "",
+                email: solicitudData?.emailSolicita,
+                solicitud: solicitudId,
+                lawyer: emailAbogado,
+                descripcion: '',
+                phone: "",
+                ...otrosDatos
+            };
+
+            console.log("✅ finalPayload:", finalPayload);
+            console.log("✅ EXPEDIENTE ID:", expedienteIdFinal);
+            await axios.post(`/api/update-record?id=${expedienteIdFinal}`, finalPayload);
+
+            Swal.fire('Éxito', expedienteExiste ? 'Expediente actualizado' : 'Expediente creado exitosamente', 'success');
             onClose();
         } catch (error) {
-            console.error(error);
-            Swal.fire('Error', 'Ocurrió un error al guardar.', 'error');
+            console.error('Error al enviar:', error);
+            Swal.fire('Error', 'No se pudo procesar el expediente.', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -123,7 +272,7 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
 
                     <div className="col-span-2">
                         <label className="text-white">Tipo de Sociedad/Fundación</label>
-                        <select name="tipoSociedad" value={formData.tipoSociedad} onChange={handleChange} className={styledInput}>
+                        <select name="tipoSociedadFundacion" value={formData.tipoSociedadFundacion} onChange={handleChange} className={styledInput}>
                             <option value="">Seleccione tipo</option>
                             <option>S.A.</option>
                             <option>INC</option>
@@ -163,7 +312,9 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
                                                     className={styledInput}
                                                 >
                                                     <option value="">Seleccione abogado</option>
-                                                    {abogados.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                                                    {abogadosDisponibles.map((a) => (
+                                                        <option key={a.id} value={a.id}>{a.nombre}</option>
+                                                    ))}
                                                     <option value="otros">Otros</option>
                                                 </select>
                                                 {dir.abogado === 'otros' && (
@@ -210,7 +361,9 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
                                                         className={styledInput}
                                                     >
                                                         <option value="">Seleccione abogado</option>
-                                                        {abogados.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                                                        {abogadosDisponibles.map((a) => (
+                                                            <option key={a.id} value={a.id}>{a.nombre}</option>
+                                                        ))}
                                                         <option value="otros">Otros</option>
                                                     </select>
                                                     {dig.abogado === 'otros' && (
@@ -279,7 +432,9 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
                                                     className={styledInput}
                                                 >
                                                     <option value="">Seleccione abogado</option>
-                                                    {abogados.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                                                    {abogadosDisponibles.map((a) => (
+                                                        <option key={a.id} value={a.id}>{a.nombre}</option>
+                                                    ))}
                                                     <option value="otros">Otros</option>
                                                 </select>
                                                 {mbr.abogado === 'otros' && (
@@ -321,13 +476,69 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
                         <input name="agenteResidenteNombre" placeholder="Nombre agente" value={formData.agenteResidenteNombre} onChange={handleChange} className={styledInput} />
                     )}
 
-                    <label className="text-white col-span-2">Número RUC</label>
-                    <input name="ruc" value={formData.ruc} onChange={handleChange} className={styledInput} />
-                    <input type="file" name="rucFile" onChange={handleChange} className={styledInput} />
+                    <div className="col-span-1">
+                        <label className="text-white block mb-1">Número RUC</label>
+                        <input
+                            name="ruc"
+                            value={formData.ruc}
+                            onChange={handleChange}
+                            className={styledInput}
+                        />
+                    </div>
 
-                    <label className="text-white col-span-2">Número NIT</label>
-                    <input name="nit" value={formData.nit} onChange={handleChange} className={styledInput} />
-                    <input type="file" name="nitFile" onChange={handleChange} className={styledInput} />
+                    <div className="col-span-1">
+                        <label className="text-white block mb-1 invisible">Archivo RUC</label>
+                        <input
+                            type="file"
+                            className={styledInput}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    rucFile: file,
+                                }));
+                            }}
+                        />
+                        {formData.archivoRUC && (
+                            <p className="text-sm text-blue-500 mt-1">
+                                <a href={formData.archivoRUC} target="_blank" rel="noopener noreferrer">
+                                    Ver documento actual
+                                </a>
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="col-span-1">
+                        <label className="text-white block mb-1">Número NIT</label>
+                        <input
+                            name="nit"
+                            value={formData.nit}
+                            onChange={handleChange}
+                            className={styledInput}
+                        />
+                    </div>
+
+                    <div className="col-span-1">
+                        <label className="text-white block mb-1 invisible">Archivo NIT</label>
+                        <input
+                            type="file"
+                            className={styledInput}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    nitFile: file,
+                                }));
+                            }}
+                        />
+                        {formData.archivoNIT && (
+                            <p className="text-sm text-blue-500 mt-1">
+                                <a href={formData.archivoNIT} target="_blank" rel="noopener noreferrer">
+                                    Ver documento actual
+                                </a>
+                            </p>
+                        )}
+                    </div>
 
                     <div className="col-span-1">
                         <label className="text-white block mb-1">Fecha de constitución</label>
@@ -344,10 +555,22 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
                         <label className="text-white block mb-1">Adjuntar escritura pública</label>
                         <input
                             type="file"
-                            name="escrituraFile"
-                            onChange={handleChange}
                             className={styledInput}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    escrituraFile: file,
+                                }));
+                            }}
                         />
+                        {formData.archivoEscritura && (
+                            <p className="text-sm text-blue-500 mt-1">
+                                <a href={formData.archivoEscritura} target="_blank" rel="noopener noreferrer">
+                                    Ver documento actual
+                                </a>
+                            </p>
+                        )}
                     </div>
 
                     <div className="col-span-1">
@@ -396,4 +619,4 @@ const ModalAgregarDirectoresDignatarios: React.FC<ModalAgregarDirectoresDignatar
     );
 };
 
-export default ModalAgregarDirectoresDignatarios;
+export default ModalNominales;
