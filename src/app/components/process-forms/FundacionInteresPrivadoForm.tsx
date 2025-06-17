@@ -3,9 +3,11 @@ import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { auth } from '@configuration/firebase';
+import { useRouter } from 'next/navigation';
 
 const FundacionInteresPrivadoForm = ({ formData, setFormData }: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -84,7 +86,7 @@ const FundacionInteresPrivadoForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/fundacion/${solicitudId}`);
     } catch (error) {
       console.error('[FundacionInteresPrivadoForm] Error in submission:', error);
       await Swal.fire({

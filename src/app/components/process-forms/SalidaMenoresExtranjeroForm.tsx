@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation';
 
 const initialMenor = {
   nombreCompleto: '',
@@ -34,6 +35,8 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
   const [fechaFirma, setFechaFirma] = useState('');
   const [boletosViaje, setBoletosViaje] = useState<File | null>(null);
   const [parentesco, setParentesco] = useState('');
+
+  const router = useRouter();
 
   const handleMenorChange = (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
@@ -115,7 +118,7 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/menores-extranjero/${solicitudId}`);
     } catch (error) {
       console.error('[SalidaMenoresExtranjeroForm] Error in submission:', error);
       await Swal.fire({

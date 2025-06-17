@@ -41,7 +41,7 @@ const ConsultaEscritaForm = ({ formData, setFormData }: any) => {
         accion: 'Creación de solicitud',
         tipo: 'consulta-escrita',
         item: 'Consulta Escrita',
-        status: 1,
+        status: 10,
         precio: 175,
         subtotal: 175,
         total: 175,

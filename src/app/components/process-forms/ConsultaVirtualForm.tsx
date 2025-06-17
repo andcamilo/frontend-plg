@@ -3,10 +3,12 @@ import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { auth } from '@configuration/firebase';
+import { useRouter } from 'next/navigation';
 
 const ConsultaVirtualForm = ({ formData, setFormData }: any) => {
   const [showEmailRespuesta, setShowEmailRespuesta] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   // Disponibilidad: 1 fecha con hora inicio y fin
   const [disponibilidad, setDisponibilidad] = useState([
@@ -107,7 +109,7 @@ const ConsultaVirtualForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/consulta-propuesta/${solicitudId}`);
     } catch (error) {
       console.error('[ConsultaVirtualForm] Error in submission:', error);
       await Swal.fire({

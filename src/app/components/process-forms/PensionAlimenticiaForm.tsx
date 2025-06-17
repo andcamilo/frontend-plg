@@ -3,9 +3,11 @@ import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { auth } from '@configuration/firebase';
+import { useRouter } from 'next/navigation';
 
 const PensionAlimenticiaForm = ({ formData, setFormData }: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -85,7 +87,7 @@ const PensionAlimenticiaForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/pension-alimenticia/${solicitudId}`);
     } catch (error) {
       console.error('[PensionAlimenticiaForm] Error in submission:', error);
       await Swal.fire({
