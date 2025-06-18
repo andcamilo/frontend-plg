@@ -19,6 +19,7 @@ const PensionAlimenticia: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
   console.log("🚀 ~ activeStep:", activeStep)
   const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
+  const [showPaymentButtons, setShowPaymentButtons] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
@@ -29,7 +30,7 @@ const PensionAlimenticia: React.FC = () => {
     throw new Error('AppStateContext must be used within an AppStateProvider');
   }
 
-  const { store } = context;
+  const { store, setStore } = context;
 
   useEffect(() => {
     if (store.currentPosition) {
@@ -42,6 +43,14 @@ const PensionAlimenticia: React.FC = () => {
     console.log("🚀 ~ store.token:", store.token)
   }, [store.token]);
 
+  // Show payment buttons when user reaches the appropriate step
+  useEffect(() => {
+    if (!store.token && (activeStep >= 1 || store.firmaYEntrega)) {
+      setShowPaymentButtons(true);
+    } else {
+      setShowPaymentButtons(false);
+    }
+  }, [store.token, activeStep, store.firmaYEntrega]);
 
   const renderActiveForm = () => {
     switch (activeStep) {
@@ -72,7 +81,43 @@ const PensionAlimenticia: React.FC = () => {
   const handlePaymentClick = () => {
     setLoading(true);
     setShowPaymentWidget(true);
+    setShowPaymentButtons(false);
   };
+
+  // Handle "Enviar y pagar más tarde" button click
+  const handleSendAndPayLater = async () => {
+    setLoading(true);
+    try {
+      // Update the solicitudId status to 10 using the update-request-all endpoint
+      if (store.solicitudId) {
+        const response = await fetch('/api/update-request-all', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            solicitudId: store.solicitudId,
+            status: 10 
+          }),
+        });
+
+        if (response.ok) {
+          console.log('Solicitud status updated to 10 successfully');
+          // Redirect to login page on success
+          router.push('/login');
+        } else {
+          console.error('Failed to update solicitud status');
+        }
+      } else {
+        console.error('No solicitudId found in store');
+      }
+    } catch (error) {
+      console.error('Error updating solicitud status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   console.log("🚀 Token ", store.token)
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -100,7 +145,28 @@ const PensionAlimenticia: React.FC = () => {
         <button className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.resumen ? (activeStep === 9 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`} onClick={() => handleStepChange(9, store.resumen)} disabled={!store.resumen}>Resumen</button>
       </div>
 
-      {!store.token && (activeStep >= 8 || store.firmaYEntrega) && <WidgetLoader />}
+      {showPaymentButtons && (
+        <div className="mt-8">
+          <div className="flex flex-col gap-4">
+            <button
+              onClick={handlePaymentClick}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+            >
+              {loading ? 'Cargando...' : 'Pagar'}
+            </button>
+            <button
+              onClick={handleSendAndPayLater}
+              disabled={loading}
+              className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+            >
+              {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showPaymentWidget && <WidgetLoader />}
 
       {store.token && (
         <div className="mt-8"><SaleComponent saleAmount={150} /></div>

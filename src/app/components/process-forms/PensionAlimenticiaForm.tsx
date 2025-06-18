@@ -74,11 +74,23 @@ const PensionAlimenticiaForm = ({ formData, setFormData }: any) => {
         tipoServicio: '',
         nivelUrgencia: '',
         descripcion: '',
+        type: 'pension-alimenticia',
         lawyer: lawyerEmail,
       };
-      await axios.post('/api/create-record', recordData, {
+      const recordRes = await axios.post('/api/create-record', recordData, {
         headers: { 'Content-Type': 'application/json' },
       });
+      const recordResponse = recordRes.data;
+      const recordId = recordResponse?.recordId;
+      const recordType = recordResponse?.expedienteType;
+      if (!recordId) throw new Error('No se recibió recordId');
+      // Step 3: Update solicitud with expedienteId
+      const updateRes = await axios.patch('/api/update-request-all', {
+        solicitudId,
+        expedienteId: recordId,
+        expedienteType: recordType,
+      });
+      if (updateRes.status !== 200) throw new Error('Error al actualizar la solicitud con expedienteId');
       await Swal.fire({
         icon: 'success',
         title: 'Solicitud enviada correctamente',
