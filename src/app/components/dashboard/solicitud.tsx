@@ -2158,47 +2158,56 @@ const Request: React.FC = () => {
                 {roleLoading ? (
                   <p className="text-gray-400 mt-2">Cargando permisos...</p>
                 ) : userRole !== null && userRole > 34 ? (
-                  <>
-                    <h3 className="text-lg font-bold text-white mt-6">Expediente relacionado</h3>
-                    {expedienteRecord && expedienteRecord.items ? (
-                      <table className="w-full text-gray-300 mt-2">
-                        <thead>
-                          <tr className="border-b border-gray-600">
-                            <th className="p-2 text-left">Título</th>
-                            <th className="p-2 text-left">Etapa</th>
-                            <th className="p-2 text-left">Descripción</th>
-                            <th className="p-2 text-left">Fecha</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.values(expedienteRecord.items).map((item: any, idx: number) => {
-                            let body = item.body;
-                            let date = item.date;
-                            if (typeof body === 'string') {
-                              try { body = JSON.parse(body); } catch {}
-                            }
-                            let dateStr = '';
-                            if (typeof date === 'string') {
-                              dateStr = date;
-                            } else if (date && date.seconds) {
-                              const d = new Date(date.seconds * 1000);
-                              dateStr = d.toLocaleString();
-                            }
-                            return (
-                              <tr key={idx} className="border-b border-gray-600">
-                                <td className="p-2">{body?.title || ''}</td>
-                                <td className="p-2">{body?.stage || ''}</td>
-                                <td className="p-2">{body?.descripcion || ''}</td>
-                                <td className="p-2">{dateStr}</td>
+                  (() => {
+                    let items = expedienteRecord?.items;
+                    if (typeof items === 'string') {
+                      try { items = JSON.parse(items); } catch {}
+                    }
+                    const itemValues = items && typeof items === 'object' ? Object.values(items) : [];
+                    return (
+                      <>
+                        <h3 className="text-lg font-bold text-white mt-6">Expediente relacionado</h3>
+                        {itemValues.length > 0 ? (
+                          <table className="w-full text-gray-300 mt-2">
+                            <thead>
+                              <tr className="border-b border-gray-600">
+                                <th className="p-2 text-left">Título</th>
+                                <th className="p-2 text-left">Etapa</th>
+                                <th className="p-2 text-left">Descripción</th>
+                                <th className="p-2 text-left">Fecha</th>
                               </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <p className="text-gray-400 mt-2">No se encontró expediente relacionado o no hay items.</p>
-                    )}
-                  </>
+                            </thead>
+                            <tbody>
+                              {itemValues.map((item: any, idx: number) => {
+                                let body = item.body;
+                                let date = item.date;
+                                if (typeof body === 'string') {
+                                  try { body = JSON.parse(body); } catch {}
+                                }
+                                let dateStr = '';
+                                if (typeof date === 'string') {
+                                  dateStr = date;
+                                } else if (date && date.seconds) {
+                                  const d = new Date(date.seconds * 1000);
+                                  dateStr = d.toLocaleString();
+                                }
+                                return (
+                                  <tr key={idx} className="border-b border-gray-600">
+                                    <td className="p-2">{body?.title || ''}</td>
+                                    <td className="p-2">{body?.stage || ''}</td>
+                                    <td className="p-2">{body?.descripcion || ''}</td>
+                                    <td className="p-2">{dateStr}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <p className="text-gray-400 mt-2">No se encontró expediente relacionado o no hay items.</p>
+                        )}
+                      </>
+                    );
+                  })()
                 ) : null}
                 {!roleLoading && userRole !== null && userRole >= 100 && (
                   <p className="text-gray-400 mt-2">No tienes permisos para ver el expediente relacionado.</p>

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation';
 
 const TramiteGeneralForm = ({ formData, setFormData }: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +53,23 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
         body: JSON.stringify(recordData),
       });
       if (!recordRes.ok) throw new Error('Error al crear el expediente');
+      const recordResponse = await recordRes.json();
+      const recordId = recordResponse?.recordId;
+      if (!recordId) throw new Error('No se recibió recordId');
+
+      // 3. Update solicitud with expedienteId
+      const recordType = recordResponse?.expedienteType;
+      const updateRes = await fetch('/api/update-request-all', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          solicitudId, 
+          expedienteId: recordId,
+          expedienteType: recordType,
+          status: 10,
+        }),
+      });
+      if (!updateRes.ok) throw new Error('Error al actualizar la solicitud con expedienteId');
 
       setSuccess(true);
       setFormData({});
@@ -62,7 +81,7 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/tramite-general/${solicitudId}`);
     } catch (err: any) {
       setError(err.message || 'Error desconocido');
       await Swal.fire({

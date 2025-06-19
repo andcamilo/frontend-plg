@@ -3,6 +3,7 @@ import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { auth } from '@configuration/firebase';
+import { useRouter } from 'next/navigation';
 
 const ConsultaPresencialForm = ({ formData, setFormData }: any) => {
   const [showEmailRespuesta, setShowEmailRespuesta] = useState(false);
@@ -15,6 +16,8 @@ const ConsultaPresencialForm = ({ formData, setFormData }: any) => {
   const [consultaOficina, setConsultaOficina] = useState('');
   const [buscarCliente, setBuscarCliente] = useState('');
   const [direccionBuscar, setDireccionBuscar] = useState('');
+
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -116,6 +119,20 @@ const ConsultaPresencialForm = ({ formData, setFormData }: any) => {
       });
       console.log('[ConsultaPresencialForm] Response from create-record:', recordResponse.data);
 
+      // Step 3: Update solicitud with expedienteId
+      const recordRes = recordResponse.data;
+      const recordId = recordRes?.recordId;
+      const recordType = recordRes?.expedienteType;
+      if (!recordId) throw new Error('No se recibió recordId');
+      
+      const updateRes = await axios.patch('/api/update-request-all', {
+        solicitudId,
+        expedienteId: recordId,
+        expedienteType: recordType,
+        status: 10,
+      });
+      console.log('[ConsultaPresencialForm] Response from update-request-all:', updateRes.data);
+
       await Swal.fire({
         icon: 'success',
         title: 'Consulta presencial enviada correctamente',
@@ -124,7 +141,7 @@ const ConsultaPresencialForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/consulta-propuesta/${solicitudId}`);
     } catch (error) {
       console.error('[ConsultaPresencialForm] Error in submission:', error);
       await Swal.fire({

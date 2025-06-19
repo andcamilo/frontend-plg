@@ -41,7 +41,7 @@ const ConsultaEscritaForm = ({ formData, setFormData }: any) => {
         accion: 'Creación de solicitud',
         tipo: 'consulta-escrita',
         item: 'Consulta Escrita',
-        status: 1,
+        status: 10,
         precio: 175,
         subtotal: 175,
         total: 175,
@@ -73,6 +73,20 @@ const ConsultaEscritaForm = ({ formData, setFormData }: any) => {
         headers: { 'Content-Type': 'application/json' },
       });
       console.log('[ConsultaEscritaForm] Response from create-record:', recordResponse.data);
+
+      // Step 3: Update solicitud with expedienteId
+      const recordRes = recordResponse.data;
+      const recordId = recordRes?.recordId;
+      const recordType = recordRes?.expedienteType;
+      if (!recordId) throw new Error('No se recibió recordId');
+      
+      const updateRes = await axios.patch('/api/update-request-all', {
+        solicitudId,
+        expedienteId: recordId,
+        expedienteType: recordType,
+        status: 10,
+      });
+      console.log('[ConsultaEscritaForm] Response from update-request-all:', updateRes.data);
 
       await Swal.fire({
         icon: 'success',

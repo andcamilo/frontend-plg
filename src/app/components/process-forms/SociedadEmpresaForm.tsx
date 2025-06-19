@@ -3,9 +3,11 @@ import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { auth } from '@configuration/firebase';
+import { useRouter } from 'next/navigation';
 
 const SociedadEmpresaForm = ({ formData, setFormData }: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -86,9 +88,25 @@ const SociedadEmpresaForm = ({ formData, setFormData }: any) => {
         descripcion: '',
         lawyer: lawyerEmail,
       };
-      await axios.post('/api/create-record', recordData, {
+      const recordResponse = await axios.post('/api/create-record', recordData, {
         headers: { 'Content-Type': 'application/json' },
       });
+      console.log('[SociedadEmpresaForm] Response from create-record:', recordResponse.data);
+
+      // Step 4: Update solicitud with expedienteId
+      const recordRes = recordResponse.data;
+      const recordId = recordRes?.recordId;
+      const recordType = recordRes?.expedienteType;
+      if (!recordId) throw new Error('No se recibió recordId');
+      
+      const updateRes = await axios.patch('/api/update-request-all', {
+        solicitudId,
+        expedienteId: recordId,
+        expedienteType: recordType,
+        status: 10,
+      });
+      console.log('[SociedadEmpresaForm] Response from update-request-all:', updateRes.data);
+
       await Swal.fire({
         icon: 'success',
         title: 'Solicitud enviada correctamente',
@@ -97,7 +115,7 @@ const SociedadEmpresaForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/sociedad-empresa/${solicitudId}`);
     } catch (error) {
       console.error('[SociedadEmpresaForm] Error in submission:', error);
       await Swal.fire({

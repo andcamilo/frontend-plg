@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation';
 
 const initialMenor = {
   nombreCompleto: '',
@@ -34,6 +35,8 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
   const [fechaFirma, setFechaFirma] = useState('');
   const [boletosViaje, setBoletosViaje] = useState<File | null>(null);
   const [parentesco, setParentesco] = useState('');
+
+  const router = useRouter();
 
   const handleMenorChange = (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
@@ -104,9 +107,25 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
         descripcion: '',
         lawyer: '',
       };
-      await axios.post('/api/create-record', recordData, {
+      const recordResponse = await axios.post('/api/create-record', recordData, {
         headers: { 'Content-Type': 'application/json' },
       });
+      console.log('[SalidaMenoresExtranjeroForm] Response from create-record:', recordResponse.data);
+
+      // Step 3: Update solicitud with expedienteId
+      const recordRes = recordResponse.data;
+      const recordId = recordRes?.recordId;
+      const recordType = recordRes?.expedienteType;
+      if (!recordId) throw new Error('No se recibió recordId');
+      
+      const updateRes = await axios.patch('/api/update-request-all', {
+        solicitudId,
+        expedienteId: recordId,
+        expedienteType: recordType,
+        status: 10,
+      });
+      console.log('[SalidaMenoresExtranjeroForm] Response from update-request-all:', updateRes.data);
+
       await Swal.fire({
         icon: 'success',
         title: 'Solicitud enviada correctamente',
@@ -115,7 +134,7 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/menores-extranjero/${solicitudId}`);
     } catch (error) {
       console.error('[SalidaMenoresExtranjeroForm] Error in submission:', error);
       await Swal.fire({

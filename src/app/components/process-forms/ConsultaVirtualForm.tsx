@@ -3,10 +3,12 @@ import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { auth } from '@configuration/firebase';
+import { useRouter } from 'next/navigation';
 
 const ConsultaVirtualForm = ({ formData, setFormData }: any) => {
   const [showEmailRespuesta, setShowEmailRespuesta] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   // Disponibilidad: 1 fecha con hora inicio y fin
   const [disponibilidad, setDisponibilidad] = useState([
@@ -99,6 +101,20 @@ const ConsultaVirtualForm = ({ formData, setFormData }: any) => {
       });
       console.log('[ConsultaVirtualForm] Response from create-record:', recordResponse.data);
 
+      // Step 3: Update solicitud with expedienteId
+      const recordRes = recordResponse.data;
+      const recordId = recordRes?.recordId;
+      const recordType = recordRes?.expedienteType;
+      if (!recordId) throw new Error('No se recibió recordId');
+      
+      const updateRes = await axios.patch('/api/update-request-all', {
+        solicitudId,
+        expedienteId: recordId,
+        expedienteType: recordType,
+        status: 10,
+      });
+      console.log('[ConsultaVirtualForm] Response from update-request-all:', updateRes.data);
+
       await Swal.fire({
         icon: 'success',
         title: 'Consulta virtual enviada correctamente',
@@ -107,7 +123,7 @@ const ConsultaVirtualForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/consulta-propuesta/${solicitudId}`);
     } catch (error) {
       console.error('[ConsultaVirtualForm] Error in submission:', error);
       await Swal.fire({

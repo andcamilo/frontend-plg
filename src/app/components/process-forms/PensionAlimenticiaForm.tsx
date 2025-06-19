@@ -3,9 +3,11 @@ import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { auth } from '@configuration/firebase';
+import { useRouter } from 'next/navigation';
 
 const PensionAlimenticiaForm = ({ formData, setFormData }: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -72,11 +74,24 @@ const PensionAlimenticiaForm = ({ formData, setFormData }: any) => {
         tipoServicio: '',
         nivelUrgencia: '',
         descripcion: '',
+        type: 'pension-alimenticia',
         lawyer: lawyerEmail,
       };
-      await axios.post('/api/create-record', recordData, {
+      const recordRes = await axios.post('/api/create-record', recordData, {
         headers: { 'Content-Type': 'application/json' },
       });
+      const recordResponse = recordRes.data;
+      const recordId = recordResponse?.recordId;
+      const recordType = recordResponse?.expedienteType;
+      if (!recordId) throw new Error('No se recibió recordId');
+      // Step 3: Update solicitud with expedienteId
+      const updateRes = await axios.patch('/api/update-request-all', {
+        solicitudId,
+        expedienteId: recordId,
+        expedienteType: recordType,
+        status: 10,
+      });
+      if (updateRes.status !== 200) throw new Error('Error al actualizar la solicitud con expedienteId');
       await Swal.fire({
         icon: 'success',
         title: 'Solicitud enviada correctamente',
@@ -85,7 +100,7 @@ const PensionAlimenticiaForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/pension-alimenticia/${solicitudId}`);
     } catch (error) {
       console.error('[PensionAlimenticiaForm] Error in submission:', error);
       await Swal.fire({
