@@ -3,10 +3,12 @@ import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { auth } from '@configuration/firebase';
+import { useRouter } from 'next/navigation';
 
 const ConsultaEscritaForm = ({ formData, setFormData }: any) => {
   const [showEmailRespuesta, setShowEmailRespuesta] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -66,6 +68,7 @@ const ConsultaEscritaForm = ({ formData, setFormData }: any) => {
         tipoServicio: '',
         nivelUrgencia: '',
         descripcion: formData.detallesPropuesta,
+        type: 'consulta-escrita',
         lawyer: lawyerEmail,
       };
       console.log('[ConsultaEscritaForm] Sending create-record:', recordData);
@@ -96,7 +99,7 @@ const ConsultaEscritaForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      window.location.reload();
+      router.push(`/request/consulta-propuesta/${solicitudId}`);
     } catch (error) {
       console.error('[ConsultaEscritaForm] Error in submission:', error);
       await Swal.fire({

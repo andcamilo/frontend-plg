@@ -46,14 +46,7 @@ const SociedadEmpresaForm = ({ formData, setFormData }: any) => {
         setIsSubmitting(false);
         return;
       }
-      // Step 1: Validate email
-      const emailResult = await axios.get('/api/validate-email', {
-        params: {
-          email: formData.email,
-          isLogged: 'false',
-        },
-      });
-      const { cuenta } = emailResult.data;
+
 
       // Step 2: Create request
       const requestData = {
@@ -62,7 +55,6 @@ const SociedadEmpresaForm = ({ formData, setFormData }: any) => {
         cedulaPasaporte: formData.cedulaPasaporte,
         emailSolicita: formData.email,
         actualizarPorCorreo: formData.notificaciones === 'yes',
-        cuenta: cuenta || '',
         precio: 1700,
         subtotal: 1700,
         total: 1700,
@@ -86,6 +78,7 @@ const SociedadEmpresaForm = ({ formData, setFormData }: any) => {
         tipoServicio: '',
         nivelUrgencia: '',
         descripcion: '',
+        type: 'new-sociedad-empresa',
         lawyer: lawyerEmail,
       };
       const recordResponse = await axios.post('/api/create-record', recordData, {
