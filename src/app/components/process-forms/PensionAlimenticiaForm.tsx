@@ -89,6 +89,7 @@ const PensionAlimenticiaForm = ({ formData, setFormData }: any) => {
         solicitudId,
         expedienteId: recordId,
         expedienteType: recordType,
+        status: 10,
       });
       if (updateRes.status !== 200) throw new Error('Error al actualizar la solicitud con expedienteId');
       await Swal.fire({

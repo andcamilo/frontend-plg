@@ -119,6 +119,20 @@ const ConsultaPresencialForm = ({ formData, setFormData }: any) => {
       });
       console.log('[ConsultaPresencialForm] Response from create-record:', recordResponse.data);
 
+      // Step 3: Update solicitud with expedienteId
+      const recordRes = recordResponse.data;
+      const recordId = recordRes?.recordId;
+      const recordType = recordRes?.expedienteType;
+      if (!recordId) throw new Error('No se recibió recordId');
+      
+      const updateRes = await axios.patch('/api/update-request-all', {
+        solicitudId,
+        expedienteId: recordId,
+        expedienteType: recordType,
+        status: 10,
+      });
+      console.log('[ConsultaPresencialForm] Response from update-request-all:', updateRes.data);
+
       await Swal.fire({
         icon: 'success',
         title: 'Consulta presencial enviada correctamente',

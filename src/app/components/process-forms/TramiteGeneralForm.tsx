@@ -58,10 +58,16 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
       if (!recordId) throw new Error('No se recibió recordId');
 
       // 3. Update solicitud with expedienteId
+      const recordType = recordResponse?.expedienteType;
       const updateRes = await fetch('/api/update-request-all', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ solicitudId, expedienteId: recordId }),
+        body: JSON.stringify({ 
+          solicitudId, 
+          expedienteId: recordId,
+          expedienteType: recordType,
+          status: 10,
+        }),
       });
       if (!updateRes.ok) throw new Error('Error al actualizar la solicitud con expedienteId');
 

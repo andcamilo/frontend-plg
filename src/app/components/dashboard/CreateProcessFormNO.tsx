@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import PropuestaLegalForm from '../process-forms/PropuestaLegalForm';
-import ConsultaLegalForm from '../process-forms/ConsultaLegalForm';
 import ConsultaEscritaForm from '../process-forms/ConsultaEscritaForm';
 import ConsultaVirtualForm from '../process-forms/ConsultaVirtualForm';
 import ConsultaPresencialForm from '../process-forms/ConsultaPresencialForm';
@@ -9,8 +8,6 @@ import SociedadEmpresaForm from '../process-forms/SociedadEmpresaForm';
 import SalidaMenoresExtranjeroForm from '../process-forms/SalidaMenoresExtranjeroForm';
 import PensionAlimenticiaForm from '../process-forms/PensionAlimenticiaForm';
 import TramiteGeneralForm from '../process-forms/TramiteGeneralForm';
-import PensionDesacatoForm from '../process-forms/PensionDesacatoForm';
-import SolicitudClienteRecurrenteForm from '../process-forms/SolicitudClienteRecurrenteForm';
 
 const CreateProcessFormNO = ({
   form2,

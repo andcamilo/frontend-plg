@@ -78,6 +78,20 @@ const FundacionInteresPrivadoForm = ({ formData, setFormData }: any) => {
       });
       console.log('[FundacionInteresPrivadoForm] Response from create-record:', recordResponse.data);
 
+      // Step 4: Update solicitud with expedienteId
+      const recordRes = recordResponse.data;
+      const recordId = recordRes?.recordId;
+      const recordType = recordRes?.expedienteType;
+      if (!recordId) throw new Error('No se recibió recordId');
+      
+      const updateRes = await axios.patch('/api/update-request-all', {
+        solicitudId,
+        expedienteId: recordId,
+        expedienteType: recordType,
+        status: 10,
+      });
+      console.log('[FundacionInteresPrivadoForm] Response from update-request-all:', updateRes.data);
+
       await Swal.fire({
         icon: 'success',
         title: 'Solicitud de fundación enviada correctamente',
