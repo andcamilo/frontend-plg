@@ -42,24 +42,6 @@ const PropuestaLegalForm = ({ formData, setFormData }: any) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // Step 1: Validate email
-      const emailResult = await axios.get('/api/validate-email', {
-        params: {
-          email: formData.email,
-          isLogged: 'false',
-        },
-      });
-      const { cuenta } = emailResult.data;
-      if (cuenta) {
-        await Swal.fire({
-          icon: 'error',
-          title: 'Este correo ya está en uso. Por favor, inicia sesión para continuar.',
-          showConfirmButton: false,
-          timer: 2000,
-        });
-        setIsSubmitting(false);
-        return;
-      }
 
       // First API call
       const requestData = {
@@ -99,6 +81,7 @@ const PropuestaLegalForm = ({ formData, setFormData }: any) => {
         email: formData.email,
         phone: formData.telefono,
         tipoServicio: '',
+        type: 'propuesta-legal',
         nivelUrgencia: '',
         descripcion: formData.detallesPropuesta,
         lawyer: auth.currentUser?.email || '',

@@ -55,7 +55,7 @@ const ConsultaPropuesta: React.FC = () => {
     const { store, setStore } = context;
 
     const [formData, setFormData] = useState({
-        nombreCompleto: "",
+        nombreSolicita: "",
         email: "",
         cedulaPasaporte: "",
         telefono: "",
@@ -124,7 +124,7 @@ const ConsultaPropuesta: React.FC = () => {
     useEffect(() => {
         if (solicitudData) {
             setFormData({
-                nombreCompleto: solicitudData.nombreSolicita || "",
+                nombreSolicita: solicitudData.nombreSolicita || "",
                 email: solicitudData.emailSolicita || "",
                 cedulaPasaporte: solicitudData.cedulaPasaporte || "",
                 telefono: solicitudData.telefonoSolicita || "",
@@ -229,7 +229,7 @@ const ConsultaPropuesta: React.FC = () => {
     };
 
     const [errors, setErrors] = useState({
-        nombreCompleto: false,
+        nombreSolicita: false,
         email: false,
         telefono: false,
         celular: false,
@@ -413,9 +413,9 @@ const ConsultaPropuesta: React.FC = () => {
     const validateFields = () => {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        // Validación de nombreCompleto
-        if (!formData.nombreCompleto) {
-            setErrors((prevErrors) => ({ ...prevErrors, nombreCompleto: true }));
+        // Validación de nombreSolicita
+        if (!formData.nombreSolicita) {
+            setErrors((prevErrors) => ({ ...prevErrors, nombreSolicita: true }));
             Swal.fire({
                 position: "top-end",
                 icon: "warning",
@@ -911,7 +911,7 @@ const ConsultaPropuesta: React.FC = () => {
             }
 
             const requestData = {
-                nombreSolicita: formData.nombreCompleto,
+                nombreSolicita: formData.nombreSolicita,
                 telefonoSolicita: `${countryCodes[formData.telefonoCodigo]}${formData.telefono}`,
                 celularSolicita: `${countryCodes[formData.celularCodigo]}${formData.celular}`,
                 cedulaPasaporte: formData.cedulaPasaporte || "",
@@ -1176,10 +1176,10 @@ const ConsultaPropuesta: React.FC = () => {
                         <input
                             ref={nombreCompletoRef}
                             type="text"
-                            name="nombreCompleto"
-                            value={formData.nombreCompleto}
+                            name="nombreSolicita"
+                            value={formData.nombreSolicita}
                             onChange={handleInputChange}
-                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
+                            className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreSolicita ? 'border-2 border-red-500' : ''}`}
                             disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                         />
                     </div>

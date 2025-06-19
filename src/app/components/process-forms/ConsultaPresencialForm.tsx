@@ -111,6 +111,7 @@ const ConsultaPresencialForm = ({ formData, setFormData }: any) => {
         tipoServicio: '',
         nivelUrgencia: '',
         descripcion: formData.detallesPropuesta,
+        type: 'consulta-presencial',
         lawyer: lawyerEmail,
       };
       console.log('[ConsultaPresencialForm] Sending create-record:', recordData);

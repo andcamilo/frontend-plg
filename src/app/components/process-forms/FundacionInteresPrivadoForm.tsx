@@ -26,14 +26,6 @@ const FundacionInteresPrivadoForm = ({ formData, setFormData }: any) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // Step 1: Validate email
-      const emailResult = await axios.get('/api/validate-email', {
-        params: {
-          email: formData.email,
-          isLogged: 'false',
-        },
-      });
-      const { cuenta } = emailResult.data;
 
       // Step 2: Create request
       const requestData = {
@@ -70,6 +62,7 @@ const FundacionInteresPrivadoForm = ({ formData, setFormData }: any) => {
         tipoServicio: '',
         nivelUrgencia: '',
         descripcion: '',
+        type: 'new-fundacion-interes-privado',
         lawyer: lawyerEmail,
       };
       console.log('[FundacionInteresPrivadoForm] Sending create-record:', recordData);

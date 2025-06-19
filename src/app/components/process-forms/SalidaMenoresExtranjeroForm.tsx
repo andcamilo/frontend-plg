@@ -3,6 +3,7 @@ import CountrySelect from '../CountrySelect';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
+import { auth } from '@configuration/firebase';
 
 const initialMenor = {
   nombreCompleto: '',
@@ -67,33 +68,51 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
         setIsSubmitting(false);
         return;
       }
-      // Prepare FormData for file uploads
-      const data = new FormData();
-      data.append('autorizado', JSON.stringify(autorizado));
-      data.append('esAutorizante', esAutorizante);
-      data.append('autorizacionTercero', autorizacionTercero);
-      data.append('fechaSalida', fechaSalida);
-      data.append('fechaRetorno', fechaRetorno);
-      data.append('fechaFirma', fechaFirma);
-      if (boletosViaje) data.append('boletosViaje', boletosViaje);
-      data.append('parentesco', parentesco);
-      menores.forEach((menor, idx) => {
-        data.append(`menores[${idx}]`, JSON.stringify({
+      // Step 1: Create request
+      const requestData = {
+        nombreSolicita: autorizado.nombreCompleto,
+        telefonoSolicita: autorizado.telefono,
+        celularSolicita: '',
+        cedulaPasaporte: autorizado.cedulaPasaporte || '',
+        emailSolicita: autorizado.email,
+        empresaSolicita: '',
+        tipoConsulta: 'Salida de Menores al Extranjero',
+        areaLegal: '',
+        detallesPropuesta: `Autorizado: ${autorizado.nombreCompleto}, Es Autorizante: ${esAutorizante}, Parentesco: ${parentesco}, Fecha Salida: ${fechaSalida}, Fecha Retorno: ${fechaRetorno}, Fecha Firma: ${fechaFirma}`,
+        preguntasEspecificas: '',
+        emailRespuesta: '',
+        menores: menores.map(menor => ({
           nombreCompleto: menor.nombreCompleto,
           cedulaPasaporte: menor.cedulaPasaporte,
-        }));
-        if (menor.identificacion) data.append(`menorIdentificacion${idx}`, menor.identificacion);
-        if (menor.pasaporte) data.append(`menorPasaporte${idx}`, menor.pasaporte);
-        if (menor.certificadoNacimiento) data.append(`menorCertificadoNacimiento${idx}`, menor.certificadoNacimiento);
-      });
-      if (autorizado.identificacion) data.append('autorizadoIdentificacion', autorizado.identificacion);
-      if (autorizado.pasaporte) data.append('autorizadoPasaporte', autorizado.pasaporte);
-      // Step 1: Create request
-      const requestRes = await axios.post('/api/create-request-consultaPropuesta', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        })),
+        autorizado: {
+          nombreCompleto: autorizado.nombreCompleto,
+          cedulaPasaporte: autorizado.cedulaPasaporte,
+          nacionalidad: autorizado.nacionalidad,
+          telefono: autorizado.telefono,
+          email: autorizado.email,
+          parentesco: parentesco,
+        },
+        esAutorizante,
+        autorizacionTercero,
+        fechaSalida,
+        fechaRetorno,
+        fechaFirma,
+        parentesco,
+        accion: 'Creación de solicitud',
+        tipo: 'menores-al-extranjero',
+        item: 'Salida de Menores al Extranjero',
+        status: 10,
+        precio: 75,
+        subtotal: 75,
+        total: 75,
+      };
+      const requestRes = await axios.post('/api/create-request-consultaPropuesta', requestData, {
+        headers: { 'Content-Type': 'application/json' },
       });
       const solicitudId = requestRes.data?.solicitudId || requestRes.data?.uid;
       if (!solicitudId) throw new Error('No se recibió solicitudId');
+      const lawyerEmail = auth.currentUser?.email || '';
       // Step 2: Create record
       const recordData = {
         solicitudId,
@@ -105,7 +124,8 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
         tipoServicio: '',
         nivelUrgencia: '',
         descripcion: '',
-        lawyer: '',
+        type: 'menores-al-extranjero',
+        lawyer: lawyerEmail,
       };
       const recordResponse = await axios.post('/api/create-record', recordData, {
         headers: { 'Content-Type': 'application/json' },
@@ -227,15 +247,15 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="font-bold text-white">Indique la fecha de salida del menor:</label>
-          <input type="date" value={fechaSalida} onChange={e => setFechaSalida(e.target.value)} className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2" />
+          <input type="date" value={fechaSalida} onChange={e => setFechaSalida(e.target.value)} className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-200" />
         </div>
         <div>
           <label className="font-bold text-white">Indique la fecha de retorno del menor:</label>
-          <input type="date" value={fechaRetorno} onChange={e => setFechaRetorno(e.target.value)} className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2" />
+          <input type="date" value={fechaRetorno} onChange={e => setFechaRetorno(e.target.value)} className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-200" />
         </div>
         <div>
           <label className="font-bold text-white">Indique la fecha que desea asistir a firmar a la notaría:</label>
-          <input type="date" value={fechaFirma} onChange={e => setFechaFirma(e.target.value)} className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2" />
+          <input type="date" value={fechaFirma} onChange={e => setFechaFirma(e.target.value)} className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-200" />
         </div>
       </div>
       <button

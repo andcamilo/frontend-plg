@@ -93,6 +93,7 @@ const ConsultaVirtualForm = ({ formData, setFormData }: any) => {
         tipoServicio: '',
         nivelUrgencia: '',
         descripcion: formData.detallesPropuesta,
+        type: 'consulta-virtual',
         lawyer: lawyerEmail,
       };
       console.log('[ConsultaVirtualForm] Sending create-record:', recordData);
