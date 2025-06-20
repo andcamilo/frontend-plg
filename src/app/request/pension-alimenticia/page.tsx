@@ -43,7 +43,7 @@ const PensionAlimenticia: React.FC = () => {
 
   // Show payment buttons when user reaches the appropriate step
   useEffect(() => {
-    if (!store.token && (activeStep >= 1 || store.firmaYEntrega)) {
+    if (!store.token && (activeStep >= 1 /* 8 */ || store.firmaYEntrega)) {
       setShowPaymentButtons(true);
     } else {
       setShowPaymentButtons(false);
@@ -102,9 +102,9 @@ const PensionAlimenticia: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             solicitudId: store.solicitudId,
-            status: 10 
+            status: 10
           }),
         });
 
@@ -158,14 +158,15 @@ const PensionAlimenticia: React.FC = () => {
             <button
               onClick={handlePaymentClick}
               disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+              className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
             >
-              {loading ? 'Cargando...' : 'Pagar'}
+              {loading ? 'Cargando...' : 'Pagar en línea'}
             </button>
+
             <button
               onClick={handleSendAndPayLater}
               disabled={loading}
-              className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+              className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
             >
               {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
             </button>

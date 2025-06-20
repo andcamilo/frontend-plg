@@ -23,6 +23,7 @@ const SociedadEmpresa: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(1);
     console.log("🚀 ~ activeStep:", activeStep)
     const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
+    const [showPaymentButtons, setShowPaymentButtons] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const router = useRouter();
 
@@ -40,6 +41,15 @@ const SociedadEmpresa: React.FC = () => {
             setActiveStep(store.currentPosition);
         }
     }, [store.currentPosition]);
+
+    // Show payment buttons when user reaches the appropriate step
+    useEffect(() => {
+        if (!store.token && (activeStep >= 1 || store.ingresos)) {
+            setShowPaymentButtons(true);
+        } else {
+            setShowPaymentButtons(false);
+        }
+    }, [store.token, activeStep, store.ingresos]);
 
     const renderActiveForm = () => {
         switch (activeStep) {
@@ -77,6 +87,41 @@ const SociedadEmpresa: React.FC = () => {
     const handlePaymentClick = () => {
         setLoading(true);
         setShowPaymentWidget(true);
+        setShowPaymentButtons(false);
+    };
+
+    // Handle "Enviar y pagar más tarde" button click
+    const handleSendAndPayLater = async () => {
+        setLoading(true);
+        try {
+            // Update the solicitudId status to 10 using the update-request-all endpoint
+            if (store.solicitudId) {
+                const response = await fetch('/api/update-request-all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        solicitudId: store.solicitudId,
+                        status: 10
+                    }),
+                });
+
+                if (response.ok) {
+                    console.log('Solicitud status updated to 10 successfully');
+                    // Redirect to login page on success
+                    router.push('/login');
+                } else {
+                    console.error('Failed to update solicitud status');
+                }
+            } else {
+                console.error('No solicitudId found in store');
+            }
+        } catch (error) {
+            console.error('Error updating solicitud status:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const dentroPanama = Boolean(store.request?.dentroPanama && store.request?.dentroPanama !== "false");
@@ -197,20 +242,32 @@ const SociedadEmpresa: React.FC = () => {
                 * Para poder enviar o pagar la solicitud todos los campos deben estar llenos.
             </p>
 
-            {activeStep >= 12 || store.ingresos && (
+            {showPaymentButtons && (
                 <div className="mt-8">
-                    <WidgetLoader />
+                    <div className="flex flex-col gap-4">
+                        <button
+                            onClick={handlePaymentClick}
+                            disabled={loading}
+                            className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                        >
+                            {loading ? 'Cargando...' : 'Pagar en línea'}
+                        </button>
+
+                        <button
+                            onClick={handleSendAndPayLater}
+                            disabled={loading}
+                            className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                        >
+                            {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+                        </button>
+                    </div>
                 </div>
             )}
 
-            {store.token ? (
-                <div className="mt-8">
-                    <SaleComponent saleAmount={100} />
-                </div>
-            ) : (
-                <div className="mt-8 text-gray-400">
-                    Por favor, complete el widget de pago para continuar.
-                </div>
+            {showPaymentWidget && <WidgetLoader />}
+
+            {store.token && (
+                <div className="mt-8"><SaleComponent saleAmount={150} /></div>
             )}
 
             <div className="mt-8">
