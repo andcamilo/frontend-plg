@@ -10,15 +10,13 @@ import PensionAlimenticiaArchivosAdjuntos from '@components/pension-alimenticia/
 import PensionAlimenticiaFirmaYEntrega from '@components/pension-alimenticia/pensionAlimenticiaFirmaYEntrega';
 import PensionAlimenticiaSolicitudAdicional from '@components/pension-alimenticia/pensionAlimenticiaSolicitudAdicional';
 import PensionAlimenticiaResumen from '@components/pension-alimenticia/pensionAlimenticiaResumen';
-import WidgetLoader from '@/src/app/components/widgetLoader';
-import SaleComponent from '@/src/app/components/saleComponent';
 import AppStateContext from '@context/context';
 import { useRouter } from 'next/navigation';
+import PaymentModal from '@/src/app/components/PaymentModal';
 
 const PensionAlimenticia: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
-  console.log("🚀 ~ activeStep:", activeStep)
-  const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState<boolean>(false);
   const [showPaymentButtons, setShowPaymentButtons] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -80,8 +78,17 @@ const PensionAlimenticia: React.FC = () => {
   // Handle the payment button click
   const handlePaymentClick = () => {
     setLoading(true);
-    setShowPaymentWidget(true);
+    setIsPaymentModalOpen(true);
     setShowPaymentButtons(false);
+  };
+
+  const handleClosePaymentModal = () => {
+    setIsPaymentModalOpen(false);
+    setLoading(false);
+    // Show payment buttons again if modal is closed and no token is present
+    if (!store.token) {
+      setShowPaymentButtons(true);
+    }
   };
 
   // Handle "Enviar y pagar más tarde" button click
@@ -166,12 +173,6 @@ const PensionAlimenticia: React.FC = () => {
         </div>
       )}
 
-      {showPaymentWidget && <WidgetLoader />}
-
-      {store.token && (
-        <div className="mt-8"><SaleComponent saleAmount={150} /></div>
-      )}
-
       <div className="mt-8">
         <button className="bg-gray-500 text-white w-full py-3 rounded-lg" onClick={() => router.push('/home')}>Salir</button>
       </div>
@@ -209,6 +210,13 @@ const PensionAlimenticia: React.FC = () => {
           </div>
         )}
       </div>
+      {isPaymentModalOpen && (
+        <PaymentModal 
+            isOpen={isPaymentModalOpen}
+            onClose={handleClosePaymentModal}
+            saleAmount={150}
+        />
+      )}
     </HomeLayout>
   );
 };

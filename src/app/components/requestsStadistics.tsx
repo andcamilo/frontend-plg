@@ -259,7 +259,7 @@ const RequestsStatistics: React.FC = () => {
 
         return true;
       })
-      .filter(({ tipo, date, status, expediente, abogados }) => {
+      .filter(({ tipo, date, status, expediente, expedienteType, abogados }) => {
         const tipoMapping: { [key: string]: string } = {
           'propuesta-legal': 'Propuesta Legal',
           'consulta-legal': 'Propuesta Legal',
@@ -371,7 +371,7 @@ const RequestsStatistics: React.FC = () => {
   // ---- Format the data for <TableWithRequests> ----
   const transformData = (solicitudes: any[]) => {
     return solicitudes.map(
-      ({ id, tipo, emailSolicita, date, status, expediente, abogados }) => {
+      ({ id, tipo, emailSolicita, date, status, expediente, expedienteType, abogados }) => {
         const statusLabels: { [key: number]: string } = {
           0: 'Rechazada',
           1: 'Borrador',
@@ -411,6 +411,21 @@ const RequestsStatistics: React.FC = () => {
           'solicitud-cliente-recurrente': 'Solicitud Cliente Recurrente',
         };
 
+        const expedienteTypeClasses: { [key: string]: string } = {
+          'Migración': 'status-aprobada',
+          'Corporativo': 'status-en-proceso',
+          'Consultas y Propuestas': 'status-enviada',
+          'Familia': 'status-pagada',
+          'Propiedad Intelectual': 'status-rechazada',
+          'Dirección General de Ingresos': 'status-confirmando-pago',
+          'Laboral': 'status-finalizada',
+          'Propiedades': 'status-borrador',
+          'Otros': 'status-borrador',
+        };
+        const expedienteClass = (expedienteType && expedienteType !== '-')
+          ? (expedienteTypeClasses[expedienteType] || 'status-borrador')
+          : 'status-borrador';
+
         return {
           ID: id,
           Tipo: tipoMapping[tipo] || tipo,
@@ -419,6 +434,11 @@ const RequestsStatistics: React.FC = () => {
           Estatus: (
             <span className={`status-badge ${statusClasses[status]}`}>
               {statusLabels[status]}
+            </span>
+          ),
+          'Tipo de Expediente': (
+            <span className={`status-badge ${expedienteClass}`}>
+              {expedienteType || '-'}
             </span>
           ),
           Expediente: expediente,
