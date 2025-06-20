@@ -9,13 +9,14 @@ import Link from 'next/link';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import AppStateContext from "@context/consultaContext";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import CountrySelect from '@components/CountrySelect';
 import ReCAPTCHA from 'react-google-recaptcha';
-import { Modal, Box, Button } from "@mui/material";
+import WidgetLoader from '@/src/app/components/widgetLoader';
+import SaleComponent from '@/src/app/components/saleComponent';
 import BannerOpcionesConsulta from '@components/BannerOpcionesConsulta';
 import { FaPlay } from 'react-icons/fa';
 import {
@@ -47,6 +48,10 @@ const ConsultaPropuesta: React.FC = () => {
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const context = useContext(AppStateContext);
     const [recaptchaToken, setRecaptchaToken] = useState(null);
+    const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
+    const [showPaymentButtons, setShowPaymentButtons] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
+    const router = useRouter();
 
     if (!context) {
         throw new Error("AppStateContext must be used within an AppStateProvider");
@@ -1028,6 +1033,47 @@ const ConsultaPropuesta: React.FC = () => {
         setShowModal(!showModal); // Alterna el estado del modal
     };
 
+    // Handle the payment button click
+    const handlePaymentClick = () => {
+        setLoading(true);
+        setShowPaymentWidget(true);
+        setShowPaymentButtons(false);
+    };
+
+    // Handle "Enviar y pagar más tarde" button click
+    const handleSendAndPayLater = async () => {
+        setLoading(true);
+        try {
+            // Update the solicitudId status to 10 using the update-request-all endpoint
+            if (store.solicitudId) {
+                const response = await fetch('/api/update-request-all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        solicitudId: store.solicitudId,
+                        status: 10
+                    }),
+                });
+
+                if (response.ok) {
+                    console.log('Solicitud status updated to 10 successfully');
+                    // Redirect to login page on success
+                    router.push('/login');
+                } else {
+                    console.error('Failed to update solicitud status');
+                }
+            } else {
+                console.error('No solicitudId found in store');
+            }
+        } catch (error) {
+            console.error('Error updating solicitud status:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
             <h2 className="text-white text-4xl font-bold flex items-center">
@@ -1163,11 +1209,11 @@ const ConsultaPropuesta: React.FC = () => {
 
                 <div className="mb-6">
                     <h2 className="text-white text-2xl font-semibold">Información Personal</h2>
-                        <>
-                            <p className="text-white text-sm">* Coméntanos tu información como solicitante de la propuesta para poder contactarte.</p>
-                        </>
+                    <>
+                        <p className="text-white text-sm">* Coméntanos tu información como solicitante de la propuesta para poder contactarte.</p>
+                    </>
 
-  
+
                 </div>
                 <hr className="mb-4" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1364,15 +1410,15 @@ const ConsultaPropuesta: React.FC = () => {
                                 disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
                             />
                             {formData.archivoURL && (
-                            <p className="text-sm text-blue-500">
-                                <Link
-                                href={formData.archivoURL}
-                                target={formData.archivoURL.startsWith('/') ? undefined : '_blank'}
-                                rel={formData.archivoURL.startsWith('/') ? undefined : 'noopener noreferrer'}
-                                >
-                                    Ver documento actual
-                                </Link>
-                            </p>
+                                <p className="text-sm text-blue-500">
+                                    <Link
+                                        href={formData.archivoURL}
+                                        target={formData.archivoURL.startsWith('/') ? undefined : '_blank'}
+                                        rel={formData.archivoURL.startsWith('/') ? undefined : 'noopener noreferrer'}
+                                    >
+                                        Ver documento actual
+                                    </Link>
+                                </p>
                             )}
                         </div>
 
@@ -1643,7 +1689,7 @@ const ConsultaPropuesta: React.FC = () => {
                     <>
                         {!solicitudData && (
                             <>
-                                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                                {/* <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                                     {isLoading ? (
                                         <div className="flex items-center justify-center">
                                             <ClipLoader size={24} color="#ffffff" />
@@ -1652,13 +1698,43 @@ const ConsultaPropuesta: React.FC = () => {
                                     ) : (
                                         "Enviar y pagar"
                                     )}
-                                </button>
+                                </button> */}
+
+                                {showPaymentButtons && (
+                                    <div className="mt-8">
+                                        <div className="flex flex-col gap-4">
+                                            <button
+                                                onClick={handlePaymentClick}
+                                                disabled={loading}
+                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                                            >
+                                                {loading ? 'Cargando...' : 'Pagar en línea'}
+                                            </button>
+
+                                            <button
+                                                onClick={handleSendAndPayLater}
+                                                disabled={loading}
+                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                                            >
+                                                {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {showPaymentWidget && <WidgetLoader />}
+
+                                {store.token && (
+                                    <div className="mt-8"><SaleComponent saleAmount={150} /></div>
+                                )}
+
+
                             </>
                         )}
 
                         {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) > 19)) && (
                             <>
-                                <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
+                                {/* <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
                                     {isLoading ? (
                                         <div className="flex items-center justify-center">
                                             <ClipLoader size={24} color="#ffffff" />
@@ -1667,7 +1743,35 @@ const ConsultaPropuesta: React.FC = () => {
                                     ) : (
                                         "Enviar y pagar"
                                     )}
-                                </button>
+                                </button> */}
+
+                                {showPaymentButtons && (
+                                    <div className="mt-8">
+                                        <div className="flex flex-col gap-4">
+                                            <button
+                                                onClick={handlePaymentClick}
+                                                disabled={loading}
+                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                                            >
+                                                {loading ? 'Cargando...' : 'Pagar en línea'}
+                                            </button>
+
+                                            <button
+                                                onClick={handleSendAndPayLater}
+                                                disabled={loading}
+                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                                            >
+                                                {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {showPaymentWidget && <WidgetLoader />}
+
+                                {store.token && (
+                                    <div className="mt-8"><SaleComponent saleAmount={150} /></div>
+                                )}
                             </>
                         )}
 
