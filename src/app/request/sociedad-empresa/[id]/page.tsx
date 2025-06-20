@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState, useContext } from 'react';
 import HomeLayout from '@components/homeLayout';
-import AppStateContext from '@context/sociedadesContext'; 
+import AppStateContext from '@context/sociedadesContext';
 import SociedadEmpresaBienvenido from '@components/sociedad-empresa/sociedadEmpresaBienvenido';
 import SociedadEmpresaSolicitante from '@components/sociedad-empresa/sociedadEmpresaSolicitud';
 import SociedadEmpresaEmpresa from '@components/sociedad-empresa/sociedadEmpresaEmpresa';
@@ -23,10 +23,10 @@ const SociedadEmpresa: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(1);
     console.log("🚀 ~ activeStep:", activeStep)
     const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
+    const [showPaymentButtons, setShowPaymentButtons] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
-        const router = useRouter();
+    const router = useRouter();
 
-    // Access the context values
     const context = useContext(AppStateContext);
 
     if (!context) {
@@ -41,6 +41,15 @@ const SociedadEmpresa: React.FC = () => {
             setActiveStep(store.currentPosition);
         }
     }, [store.currentPosition]);
+
+    // Show payment buttons when user reaches the appropriate step
+    useEffect(() => {
+        if (!store.token && (activeStep >= 1 || store.ingresos)) {
+            setShowPaymentButtons(true);
+        } else {
+            setShowPaymentButtons(false);
+        }
+    }, [store.token, activeStep, store.ingresos]);
 
     const renderActiveForm = () => {
         switch (activeStep) {
@@ -78,170 +87,232 @@ const SociedadEmpresa: React.FC = () => {
     const handlePaymentClick = () => {
         setLoading(true);
         setShowPaymentWidget(true);
+        setShowPaymentButtons(false);
+    };
+
+    // Handle "Enviar y pagar más tarde" button click
+    const handleSendAndPayLater = async () => {
+        setLoading(true);
+        try {
+            // Update the solicitudId status to 10 using the update-request-all endpoint
+            if (store.solicitudId) {
+                const response = await fetch('/api/update-request-all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        solicitudId: store.solicitudId,
+                        status: 10
+                    }),
+                });
+
+                if (response.ok) {
+                    console.log('Solicitud status updated to 10 successfully');
+                    // Redirect to login page on success
+                    router.push('/login');
+                } else {
+                    console.error('Failed to update solicitud status');
+                }
+            } else {
+                console.error('No solicitudId found in store');
+            }
+        } catch (error) {
+            console.error('Error updating solicitud status:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const dentroPanama = Boolean(store.request?.dentroPanama && store.request?.dentroPanama !== "false");
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const renderSidebar = () => (
+        <div className="text-white">
+            <h2 className="text-3xl mt-2 text-center font-bold mb-4">Nueva Sociedad / Empresa</h2>
+            <p className="mb-8 text-center">Complete cada uno de los siguientes apartados:</p>
+            <div className="grid grid-cols-3 gap-4 gap-y-4">
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center text-white ${activeStep === 1 ? 'bg-profile' : 'bg-gray-800'}`}
+                    onClick={() => handleStepChange(1, store.bienvenido)}
+                    disabled={!store.bienvenido}
+                >
+                    ¡Bienvenido!
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.solicitante ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(2, store.solicitante)}
+                    disabled={!store.solicitante}
+                >
+                    Solicitante
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.empresa || store.request?.nombreSociedad_1 ? (activeStep === 3 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(3, !!(store.empresa || store.request?.nombreSociedad_1))}
+                    disabled={!(store.empresa || store.request?.nombreSociedad_1)}
+                >
+                    Empresa
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.personas || store.request?.nombreSociedad_1 ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(4, !!(store.personas || store.request?.nombreSociedad_1))}
+                    disabled={!(store.personas || store.request?.nombreSociedad_1)}
+                >
+                    Personas
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.directores ? (activeStep === 5 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(5, store.directores)}
+                    disabled={!store.directores}
+                >
+                    Directores
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.dignatarios ? (activeStep === 6 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(6, store.dignatarios)}
+                    disabled={!store.dignatarios}
+                >
+                    Dignatarios
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.accionistas ? (activeStep === 7 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(7, store.accionistas)}
+                    disabled={!store.accionistas}
+                >
+                    Accionistas
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.capital ? (activeStep === 8 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(8, store.capital)}
+                    disabled={!store.capital}
+                >
+                    Capital
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.poder ? (activeStep === 9 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(9, store.poder)}
+                    disabled={!store.poder}
+                >
+                    Poder
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.actividades ? (activeStep === 10 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(10, store.actividades)}
+                    disabled={!store.actividades}
+                >
+                    Actividades
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.ingresos ? (activeStep === 11 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(11, !!(store.ingresos || dentroPanama))}
+                    disabled={!(store.ingresos || dentroPanama)}
+                >
+                    Ingresos
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.solicitudAdicional ? (activeStep === 12 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(12, store.solicitudAdicional)}
+                    disabled={!store.solicitudAdicional}
+                >
+                    Solicitud Adicional
+                </button>
+
+                <button
+                    className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.resumen ? (activeStep === 13 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+                    onClick={() => handleStepChange(13, store.resumen)}
+                    disabled={!store.resumen}
+                >
+                    Resumen
+                </button>
+            </div>
+
+            <p className="my-8 text-center">
+                * Para poder enviar o pagar la solicitud todos los campos deben estar llenos.
+            </p>
+
+            {showPaymentButtons && (
+                <div className="mt-8">
+                    <div className="flex flex-col gap-4">
+                        <button
+                            onClick={handlePaymentClick}
+                            disabled={loading}
+                            className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                        >
+                            {loading ? 'Cargando...' : 'Pagar en línea'}
+                        </button>
+
+                        <button
+                            onClick={handleSendAndPayLater}
+                            disabled={loading}
+                            className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                        >
+                            {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {showPaymentWidget && <WidgetLoader />}
+
+            {store.token && (
+                <div className="mt-8"><SaleComponent saleAmount={150} /></div>
+            )}
+
+            <div className="mt-8">
+                <button className="bg-gray-500 text-white w-full py-3 rounded-lg" onClick={() => router.push('/home')}>Salir</button>
+            </div>
+        </div>
+    );
+
+    const handleStepChange = (step: number, condition: boolean) => {
+        if (condition) {
+            setActiveStep(step);
+            setIsMobileMenuOpen(false); // cerrar menú si está abierto
+        }
+    };
 
     return (
         <HomeLayout>
-            <div className="relative w-full h-screen flex overflow-hidden">
-                <div className="w-[75%] h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
-                    {renderActiveForm()}
-                </div>
-                <div className="w-[25%] h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
-                    <div className="text-white">
-                        <h2 className="text-3xl text-center font-bold mb-4">Nueva Sociedad / Empresa</h2>
-                        <p className="mb-8 text-center">Complete cada uno de los siguientes apartados:</p>
-                        <div className="grid grid-cols-3 gap-4">
-        
-                            <button
-                                className={`p-2 text-xs rounded-lg text-white ${activeStep === 1 ? 'bg-profile' : 'bg-gray-800'}`}
-                                onClick={() => store.bienvenido && setActiveStep(1)}
-                                disabled={!store.bienvenido}
-                            >
-                                ¡Bienvenido!
-                            </button>
+            <div className="relative w-full h-screen overflow-hidden">
+                {/* Botón móvil que cambia entre "Menú" y "Cerrar" */}
+                <button
+                    className="fixed top-2 right-3 z-50 flex items-center gap-1 px-2 py-1 text-white text-sm md:hidden"
+                    onClick={() => setIsMobileMenuOpen(prev => !prev)}
+                >
+                    <span>{isMobileMenuOpen ? '' : 'Menú'}</span>
+                    <span className="text-2xl">{isMobileMenuOpen ? '✕' : '☰'}</span>
+                </button>
 
-                            <button
-                                className={`p-2 text-xs  rounded-lg ${store.solicitante ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => store.solicitante && setActiveStep(2)}
-                                disabled={!store.solicitante}
-                            >
-                                Solicitante
-                            </button>
+                {/* Contenido principal */}
+                <div className={`h-full transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'hidden' : 'block md:flex'}`}>
+                    <div className="w-full md:w-[75%] h-full p-4 md:p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
+                        {renderActiveForm()}
+                    </div>
 
-                            <button
-                                className={`p-2 text-xs rounded-lg ${store.empresa || store.request?.nombreSociedad_1
-                                    ? (activeStep === 3 ? 'bg-profile text-white' : 'bg-gray-800 text-white')
-                                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => (store.empresa || store.request?.nombreSociedad_1) && setActiveStep(3)}
-                                disabled={!(store.empresa || store.request?.nombreSociedad_1)}
-                            >
-                                Empresa
-                            </button>
-
-            
-                            <button
-                                className={`p-2 text-xs rounded-lg ${store.personas || store.request?.nombreSociedad_1
-                                    ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white')
-                                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => (store.personas || store.request?.nombreSociedad_1) && setActiveStep(4)}
-                                disabled={!(store.personas || store.request?.nombreSociedad_1)}
-                            >
-                                Personas
-                            </button>
-
-      
-                            <button
-                                className={`p-2 text-xs  rounded-lg ${store.directores ? (activeStep === 5 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => store.directores && setActiveStep(5)}
-                                disabled={!store.directores}
-                            >
-                                Directores
-                            </button>
-
-                            <button
-                                className={`p-2 text-xs rounded-lg ${store.dignatarios ? (activeStep === 6 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => store.dignatarios && setActiveStep(6)}
-                                disabled={!store.dignatarios}
-                            >
-                                Dignatarios
-                            </button>
-
-                            <button
-                                className={`p-2 text-xs rounded-lg ${store.accionistas ? (activeStep === 7 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => store.accionistas && setActiveStep(7)}
-                                disabled={!store.accionistas}
-                            >
-                                Accionistas
-                            </button>
-
-                            <button
-                                className={`p-2 text-xs rounded-lg ${store.capital ? (activeStep === 8 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => store.capital && setActiveStep(8)}
-                                disabled={!store.capital}
-                            >
-                                Capital
-                            </button>
-
-                            <button
-                                className={`p-2 text-xs rounded-lg ${store.poder ? (activeStep === 9 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => store.poder && setActiveStep(9)}
-                                disabled={!store.poder}
-                            >
-                                Poder
-                            </button>
-
-                            <button
-                                className={`p-2 text-xs rounded-lg ${store.actividades ? (activeStep === 10 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => store.actividades && setActiveStep(10)}
-                                disabled={!store.actividades}
-                            >
-                                Actividades
-                            </button>
-
-                            <button
-                                className={`p-2 text-xs rounded-lg ${store.ingresos ? (activeStep === 11 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => (store.ingresos || Boolean(store.request?.dentroPanama)) && setActiveStep(11)}
-                                disabled={!(store.ingresos || Boolean(store.request?.dentroPanama))}
-                            >
-                                Ingresos
-                            </button>
-
-                            <button
-                                className={`p-2 text-xs  rounded-lg ${store.solicitudAdicional ? (activeStep === 12 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => store.solicitudAdicional && setActiveStep(12)}
-                                disabled={!store.solicitudAdicional}
-                            >
-                                Solicitud adicional
-                            </button>
-
-                            <button
-                                className={`p-2 text-xs rounded-lg ${store.resumen ? (activeStep === 13 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                onClick={() => store.resumen && setActiveStep(13)}
-                                disabled={!store.resumen}
-                            >
-                                Resumen
-                            </button>
-                        </div>
-
-                        <p className="my-8 text-center">
-                            * Para poder enviar o pagar la solicitud todos los campos deben estar llenos.
-                        </p>
-
-                        {activeStep >= 12 || store.ingresos && (
-                            <div className="mt-8">
-                                <WidgetLoader />
-                            </div>
-                        )}
-
-                        {store.token ? (
-                            <div className="mt-8">
-                                <SaleComponent saleAmount={100} />
-                            </div>
-                        ) : (
-                            <div className="mt-8 text-gray-400">
-                                Por favor, complete el widget de pago para continuar.
-                            </div>
-                        )}
-
-                        <div className="mt-8">
-                         <button className="bg-gray-500 text-white w-full py-3 rounded-lg" onClick={() => router.push('/home')}>Salir</button>
-                        </div>
+                    {/* Submenú visible solo en escritorio */}
+                    <div className="hidden md:block w-[25%] h-full p-8 overflow-y-scroll bg-gray-900 scrollbar-thin">
+                        {renderSidebar()}
                     </div>
                 </div>
+
+                {/* Menú móvil */}
+                {isMobileMenuOpen && (
+                    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 z-40 overflow-y-scroll p-6 md:hidden">
+                        {renderSidebar()}
+                    </div>
+                )}
             </div>
         </HomeLayout>
     );

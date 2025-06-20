@@ -36,12 +36,13 @@ const User: React.FC = () => {
     const id = params?.id as string | undefined;
     const [puedeEditarEmail, setPuedeEditarEmail] = useState(false);
     const [archivoFile, setArchivoFile] = useState<File | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         nombre: '',
         email: '',
         telefono: '',
-        rol: '',
+        rol: 'Administrador',
         cedulaPasaporte: "",
         archivoURL: "",
     });
@@ -133,6 +134,8 @@ const User: React.FC = () => {
     };
 
     const handleSave = async () => {
+        setIsLoading(true);
+
         if (id) {
             try {
 
@@ -177,7 +180,9 @@ const User: React.FC = () => {
                         background: '#2c2c3e',
                         color: '#fff',
                     });
-                    window.location.reload();
+                    setTimeout(() => {
+                        router.push('/dashboard/users');
+                    }, 1600);
                 }
             } catch (error) {
                 Swal.fire({
@@ -189,6 +194,8 @@ const User: React.FC = () => {
                     color: '#fff',
                 });
                 console.error('Error updating user:', error);
+            } finally {
+                setIsLoading(false);
             }
         } else {
             try {
@@ -255,14 +262,14 @@ const User: React.FC = () => {
                 const responseDataUpdate = await axios.post('/api/update-user', responseAdjunto);
 
                 if (archivoFile && responseDataUpdate.status === 200) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Usuario actualizado con adjunto',
-                        timer: 2000,
-                        showConfirmButton: false,
-                        background: '#2c2c3e',
-                        color: '#fff',
-                    });
+
+                    setTimeout(() => {
+                        router.push('/dashboard/users');
+                    }, 1600);
+                } else {
+                    setTimeout(() => {
+                        router.push('/dashboard/users');
+                    }, 1600);
                 }
 
             } catch (error: any) {
@@ -279,6 +286,8 @@ const User: React.FC = () => {
                     background: '#2c2c3e',
                     color: '#fff',
                 });
+            } finally {
+                setIsLoading(false);
             }
         }
 
@@ -387,11 +396,16 @@ const User: React.FC = () => {
                     Volver
                 </button>
                 <button
-                    className="bg-pink-600 text-white px-6 py-3 rounded"
+                    className={`px-6 py-3 rounded transition ${isLoading
+                        ? 'bg-pink-400 text-white cursor-not-allowed'
+                        : 'bg-pink-600 text-white hover:bg-pink-700'
+                        }`}
                     onClick={handleSave}
+                    disabled={isLoading}
                 >
-                    Guardar
+                    {isLoading ? 'Guardando...' : 'Guardar'}
                 </button>
+
             </div>
         </div>
     );

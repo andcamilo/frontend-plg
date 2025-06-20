@@ -31,7 +31,7 @@ export default function BotonesPreguntasYContactos({
                     href={primerHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center w-64"
+                    className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center w-full max-w-[200px] mx-auto"
                 >
                     {primerTexto}
                 </Link>
@@ -39,7 +39,7 @@ export default function BotonesPreguntasYContactos({
 
             <Link
                 href="/request/consulta-propuesta"
-                className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center w-64"
+                className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center w-full max-w-[200px] mx-auto"
             >
                 Solicitar Propuesta
                 <br />
@@ -51,7 +51,7 @@ export default function BotonesPreguntasYContactos({
                     href={preguntasHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center w-64"
+                    className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center w-full max-w-[200px] mx-auto"
                 >
                     Preguntas Frecuentes
                 </Link>
@@ -61,7 +61,7 @@ export default function BotonesPreguntasYContactos({
                 href="/contacts"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center w-64"
+                className="bg-profile text-white font-semibold py-4 px-2 rounded-lg transition-colors block h-24 flex items-center justify-center text-center w-full max-w-[200px] mx-auto"
             >
                 Contáctanos
             </Link>

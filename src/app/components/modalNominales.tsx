@@ -60,7 +60,7 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
 
     const [formData, setFormData] = useState<any>({
         tipoSolicitud: tipoLegible || solicitudData.tipo,
-        nombre: '',
+        nombreSociedadFundacion: '',
         tipoSociedadFundacion: '',
         poseeNominales: 'No',
         poseeDirectoresNominales: 'No',
@@ -71,6 +71,14 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
         miembrosNominales: [],
         agenteResidente: '',
         agenteResidenteNombre: '',
+        poseeAvisoOperacion: 'No',
+        avisoOperacionFile: null,
+        archivoAvisoOperacion: '',
+        libroAccionesFile: null,
+        archivoLibroAcciones: '',
+        acciones: [],
+        reglamentoInternoFile: null,
+        archivoReglamentoInterno: '',
         ruc: '',
         rucFile: null,
         archivoRUC: '',
@@ -106,8 +114,12 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                     setFormData((prev: any) => ({
                         ...prev,
                         ...data,
-                        nombre: data.name,
-
+                        nombreSociedadFundacion: data.nombreSociedadFundacion,
+                        acciones:
+                            data.archivosAcciones && data.archivosAcciones.length > 0
+                                ? data.archivosAcciones.map((url: string) => ({ archivo: null, url }))
+                                : [{ archivo: null, url: '' }],
+                        archivosAcciones: data.archivosAcciones || [],
                     }));
                 }
             } catch (error) {
@@ -147,6 +159,26 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
         const copia = [...formData[tipo]];
         copia.splice(index, 1);
         setFormData((prev: any) => ({ ...prev, [tipo]: copia }));
+    };
+
+    const agregarAccion = () => {
+        setFormData((prev: any) => ({
+            ...prev,
+            acciones: [...prev.acciones, { archivo: null, url: '' }],
+        }));
+    };
+
+    const actualizarAccionArchivo = (index: number, archivo: File) => {
+        const nuevas = [...formData.acciones];
+        nuevas[index].archivo = archivo;
+        setFormData((prev: any) => ({ ...prev, acciones: nuevas }));
+    };
+
+    const eliminarAccion = (index: number) => {
+        if (formData.acciones.length === 1) return;
+        const nuevas = [...formData.acciones];
+        nuevas.splice(index, 1);
+        setFormData((prev: any) => ({ ...prev, acciones: nuevas }));
     };
 
     const uploadFileToFirebase = (file: File, path: string): Promise<string> => {
@@ -226,6 +258,49 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                 otrosDatos.archivoEscritura = await uploadFileToFirebase(escrituraFile, `uploads/${expedienteIdFinal}/escritura`);
             }
 
+            if (formData.avisoOperacionFile) {
+                otrosDatos.archivoAvisoOperacion = await uploadFileToFirebase(
+                    formData.avisoOperacionFile,
+                    `uploads/${expedienteIdFinal}/aviso-operacion`
+                );
+            }
+
+            if (formData.libroAccionesFile) {
+                otrosDatos.archivoLibroAcciones = await uploadFileToFirebase(
+                    formData.libroAccionesFile,
+                    `uploads/${expedienteIdFinal}/libro-acciones`
+                );
+            }
+
+            const nuevasAcciones: string[] = [];
+
+            for (let i = 0; i < formData.acciones.length; i++) {
+                const accion = formData.acciones[i];
+
+                if (accion.archivo) {
+                    const url = await uploadFileToFirebase(
+                        accion.archivo,
+                        `uploads/${expedienteIdFinal}/acciones/${i}`
+                    );
+                    nuevasAcciones.push(url);
+                } else if (accion.url) {
+                    nuevasAcciones.push(accion.url);
+                }
+            }
+
+            if (nuevasAcciones.length > 0) {
+                otrosDatos.archivosAcciones = nuevasAcciones;
+            }
+
+            if (formData.reglamentoInternoFile) {
+                otrosDatos.archivoReglamentoInterno = await uploadFileToFirebase(
+                    formData.reglamentoInternoFile,
+                    `uploads/${expedienteIdFinal}/reglamento-interno`
+                );
+            }
+
+            delete otrosDatos.acciones;
+
             const finalPayload = {
                 name: solicitudData?.nombreSolicita,
                 lastName: "",
@@ -267,7 +342,7 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
 
                     <div className="col-span-2">
                         <label className="text-white">Nombre de la Sociedad/Fundación</label>
-                        <input name="nombre" value={formData.nombre} onChange={handleChange} className={styledInput} />
+                        <input name="nombreSociedadFundacion" value={formData.nombreSociedadFundacion} onChange={handleChange} className={styledInput} />
                     </div>
 
                     <div className="col-span-2">
@@ -421,45 +496,46 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                                     <option>Si</option>
                                 </select>
                             </div>
-                            {formData.poseeMiembrosNominales === 'Si' && (
-                                <>
-                                    {formData.miembrosNominales.map((mbr: any, i: number) => (
-                                        <div key={i} className="col-span-2 flex flex-col md:flex-row md:items-center gap-2">
-                                            <div className="flex-1">
-                                                <select
-                                                    value={mbr.abogado}
-                                                    onChange={(e) => actualizarNominal('miembrosNominales', i, 'abogado', e.target.value)}
-                                                    className={styledInput}
+                            {formData.poseeMiembrosNominales === 'Si' &&
+                                !['new-sociedad-empresa', 'Sociedad / Empresa'].includes(solicitudData.tipo) && (
+                                    <>
+                                        {formData.miembrosNominales.map((mbr: any, i: number) => (
+                                            <div key={i} className="col-span-2 flex flex-col md:flex-row md:items-center gap-2">
+                                                <div className="flex-1">
+                                                    <select
+                                                        value={mbr.abogado}
+                                                        onChange={(e) => actualizarNominal('miembrosNominales', i, 'abogado', e.target.value)}
+                                                        className={styledInput}
+                                                    >
+                                                        <option value="">Seleccione abogado</option>
+                                                        {abogadosDisponibles.map((a) => (
+                                                            <option key={a.id} value={a.id}>{a.nombre}</option>
+                                                        ))}
+                                                        <option value="otros">Otros</option>
+                                                    </select>
+                                                    {mbr.abogado === 'otros' && (
+                                                        <input
+                                                            placeholder="Nombre otro"
+                                                            value={mbr.otro}
+                                                            onChange={(e) => actualizarNominal('miembrosNominales', i, 'otro', e.target.value)}
+                                                            className={`${styledInput} mt-2`}
+                                                        />
+                                                    )}
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => eliminarNominal('miembrosNominales', i)}
+                                                    className="bg-red-600 text-white rounded px-3 py-1 text-sm h-fit"
                                                 >
-                                                    <option value="">Seleccione abogado</option>
-                                                    {abogadosDisponibles.map((a) => (
-                                                        <option key={a.id} value={a.id}>{a.nombre}</option>
-                                                    ))}
-                                                    <option value="otros">Otros</option>
-                                                </select>
-                                                {mbr.abogado === 'otros' && (
-                                                    <input
-                                                        placeholder="Nombre otro"
-                                                        value={mbr.otro}
-                                                        onChange={(e) => actualizarNominal('miembrosNominales', i, 'otro', e.target.value)}
-                                                        className={`${styledInput} mt-2`}
-                                                    />
-                                                )}
+                                                    Eliminar
+                                                </button>
                                             </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => eliminarNominal('miembrosNominales', i)}
-                                                className="bg-red-600 text-white rounded px-3 py-1 text-sm h-fit"
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
-                                    ))}
-                                    {formData.miembrosNominales.length < 5 && (
-                                        <button type="button" onClick={() => agregarNominal('miembrosNominales')} className="bg-profile text-white py-1 px-3 rounded-lg mt-2">Agregar Miembro Nominal</button>
-                                    )}
-                                </>
-                            )}
+                                        ))}
+                                        {formData.miembrosNominales.length < 5 && (
+                                            <button type="button" onClick={() => agregarNominal('miembrosNominales')} className="bg-profile text-white py-1 px-3 rounded-lg mt-2">Agregar Miembro Nominal</button>
+                                        )}
+                                    </>
+                                )}
                         </>
                     )}
 
@@ -473,8 +549,152 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                         </select>
                     </div>
                     {formData.agenteResidente === 'otros' && (
-                        <input name="agenteResidenteNombre" placeholder="Nombre agente" value={formData.agenteResidenteNombre} onChange={handleChange} className={styledInput} />
+                        <>
+                            <div className="col-span-1">
+                                <input name="agenteResidenteNombre" className={styledInput} placeholder="Nombre agente" value={formData.agenteResidenteNombre} onChange={handleChange} />
+                            </div>
+                            <div className="col-span-1"></div>
+                        </>
                     )}
+
+                    {/* Posee aviso de operación */}
+                    {['new-sociedad-empresa', 'Sociedad / Empresa'].includes(solicitudData.tipo) && (
+                        <div className="col-span-2">
+                            <label className="text-white">¿Posee la sociedad aviso de operaciones?</label>
+                            <select
+                                name="poseeAvisoOperacion"
+                                value={formData.poseeAvisoOperacion}
+                                onChange={handleChange}
+                                className={styledInput}
+                            >
+                                <option>No</option>
+                                <option>Si</option>
+                            </select>
+                        </div>
+                    )}
+
+                    {/* Campo de adjunto solo si selecciona "Si" */}
+                    {formData.poseeAvisoOperacion === 'Si' &&
+                        ['new-sociedad-empresa', 'Sociedad / Empresa'].includes(solicitudData.tipo) && (
+                            <div className="col-span-2">
+                                <label className="text-white">Adjunte el Aviso de Operación de la sociedad</label>
+                                <input
+                                    type="file"
+                                    className={styledInput}
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            avisoOperacionFile: file,
+                                        }));
+                                    }}
+                                />
+                                {formData.archivoAvisoOperacion && (
+                                    <p className="text-sm text-blue-500 mt-1">
+                                        <a href={formData.archivoAvisoOperacion} target="_blank" rel="noopener noreferrer">
+                                            Ver documento actual
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                    {/* LIBRO DE ACCIONES - Solo para sociedades */}
+                    {(formData.tipoSolicitud === 'Sociedad / Empresa' || formData.tipoSolicitud === 'new-sociedad-empresa') && (
+                        <div className="col-span-2">
+                            <label className="text-white">Agregar Libro de acciones</label>
+                            <input
+                                type="file"
+                                className={styledInput}
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        libroAccionesFile: file,
+                                    }));
+                                }}
+                            />
+                            {formData.archivoLibroAcciones && (
+                                <p className="text-sm text-blue-500 mt-1">
+                                    <a href={formData.archivoLibroAcciones} target="_blank" rel="noopener noreferrer">
+                                        Ver documento actual
+                                    </a>
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ACCIONES - adjuntos dinámicos */}
+                    {(formData.tipoSolicitud === 'Sociedad / Empresa' || formData.tipoSolicitud === 'new-sociedad-empresa') && (
+                        <div className="col-span-2">
+                            <label className="text-white">Agregar acciones</label>
+
+                            {formData.acciones.map((accion: any, i: number) => (
+                                <div key={i} className="flex flex-col md:flex-row md:items-center gap-2 mt-2">
+                                    <div className="flex-1">
+                                        <input
+                                            type="file"
+                                            className={styledInput}
+                                            onChange={(e) => {
+                                                const archivo = e.target.files?.[0];
+                                                if (archivo) actualizarAccionArchivo(i, archivo);
+                                            }}
+                                        />
+                                        {accion.url && (
+                                            <p className="text-sm text-blue-500 mt-1">
+                                                <a href={accion.url} target="_blank" rel="noopener noreferrer">
+                                                    Ver documento actual
+                                                </a>
+                                            </p>
+                                        )}
+                                    </div>
+                                    {formData.acciones.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => eliminarAccion(i)}
+                                            className="bg-red-600 text-white rounded px-3 py-1 text-sm h-fit"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+
+                            <button
+                                type="button"
+                                onClick={agregarAccion}
+                                className="bg-profile text-white py-1 px-3 rounded-lg mt-2"
+                            >
+                                Agregar acción
+                            </button>
+                        </div>
+                    )}
+
+                    {/* REGLAMENTO INTERNO - Solo fundaciones */}
+                    {(formData.tipoSolicitud === 'Fundación de Interés Privado' ||
+                        formData.tipoSolicitud === 'fundacion-interes-privado' || formData.tipoSolicitud === 'new-fundacion') && (
+                            <div className="col-span-2">
+                                <label className="text-white">Agregar reglamento interno (Adjuntar Fundaciones)</label>
+                                <input
+                                    type="file"
+                                    className={styledInput}
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            reglamentoInternoFile: file,
+                                        }));
+                                    }}
+                                />
+                                {formData.archivoReglamentoInterno && (
+                                    <p className="text-sm text-blue-500 mt-1">
+                                        <a href={formData.archivoReglamentoInterno} target="_blank" rel="noopener noreferrer">
+                                            Ver documento actual
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                     <div className="col-span-1">
                         <label className="text-white block mb-1">Número RUC</label>

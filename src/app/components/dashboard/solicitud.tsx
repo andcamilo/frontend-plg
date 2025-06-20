@@ -2140,7 +2140,7 @@ const Request: React.FC = () => {
                                 className="bg-profile text-white px-4 py-2 rounded mt-8"
                                 onClick={openModal}
                             >
-                                Agregar Directores y Dignatarios Nominales
+                                Información de Registro de la Sociedad/Fundación
                             </button>
                         </>
                     )}
