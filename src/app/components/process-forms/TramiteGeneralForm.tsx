@@ -66,7 +66,7 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
           solicitudId, 
           expedienteId: recordId,
           expedienteType: recordType,
-          status: 10,
+          status: 1,
         }),
       });
       if (!updateRes.ok) throw new Error('Error al actualizar la solicitud con expedienteId');

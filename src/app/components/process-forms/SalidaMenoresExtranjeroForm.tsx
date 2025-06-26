@@ -142,7 +142,7 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
         solicitudId,
         expedienteId: recordId,
         expedienteType: recordType,
-        status: 10,
+        status: 1,
       });
       console.log('[SalidaMenoresExtranjeroForm] Response from update-request-all:', updateRes.data);
 

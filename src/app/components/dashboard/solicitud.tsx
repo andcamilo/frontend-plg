@@ -10,6 +10,7 @@ import { backendBaseUrl, backendEnv } from '@utils/env';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import { auth } from "@configuration/firebase";
 import ModalNominales from '@/src/app/components/modalNominales';
+import ModalExpediente from '@/src/app/components/ModalExpediente';
 import Link from 'next/link';
 import {
     firebaseApiKey,
@@ -76,6 +77,10 @@ const Request: React.FC = () => {
         setIsModalOpen(false);
         /* fetchData(); */
     };
+
+    const [isExpedienteModalOpen, setIsExpedienteModalOpen] = useState(false);
+    const openExpedienteModal = () => setIsExpedienteModalOpen(true);
+    const closeExpedienteModal = () => setIsExpedienteModalOpen(false);
 
     const [formData, setFormData] = useState<{
         cuenta: string;
@@ -2167,6 +2172,15 @@ const Request: React.FC = () => {
                     return (
                       <>
                         <h3 className="text-lg font-bold text-white mt-6">Expediente relacionado</h3>
+                        <div className="flex justify-between items-center mb-4">
+                          <div></div>
+                          <button
+                            className="bg-profile text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                            onClick={openExpedienteModal}
+                          >
+                            Agregar Item en Expediente
+                          </button>
+                        </div>
                         {itemValues.length > 0 ? (
                           <table className="w-full text-gray-300 mt-2">
                             <thead>
@@ -2232,6 +2246,37 @@ const Request: React.FC = () => {
                         />
                     </div>
                 </div>
+            )}
+
+            {isExpedienteModalOpen && (
+                <ModalExpediente
+                    isOpen={isExpedienteModalOpen}
+                    onClose={closeExpedienteModal}
+                    solicitudId={id || ''}
+                    onSuccess={() => {
+                        // Refresh the expediente data
+                        if (id) {
+                            const fetchExpediente = async () => {
+                                try {
+                                    const db = getFirestore();
+                                    const expedienteRef = collection(db, 'expediente');
+                                    const q = query(expedienteRef, where('solicitud', '==', id));
+                                    const querySnapshot = await getDocs(q);
+                         
+                                    if (!querySnapshot.empty) {
+                                        setExpedienteRecord(querySnapshot.docs[0].data());
+                                    } else {
+                                        setExpedienteRecord(null);
+                                    }
+                                } catch (err) {
+                                    console.error('Error fetching expediente:', err);
+                                    setExpedienteRecord(null);
+                                }
+                            };
+                            fetchExpediente();
+                        }
+                    }}
+                />
             )}
 
 

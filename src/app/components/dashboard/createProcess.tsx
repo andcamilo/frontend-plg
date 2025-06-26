@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import TableWithRequests from '@components/TableWithRequests';
-import get from 'lodash/get';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 import Link from 'next/link';
 import { auth } from "@configuration/firebase";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
 import CreateProcessFormSI from './CreateProcessFormSI';
 import CreateProcessFormNO from './CreateProcessFormNO';
 
@@ -56,13 +52,6 @@ const Actions: React.FC<{ id: string }> = ({ id }) => {
 };
 
 const CreateProcessForm: React.FC = () => {
-  const [data, setData] = useState<any[]>([]);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [hasPrevPage, setHasPrevPage] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const rowsPerPage = 10;
   const [form, setForm] = useState({ email: '', tipoTramite: '', tipoSolicitud: '' });
   const [form2, setForm2] = useState({
     nombre: '',

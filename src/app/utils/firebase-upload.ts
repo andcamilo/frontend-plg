@@ -8,6 +8,7 @@ import {
   firebaseMessagingSenderId, 
   firebaseAppId 
 } from '@utils/env'; 
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: firebaseApiKey,
@@ -20,6 +21,8 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
+export const db = getFirestore(app);
+export { app };
 
 export const uploadFile = async (file: File): Promise<string> => {
   try {
