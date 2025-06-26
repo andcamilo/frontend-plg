@@ -371,7 +371,7 @@ const RequestsStatistics: React.FC = () => {
   // ---- Format the data for <TableWithRequests> ----
   const transformData = (solicitudes: any[]) => {
     return solicitudes.map(
-      ({ id, tipo, emailSolicita, date, status, expediente, expedienteType, abogados }) => {
+      ({ id, tipo, emailSolicita, date, status, expediente, expedienteType, abogados }, index) => {
         const statusLabels: { [key: number]: string } = {
           0: 'Rechazada',
           1: 'Borrador',
@@ -426,6 +426,39 @@ const RequestsStatistics: React.FC = () => {
           ? (expedienteTypeClasses[expedienteType] || 'status-borrador')
           : 'status-borrador';
 
+        // --- Expediente type mapping logic ---
+        const validTypes = [
+          'propuesta-legal',
+          'consulta-escrita',
+          'consulta-virtual',
+          'consulta-presencial',
+          'new-fundacion-interes-privado',
+          'new-sociedad-empresa',
+          'menores-al-extranjero',
+          'pension',
+          'pension-alimenticia',
+        ];
+        let mappedExpedienteType = '';
+        if (tipo && validTypes.includes(tipo)) {
+          if ([
+            'propuesta-legal',
+            'consulta-escrita',
+            'consulta-virtual',
+            'consulta-presencial'
+          ].includes(tipo)) {
+            mappedExpedienteType = 'Consultas y Propuestas';
+          } else if ([
+            'new-fundacion-interes-privado',
+            'new-sociedad-empresa'
+          ].includes(tipo)) {
+            mappedExpedienteType = 'Corporativo';
+          } else if (tipo === 'menores-al-extranjero') {
+            mappedExpedienteType = 'Migración';
+          } else if (tipo === 'pension' || tipo === 'pension-alimenticia') {
+            mappedExpedienteType = 'Familia';
+          }
+        }
+
         return {
           ID: id,
           Tipo: tipoMapping[tipo] || tipo,
@@ -438,7 +471,7 @@ const RequestsStatistics: React.FC = () => {
           ),
           'Tipo de Expediente': (
             <span className={`status-badge ${expedienteClass}`}>
-              {expedienteType || '-'}
+              {mappedExpedienteType || '-'}
             </span>
           ),
           Expediente: expediente,

@@ -17,6 +17,8 @@ import Link from 'next/link';
 import BannerOpciones from '@components/BannerOpciones';
 import BotonesPreguntasYContactos from '@components/botonesPreguntasYContactos';
 import { FaPlay } from 'react-icons/fa';
+import Cookies from 'js-cookie';
+import { getAuth, signInWithCustomToken } from 'firebase/auth';
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -382,9 +384,14 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       };
 
       const response = await axios.post('/api/create-request', requestData);
-      const { solicitudId, status } = response.data;
+      const { solicitudId, status, idToken } = response.data;
 
       if (status === 'success' && solicitudId) {
+        if (idToken) {
+          Cookies.set('AuthToken', idToken, { expires: 7 });
+          console.log('ID token set as AuthToken cookie');
+        }
+
         Swal.fire({
           icon: 'success',
           title: isSummary ? 'Resumen Enviado' : 'Formulario Enviado',
@@ -456,6 +463,17 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
   const toggleModal = () => {
     setShowModal(!showModal); // Alterna el estado del modal
   };
+
+  // Sign in to Firebase Auth with custom token from cookie
+  useEffect(() => {
+    const authToken = Cookies.get('AuthToken');
+    if (authToken) {
+      const auth = getAuth();
+      signInWithCustomToken(auth, authToken).catch((err) => {
+        console.error('Error signing in with custom token:', err);
+      });
+    }
+  }, []);
 
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">

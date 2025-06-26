@@ -45,6 +45,8 @@ const User: React.FC = () => {
         rol: 'Administrador',
         cedulaPasaporte: "",
         archivoURL: "",
+        permisos: '',
+        fechaCaducidadPermiso: '',
     });
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,6 +89,8 @@ const User: React.FC = () => {
                     rol: mappedRol,
                     archivoURL: user.adjuntoFotoPerfil || "",
                     cedulaPasaporte: user.cedulaPasaporte || "",
+                    permisos: user.permisos || '',
+                    fechaCaducidadPermiso: user.fechaCaducidadPermiso || '',
                 });
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -167,6 +171,8 @@ const User: React.FC = () => {
                     cedulaPasaporte: formData.cedulaPasaporte,
                     rol: rolLabels[formData.rol.trim()] || null,
                     adjuntoFotoPerfil: archivoURL,
+                    permisos: formData.permisos,
+                    fechaCaducidadPermiso: formData.fechaCaducidadPermiso,
                 };
 
                 const response = await axios.patch('/api/update-user', responseData);
@@ -217,6 +223,8 @@ const User: React.FC = () => {
                     telefonoSolicita: formData.telefono,
                     cedulaPasaporte: formData.cedulaPasaporte,
                     rol: rolLabels[formData.rol.trim()] || null,
+                    permisos: formData.permisos,
+                    fechaCaducidadPermiso: formData.fechaCaducidadPermiso,
                 };
 
                 const response = await axios.post('/api/create-only-user', responseData);
@@ -257,6 +265,8 @@ const User: React.FC = () => {
                     cedulaPasaporte: formData.cedulaPasaporte,
                     rol: rolLabels[formData.rol.trim()] || null,
                     adjuntoFotoPerfil: archivoURL,
+                    permisos: formData.permisos,
+                    fechaCaducidadPermiso: formData.fechaCaducidadPermiso,
                 };
 
                 const responseDataUpdate = await axios.post('/api/update-user', responseAdjunto);
@@ -385,6 +395,34 @@ const User: React.FC = () => {
                             </a>
                         </p>
                     )}
+                </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div>
+                    <label className="block text-gray-300 mb-1">Permisos</label>
+                    <select
+                        name="permisos"
+                        value={formData.permisos}
+                        onChange={handleChange}
+                        className="w-full p-3 rounded bg-gray-800 text-white"
+                        required
+                    >
+                        <option value="">Selecciona un permiso</option>
+                        <option value="caja chica">caja chica</option>
+                        <option value="expediente">expediente</option>
+                        <option value="administrador">administrador</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-gray-300 mb-1">Fecha de caducidad permiso</label>
+                    <input
+                        type="date"
+                        name="fechaCaducidadPermiso"
+                        value={formData.fechaCaducidadPermiso}
+                        onChange={handleChange}
+                        className="w-full p-3 rounded bg-gray-800 text-white"
+                        placeholder="Fecha de caducidad permiso"
+                    />
                 </div>
             </div>
 

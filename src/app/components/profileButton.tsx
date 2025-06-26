@@ -1,11 +1,11 @@
 "use client";  // Make sure it's a client component
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
-import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
-import { auth } from "@configuration/firebase";
+import { db } from "@utils/firebase-upload";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import cookie from "js-cookie";
 import Image from "next/image";
+import { getAuth, signInWithCustomToken } from "firebase/auth";
 
 const ROLES: Record<number, string> = {
   99: "Super Admin",
@@ -18,6 +18,21 @@ const ROLES: Record<number, string> = {
   10: "Cliente",
 };
 
+// Function to decode JWT token
+const decodeJWT = (token: string) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Error decoding JWT:', error);
+    return null;
+  }
+};
+
 const ProfileButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -25,43 +40,70 @@ const ProfileButton: React.FC = () => {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
-  const router = useRouter(); // ✅ FIXED: Now works in App Router
+  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser && firebaseUser.email) {
-        setEmail(firebaseUser.email);
+    const fetchUserData = async () => {
+      const authToken = cookie.get('AuthToken');
+      
+      if (authToken) {
+        // Sign in to Firebase Auth with the custom token
         try {
-          const db = getFirestore();
-          const q = query(collection(db, "usuarios"), where("email", "==", firebaseUser.email));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            const data = doc.data();
-            setRole(data.rol || null);
-            setProfilePhoto(data.fotoPerfil || null);
-          } else {
-            setRole(null);
-            setProfilePhoto(null);
-          }
+          const auth = getAuth();
+          await signInWithCustomToken(auth, authToken);
+        } catch (authError) {
+          console.error("Error signing in with custom token:", authError);
+          setEmail(null);
+          setRole(null);
+          setProfilePhoto(null);
+          return;
+        }
+        
+        const decodedToken = decodeJWT(authToken);
+        console.log("🚀 ~ fetchUserData ~ decodedToken:", decodedToken)
+        
+        if (decodedToken) {
+          setEmail(decodedToken.email);
+          
+          try {
+            console.log("entreeee")
+            const q = query(collection(db, "usuarios"), where("email", "==", decodedToken.email));
 
-        } catch (error) {
-          console.error("Error fetching user role:", error);
+            const querySnapshot = await getDocs(q);
+            console.log("🚀 ~ fetchUserData ~ querySnapshot:", querySnapshot)
+            
+            if (!querySnapshot.empty) {
+              const doc = querySnapshot.docs[0];
+              const data = doc.data();
+              setRole(data.rol || null);
+              setProfilePhoto(data.fotoPerfil || null);
+            } else {
+              setRole(null);
+              setProfilePhoto(null);
+            }
+          } catch (error) {
+            console.error("Error fetching user role:", error);
+          }
+        } else {
+          setEmail(null);
+          setRole(null);
+          setProfilePhoto(null);
         }
       } else {
         setEmail(null);
         setRole(null);
+        setProfilePhoto(null);
       }
-    });
-    return () => unsubscribe();
+    };
+
+    fetchUserData();
   }, []);
 
   const handleLogout = async () => {
     try {
-      await auth.signOut();
       cookie.remove("AuthToken");
-      router.push("/login"); // ✅ FIXED: Works in Next.js 13+
+      router.push("/login");
     } catch (error) {
       console.error("Error logging out:", error);
     }
