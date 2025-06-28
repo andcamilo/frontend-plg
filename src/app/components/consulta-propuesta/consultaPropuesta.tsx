@@ -27,6 +27,7 @@ import {
     firebaseMessagingSenderId,
     firebaseAppId
 } from '@utils/env';
+import PaymentModal from '@/src/app/components/PaymentModal';
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -1033,11 +1034,21 @@ const ConsultaPropuesta: React.FC = () => {
         setShowModal(!showModal); // Alterna el estado del modal
     };
 
-    // Handle the payment button click
+    // PaymentModal state
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+
+    // Update the payment button click handler
     const handlePaymentClick = () => {
         setLoading(true);
-        setShowPaymentWidget(true);
+        setIsPaymentModalOpen(true);
+        setShowPaymentWidget(false); // Hide widget if open
         setShowPaymentButtons(false);
+    };
+
+    const handleClosePaymentModal = () => {
+        setIsPaymentModalOpen(false);
+        setLoading(false);
+        setShowPaymentButtons(true);
     };
 
     // Handle "Enviar y pagar más tarde" button click
@@ -1072,6 +1083,29 @@ const ConsultaPropuesta: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Registrar Pago modal state and form
+    const [isRegisterPaymentModalOpen, setIsRegisterPaymentModalOpen] = useState(false);
+    const [registerPaymentForm, setRegisterPaymentForm] = useState({
+        factura: '',
+        monto: '',
+        fecha: '',
+        correo: '',
+    });
+
+    const handleRegisterPaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setRegisterPaymentForm({
+            ...registerPaymentForm,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const handleRegisterPaymentSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // TODO: Implement submit logic (API call, etc.)
+        setIsRegisterPaymentModalOpen(false);
+        setRegisterPaymentForm({ factura: '', monto: '', fecha: '', correo: '' });
     };
 
     return (
@@ -1139,21 +1173,6 @@ const ConsultaPropuesta: React.FC = () => {
             </p>
 
             <BannerOpcionesConsulta />
-
-            {/* <ul className="text-white mt-4 list-disc list-inside space-y-4 texto_justificado">
-                <li>
-                    <strong>Propuesta Legal:</strong> al escoger propuesta legal, nos podrás detallar tu necesidad y te estaríamos enviando una cotización con los requisitos. Podrás comentarnos dudas adicionales de la misma, y te estaríamos guiando sobre los próximos pasos una vez aprobada la propuesta. Solicitar una propuesta legal no tiene costo.
-                </li>
-                <li>
-                    <strong>Consulta Escrita:</strong> desde donde quiera que te encuentres, podrás hacernos consultas escritas para analizar tus casos específicos. Nos puedes enviar todos los datos y documentos respecto a tu consulta, y te estaríamos enviando un informe legal al respecto. El tiempo de respuesta es de una media de 3 a 5 días hábiles, sin embargo, dependiendo de la complejidad, te estaríamos informando si se requiere más tiempo, o un estudio legal complejo.
-                </li>
-                <li>
-                    <strong>Consulta virtual:</strong> aquí podrás solicitar una reunión virtual con alguno de nuestros abogados, que te atenderá según el requerimiento que tengas. La reunión se sostendría de manera virtual para que no tengas que trasladarte, y nosotros poder seguir dándote la atención personalizada que te mereces. Escoge 3 fechas disponibles que tengas, y estarás recibiendo la confirmación de una de las fechas, que incluirá el link. Si ocurre algo y no te puedes conectar, puedes solicitar el cambio de fecha en el sistema.
-                </li>
-                <li>
-                    <strong>Consulta presencial:</strong> sabemos que para algunos es muy importante explicarnos su requerimiento en persona, por ello, estamos siempre dispuestos a recibirlos en nuestra casa. Puedes solicitar una consulta presencial según tu disponibilidad. Escoge 3 fechas disponibles que tengas, y estarás recibiendo la confirmación de una de las fechas para tu visita a nuestras oficinas.
-                </li>
-            </ul> */}
 
             <p className="text-white mt-4 texto_justificado">
                 <strong className="text-red-500">IMPORTANTE:</strong> Si elige la opción de Consultas (Escrita, Presencial o Virtual) debe tener en cuenta que la misma tiene una duración máxima de 1 hora y 30 minutos, en caso que se extienda por más tiempo esto incurrirá en aumento en su tarifa que deberán ser cancelados al momento de finalizar dicha consulta. Por lo tanto le pedimos que sea bien específico al momento de enviar el formulario para que sus dudas sean aclaradas en el tiempo propuesto y no incurrir en gastos adicionales.
@@ -1689,24 +1708,13 @@ const ConsultaPropuesta: React.FC = () => {
                     <>
                         {!solicitudData && (
                             <>
-                                {/* <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
-                                    {isLoading ? (
-                                        <div className="flex items-center justify-center">
-                                            <ClipLoader size={24} color="#ffffff" />
-                                            <span className="ml-2">Cargando...</span>
-                                        </div>
-                                    ) : (
-                                        "Enviar y pagar"
-                                    )}
-                                </button> */}
-
                                 {showPaymentButtons && (
                                     <div className="mt-8">
                                         <div className="flex flex-col gap-4">
                                             <button
                                                 onClick={handlePaymentClick}
                                                 disabled={loading}
-                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
                                             >
                                                 {loading ? 'Cargando...' : 'Pagar en línea'}
                                             </button>
@@ -1714,9 +1722,16 @@ const ConsultaPropuesta: React.FC = () => {
                                             <button
                                                 onClick={handleSendAndPayLater}
                                                 disabled={loading}
-                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
                                             >
                                                 {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+                                            </button>
+
+                                            <button
+                                                className="bg-profile text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+                                                onClick={() => setIsRegisterPaymentModalOpen(true)}
+                                            >
+                                                Registrar Pago
                                             </button>
                                         </div>
                                     </div>
@@ -1727,31 +1742,19 @@ const ConsultaPropuesta: React.FC = () => {
                                 {store.token && (
                                     <div className="mt-8"><SaleComponent saleAmount={150} /></div>
                                 )}
-
 
                             </>
                         )}
 
                         {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) > 19)) && (
                             <>
-                                {/* <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
-                                    {isLoading ? (
-                                        <div className="flex items-center justify-center">
-                                            <ClipLoader size={24} color="#ffffff" />
-                                            <span className="ml-2">Cargando...</span>
-                                        </div>
-                                    ) : (
-                                        "Enviar y pagar"
-                                    )}
-                                </button> */}
-
                                 {showPaymentButtons && (
                                     <div className="mt-8">
                                         <div className="flex flex-col gap-4">
                                             <button
                                                 onClick={handlePaymentClick}
                                                 disabled={loading}
-                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
                                             >
                                                 {loading ? 'Cargando...' : 'Pagar en línea'}
                                             </button>
@@ -1759,9 +1762,16 @@ const ConsultaPropuesta: React.FC = () => {
                                             <button
                                                 onClick={handleSendAndPayLater}
                                                 disabled={loading}
-                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                                                className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
                                             >
                                                 {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+                                            </button>
+
+                                            <button
+                                                className="bg-profile text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+                                                onClick={() => setIsRegisterPaymentModalOpen(true)}
+                                            >
+                                                Registrar Pago
                                             </button>
                                         </div>
                                     </div>
@@ -1772,6 +1782,7 @@ const ConsultaPropuesta: React.FC = () => {
                                 {store.token && (
                                     <div className="mt-8"><SaleComponent saleAmount={150} /></div>
                                 )}
+
                             </>
                         )}
 
@@ -1792,6 +1803,75 @@ const ConsultaPropuesta: React.FC = () => {
                 )}
 
             </form>
+
+            {/* PaymentModal */}
+            {isPaymentModalOpen && (
+                <PaymentModal
+                    isOpen={isPaymentModalOpen}
+                    onClose={handleClosePaymentModal}
+                    saleAmount={150}
+                />
+            )}
+
+            {/* Registrar Pago Modal */}
+            {isRegisterPaymentModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-gray-900 rounded-lg w-11/12 max-w-md p-6 relative">
+                        <button
+                            className="absolute top-2 right-2 text-white text-xl"
+                            onClick={() => setIsRegisterPaymentModalOpen(false)}
+                        >
+                            ✕
+                        </button>
+                        <h2 className="text-white text-2xl font-bold mb-4">Registrar Pago</h2>
+                        <form onSubmit={handleRegisterPaymentSubmit} className="flex flex-col gap-4">
+                            <input
+                                type="text"
+                                name="factura"
+                                value={registerPaymentForm.factura}
+                                onChange={handleRegisterPaymentChange}
+                                className="p-3 rounded bg-gray-800 text-white"
+                                placeholder="No Factura"
+                                required
+                            />
+                            <input
+                                type="number"
+                                name="monto"
+                                value={registerPaymentForm.monto}
+                                onChange={handleRegisterPaymentChange}
+                                className="p-3 rounded bg-gray-800 text-white"
+                                placeholder="Monto"
+                                required
+                            />
+                            <input
+                                type="date"
+                                name="fecha"
+                                value={registerPaymentForm.fecha}
+                                onChange={handleRegisterPaymentChange}
+                                className="p-3 rounded bg-gray-800 text-white"
+                                placeholder="Fecha de Pago"
+                                required
+                            />
+                            <input
+                                type="email"
+                                name="correo"
+                                value={registerPaymentForm.correo}
+                                onChange={handleRegisterPaymentChange}
+                                className="p-3 rounded bg-gray-800 text-white"
+                                placeholder="Correo Usuario"
+                                required
+                            />
+                            <button
+                                type="submit"
+                                className="bg-profile text-white py-3 rounded-lg font-semibold mt-2 hover:bg-profile/90 transition-colors"
+                            >
+                                Registrar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

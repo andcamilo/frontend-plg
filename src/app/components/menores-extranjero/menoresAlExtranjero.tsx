@@ -27,6 +27,7 @@ import {
     firebaseAppId
 } from '@utils/env';
 import get from 'lodash/get';
+import PaymentModal from '@/src/app/components/PaymentModal';
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -2158,6 +2159,44 @@ const MenoresAlExtranjero: React.FC = () => {
         setShowModal(!showModal); // Alterna el estado del modal
     };
 
+    // Estados para los modales y loading
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [isRegisterPaymentModalOpen, setIsRegisterPaymentModalOpen] = useState(false);
+    const [registerPaymentForm, setRegisterPaymentForm] = useState({
+        factura: '',
+        monto: '',
+        fecha: '',
+        correo: '',
+    });
+    const [loading, setLoading] = useState(false);
+
+    // Handlers para los botones
+    const handlePaymentClick = () => {
+        setLoading(true);
+        setIsPaymentModalOpen(true);
+    };
+    const handleClosePaymentModal = () => {
+        setIsPaymentModalOpen(false);
+        setLoading(false);
+    };
+    const handleSendAndPayLater = async () => {
+        setLoading(true);
+        // Aquí va la lógica para enviar y pagar más tarde
+        setTimeout(() => setLoading(false), 1000);
+    };
+    const handleRegisterPaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setRegisterPaymentForm({
+            ...registerPaymentForm,
+            [e.target.name]: e.target.value,
+        });
+    };
+    const handleRegisterPaymentSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Aquí va la lógica para registrar el pago
+        setIsRegisterPaymentModalOpen(false);
+        setRegisterPaymentForm({ factura: '', monto: '', fecha: '', correo: '' });
+    };
+
     return (
         <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
             <h1 className="text-white text-3xl font-bold flex items-center">
@@ -3432,86 +3471,107 @@ const MenoresAlExtranjero: React.FC = () => {
                     </>
                 )}
 
-                {((solicitudData && solicitudData.status < 10) || (solicitudData && solicitudData.status >= 10 && store.rol > 19)) && (
-                    <>
-                        <button className="bg-profile text-white w-full py-3 rounded-lg mt-4" type="submit" disabled={isLoading}>
-                            {isLoading ? (
-                                <div className="flex items-center justify-center">
-                                    <ClipLoader size={24} color="#ffffff" />
-                                    <span className="ml-2">Cargando...</span>
-                                </div>
-                            ) : (
-                                "Enviar y pagar"
-                            )}
-                        </button>
-                    </>
-                )}
-
-                {solicitudData && solicitudData.status >= 10 && (
-                    <>
-                        <button
-                            className="bg-profile text-white w-full py-3 rounded-lg mt-6"
-                            type="button"
-                            onClick={() => {
-                                window.location.href = "/dashboard/requests";
-                            }}
-                        >
-                            Volver
-                        </button>
-                    </>
-                )}
-
-                {/* Modal for payment widget
-                <Modal
-                    open={open}
-                    onClose={handleClose}
-                    aria-labelledby="modal-title"
-                    aria-describedby="modal-description"
-                >
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            width: "600px", // Modal width
-                            maxWidth: "90%", // Max width on small screens
-                            maxHeight: "90vh", // Limit height to 90% viewport
-                            overflowY: "auto", // Enable vertical scrolling
-                            bgcolor: "background.paper",
-                            border: "2px solid #000",
-                            boxShadow: 24,
-                            p: 4,
-                            borderRadius: 2,
-                            zIndex: 1000,
-                        }}
+                {/* Botones de pago al final del formulario */}
+                <div className="mt-8 flex flex-col gap-4">
+                    <button
+                        type="button"
+                        onClick={handlePaymentClick}
+                        disabled={loading}
+                        className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
                     >
+                        {loading ? 'Cargando...' : 'Pagar en línea'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSendAndPayLater}
+                        disabled={loading}
+                        className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+                    >
+                        {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setIsRegisterPaymentModalOpen(true)}
+                        className="bg-profile text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+                    >
+                        Registrar Pago
+                    </button>
+                    <button
+                        type="button"
+                        className="bg-gray-500 text-white w-full py-3 rounded-lg"
+                        onClick={() => window.location.href = "/dashboard/requests"}
+                    >
+                        Salir
+                    </button>
+                </div>
 
-                        <div className="mt-8">
-                            <WidgetLoader />
+                {/* PaymentModal */}
+                {isPaymentModalOpen && (
+                    <PaymentModal
+                        isOpen={isPaymentModalOpen}
+                        onClose={handleClosePaymentModal}
+                        saleAmount={total}
+                    />
+                )}
+
+                {/* Registrar Pago Modal */}
+                {isRegisterPaymentModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-gray-900 rounded-lg w-11/12 max-w-md p-6 relative">
+                            <button
+                                className="absolute top-2 right-2 text-white text-xl"
+                                onClick={() => setIsRegisterPaymentModalOpen(false)}
+                            >
+                                ✕
+                            </button>
+                            <h2 className="text-white text-2xl font-bold mb-4">Registrar Pago</h2>
+                            <form onSubmit={handleRegisterPaymentSubmit} className="flex flex-col gap-4">
+                                <input
+                                    type="text"
+                                    name="factura"
+                                    value={registerPaymentForm.factura}
+                                    onChange={handleRegisterPaymentChange}
+                                    className="p-3 rounded bg-gray-800 text-white"
+                                    placeholder="No Factura"
+                                    required
+                                />
+                                <input
+                                    type="number"
+                                    name="monto"
+                                    value={registerPaymentForm.monto}
+                                    onChange={handleRegisterPaymentChange}
+                                    className="p-3 rounded bg-gray-800 text-white"
+                                    placeholder="Monto"
+                                    required
+                                />
+                                <input
+                                    type="date"
+                                    name="fecha"
+                                    value={registerPaymentForm.fecha}
+                                    onChange={handleRegisterPaymentChange}
+                                    className="p-3 rounded bg-gray-800 text-white"
+                                    placeholder="Fecha de Pago"
+                                    required
+                                />
+                                <input
+                                    type="email"
+                                    name="correo"
+                                    value={registerPaymentForm.correo}
+                                    onChange={handleRegisterPaymentChange}
+                                    className="p-3 rounded bg-gray-800 text-white"
+                                    placeholder="Correo Usuario"
+                                    required
+                                />
+                                <button
+                                    type="submit"
+                                    className="bg-profile text-white py-3 rounded-lg font-semibold mt-2 hover:bg-profile/90 transition-colors"
+                                >
+                                    Registrar
+                                </button>
+                            </form>
                         </div>
-
-                        {store.token ? (
-                            <div className="mt-8">
-                                <SaleComponent saleAmount={100} />
-                            </div>
-                        ) : (
-                            <div className="mt-8 text-gray-400">
-                                Por favor, complete el widget de pago para continuar.
-                            </div>
-                        )}
-
-                        <Button
-                            variant="outlined"
-                            color="secondary"
-                            onClick={handleClose}
-                            style={{ marginTop: "20px" }}
-                        >
-                            Cerrar
-                        </Button>
-                    </Box>
-                </Modal>
-                */}
+                    </div>
+                )}
 
                 <BotonesPreguntasYContactos
                     primerTexto={
