@@ -5,7 +5,6 @@ import { db } from "@utils/firebase-upload";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import cookie from "js-cookie";
 import Image from "next/image";
-import { getAuth, signInWithCustomToken } from "firebase/auth";
 
 const ROLES: Record<number, string> = {
   99: "Super Admin",
@@ -48,18 +47,6 @@ const ProfileButton: React.FC = () => {
       const authToken = cookie.get('AuthToken');
       
       if (authToken) {
-        // Sign in to Firebase Auth with the custom token
-        try {
-          const auth = getAuth();
-          await signInWithCustomToken(auth, authToken);
-        } catch (authError) {
-          console.error("Error signing in with custom token:", authError);
-          setEmail(null);
-          setRole(null);
-          setProfilePhoto(null);
-          return;
-        }
-        
         const decodedToken = decodeJWT(authToken);
         console.log("🚀 ~ fetchUserData ~ decodedToken:", decodedToken)
         

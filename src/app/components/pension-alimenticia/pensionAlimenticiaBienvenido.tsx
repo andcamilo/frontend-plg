@@ -384,11 +384,11 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
       };
 
       const response = await axios.post('/api/create-request', requestData);
-      const { solicitudId, status, idToken } = response.data;
+      const { solicitudId, status, customToken } = response.data;
 
       if (status === 'success' && solicitudId) {
-        if (idToken) {
-          Cookies.set('AuthToken', idToken, { expires: 7 });
+        if (customToken) {
+          Cookies.set('AuthToken', customToken, { expires: 7 });
           console.log('ID token set as AuthToken cookie');
         }
 
