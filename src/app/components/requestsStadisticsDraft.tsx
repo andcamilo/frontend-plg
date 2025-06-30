@@ -148,6 +148,8 @@ const RequestsStatistics: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [filterExpediente, setFilterExpediente] = useState('');
+  const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
+  const [selectAll, setSelectAll] = useState(false);
 
   const hayFiltrosActivos = filterTipo || filterStatus || filterDate || filterExpediente;
 
@@ -294,19 +296,19 @@ const RequestsStatistics: React.FC = () => {
 
   const totalPagesEnProceso = useMemo(() => {
     return Math.max(1, Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage));
-  }, [solicitudesFiltradasEnProceso, rowsPerPage]);  
+  }, [solicitudesFiltradasEnProceso, rowsPerPage]);
 
   useEffect(() => {
     if (solicitudesFiltradasEnProceso.length === 0) return;
-  
+
     const totalPages = Math.max(1, Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage));
     setPaginationEnProceso({
       hasPrevPage: currentPageEnProceso > 1,
       hasNextPage: currentPageEnProceso < totalPages,
       totalPages,
     });
-  }, [solicitudesFiltradasEnProceso, currentPageEnProceso, rowsPerPage]);  
-  
+  }, [solicitudesFiltradasEnProceso, currentPageEnProceso, rowsPerPage]);
+
   // ---- Format the data for <TableWithRequests> ----
   const transformData = (solicitudes: any[]) => {
     return solicitudes.map(
@@ -351,6 +353,7 @@ const RequestsStatistics: React.FC = () => {
         };
 
         return {
+          id,
           Tipo: tipoMapping[tipo] || tipo,
           Fecha: formatDate(date),
           Email: emailSolicita,
@@ -391,6 +394,72 @@ const RequestsStatistics: React.FC = () => {
     { value: 30, label: 'En proceso' },
     { value: 70, label: 'Finalizada' },
   ];
+
+  const handleSelectRow = (id: string) => {
+    setSelectedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleSelectAll = (rows: any[]) => {
+    const allSelected = !selectAll;
+    setSelectAll(allSelected);
+
+    const newSelection: { [key: string]: boolean } = {};
+    rows.forEach((row) => {
+      newSelection[row.id] = allSelected;
+    });
+
+    setSelectedRows(newSelection);
+  };
+
+  const handleDeleteSelected = async () => {
+    const selectedIds = Object.keys(selectedRows).filter((id) => selectedRows[id]);
+
+    if (selectedIds.length === 0) {
+      Swal.fire('Atención', 'No has seleccionado ninguna solicitud.', 'info');
+      return;
+    }
+
+    const confirm = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Eliminarás ${selectedIds.length} solicitudes.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      background: '#2c2c3e',
+      color: '#fff',
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        await axios.post('/api/delete-multiple-requests', {
+          solicitudIds: selectedIds,
+        });
+
+        Swal.fire('Eliminadas', 'Solicitudes eliminadas correctamente.', 'success');
+        window.location.reload();
+      } catch (error) {
+        console.error('Error al eliminar:', error);
+        Swal.fire('Error', 'Hubo un problema al eliminar las solicitudes.', 'error');
+      }
+    }
+  };
+
+  const deleteButtonHeader = (
+    Object.values(selectedRows).some(Boolean) && (
+      <div className="flex justify-end">
+        <button
+          onClick={handleDeleteSelected}
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-all"
+        >
+          Eliminar seleccionados
+        </button>
+      </div>
+    )
+  );
 
   return (
     <div className="flex flex-col gap-4 p-8 w-full">
@@ -453,6 +522,10 @@ const RequestsStatistics: React.FC = () => {
             hasPrevPage={paginationEnProceso.hasPrevPage}
             hasNextPage={paginationEnProceso.hasNextPage}
             onPageChange={setCurrentPageEnProceso}
+            extraHeader={deleteButtonHeader}
+            selectedRows={selectedRows}
+            onSelectRow={handleSelectRow}
+            onSelectAll={handleSelectAll}
           />
         </>
       )}

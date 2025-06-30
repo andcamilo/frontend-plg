@@ -7,10 +7,19 @@ const usersApiUrl = `${backendBaseUrl}/${backendEnv}/get-users`;
 
 const getUsers = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
- 
-    const { limit = '10', page = '1' } = req.query;
+    const { limit = '10', page = '1', singleId } = req.query;
 
+    if (singleId) {
+      // 🔍 Obtener un solo usuario por ID
+      const response = await axios.get(`${usersApiUrl}`, {
+        params: { singleId },
+      });
 
+      const usuario = get(response.data, 'usuario', null);
+      return res.status(200).json({ usuario });
+    }
+
+    // Paginar normalmente
     const response = await axios.get(usersApiUrl, {
       params: {
         limit: parseInt(limit as string, 10),
@@ -28,7 +37,6 @@ const getUsers = async (req: NextApiRequest, res: NextApiResponse) => {
     const usuarios = get(data, 'usuarios', []);
     const pagination = get(data, 'pagination', {});
 
-    // Return formatted response
     res.status(200).json({
       status,
       message,

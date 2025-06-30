@@ -316,8 +316,11 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
             console.log("✅ EXPEDIENTE ID:", expedienteIdFinal);
             await axios.post(`/api/update-record?id=${expedienteIdFinal}`, finalPayload);
 
-            Swal.fire('Éxito', expedienteExiste ? 'Expediente actualizado' : 'Expediente creado exitosamente', 'success');
-            onClose();
+            Swal.fire('Éxito', expedienteExiste ? 'Expediente actualizado' : 'Expediente creado exitosamente', 'success')
+                .then(() => {
+                    onClose(); 
+                    window.location.reload(); 
+                });
         } catch (error) {
             console.error('Error al enviar:', error);
             Swal.fire('Error', 'No se pudo procesar el expediente.', 'error');
@@ -489,13 +492,18 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                             )}
 
                             {/* MIEMBROS NOMINALES */}
-                            <div className="col-span-2">
-                                <label className="text-white block mb-1">¿Posee Miembros nominales?</label>
-                                <select name="poseeMiembrosNominales" value={formData.poseeMiembrosNominales} onChange={handleChange} className={styledInput}>
-                                    <option>No</option>
-                                    <option>Si</option>
-                                </select>
-                            </div>
+                            {formData.poseeMiembrosNominales === 'Si' &&
+                                !['new-sociedad-empresa', 'Sociedad / Empresa'].includes(solicitudData.tipo) && (
+                                    <>
+                                        <div className="col-span-2">
+                                            <label className="text-white block mb-1">¿Posee Miembros nominales?</label>
+                                            <select name="poseeMiembrosNominales" value={formData.poseeMiembrosNominales} onChange={handleChange} className={styledInput}>
+                                                <option>No</option>
+                                                <option>Si</option>
+                                            </select>
+                                        </div>
+                                    </>
+                                )}
                             {formData.poseeMiembrosNominales === 'Si' &&
                                 !['new-sociedad-empresa', 'Sociedad / Empresa'].includes(solicitudData.tipo) && (
                                     <>
