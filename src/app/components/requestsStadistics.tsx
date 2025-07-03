@@ -460,7 +460,6 @@ const RequestsStatistics: React.FC = () => {
         }
 
         return {
-          ID: id,
           Tipo: tipoMapping[tipo] || tipo,
           Fecha: formatDate(date),
           Email: emailSolicita,
