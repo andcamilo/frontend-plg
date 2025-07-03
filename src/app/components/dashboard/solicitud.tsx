@@ -124,6 +124,7 @@ const Request: React.FC = () => {
                     const expedienteRef = collection(db, 'expediente');
                     const q = query(expedienteRef, where('solicitud', '==', id));
                     const querySnapshot = await getDocs(q);
+       
          
                     if (!querySnapshot.empty) {
                         console.log("🚀 ~ fetchExpediente ~ querySnapshot:", querySnapshot.docs[0].data())
@@ -2162,25 +2163,29 @@ const Request: React.FC = () => {
                 {/* Expediente Table */}
                 {roleLoading ? (
                   <p className="text-gray-400 mt-2">Cargando permisos...</p>
-                ) : userRole !== null && userRole > 34 ? (
+                ) : userRole !== null && userRole > 1 && expedienteRecord ? (
                   (() => {
+                    // There is a record, check for items
                     let items = expedienteRecord?.items;
                     if (typeof items === 'string') {
                       try { items = JSON.parse(items); } catch {}
                     }
                     const itemValues = items && typeof items === 'object' ? Object.values(items) : [];
+                    
                     return (
                       <>
                         <h3 className="text-lg font-bold text-white mt-6">Expediente relacionado</h3>
-                        <div className="flex justify-between items-center mb-4">
-                          <div></div>
-                          <button
-                            className="bg-profile text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-                            onClick={openExpedienteModal}
-                          >
-                            Agregar Item en Expediente
-                          </button>
-                        </div>
+                        {userRole > 34 && (
+                          <div className="flex justify-between items-center mb-4">
+                            <div></div>
+                            <button
+                              className="bg-profile text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                              onClick={openExpedienteModal}
+                            >
+                              Agregar Item en Expediente
+                            </button>
+                          </div>
+                        )}
                         {itemValues.length > 0 ? (
                           <table className="w-full text-gray-300 mt-2">
                             <thead>
@@ -2217,7 +2222,7 @@ const Request: React.FC = () => {
                             </tbody>
                           </table>
                         ) : (
-                          <p className="text-gray-400 mt-2">No se encontró expediente relacionado o no hay items.</p>
+                          <p className="text-gray-400 mt-2">Expediente creado pero no hay items.</p>
                         )}
                       </>
                     );
