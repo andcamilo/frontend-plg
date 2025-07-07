@@ -191,6 +191,7 @@ const FundacionObjetivos: React.FC = () => {
                     telefonoContador: objetivosData.telefonoContador || '',
                     correoContador: objetivosData.correoContador || '',
                     otroObjetivo: objetivosData.otroObjetivo || '',
+                    adjuntoDocumentoContribuyenteURL: objetivosData.adjuntoDocumentoContribuyenteURL || '',
                 }));
 
                 // Verificar si "otros" está seleccionado y mostrar el campo si es así

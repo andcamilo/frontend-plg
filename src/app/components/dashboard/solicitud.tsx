@@ -1629,137 +1629,119 @@ const Request: React.FC = () => {
         doc.save('Resumen_Solicitud.pdf');
     };
 
-    const generatePDFPersonas = () => {
+    const generateInfoPersonas = () => {
         const doc = new jsPDF();
         let y = 20; // Posición inicial en Y
         const pageHeight = doc.internal.pageSize.height; // Altura de la página
 
         // Función auxiliar para manejar texto con saltos de página automáticos
         const addLine = (text: string) => {
-            if (y + 10 > pageHeight) {
-                doc.addPage();
-                y = 20; // Reinicia la posición Y en la nueva página
-            }
-            doc.text(text, 10, y);
-            y += 10;
+            const margin = 10; // Margen izquierdo
+            const maxWidth = doc.internal.pageSize.width - 2 * margin; // Ancho máximo del texto
+            const lines = doc.splitTextToSize(text, maxWidth); // Divide el texto en líneas ajustadas al ancho
+            lines.forEach(line => {
+                if (y + 10 > pageHeight) {
+                    doc.addPage();
+                    y = 20; // Reinicia la posición Y en la nueva página
+                }
+                doc.text(line, margin, y);
+                y += 7; // Ajusta el espacio entre líneas
+            });
         };
 
-        // Título del documento
+        // Título
         doc.setFontSize(20);
         addLine('Información de las Personas');
 
-        // Validar si existen datos en peopleData
-        if (Array.isArray(peopleData) && peopleData.length > 0) {
-            // Recorrer cada persona en el array
-            peopleData.forEach((person, index) => {
-                let fechaNacimiento = person.fechaNacimiento;
+        // Información de cada persona
+        peopleData.forEach((persona: any, index: number) => {
+            doc.setFontSize(14);
+            addLine(`Persona #${index + 1}`);
+            doc.setFontSize(12);
 
-                // Verificar si userData.fechaNacimiento tiene el formato esperado de Firebase
-                if (person.fechaNacimiento?._seconds) {
-                    // Convertir el timestamp de Firebase a una fecha válida
-                    const timestamp = person.fechaNacimiento._seconds * 1000; // Convertir segundos a milisegundos
-                    fechaNacimiento = new Date(timestamp).toISOString().split('T')[0]; // Convertir a YYYY-MM-DD
-                }
-                doc.setFontSize(16);
-                addLine(`Información del Representante Legal ${index + 1}:`);
+            addLine(`Nombre Completo: ${persona.nombreApellido || 'N/A'}`);
+            addLine(`Cédula o Pasaporte: ${persona.cedulaPasaporte || 'N/A'}`);
+            addLine(`Fecha de Nacimiento: ${persona.fechaNacimiento ? new Date(persona.fechaNacimiento._seconds * 1000).toLocaleDateString() : 'N/A'}`);
+            addLine(`Sexo: ${persona.sexo || 'N/A'}`);
+            addLine(`Nacionalidad: ${persona.nacionalidad || 'N/A'}`);
+            addLine(`País de Nacimiento: ${persona.paisNacimiento || 'N/A'}`);
+            addLine(`País de Residencia: ${persona.paisResidencia || 'N/A'}`);
+            addLine(`Dirección: ${persona.direccion || 'N/A'}`);
+            addLine(`Teléfono: ${persona.telefono || 'N/A'}`);
+            addLine(`Correo Electrónico: ${persona.email || 'N/A'}`);
+            addLine(`Profesión: ${persona.profesion || 'N/A'}`);
+            addLine(`Tipo de Persona: ${persona.tipoPersona || 'N/A'}`);
+
+            // Persona Jurídica
+            if (persona.tipoPersona === "Persona Jurídica") {
+                doc.setFontSize(14);
+                addLine(`--- Información Jurídica ---`);
                 doc.setFontSize(12);
-                addLine(`Tipo de Persona: ${person.tipoPersona || 'N/A'}`);
-                if (person.tipoPersona === "Persona Jurídica") {
-                    addLine(`Nombre de la persona jurídica / sociedad: ${person.personaJuridica.nombreJuridico || 'N/A'}`);
-                    addLine(`País de la persona jurídica: ${person.personaJuridica.paisJuridico || 'N/A'}`);
-                    addLine(`Número de registro: ${person.personaJuridica.registroJuridico || 'N/A'}`);
-                    y += 10;
+                addLine(`Nombre Jurídico: ${persona.personaJuridica.nombreJuridico || 'N/A'}`);
+                addLine(`País Jurídico: ${persona.personaJuridica.paisJuridico || 'N/A'}`);
+                addLine(`Registro Jurídico: ${persona.personaJuridica.registroJuridico || 'N/A'}`);
+            }
+
+            // Referencias bancarias
+            if (persona.referenciasBancarias) {
+                doc.setFontSize(14);
+                addLine(`--- Referencia Bancaria ---`);
+                doc.setFontSize(12);
+                addLine(`Banco: ${persona.referenciasBancarias.bancoNombre || 'N/A'}`);
+                addLine(`Teléfono: ${persona.referenciasBancarias.bancoTelefono || 'N/A'}`);
+                addLine(`Correo: ${persona.referenciasBancarias.bancoEmail || 'N/A'}`);
+            }
+
+            // Referencias comerciales
+            if (persona.referenciasComerciales) {
+                doc.setFontSize(14);
+                addLine(`--- Referencia Comercial ---`);
+                doc.setFontSize(12);
+                addLine(`Nombre: ${persona.referenciasComerciales.comercialNombre || 'N/A'}`);
+                addLine(`Teléfono: ${persona.referenciasComerciales.comercialTelefono || 'N/A'}`);
+                addLine(`Correo: ${persona.referenciasComerciales.comercialEmail || 'N/A'}`);
+            }
+
+            // Expuesta políticamente
+            addLine(`Es persona políticamente expuesta: ${persona.esPoliticamenteExpuesta || 'No'}`);
+            if (persona.esPoliticamenteExpuesta === 'Sí') {
+                addLine(`Cargo: ${persona.personaExpuestaCargo || 'N/A'}`);
+                addLine(`Fecha: ${persona.personaExpuestaFecha || 'N/A'}`);
+            }
+
+            // Roles
+            if (persona.director?.esActivo) {
+                addLine(`Director: Sí `);
+            }
+
+            if (persona.fundador?.esActivo) {
+                addLine(`Fundador: Sí `);
+            }
+
+            if (persona.dignatario?.dignatario) {
+                addLine(`Dignatario: Sí`);
+                if (persona.dignatario.posiciones?.length) {
+                    addLine(`Posiciones: ${persona.dignatario.posiciones.join(', ')}`);
                 }
+            }
 
-                addLine(`Nombre: ${person.nombreApellido || 'N/A'}`);
-                addLine(`Cédula o Pasaporte: ${person.cedulaPasaporte || 'N/A'}`);
-                addLine(`Nacionalidad: ${person.nacionalidad || 'N/A'}`);
-                addLine(`Sexo: ${person.sexo || 'N/A'}`);
-                addLine(`País de Nacimiento: ${person.paisNacimiento || 'N/A'}`);
-                addLine(`Fecha de Nacimiento: ${fechaNacimiento || 'N/A'}`);
-                addLine(`Dirección: ${person.direccion || 'N/A'}`);
-                addLine(`País de Residencia: ${person.paisResidencia || 'N/A'}`);
-                addLine(`Profesión: ${person.profesion || 'N/A'}`);
-                addLine(`Teléfono: ${person.telefono || 'N/A'}`);
-                addLine(`Email: ${person.email || 'N/A'}`);
-                y += 10;
+            if (persona.miembro?.esActivo) {
+                addLine(`Miembro: Sí `);
+            }
 
-                if (person.esPoliticamenteExpuesta === "Si") {
-                    doc.setFontSize(16);
-                    addLine(`Es una persona políticamente expuesta:`);
-                    doc.setFontSize(12);
-                    addLine(`Indicar qué cargo ocupa u ocupó: ${person.personaExpuestaCargo || 'N/A'}`);
-                    addLine(`En qué fecha: ${person.personaExpuestaFecha || 'N/A'}`);
-                    y += 10;
-                }
+            if (persona.accionista?.accionista) {
+                addLine(`Accionista: Sí `);
+                addLine(`Porcentaje: ${persona.accionista?.porcentajeAcciones || 'N/A'}%`);
+            }
 
-                if (person.referenciasBancarias.bancoNombre !== "") {
-                    doc.setFontSize(16);
-                    addLine(`Referencias Bancarias ${index + 1}:`);
-                    doc.setFontSize(12);
-                    addLine(`Nombre del Banco: ${person.referenciasBancarias.bancoNombre || 'N/A'}`);
-                    addLine(`Teléfono: ${person.referenciasBancarias.bancoTelefono || 'N/A'}`);
-                    addLine(`Email: ${person.referenciasBancarias.bancoEmail || 'N/A'}`);
-                    y += 10;
-                }
+            if (persona.poder?.poder) {
+                addLine(`Apoderado: Sí`);
+            }
 
-                if (person.referenciasComerciales.comercialNombre !== "") {
-                    doc.setFontSize(16);
-                    addLine(`Referencias Comerciales ${index + 1}:`);
-                    doc.setFontSize(12);
-                    addLine(`Nombre del Comercial: ${person.referenciasComerciales.comercialNombre || 'N/A'}`);
-                    addLine(`Teléfono: ${person.referenciasComerciales.comercialTelefono || 'N/A'}`);
-                    addLine(`Email: ${person.referenciasComerciales.comercialEmail || 'N/A'}`);
-                    y += 10;
-                }
+            y += 10;
+        });
 
-                if (person.beneficiarios && person.beneficiarios.length > 0) {
-                    person.beneficiarios.forEach((beneficiario, index) => {
-                        let fechaNacimiento = beneficiario.fechaNacimiento;
-
-                        // Verificar si userData.fechaNacimiento tiene el formato esperado de Firebase
-                        if (beneficiario.fechaNacimiento?._seconds) {
-                            // Convertir el timestamp de Firebase a una fecha válida
-                            const timestamp = beneficiario.fechaNacimiento._seconds * 1000; // Convertir segundos a milisegundos
-                            fechaNacimiento = new Date(timestamp).toISOString().split('T')[0]; // Convertir a YYYY-MM-DD
-                        }
-
-                        doc.setFontSize(16);
-                        addLine(`Información del Beneficiario Final ${index + 1}:`);
-                        doc.setFontSize(12);
-                        addLine(`Nombre: ${beneficiario.nombreApellido || 'N/A'}`);
-                        addLine(`Cédula o Pasaporte: ${beneficiario.cedulaPasaporte || 'N/A'}`);
-                        addLine(`Nacionalidad: ${beneficiario.nacionalidad || 'N/A'}`);
-                        addLine(`Sexo: ${beneficiario.sexo || 'N/A'}`);
-                        addLine(`País de Nacimiento: ${beneficiario.paisNacimiento || 'N/A'}`);
-                        addLine(`Fecha de Nacimiento: ${fechaNacimiento || 'N/A'}`);
-                        addLine(`Dirección: ${beneficiario.direccion || 'N/A'}`);
-                        addLine(`País de Residencia: ${beneficiario.paisResidencia || 'N/A'}`);
-                        addLine(`Profesión: ${beneficiario.profesion || 'N/A'}`);
-                        addLine(`Teléfono: ${beneficiario.telefono || 'N/A'}`);
-                        addLine(`Email: ${beneficiario.email || 'N/A'}`);
-                        y += 10;
-
-                        if (beneficiario.esPoliticamenteExpuesta === "Si") {
-                            doc.setFontSize(16);
-                            addLine(`Es una persona políticamente expuesta:`);
-                            doc.setFontSize(12);
-                            addLine(`Indicar qué cargo ocupa u ocupó: ${beneficiario.personaExpuestaCargo || 'N/A'}`);
-                            addLine(`En qué fecha: ${beneficiario.personaExpuestaFecha || 'N/A'}`);
-                            y += 10;
-                        }
-
-                        addLine(''); // Espacio entre registros
-                    });
-                }
-
-                addLine(''); // Espacio entre registros
-            });
-        } else {
-            addLine('No se encontraron personas asociadas.');
-        }
-
-        // Guardar el PDF
+        // Guardar
         doc.save('Información_Personas.pdf');
     };
 
@@ -2114,37 +2096,39 @@ const Request: React.FC = () => {
                     </table>
 
                     <div className="flex space-x-4 mt-2">
-                        <button
-                            onClick={generatePDF}
-                            className="bg-profile text-white px-4 py-2 rounded mt-8"
-                        >
-                            Descargar Resumen PDF
-                        </button>
-                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
-                            <>
-                                <button
-                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                    onClick={handleDownload}
-                                >
-                                    Descargar Pacto Social
-                                </button>
-                            </>
-                        )}
-                    </div>
-
-                    {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
                         <>
-                            <div className="flex space-x-4 ">
-                                <button
-                                    onClick={generatePDFPersonas}
-                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                >
-                                    Descargar información de las personas
-                                </button>
+                            <button
+                                onClick={generatePDF}
+                                className="bg-profile text-white px-4 py-2 rounded mt-8"
+                            >
+                                Descargar Resumen PDF
+                            </button>
+                            {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
+                                <>
+                                    <button
+                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                        onClick={handleDownload}
+                                    >
+                                        Descargar Pacto Social
+                                    </button>
+                                </>
+                            )}
 
-                            </div>
+                            {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa" || solicitudData?.tipo === "new-fundacion")) && (
+                                <>
+                                    <div className="flex space-x-4 ">
+                                        <button
+                                            onClick={generateInfoPersonas}
+                                            className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                        >
+                                            Descargar información de las personas
+                                        </button>
+
+                                    </div>
+                                </>
+                            )}
                         </>
-                    )}
+                    </div>
                 </div>
 
                 {expedienteRecord ? (
