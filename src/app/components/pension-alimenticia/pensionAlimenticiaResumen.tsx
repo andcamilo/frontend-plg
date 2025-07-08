@@ -17,6 +17,7 @@ const PensionAlimenticiaResumen: React.FC = () => {
   const [solicitudData, setSolicitudData] = useState<any>(null);
   const { store } = context;
   const { fetchSolicitud } = useFetchSolicitud(store.solicitudId);
+  const [mostrarAdjuntos, setMostrarAdjuntos] = useState(false);
 
   useEffect(() => {
     if (store.solicitudId) {
@@ -662,12 +663,109 @@ const PensionAlimenticiaResumen: React.FC = () => {
           </tbody>
         </table>
 
-        <button
-          onClick={generatePDF}
-          className="mt-6 px-4 py-2 bg-profile text-white font-bold rounded hover:bg-profile-600"
-        >
-          Descargar Resumen PDF
-        </button>
+        {((mostrarAdjuntos && solicitudData.archivosAdjuntos) || (mostrarAdjuntos && solicitudData.solicitudAdicional.documentoAdicional)) && (
+          <>
+            <hr className='mt-2 mb-2' />
+            <p className="font-semibold mb-2">Archivos Adjuntos:</p>
+            <ul className="space-y-2 text-sm">
+              {solicitudData.archivosAdjuntos.cedula && (
+                <li>
+                  <strong>Cédula:</strong>{' '}
+                  <a href={solicitudData.archivosAdjuntos.cedula} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                    Ver archivo adjunto
+                  </a>
+                </li>
+              )}
+
+              {solicitudData.archivosAdjuntos.cedulaMayor && (
+                <li>
+                  <strong>Cédula Hijo Mayor de Edad:</strong>{' '}
+                  <a href={solicitudData.archivosAdjuntos.cedulaMayor} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                    Ver archivo adjunto
+                  </a>
+                </li>
+              )}
+
+              {solicitudData.archivosAdjuntos.cedulaMenor && (
+                <li>
+                  <strong>Cédula Hijo Menor de Edad:</strong>{' '}
+                  <a href={solicitudData.archivosAdjuntos.cedulaMenor} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                    Ver archivo adjunto
+                  </a>
+                </li>
+              )}
+
+              {solicitudData.archivosAdjuntos.certificadoMatrimonio && (
+                <li>
+                  <strong>Certificado de Matrimonio:</strong>{' '}
+                  <a href={solicitudData.archivosAdjuntos.certificadoMatrimonio} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                    Ver archivo adjunto
+                  </a>
+                </li>
+              )}
+
+              {solicitudData.archivosAdjuntos.certificadoNacimiento && (
+                <li>
+                  <strong>Certificado de Nacimiento:</strong>{' '}
+                  <a href={solicitudData.archivosAdjuntos.certificadoNacimiento} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                    Ver archivo adjunto
+                  </a>
+                </li>
+              )}
+
+              {solicitudData.archivosAdjuntos.sentencia && (
+                <li>
+                  <strong>Sentencia:</strong>{' '}
+                  <a href={solicitudData.archivosAdjuntos.sentencia} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                    Ver archivo adjunto
+                  </a>
+                </li>
+              )}
+
+              {solicitudData.archivosAdjuntos.additionalDocs?.length > 0 && (
+                <li>
+                  <strong>Documentos Adicionales:</strong>
+                  <ul className="list-disc ml-5 mt-1">
+                    {solicitudData.archivosAdjuntos.additionalDocs.map((url: string, i: number) => (
+                      <li key={i}>
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline"
+                        >
+                          Ver archivo adicional #{i + 1}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              )}
+
+              {solicitudData.solicitudAdicional.documentoAdicional && (
+                <li>
+                  <strong>Documento de la Solicitud Adicional:</strong>{' '}
+                  <a href={solicitudData.solicitudAdicional.documentoAdicional} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                    Ver archivo adjunto
+                  </a>
+                </li>
+              )}
+            </ul>
+            <hr className='mt-2 mb-2' />
+          </>
+        )}
+
+        <div className="flex gap-x-2 mt-4">
+          <button
+            className="bg-profile text-white px-4 py-2 rounded"
+            onClick={() => setMostrarAdjuntos(prev => !prev)}
+          >
+            {mostrarAdjuntos ? 'Ocultar archivos adjuntos' : 'Ver archivos adjuntos'}
+          </button>
+
+          <button
+            onClick={generatePDF}
+            className="px-4 py-2 bg-profile text-white font-bold rounded hover:bg-profile-600"
+          >
+            Descargar Resumen PDF
+          </button>
+        </div>
 
       </div>
     </div>

@@ -70,6 +70,7 @@ const Request: React.FC = () => {
     const [peopleData, setPeopleData] = useState<any[]>([]);
     const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
     const [expedienteRecord, setExpedienteRecord] = useState<any>(null);
+    const [mostrarAdjuntos, setMostrarAdjuntos] = useState(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const openModal = () => setIsModalOpen(true);
@@ -124,8 +125,6 @@ const Request: React.FC = () => {
                     const expedienteRef = collection(db, 'expediente');
                     const q = query(expedienteRef, where('solicitud', '==', id));
                     const querySnapshot = await getDocs(q);
-       
-         
                     if (!querySnapshot.empty) {
                         console.log("🚀 ~ fetchExpediente ~ querySnapshot:", querySnapshot.docs[0].data())
                         setExpedienteRecord(querySnapshot.docs[0].data());
@@ -217,13 +216,15 @@ const Request: React.FC = () => {
             let allAlreadyAssigned: any[] = [];
 
             try {
-                // Obtener los IDs de los abogados ya asignados en la solicitud
-                /* const assignedLawyerIds = solicitudData?.abogados?.map((abogado: any) => abogado.id) || []; */
+                // Obtener los abogados asignados desde la solicitud
                 const assignedLawyers = solicitudData?.abogados?.map((abogado: any) => ({
-                    id: abogado.id,
-                    nombre: abogado.nombre
+                    id: abogado.id || abogado._id,
+                    nombre: abogado.nombre,
                 })) || [];
 
+                const assignedLawyerIds = assignedLawyers.map((lawyer) => lawyer.id);
+
+                // Recorrer todas las páginas
                 while (hasMore) {
                     const response = await axios.get('/api/user', {
                         params: {
@@ -234,8 +235,6 @@ const Request: React.FC = () => {
 
                     const usuarios = response.data.usuarios;
 
-                    const assignedLawyerIds = assignedLawyers.map((lawyer) => lawyer.id);
-
                     const filteredLawyers = usuarios.filter((user: any) =>
                         user.rol >= 35 && !assignedLawyerIds.includes(user.id)
                     );
@@ -244,27 +243,47 @@ const Request: React.FC = () => {
                         user.rol >= 35 && assignedLawyerIds.includes(user.id)
                     );
 
-                    // Añadir los resultados filtrados al array total
                     allLawyers = [...allLawyers, ...filteredLawyers];
                     allAlreadyAssigned = [...allAlreadyAssigned, ...alreadyAssigned];
-                    // Verificar si hay más páginas
+
                     const totalUsers = response.data.totalUsers;
                     const totalPages = Math.ceil(totalUsers / limitPerPage);
-
                     hasMore = currentPage < totalPages;
-                    currentPage += 1; // Avanzar a la siguiente página
+                    currentPage += 1;
                 }
 
-                setLawyers(allLawyers); // Almacenar todos los abogados en el estado
+                // 🔍 Verificar si falta algún abogado asignado
+                const encontradosIds = allAlreadyAssigned.map((ab) => ab.id);
+                const faltantesIds = assignedLawyerIds.filter((id) => !encontradosIds.includes(id));
+
+                if (faltantesIds.length > 0) {
+                    // 🔄 Hacer una llamada por cada uno que falta
+                    const fetchFaltantes = await Promise.all(
+                        faltantesIds.map(async (id) => {
+                            const res = await axios.get(`/api/user`, {
+                                params: { singleId: id },
+                            });
+                            return res.data.usuario;
+                        })
+                    );
+
+                    // Añadir los que faltaban a alreadyAssigned
+                    allAlreadyAssigned = [...allAlreadyAssigned, ...fetchFaltantes];
+                }
+
+                setLawyers(allLawyers);
                 setAlreadyAssigned(allAlreadyAssigned);
                 setAssignedLawyers(assignedLawyers);
-                console.log("Abogados asignados ", allAlreadyAssigned)
+                console.log("✅ allLawyers ", allLawyers);
+                console.log("✅ allAlreadyAssigned ", allAlreadyAssigned);
+                console.log("✅ assignedLawyers ", assignedLawyers);
             } catch (error) {
                 console.error('Error fetching all lawyers:', error);
             }
         };
 
         if (solicitudData && solicitudData.abogados) {
+            console.log("✅ Condición cumplida, llamando a fetchAllLawyers()");
             fetchAllLawyers();
         }
     }, [solicitudData]);
@@ -415,13 +434,13 @@ const Request: React.FC = () => {
         await router.push('/dashboard/requests');
     };
 
-    useEffect(() => {
+    /* useEffect(() => {
         const fetchAllLawyers = async () => {
             // Lógica para cargar abogados (sin cambios)
         };
 
         fetchAllLawyers();
-    }, []);
+    }, []); */
 
     const handleAssignLawyer = async () => {
         if (isAssigning) return; // ⬅️ Si ya está asignando, no volver a ejecutar
@@ -594,10 +613,10 @@ const Request: React.FC = () => {
 
     const handleDownload = async () => {
         try {
-            let solicitudId = id;
+            console.log("solicitudId Antes de enviar", id)
             // Llamar a la API para obtener la URL del archivo
-            const response = await axios.post(`${backendBaseUrl}/${backendEnv}/create-pacto-social-file/${solicitudId}`);
-
+            const response = await axios.post('/api/create-pacto-social-file', { solicitudId: id });
+            console.log("solicitudId enviado", id)
             if (response.data && response.data.fileUrl) {
                 // Crear un enlace temporal para descargar el archivo
                 const url = response.data.fileUrl;
@@ -1610,137 +1629,119 @@ const Request: React.FC = () => {
         doc.save('Resumen_Solicitud.pdf');
     };
 
-    const generatePDFPersonas = () => {
+    const generateInfoPersonas = () => {
         const doc = new jsPDF();
         let y = 20; // Posición inicial en Y
         const pageHeight = doc.internal.pageSize.height; // Altura de la página
 
         // Función auxiliar para manejar texto con saltos de página automáticos
         const addLine = (text: string) => {
-            if (y + 10 > pageHeight) {
-                doc.addPage();
-                y = 20; // Reinicia la posición Y en la nueva página
-            }
-            doc.text(text, 10, y);
-            y += 10;
+            const margin = 10; // Margen izquierdo
+            const maxWidth = doc.internal.pageSize.width - 2 * margin; // Ancho máximo del texto
+            const lines = doc.splitTextToSize(text, maxWidth); // Divide el texto en líneas ajustadas al ancho
+            lines.forEach(line => {
+                if (y + 10 > pageHeight) {
+                    doc.addPage();
+                    y = 20; // Reinicia la posición Y en la nueva página
+                }
+                doc.text(line, margin, y);
+                y += 7; // Ajusta el espacio entre líneas
+            });
         };
 
-        // Título del documento
+        // Título
         doc.setFontSize(20);
         addLine('Información de las Personas');
 
-        // Validar si existen datos en peopleData
-        if (Array.isArray(peopleData) && peopleData.length > 0) {
-            // Recorrer cada persona en el array
-            peopleData.forEach((person, index) => {
-                let fechaNacimiento = person.fechaNacimiento;
+        // Información de cada persona
+        peopleData.forEach((persona: any, index: number) => {
+            doc.setFontSize(14);
+            addLine(`Persona #${index + 1}`);
+            doc.setFontSize(12);
 
-                // Verificar si userData.fechaNacimiento tiene el formato esperado de Firebase
-                if (person.fechaNacimiento?._seconds) {
-                    // Convertir el timestamp de Firebase a una fecha válida
-                    const timestamp = person.fechaNacimiento._seconds * 1000; // Convertir segundos a milisegundos
-                    fechaNacimiento = new Date(timestamp).toISOString().split('T')[0]; // Convertir a YYYY-MM-DD
-                }
-                doc.setFontSize(16);
-                addLine(`Información del Representante Legal ${index + 1}:`);
+            addLine(`Nombre Completo: ${persona.nombreApellido || 'N/A'}`);
+            addLine(`Cédula o Pasaporte: ${persona.cedulaPasaporte || 'N/A'}`);
+            addLine(`Fecha de Nacimiento: ${persona.fechaNacimiento ? new Date(persona.fechaNacimiento._seconds * 1000).toLocaleDateString() : 'N/A'}`);
+            addLine(`Sexo: ${persona.sexo || 'N/A'}`);
+            addLine(`Nacionalidad: ${persona.nacionalidad || 'N/A'}`);
+            addLine(`País de Nacimiento: ${persona.paisNacimiento || 'N/A'}`);
+            addLine(`País de Residencia: ${persona.paisResidencia || 'N/A'}`);
+            addLine(`Dirección: ${persona.direccion || 'N/A'}`);
+            addLine(`Teléfono: ${persona.telefono || 'N/A'}`);
+            addLine(`Correo Electrónico: ${persona.email || 'N/A'}`);
+            addLine(`Profesión: ${persona.profesion || 'N/A'}`);
+            addLine(`Tipo de Persona: ${persona.tipoPersona || 'N/A'}`);
+
+            // Persona Jurídica
+            if (persona.tipoPersona === "Persona Jurídica") {
+                doc.setFontSize(14);
+                addLine(`--- Información Jurídica ---`);
                 doc.setFontSize(12);
-                addLine(`Tipo de Persona: ${person.tipoPersona || 'N/A'}`);
-                if (person.tipoPersona === "Persona Jurídica") {
-                    addLine(`Nombre de la persona jurídica / sociedad: ${person.personaJuridica.nombreJuridico || 'N/A'}`);
-                    addLine(`País de la persona jurídica: ${person.personaJuridica.paisJuridico || 'N/A'}`);
-                    addLine(`Número de registro: ${person.personaJuridica.registroJuridico || 'N/A'}`);
-                    y += 10;
+                addLine(`Nombre Jurídico: ${persona.personaJuridica.nombreJuridico || 'N/A'}`);
+                addLine(`País Jurídico: ${persona.personaJuridica.paisJuridico || 'N/A'}`);
+                addLine(`Registro Jurídico: ${persona.personaJuridica.registroJuridico || 'N/A'}`);
+            }
+
+            // Referencias bancarias
+            if (persona.referenciasBancarias) {
+                doc.setFontSize(14);
+                addLine(`--- Referencia Bancaria ---`);
+                doc.setFontSize(12);
+                addLine(`Banco: ${persona.referenciasBancarias.bancoNombre || 'N/A'}`);
+                addLine(`Teléfono: ${persona.referenciasBancarias.bancoTelefono || 'N/A'}`);
+                addLine(`Correo: ${persona.referenciasBancarias.bancoEmail || 'N/A'}`);
+            }
+
+            // Referencias comerciales
+            if (persona.referenciasComerciales) {
+                doc.setFontSize(14);
+                addLine(`--- Referencia Comercial ---`);
+                doc.setFontSize(12);
+                addLine(`Nombre: ${persona.referenciasComerciales.comercialNombre || 'N/A'}`);
+                addLine(`Teléfono: ${persona.referenciasComerciales.comercialTelefono || 'N/A'}`);
+                addLine(`Correo: ${persona.referenciasComerciales.comercialEmail || 'N/A'}`);
+            }
+
+            // Expuesta políticamente
+            addLine(`Es persona políticamente expuesta: ${persona.esPoliticamenteExpuesta || 'No'}`);
+            if (persona.esPoliticamenteExpuesta === 'Sí') {
+                addLine(`Cargo: ${persona.personaExpuestaCargo || 'N/A'}`);
+                addLine(`Fecha: ${persona.personaExpuestaFecha || 'N/A'}`);
+            }
+
+            // Roles
+            if (persona.director?.esActivo) {
+                addLine(`Director: Sí `);
+            }
+
+            if (persona.fundador?.esActivo) {
+                addLine(`Fundador: Sí `);
+            }
+
+            if (persona.dignatario?.dignatario) {
+                addLine(`Dignatario: Sí`);
+                if (persona.dignatario.posiciones?.length) {
+                    addLine(`Posiciones: ${persona.dignatario.posiciones.join(', ')}`);
                 }
+            }
 
-                addLine(`Nombre: ${person.nombreApellido || 'N/A'}`);
-                addLine(`Cédula o Pasaporte: ${person.cedulaPasaporte || 'N/A'}`);
-                addLine(`Nacionalidad: ${person.nacionalidad || 'N/A'}`);
-                addLine(`Sexo: ${person.sexo || 'N/A'}`);
-                addLine(`País de Nacimiento: ${person.paisNacimiento || 'N/A'}`);
-                addLine(`Fecha de Nacimiento: ${fechaNacimiento || 'N/A'}`);
-                addLine(`Dirección: ${person.direccion || 'N/A'}`);
-                addLine(`País de Residencia: ${person.paisResidencia || 'N/A'}`);
-                addLine(`Profesión: ${person.profesion || 'N/A'}`);
-                addLine(`Teléfono: ${person.telefono || 'N/A'}`);
-                addLine(`Email: ${person.email || 'N/A'}`);
-                y += 10;
+            if (persona.miembro?.esActivo) {
+                addLine(`Miembro: Sí `);
+            }
 
-                if (person.esPoliticamenteExpuesta === "Si") {
-                    doc.setFontSize(16);
-                    addLine(`Es una persona políticamente expuesta:`);
-                    doc.setFontSize(12);
-                    addLine(`Indicar qué cargo ocupa u ocupó: ${person.personaExpuestaCargo || 'N/A'}`);
-                    addLine(`En qué fecha: ${person.personaExpuestaFecha || 'N/A'}`);
-                    y += 10;
-                }
+            if (persona.accionista?.accionista) {
+                addLine(`Accionista: Sí `);
+                addLine(`Porcentaje: ${persona.accionista?.porcentajeAcciones || 'N/A'}%`);
+            }
 
-                if (person.referenciasBancarias.bancoNombre !== "") {
-                    doc.setFontSize(16);
-                    addLine(`Referencias Bancarias ${index + 1}:`);
-                    doc.setFontSize(12);
-                    addLine(`Nombre del Banco: ${person.referenciasBancarias.bancoNombre || 'N/A'}`);
-                    addLine(`Teléfono: ${person.referenciasBancarias.bancoTelefono || 'N/A'}`);
-                    addLine(`Email: ${person.referenciasBancarias.bancoEmail || 'N/A'}`);
-                    y += 10;
-                }
+            if (persona.poder?.poder) {
+                addLine(`Apoderado: Sí`);
+            }
 
-                if (person.referenciasComerciales.comercialNombre !== "") {
-                    doc.setFontSize(16);
-                    addLine(`Referencias Comerciales ${index + 1}:`);
-                    doc.setFontSize(12);
-                    addLine(`Nombre del Comercial: ${person.referenciasComerciales.comercialNombre || 'N/A'}`);
-                    addLine(`Teléfono: ${person.referenciasComerciales.comercialTelefono || 'N/A'}`);
-                    addLine(`Email: ${person.referenciasComerciales.comercialEmail || 'N/A'}`);
-                    y += 10;
-                }
+            y += 10;
+        });
 
-                if (person.beneficiarios && person.beneficiarios.length > 0) {
-                    person.beneficiarios.forEach((beneficiario, index) => {
-                        let fechaNacimiento = beneficiario.fechaNacimiento;
-
-                        // Verificar si userData.fechaNacimiento tiene el formato esperado de Firebase
-                        if (beneficiario.fechaNacimiento?._seconds) {
-                            // Convertir el timestamp de Firebase a una fecha válida
-                            const timestamp = beneficiario.fechaNacimiento._seconds * 1000; // Convertir segundos a milisegundos
-                            fechaNacimiento = new Date(timestamp).toISOString().split('T')[0]; // Convertir a YYYY-MM-DD
-                        }
-
-                        doc.setFontSize(16);
-                        addLine(`Información del Beneficiario Final ${index + 1}:`);
-                        doc.setFontSize(12);
-                        addLine(`Nombre: ${beneficiario.nombreApellido || 'N/A'}`);
-                        addLine(`Cédula o Pasaporte: ${beneficiario.cedulaPasaporte || 'N/A'}`);
-                        addLine(`Nacionalidad: ${beneficiario.nacionalidad || 'N/A'}`);
-                        addLine(`Sexo: ${beneficiario.sexo || 'N/A'}`);
-                        addLine(`País de Nacimiento: ${beneficiario.paisNacimiento || 'N/A'}`);
-                        addLine(`Fecha de Nacimiento: ${fechaNacimiento || 'N/A'}`);
-                        addLine(`Dirección: ${beneficiario.direccion || 'N/A'}`);
-                        addLine(`País de Residencia: ${beneficiario.paisResidencia || 'N/A'}`);
-                        addLine(`Profesión: ${beneficiario.profesion || 'N/A'}`);
-                        addLine(`Teléfono: ${beneficiario.telefono || 'N/A'}`);
-                        addLine(`Email: ${beneficiario.email || 'N/A'}`);
-                        y += 10;
-
-                        if (beneficiario.esPoliticamenteExpuesta === "Si") {
-                            doc.setFontSize(16);
-                            addLine(`Es una persona políticamente expuesta:`);
-                            doc.setFontSize(12);
-                            addLine(`Indicar qué cargo ocupa u ocupó: ${beneficiario.personaExpuestaCargo || 'N/A'}`);
-                            addLine(`En qué fecha: ${beneficiario.personaExpuestaFecha || 'N/A'}`);
-                            y += 10;
-                        }
-
-                        addLine(''); // Espacio entre registros
-                    });
-                }
-
-                addLine(''); // Espacio entre registros
-            });
-        } else {
-            addLine('No se encontraron personas asociadas.');
-        }
-
-        // Guardar el PDF
+        // Guardar
         doc.save('Información_Personas.pdf');
     };
 
@@ -1798,6 +1799,19 @@ const Request: React.FC = () => {
         });
         return () => unsubscribe();
     }, []);
+
+    const obtenerNombreAbogado = (id: string) => {
+        if (!id) return 'ID no proporcionado';
+
+        const abogado =
+            assignedLawyers.find((a: any) => String(a.id ?? a._id) === String(id)) ||
+            alreadyAssigned.find((a: any) => String(a.id ?? a._id) === String(id)) ||
+            lawyers.find((a: any) => String(a.id ?? a._id) === String(id));
+
+        return abogado ? abogado.nombre : `Abogado no encontrado (ID: ${id})`;
+    };
+
+    const filteredAssigned = alreadyAssigned.filter(Boolean);
 
     return (
         <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
@@ -2021,14 +2035,11 @@ const Request: React.FC = () => {
                     <div className="">
                         {alreadyAssigned.length > 0 ? (
                             <ul className="space-y-2">
-                                {alreadyAssigned.map((lawyer, index) => (
-                                    <li key={index} className="text-white text-base flex items-center justify-between">
+                                {filteredAssigned.map((lawyer, index) => (
+                                    <li key={index} className="text-white text-base flex items-center gap-2">
                                         <span>{lawyer.nombre}</span>
                                         {lawyer.fotoPerfil && (
-                                            <button
-                                                onClick={() => setSelectedPhotoUrl(lawyer.fotoPerfil)}
-                                                className="text-blue-400 underline hover:text-blue-200 ml-2 text-base"
-                                            >
+                                            <button onClick={() => setSelectedPhotoUrl(lawyer.fotoPerfil)}>
                                                 Ver foto
                                             </button>
                                         )}
@@ -2085,38 +2096,222 @@ const Request: React.FC = () => {
                     </table>
 
                     <div className="flex space-x-4 mt-2">
-                        <button
-                            onClick={generatePDF}
-                            className="bg-profile text-white px-4 py-2 rounded mt-8"
-                        >
-                            Descargar Resumen PDF
-                        </button>
-                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
-                            <>
-                                <button
-                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                    onClick={handleDownload}
-                                >
-                                    Descargar Pacto Social
-                                </button>
-                            </>
-                        )}
-                    </div>
-
-                    {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
-                            <>
-                                <div className="flex space-x-4 ">
+                        <>
+                            <button
+                                onClick={generatePDF}
+                                className="bg-profile text-white px-4 py-2 rounded mt-8"
+                            >
+                                Descargar Resumen PDF
+                            </button>
+                            {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
+                                <>
                                     <button
-                                        onClick={generatePDFPersonas}
                                         className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                        onClick={handleDownload}
                                     >
-                                        Descargar información de las personas
+                                        Descargar Pacto Social
                                     </button>
+                                </>
+                            )}
 
-                                </div>
+                            {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa" || solicitudData?.tipo === "new-fundacion")) && (
+                                <>
+                                    <div className="flex space-x-4 ">
+                                        <button
+                                            onClick={generateInfoPersonas}
+                                            className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                        >
+                                            Descargar información de las personas
+                                        </button>
+
+                                    </div>
+                                </>
+                            )}
+                        </>
+                    </div>
+                </div>
+
+                {expedienteRecord ? (
+                    <div className="bg-gray-800 text-white p-4 rounded-lg mt-6 shadow-md">
+                        <h2 className="text-lg font-bold">Información de Registro de la Sociedad o Fundación</h2>
+                        <hr className='mt-2 mb-2' />
+                        <p><strong>Nombre de la Sociedad/Fundación:</strong> {expedienteRecord.nombreSociedadFundacion || 'No disponible'}</p>
+                        <p><strong>Tipo:</strong> {expedienteRecord.tipoSociedadFundacion || 'No disponible'}</p>
+                        <p><strong>Posee Nominales:</strong> {expedienteRecord.poseeNominales || 'No'}</p>
+
+                        {expedienteRecord.poseeDirectoresNominales === 'Si' && (
+                            <>
+                                <p className="font-semibold mt-4">Directores Nominales:</p>
+                                <ul className="list-disc list-inside text-sm ml-4">
+                                    {expedienteRecord.directoresNominales?.map((dir: any, index: number) => (
+                                        <li key={index}>{obtenerNombreAbogado(dir.abogado)}</li>
+                                    ))}
+                                </ul>
                             </>
                         )}
-                </div>
+
+                        {expedienteRecord.poseeDignatariosNominales === 'Si' && (
+                            <>
+                                <p className="font-semibold mt-4">Dignatarios Nominales:</p>
+                                <ul className="list-disc list-inside text-sm ml-4">
+                                    {expedienteRecord.dignatariosNominales?.map((dig: any, index: number) => (
+                                        <li key={index}>
+                                            {obtenerNombreAbogado(dig.abogado)} - {dig.cargo}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
+                        )}
+
+                        {expedienteRecord.poseeMiembrosNominales === 'Si' && (
+                            <>
+                                <p className="font-semibold mt-4">Miembros Nominales:</p>
+                                <ul className="list-disc list-inside text-sm ml-4">
+                                    {expedienteRecord.miembrosNominales?.map((miem: any, index: number) => (
+                                        <li key={index}>{obtenerNombreAbogado(miem.abogado)}</li>
+                                    ))}
+                                </ul>
+                            </>
+                        )}
+
+                        <p className='mt-4'><strong>Agente Residente:</strong> {expedienteRecord.agenteResidente || 'No disponible'}</p>
+                        {expedienteRecord.agenteResidente === 'otros' && (
+                            <p><strong>Nombre del Agente:</strong> {expedienteRecord.agenteResidenteNombre || 'No disponible'}</p>
+                        )}
+
+                        <p><strong>Posee Aviso de Operación:</strong> {expedienteRecord.poseeAvisoOperacion || 'No'}</p>
+
+                        <p><strong>RUC:</strong> {expedienteRecord.ruc || 'No disponible'}</p>
+                        <p><strong>NIT:</strong> {expedienteRecord.nit || 'No disponible'}</p>
+                        <p><strong>Fecha de Constitución:</strong> {expedienteRecord.fechaConstitucion || 'No disponible'}</p>
+
+                        <p><strong>Correo Responsable:</strong> {expedienteRecord.correoResponsable || 'No disponible'}</p>
+                        <p><strong>Correo Adicional:</strong> {expedienteRecord.correoAdicional || 'No disponible'}</p>
+
+                        <p><strong>Periodo de Pago:</strong> {expedienteRecord.periodoPago || 'No disponible'}</p>
+
+                        {mostrarAdjuntos && (
+                            <>
+                                <hr className='mt-2 mb-2' />
+                                <p className="font-semibold mb-2">Archivos Adjuntos:</p>
+                                <ul className="space-y-2 text-sm">
+                                    {expedienteRecord.archivoRUC && (
+                                        <li>
+                                            <strong>RUC:</strong>{' '}
+                                            <a href={expedienteRecord.archivoRUC} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                Ver archivo adjunto
+                                            </a>
+                                        </li>
+                                    )}
+
+                                    {expedienteRecord.archivoNIT && (
+                                        <li>
+                                            <strong>NIT:</strong>{' '}
+                                            <a href={expedienteRecord.archivoNIT} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                Ver archivo adjunto
+                                            </a>
+                                        </li>
+                                    )}
+
+                                    {expedienteRecord.archivoEscritura && (
+                                        <li>
+                                            <strong>Escritura Pública:</strong>{' '}
+                                            <a href={expedienteRecord.archivoEscritura} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                Ver archivo adjunto
+                                            </a>
+                                        </li>
+                                    )}
+
+                                    {expedienteRecord.archivoNombramiento && (
+                                        <li>
+                                            <strong>Nombramiento:</strong>{' '}
+                                            <a href={expedienteRecord.archivoNombramiento} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                Ver archivo adjunto
+                                            </a>
+                                        </li>
+                                    )}
+
+                                    {expedienteRecord.archivoAvisoOperacion && (
+                                        <li>
+                                            <strong>Aviso de Operación:</strong>{' '}
+                                            <a href={expedienteRecord.archivoAvisoOperacion} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                Ver archivo adjunto
+                                            </a>
+                                        </li>
+                                    )}
+
+                                    {expedienteRecord.archivoLibroAcciones && (
+                                        <p>
+                                            <strong>Libro de Acciones:</strong>{' '}
+                                            <a
+                                                href={expedienteRecord.archivoLibroAcciones}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-400 no-underline hover:underline"
+                                            >
+                                                Ver archivo adjunto
+                                            </a>
+                                        </p>
+                                    )}
+
+                                    {expedienteRecord.archivosAcciones?.length > 0 && (
+                                        <li>
+                                            <strong>Documentos de Acciones:</strong>
+                                            <ul className="list-disc ml-5 mt-1">
+                                                {expedienteRecord.archivosAcciones.map((url: string, i: number) => (
+                                                    <li key={i}>
+                                                        <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline"
+                                                        >
+                                                            Ver archivo de acción #{i + 1}
+                                                        </a>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </li>
+                                    )}
+                                </ul>
+                                <hr className='mt-2 mb-2' />
+                            </>
+                        )}
+
+                        <button
+                            className="bg-profile text-white px-4 py-2 rounded mt-4"
+                            onClick={() => setMostrarAdjuntos(prev => !prev)}
+                        >
+                            {mostrarAdjuntos ? 'Ocultar archivos adjuntos' : 'Ver archivos adjuntos'}
+                        </button>
+
+                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente"
+                        ) && (
+                                <>
+                                    <button
+                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                        onClick={openModal}
+                                    >
+                                        Agregar información de Registro de la Sociedad/Fundación
+                                    </button>
+                                </>
+                            )}
+                    </div>
+                ) : (
+                    <div className="bg-gray-800 text-white p-4 rounded-lg mt-6 shadow-md">
+                        <h2 className="text-lg font-bold mb-4">Información de Registro de la Sociedad o Fundación</h2>
+                        <p className="text-sm text-red-500">No hay información de Registro de la Sociedad o Fundación.</p>
+
+                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente"
+                        ) && (
+                                <>
+                                    <button
+                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                        onClick={openModal}
+                                    >
+                                        Agregar información de Registro de la Sociedad/Fundación
+                                    </button>
+                                </>
+                            )}
+
+                    </div>
+                )}
 
                 {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && formData.rol !== "Asistente"
                     && formData.rol !== "Abogados" && formData.rol !== "Auditor"
@@ -2135,19 +2330,6 @@ const Request: React.FC = () => {
                                     <p className="text-sm text-red-500">No hay comprobante de pago cargado.</p>
                                 )}
                             </div>
-                        </>
-                    )}
-
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa"
-                    || solicitudData?.tipo === "new-fundacion")
-                ) && (
-                        <>
-                            <button
-                                className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                onClick={openModal}
-                            >
-                                Información de Registro de la Sociedad/Fundación
-                            </button>
                         </>
                     )}
 
@@ -2229,7 +2411,7 @@ const Request: React.FC = () => {
                   })()
                 ) : null}
                 {!roleLoading && userRole !== null && userRole >= 100 && (
-                  <p className="text-gray-400 mt-2">No tienes permisos para ver el expediente relacionado.</p>
+                    <p className="text-gray-400 mt-2">No tienes permisos para ver el expediente relacionado.</p>
                 )}
             </div>
 

@@ -85,6 +85,10 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
 
         adjuntoDocumentoCedulaPasaporteURL: '',
         adjuntoDocumentoCedulaPasaporte2URL: '',
+        adjuntoCartaReferenciasBancarias: '',
+        adjuntoSustentoRentaOCartaTrabajo: '',
+        adjuntoReferenciaComercial: '',
+
     });
 
     useEffect(() => {
@@ -146,15 +150,18 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                 bancoTelefono: userData.referenciasBancarias?.bancoTelefono || userData.telefono_banco || '',
                 bancoTelefonoCodigo: 'PA',
                 bancoEmail: userData.referenciasBancarias?.bancoEmail || userData.email_banco || '',
+                adjuntoCartaReferenciasBancarias: userData.referenciasBancarias?.adjuntoCartaReferenciasBancarias || '',
 
                 // Referencias comerciales
                 comercialNombre: userData.referenciasComerciales?.comercialNombre || userData.nombre_comercial || '',
                 comercialTelefono: userData.referenciasComerciales?.comercialTelefono || userData.telefono_comercial || '',
                 comercialTelefonoCodigo: userData.referenciasComerciales?.comercialTelefonoCodigo || 'PA',
                 comercialEmail: userData.referenciasComerciales?.comercialEmail || userData.email_comercial || '',
+                adjuntoReferenciaComercial: userData.referenciasComerciales?.adjuntoReferenciaComercial || '',
 
                 adjuntoDocumentoCedulaPasaporteURL: userData?.adjuntoDocumentoCedulaPasaporteURL || userData.adjunto_documento || '',
                 adjuntoDocumentoCedulaPasaporte2URL: userData?.adjuntoDocumentoCedulaPasaporte2URL || userData.adjunto_documento2 || '',
+                adjuntoSustentoRentaOCartaTrabajo: userData?.adjuntoSustentoRentaOCartaTrabajo || '',
 
             });
 
@@ -266,7 +273,23 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                         ...prevData,
                         adjuntoDocumentoCedulaPasaporte2URL: downloadURL,
                     }));
+                } else if (name === 'adjuntoCartaReferenciasBancarias') {
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        adjuntoCartaReferenciasBancarias: downloadURL,
+                    }));
+                } else if (name === 'adjuntoSustentoRentaOCartaTrabajo') {
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        adjuntoSustentoRentaOCartaTrabajo: downloadURL,
+                    }));
+                } else if (name === 'adjuntoReferenciaComercial') {
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        adjuntoReferenciaComercial: downloadURL,
+                    }));
                 }
+
             } catch (error) {
                 console.error('Error uploading file:', error);
             }
@@ -399,6 +422,10 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
         comercialTelefono: false,
         comercialEmail: false,
         adjuntoDocumentoCedulaPasaporteURL: false,
+        adjuntoCartaReferenciasBancarias: false,
+        adjuntoReferenciaComercial: false,
+        adjuntoSustentoRentaOCartaTrabajo: false,
+
     });
 
     const nombreJuridicoRef = useRef<HTMLInputElement>(null);
@@ -416,6 +443,9 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
     const comercialTelefonoRef = useRef<HTMLInputElement>(null);
     const comercialEmailRef = useRef<HTMLInputElement>(null);
     const adjuntoDocumentoCedulaPasaporteURL = useRef<HTMLInputElement>(null);
+    const adjuntoCartaReferenciasBancarias = useRef<HTMLInputElement>(null);
+    const adjuntoReferenciaComercial = useRef<HTMLInputElement>(null);
+    const adjuntoSustentoRentaOCartaTrabajo = useRef<HTMLInputElement>(null);
 
     const fieldValidations = [
         { field: "nombreApellido", ref: nombreApellidoRef, errorMessage: "Por favor, ingrese el nombre y apellido." },
@@ -426,6 +456,9 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
         { field: "telefono", ref: telefonoRef, errorMessage: "Por favor, ingrese el número de teléfono." },
         { field: "email", ref: emailRef, errorMessage: "Por favor, ingrese el correo electrónico." },
         { field: "adjuntoDocumentoCedulaPasaporteURL", ref: adjuntoDocumentoCedulaPasaporteURL, errorMessage: "Es necesario adjuntar la copia de la cédula o pasaporte." },
+        { field: "adjuntoCartaReferenciasBancarias", ref: adjuntoCartaReferenciasBancarias, errorMessage: "Es necesario adjuntar la Carta de Referencia Bancaria." },
+        { field: "adjuntoReferenciaComercial", ref: adjuntoReferenciaComercial, errorMessage: "Es necesario adjuntar la Carta de Referencia Comercial." },
+        { field: "adjuntoSustentoRentaOCartaTrabajo", ref: adjuntoSustentoRentaOCartaTrabajo, errorMessage: "Es necesario adjuntar el Sustento de declaración de renta o carta de trabajo." },
     ];
 
     const validateFields = () => {
@@ -901,6 +934,7 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                 }),
                 adjuntoDocumentoCedulaPasaporteURL: formData.adjuntoDocumentoCedulaPasaporteURL,
                 adjuntoDocumentoCedulaPasaporte2URL: formData.adjuntoDocumentoCedulaPasaporte2URL,
+                adjuntoSustentoRentaOCartaTrabajo: formData.adjuntoSustentoRentaOCartaTrabajo || '',
                 personaJuridica: {
                     nombreJuridico: formData.nombreJuridico,
                     paisJuridico: formData.paisJuridico,
@@ -910,11 +944,13 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                     bancoNombre: formData.bancoNombre,
                     bancoTelefono: `${countryCodes[formData.bancoTelefonoCodigo]}${formData.bancoTelefono}` || '',
                     bancoEmail: formData.bancoEmail,
+                    adjuntoCartaReferenciasBancarias: formData.adjuntoCartaReferenciasBancarias || '',
                 },
                 referenciasComerciales: {
                     comercialNombre: formData.comercialNombre,
                     comercialTelefono: `${countryCodes[formData.comercialTelefonoCodigo]}${formData.comercialTelefono}` || '',
                     comercialEmail: formData.comercialEmail,
+                    adjuntoReferenciaComercial: formData.adjuntoReferenciaComercial || '',
                 },
             };
 
@@ -1321,6 +1357,23 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                                 /* required */
                                 />
                             </div>
+                            <div className="col-span-1 mt-2">
+                                <label className="text-white">Carta de Referencias Bancarias</label>
+                                <input
+                                    type="file"
+                                    name="adjuntoCartaReferenciasBancarias"
+                                    accept="application/pdf,image/*"
+                                    onChange={handleFileChange}
+                                    className={`w-full p-2 border ${errors.adjuntoCartaReferenciasBancarias ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
+                                />
+                                {formData.adjuntoCartaReferenciasBancarias && (
+                                    <p className="text-sm text-blue-500">
+                                        <a href={formData.adjuntoCartaReferenciasBancarias} target="_blank" rel="noopener noreferrer">
+                                            Ver documento actual
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
                         </div>
                         <p className="col-span-2 texto-blanco">
                             * El Teléfono y Correo Electrónico que deben colocar es el de su enlace en el banco de tenerlo o el oficial del banco que ve su cuenta.
@@ -1376,10 +1429,45 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                                 /* required */
                                 />
                             </div>
+                            <div className="col-span-1 mt-2">
+                                <label className="text-white">Carta de Referencia Comercial</label>
+                                <input
+                                    type="file"
+                                    name="adjuntoReferenciaComercial"
+                                    accept="application/pdf,image/*"
+                                    onChange={handleFileChange}
+                                    className={`w-full p-2 border ${errors.adjuntoReferenciaComercial ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
+                                />
+                                {formData.adjuntoReferenciaComercial && (
+                                    <p className="text-sm text-blue-500">
+                                        <a href={formData.adjuntoReferenciaComercial} target="_blank" rel="noopener noreferrer">
+                                            Ver documento actual
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
                         </div>
                         <p className="col-span-2 texto-blanco">
                             * Aquí debes poner el nombre y contacto de cualquier referencia comercial, si no se mantiene una referencia comercial porque no ha ejecutado actividades comerciales, según la ocupación, puede dejarlo en blanco.
                         </p>
+                        <div className="col-span-1 mt-2">
+                            <label className="text-white">Sustento de declaración de renta o carta de trabajo</label>
+                            <input
+                                type="file"
+                                name="adjuntoSustentoRentaOCartaTrabajo"
+                                accept="application/pdf,image/*"
+                                onChange={handleFileChange}
+                                className={`w-full p-2 border ${errors.adjuntoSustentoRentaOCartaTrabajo ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
+                            />
+                            {formData.adjuntoSustentoRentaOCartaTrabajo && (
+                                <p className="text-sm text-blue-500">
+                                    <a href={formData.adjuntoSustentoRentaOCartaTrabajo} target="_blank" rel="noopener noreferrer">
+                                        Ver documento actual
+                                    </a>
+                                </p>
+                            )}
+                        </div>
+
                         <div className="col-span-1 mt-2">
                             <label className="text-white">Adjuntar copia de pasaporte o cédula</label>
                             <input
@@ -1396,6 +1484,7 @@ const ModalPersona: React.FC<ModalProps> = ({ onClose, id }) => {
                                 </p>
                             )}
                         </div>
+
                         <div className="col-span-1 mt-2">
                             <label className="text-white">Adjuntar copia de pasaporte o cédula</label>
                             <input

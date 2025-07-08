@@ -9,6 +9,10 @@ interface TableWithPaginationProps {
     hasPrevPage: boolean;
     hasNextPage: boolean;
     onPageChange: (pageNumber: number) => void;
+    extraHeader?: React.ReactNode;
+    selectedRows?: { [key: string]: boolean };
+    onSelectRow?: (id: string) => void;
+    onSelectAll?: (rows: { [key: string]: any }[]) => void;
 }
 
 const TableWithRequests: React.FC<TableWithPaginationProps> = ({
@@ -20,12 +24,17 @@ const TableWithRequests: React.FC<TableWithPaginationProps> = ({
     hasPrevPage,
     hasNextPage,
     onPageChange,
+    extraHeader,
+    selectedRows,
+    onSelectRow,
+    onSelectAll,
 }) => {
     const columns = data.length > 0 ? Object.keys(data[0]) : [];
 
     return (
         <div className="bg-[#1F1F2E] p-4 rounded-lg shadow-lg w-full mb-4" style={{ maxWidth: '100%' }}>
             <h2 className="text-lg font-bold text-white mb-4">{title}</h2>
+            {extraHeader && <div className="mb-4">{extraHeader}</div>}
             <div className="overflow-x-auto">
                 {data.length > 0 ? (
                     <div className="w-full overflow-x-auto">
@@ -33,11 +42,20 @@ const TableWithRequests: React.FC<TableWithPaginationProps> = ({
                             <table className="w-full text-left text-gray-400 border-collapse">
                                 <thead>
                                     <tr>
+                                        {onSelectRow && (
+                                            <th className="py-2 px-4 text-white">
+                                                <input
+                                                    type="checkbox"
+                                                    onChange={() => onSelectAll?.(data)}
+                                                    checked={
+                                                        data.length > 0 &&
+                                                        data.every((row) => selectedRows?.[row.id])
+                                                    }
+                                                />
+                                            </th>
+                                        )}
                                         {columns.map((column, index) => (
-                                            <th
-                                                key={index}
-                                                className="py-2 px-4 capitalize text-white whitespace-nowrap"
-                                            >
+                                            <th key={index} className="py-2 px-4 capitalize text-white whitespace-nowrap">
                                                 {column}
                                             </th>
                                         ))}
@@ -46,17 +64,21 @@ const TableWithRequests: React.FC<TableWithPaginationProps> = ({
                                 <tbody>
                                     {data.map((row, rowIndex) => (
                                         <tr key={rowIndex} className="border-t border-gray-700">
+                                            {onSelectRow && (
+                                                <td className="py-2 px-4">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={!!selectedRows?.[row.id]}
+                                                        onChange={() => onSelectRow(row.id)}
+                                                    />
+                                                </td>
+                                            )}
                                             {columns.map((column, colIndex) => (
-                                                <td
-                                                    key={colIndex}
-                                                    className="py-2 px-4 align-top whitespace-nowrap"
-                                                >
+                                                <td key={colIndex} className="py-2 px-4 align-top whitespace-nowrap">
                                                     {column.toLowerCase() === 'abogado' && typeof row[column] === 'string'
                                                         ? row[column]
                                                             .split(',')
-                                                            .map((lawyer: string, idx: number) => (
-                                                                <div key={idx}>{lawyer.trim()}</div>
-                                                            ))
+                                                            .map((lawyer: string, idx: number) => <div key={idx}>{lawyer.trim()}</div>)
                                                         : row[column]}
                                                 </td>
                                             ))}
