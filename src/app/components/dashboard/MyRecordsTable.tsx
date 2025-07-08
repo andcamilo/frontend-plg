@@ -66,12 +66,20 @@ const MyRecordsTable: React.FC = () => {
     Expediente: row.solicitudId || row.solicitud || '',
     Abogado: row.lawyer || '',
     Opciones: (
-      <button
-        className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition-colors"
-        onClick={() => router.push(`/dashboard/record/${row.id || ''}`)}
-      >
-        Actualizar
-      </button>
+      <div className="flex gap-2">
+        <button
+          className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 transition-colors"
+          onClick={() => router.push(`/dashboard/see-record/${row.id || ''}`)}
+        >
+          Ver
+        </button>
+        <button
+          className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition-colors"
+          onClick={() => router.push(`/dashboard/record/${row.id || ''}`)}
+        >
+          Actualizar
+        </button>
+      </div>
     )
   }));
 

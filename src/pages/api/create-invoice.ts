@@ -1,59 +1,46 @@
 import axios from 'axios';
-import { backendBaseUrl, backendEnv } from '@utils/env';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-export const getLineItem = (pensionType) => {
-  if (pensionType === "Primera vez") {
-    return {
-      item_id: "5848961000000098003",
-      name: "Legal Services",
-      description: "Professional legal services rendered.",
-      quantity: 1,
-      rate: 150,
-      item_order: 1,
-    };
-  } else {
-    return {
-      item_id: "5848961000000148093",
-      name: "Legal Services 2",
-      description: "Professional legal services rendered.",
-      quantity: 1,
-      rate: 200,
-      item_order: 1,
-    };
-  }
-};
-
+import { backendBaseUrl, backendEnv } from '@utils/env';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Only POST requests are allowed' });
   }
 
-  const { customer_id, pensionType } = req.body;
+  const { customer_id, rate, date, status, payment_terms, notes } = req.body;
 
   if (!customer_id || typeof customer_id !== 'string') {
     return res.status(400).json({ message: 'customer_id is required and must be a string' });
   }
-
-  if (!pensionType || typeof pensionType !== 'string') {
-    return res.status(400).json({ message: 'pensionType is required and must be a string' });
+  if (typeof rate !== 'number') {
+    return res.status(400).json({ message: 'rate is required and must be a number' });
+  }
+  if (!date || typeof date !== 'string') {
+    return res.status(400).json({ message: 'date is required and must be a string' });
+  }
+  if (!status || typeof status !== 'string') {
+    return res.status(400).json({ message: 'status is required and must be a string' });
+  }
+  if (typeof payment_terms !== 'number') {
+    return res.status(400).json({ message: 'payment_terms is required and must be a number' });
   }
 
   try {
-   
-    const today = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
-    const lineItem = getLineItem(pensionType);
-
     const payload = {
       customer_id,
-      date: today,
-      due_date: today,
-      line_items: [lineItem],
-      terms: "Terms & Conditions apply",
+      date,
+      status,
+      payment_terms,
+      notes,
+      line_items: [
+        {
+          item_id: '1690190000008580001',
+          rate,
+          quantity: 1,
+        },
+      ],
     };
 
-    
     const lambdaUrl = `${backendBaseUrl}/${backendEnv}/createInvoice`;
 
     // Make a POST request to the Lambda function
