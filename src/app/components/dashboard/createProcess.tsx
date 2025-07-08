@@ -291,7 +291,7 @@ const CreateProcessForm: React.FC = () => {
     <>
       <div className="flex flex-col gap-4 p-8 w-full">
         <div className="bg-component text-[#b8b8b8] px-10 py-6 rounded-lg w-full flex flex-col gap-4 mb-8">
-          <label className="text-lg font-bold text-white mb-2">¿El trámite ya está crea do en la plataforma?</label>
+          <label className="text-lg font-bold text-white mb-2">¿El trámite ya está creado en la plataforma?</label>
           <select
             value={isDigitalizado}
             onChange={handleSelectChange}

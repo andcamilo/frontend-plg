@@ -18,6 +18,7 @@ import SociedadEmpresaResumen from '@components/sociedad-empresa/sociedadEmpresa
 import WidgetLoader from '@/src/app/components/widgetLoader';
 import SaleComponent from '@/src/app/components/saleComponent';
 import PaymentModal from '@/src/app/components/PaymentModal';
+import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 
@@ -33,6 +34,11 @@ const SociedadEmpresaBase: React.FC = () => {
         monto: '',
         fecha: '',
         correo: '',
+        customer_id: '',
+        payment_mode: '',
+        amount: '',
+        invoice_id: '',
+        amount_applied: '',
     });
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const router = useRouter();
@@ -353,50 +359,9 @@ const SociedadEmpresaBase: React.FC = () => {
                             ✕
                         </button>
                         <h2 className="text-white text-2xl font-bold mb-4">Registrar Pago</h2>
-                        <form onSubmit={handleRegisterPaymentSubmit} className="flex flex-col gap-4">
-                            <input
-                                type="text"
-                                name="factura"
-                                value={registerPaymentForm.factura}
-                                onChange={handleRegisterPaymentChange}
-                                className="p-3 rounded bg-gray-800 text-white"
-                                placeholder="No Factura"
-                                required
-                            />
-                            <input
-                                type="number"
-                                name="monto"
-                                value={registerPaymentForm.monto}
-                                onChange={handleRegisterPaymentChange}
-                                className="p-3 rounded bg-gray-800 text-white"
-                                placeholder="Monto"
-                                required
-                            />
-                            <input
-                                type="date"
-                                name="fecha"
-                                value={registerPaymentForm.fecha}
-                                onChange={handleRegisterPaymentChange}
-                                className="p-3 rounded bg-gray-800 text-white"
-                                placeholder="Fecha de Pago"
-                                required
-                            />
-                            <input
-                                type="email"
-                                name="correo"
-                                value={registerPaymentForm.correo}
-                                onChange={handleRegisterPaymentChange}
-                                className="p-3 rounded bg-gray-800 text-white"
-                                placeholder="Correo Usuario"
-                                required
-                            />
-                            <button
-                                type="submit"
-                                className="bg-profile text-white py-3 rounded-lg font-semibold mt-2 hover:bg-profile/90 transition-colors"
-                            >
-                                Registrar
-                            </button>
-                        </form>
+                        <RegisterPaymentForm
+                            onClose={() => setIsRegisterPaymentModalOpen(false)}
+                        />
                     </div>
                 </div>
             )}

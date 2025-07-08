@@ -15,6 +15,7 @@ const FundacionResumen: React.FC = () => {
     const { store } = context;
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const [peopleData, setPeopleData] = useState<any[]>([]);
+    const [mostrarAdjuntos, setMostrarAdjuntos] = useState(false);
 
     useEffect(() => {
         const fetchSolicitudAndPeople = async () => {
@@ -298,8 +299,109 @@ const FundacionResumen: React.FC = () => {
         doc.save('Resumen_Fundacion.pdf');
     };
 
-    if (!solicitudData) {
-        return <p className="text-white">Cargando los detalles de la solicitud...</p>;
+    const generateInfoPersonas = () => {
+        const doc = new jsPDF();
+        let y = 20;
+        const pageHeight = doc.internal.pageSize.height;
+
+        const addLine = (text: string) => {
+            if (y + 10 > pageHeight) {
+                doc.addPage();
+                y = 20;
+            }
+            doc.text(text, 10, y);
+            y += 10;
+        };
+
+        // Título
+        doc.setFontSize(20);
+        addLine('Información de las Personas de la Fundación');
+
+        // Información de cada persona
+        peopleData.forEach((persona: any, index: number) => {
+            doc.setFontSize(14);
+            addLine(`Persona #${index + 1}`);
+            doc.setFontSize(12);
+
+            addLine(`Nombre Completo: ${persona.nombreApellido || 'N/A'}`);
+            addLine(`Cédula o Pasaporte: ${persona.cedulaPasaporte || 'N/A'}`);
+            addLine(`Fecha de Nacimiento: ${persona.fechaNacimiento ? new Date(persona.fechaNacimiento._seconds * 1000).toLocaleDateString() : 'N/A'}`);
+            addLine(`Sexo: ${persona.sexo || 'N/A'}`);
+            addLine(`Nacionalidad: ${persona.nacionalidad || 'N/A'}`);
+            addLine(`País de Nacimiento: ${persona.paisNacimiento || 'N/A'}`);
+            addLine(`País de Residencia: ${persona.paisResidencia || 'N/A'}`);
+            addLine(`Dirección: ${persona.direccion || 'N/A'}`);
+            addLine(`Teléfono: ${persona.telefono || 'N/A'}`);
+            addLine(`Correo Electrónico: ${persona.email || 'N/A'}`);
+            addLine(`Profesión: ${persona.profesion || 'N/A'}`);
+            addLine(`Tipo de Persona: ${persona.tipoPersona || 'N/A'}`);
+
+            // Persona Jurídica
+            if (persona.tipoPersona === "Persona Jurídica") {
+                doc.setFontSize(14);
+                addLine(`--- Información Jurídica ---`);
+                doc.setFontSize(12);
+                addLine(`Nombre Jurídico: ${persona.personaJuridica.nombreJuridico || 'N/A'}`);
+                addLine(`País Jurídico: ${persona.personaJuridica.paisJuridico || 'N/A'}`);
+                addLine(`Registro Jurídico: ${persona.personaJuridica.registroJuridico || 'N/A'}`);
+            }
+
+            // Referencias bancarias
+            if (persona.referenciasBancarias) {
+                doc.setFontSize(14);
+                addLine(`--- Referencia Bancaria ---`);
+                doc.setFontSize(12);
+                addLine(`Banco: ${persona.referenciasBancarias.bancoNombre || 'N/A'}`);
+                addLine(`Teléfono: ${persona.referenciasBancarias.bancoTelefono || 'N/A'}`);
+                addLine(`Correo: ${persona.referenciasBancarias.bancoEmail || 'N/A'}`);
+            }
+
+            // Referencias comerciales
+            if (persona.referenciasComerciales) {
+                doc.setFontSize(14);
+                addLine(`--- Referencia Comercial ---`);
+                doc.setFontSize(12);
+                addLine(`Nombre: ${persona.referenciasComerciales.comercialNombre || 'N/A'}`);
+                addLine(`Teléfono: ${persona.referenciasComerciales.comercialTelefono || 'N/A'}`);
+                addLine(`Correo: ${persona.referenciasComerciales.comercialEmail || 'N/A'}`);
+            }
+
+            // Expuesta políticamente
+            addLine(`Es persona políticamente expuesta: ${persona.esPoliticamenteExpuesta || 'No'}`);
+            if (persona.esPoliticamenteExpuesta === 'Sí') {
+                addLine(`Cargo: ${persona.personaExpuestaCargo || 'N/A'}`);
+                addLine(`Fecha: ${persona.personaExpuestaFecha || 'N/A'}`);
+            }
+
+            // Roles
+            if (persona.dignatario?.dignatario) {
+                addLine(`Dignatario: Sí`);
+                if (persona.dignatario.posiciones?.length) {
+                    addLine(`Posiciones: ${persona.dignatario.posiciones.join(', ')}`);
+                }
+            }
+
+            if (persona.fundador?.esActivo) {
+                addLine(`Fundador: Sí `);
+            }
+
+            if (persona.miembro?.esActivo) {
+                addLine(`Miembro: Sí `);
+            }
+
+            if (persona.poder?.poder) {
+                addLine(`Apoderado: Sí`);
+            }
+
+            y += 10;
+        });
+
+        // Guardar
+        doc.save('Información_Personas.pdf');
+    };
+
+    if (peopleData.length <= 0) {
+        return <p className="text-white">No hay Información de las Personas...</p>;
     }
 
     return (
@@ -622,12 +724,55 @@ const FundacionResumen: React.FC = () => {
                     </tbody>
                 </table>
 
-                <button
-                    onClick={generatePDF}
-                    className="mt-6 px-4 py-2 bg-profile text-white font-bold rounded hover:bg-profile-600"
-                >
-                    Descargar Resumen PDF
-                </button>
+                {((mostrarAdjuntos && solicitudData.objetivos.adjuntoDocumentoContribuyenteURL) || (mostrarAdjuntos && solicitudData.solicitudAdicional.archivoURL)) && (
+                    <>
+                        <hr className='mt-2 mb-2' />
+                        <p className="font-semibold mb-2">Archivos Adjuntos:</p>
+                        <ul className="space-y-2 text-sm">
+                            {solicitudData.objetivos.adjuntoDocumentoContribuyenteURL && (
+                                <li>
+                                    <strong>Registro Único de Contribuyente:</strong>{' '}
+                                    <a href={solicitudData.objetivos.adjuntoDocumentoContribuyenteURL} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                        Ver archivo adjunto
+                                    </a>
+                                </li>
+                            )}
+
+                            {solicitudData.solicitudAdicional.archivoURL && (
+                                <li>
+                                    <strong>Documento de la Solicitud Adicional:</strong>{' '}
+                                    <a href={solicitudData.solicitudAdicional.archivoURL} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                        Ver archivo adjunto
+                                    </a>
+                                </li>
+                            )}
+                        </ul>
+                        <hr className='mt-2 mb-2' />
+                    </>
+                )}
+
+                <div className="flex gap-x-3 mt-4">
+                    <button
+                        className="bg-profile text-white px-4 py-2 rounded"
+                        onClick={() => setMostrarAdjuntos(prev => !prev)}
+                    >
+                        {mostrarAdjuntos ? 'Ocultar archivos adjuntos' : 'Ver archivos adjuntos'}
+                    </button>
+
+                    <button
+                        onClick={generatePDF}
+                        className="px-4 py-2 bg-profile text-white font-bold rounded hover:bg-profile-600"
+                    >
+                        Descargar Resumen PDF
+                    </button>
+
+                    <button
+                        onClick={generateInfoPersonas}
+                        className="px-4 py-2 bg-profile text-white font-bold rounded hover:bg-profile-600"
+                    >
+                        Descargar Información de las Personas
+                    </button>
+                </div>
 
             </div>
         </div>

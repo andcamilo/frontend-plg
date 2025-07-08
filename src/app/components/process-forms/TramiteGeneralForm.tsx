@@ -1,12 +1,31 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
+import { uploadFile } from '@/src/app/utils/firebase-upload';
+
+interface FileInput {
+  id: number;
+  file: File | null;
+}
 
 const TramiteGeneralForm = ({ formData, setFormData }: any) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fileInputs, setFileInputs] = useState<FileInput[]>([{ id: Date.now(), file: null }]);
   const router = useRouter();
+
+  const handleFileChange = (index: number, file: File | null) => {
+    setFileInputs((prev) => prev.map((input, i) => i === index ? { ...input, file } : input));
+  };
+
+  const handleAddFileInput = () => {
+    setFileInputs((prev) => [...prev, { id: Date.now() + Math.random(), file: null }]);
+  };
+
+  const handleRemoveFileInput = (index: number) => {
+    setFileInputs((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,27 +34,34 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
     setSuccess(false);
 
     try {
-      // 1. Create tramite request
-      const tramiteData = new FormData();
-      tramiteData.append('tipoServicio', formData.tipoServicio || '');
-      tramiteData.append('nivelUrgencia', formData.nivelUrgencia || '');
-      tramiteData.append('descripcion', formData.descripcion || '');
-      if (formData.documentos) {
-        for (let i = 0; i < formData.documentos.length; i++) {
-          tramiteData.append('documentos', formData.documentos[i]);
-        }
-      }
+      // 1. Upload files to Firebase and collect URLs
+      const fileUploadPromises = fileInputs
+        .filter(input => input.file)
+        .map(input => uploadFile(input.file as File));
+      const fileUrls = await Promise.all(fileUploadPromises);
+
+      // 2. Create tramite request
+      const tramiteData = {
+        nombreSolicita: formData.nombre || '',
+        emailSolicita: formData.email || '',
+        telefonoSolicita: formData.telefono || '',
+        tipoServicio: formData.tipoServicio || '',
+        nivelUrgencia: formData.nivelUrgencia || '',
+        descripcion: formData.descripcion || '',
+        documentos: fileUrls, // Array of URLs
+      };
 
       const tramiteRes = await fetch('/api/create-request-tramite', {
         method: 'POST',
-        body: tramiteData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tramiteData),
       });
       if (!tramiteRes.ok) throw new Error('Error al crear el trámite');
       const tramiteJson = await tramiteRes.json();
       const solicitudId = tramiteJson?.uid || tramiteJson?.solicitudId;
       if (!solicitudId) throw new Error('No se recibió solicitudId');
 
-      // 2. Create record
+      // 3. Create record
       const recordData = {
         solicitudId,
         solicitud: solicitudId,
@@ -45,7 +71,7 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
         phone: formData.telefono || '',
         tipoServicio: formData.tipoServicio || '',
         nivelUrgencia: formData.nivelUrgencia || '',
-        descripcion: formData.descripcion || '',
+        descripcion: formData.descripcion || ''
       };
       const recordRes = await fetch('/api/create-record', {
         method: 'POST',
@@ -57,7 +83,7 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
       const recordId = recordResponse?.recordId;
       if (!recordId) throw new Error('No se recibió recordId');
 
-      // 3. Update solicitud with expedienteId
+      // 4. Update solicitud with expedienteId
       const recordType = recordResponse?.expedienteType;
       const updateRes = await fetch('/api/update-request-all', {
         method: 'PATCH',
@@ -73,6 +99,7 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
 
       setSuccess(true);
       setFormData({});
+      setFileInputs([{ id: Date.now(), file: null }]);
       await Swal.fire({
         icon: 'success',
         title: 'Trámite y expediente creados exitosamente.',
@@ -98,6 +125,37 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <label className="font-bold text-white">Nombre Completo</label>
+      <input
+        type="text"
+        name="nombre"
+        placeholder="Nombre Completo"
+        value={formData.nombre || ''}
+        onChange={e => setFormData((prev: any) => ({ ...prev, nombre: e.target.value }))}
+        className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2"
+        required
+      />
+      <label className="font-bold text-white">Email</label>
+      <input
+        type="email"
+        name="email"
+        placeholder="Correo electrónico"
+        value={formData.email || ''}
+        onChange={e => setFormData((prev: any) => ({ ...prev, email: e.target.value }))}
+        className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2"
+        required
+      />
+      <label className="font-bold text-white">Teléfono</label>
+      <input
+        type="text"
+        name="telefono"
+        placeholder="Teléfono"
+        value={formData.telefono || ''}
+        onChange={e => setFormData((prev: any) => ({ ...prev, telefono: e.target.value }))}
+        className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2"
+        required
+      />
+
       <label className="font-bold text-white">Detalle del tipo de servicio que requiere</label>
       <select
         name="tipoServicio"
@@ -145,13 +203,34 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
       />
 
       <label className="font-bold text-white">Subir documentos</label>
-      <input
-        type="file"
-        name="documentos"
-        multiple
-        onChange={e => setFormData((prev: any) => ({ ...prev, documentos: e.target.files }))}
-        className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2"
-      />
+      {fileInputs.map((input, idx) => (
+        <div key={input.id} className="flex items-center gap-2 mb-2">
+          <input
+            type="file"
+            name={`documentos-${input.id}`}
+            onChange={e => handleFileChange(idx, e.target.files ? e.target.files[0] : null)}
+            className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm"
+          />
+          <button
+            type="button"
+            onClick={handleAddFileInput}
+            className="text-white rounded px-2 py-1 font-bold text-lg"
+            title="Agregar otro archivo"
+          >
+            +
+          </button>
+          {fileInputs.length > 1 && (
+            <button
+              type="button"
+              onClick={() => handleRemoveFileInput(idx)}
+              className="text-white rounded px-2 py-1 font-bold text-lg"
+              title="Eliminar este archivo"
+            >
+              -
+            </button>
+          )}
+        </div>
+      ))}
 
       {error && <div className="text-red-500 font-bold">{error}</div>}
       {success && <div className="text-green-500 font-bold">Trámite y expediente creados exitosamente.</div>}

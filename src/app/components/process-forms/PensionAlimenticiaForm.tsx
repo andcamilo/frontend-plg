@@ -62,6 +62,7 @@ const PensionAlimenticiaForm = ({ formData, setFormData }: any) => {
       });
       const solicitudId = response.data?.solicitudId || response.data?.uid;
       if (!solicitudId) throw new Error('No se recibió solicitudId');
+
       // Step 2: Create record
       const lawyerEmail = auth.currentUser?.email || '';
       const recordData = {
