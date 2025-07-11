@@ -1,53 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import TableForDisbursement from '../TableForDisbursement';
+import TableForInvoices from '../TableForInvoices';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+
+interface InvoiceData {
+  [key: string]: any;
+}
+
+interface PaginationInfo {
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  hasMorePages: boolean;
+}
 
 const ListInvoices: React.FC = () => {
   const router = useRouter();
 
-  // We'll store the entire array in 'allData',
-  // and the "current page" data in 'data'
-  const [allData, setAllData] = useState<{ [key: string]: any }[]>([]);
-  const [data, setData] = useState<{ [key: string]: any }[]>([]);
-
+  const [data, setData] = useState<InvoiceData[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    totalCount: 0,
+    totalPages: 0,
+    currentPage: 1,
+    hasMorePages: false
+  });
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
-  const [hasPrevPage, setHasPrevPage] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(false);
-
   const [loading, setLoading] = useState(false);
+  const [lawyerFilter, setLawyerFilter] = useState('');
+  const [userRole, setUserRole] = useState<number>(0);
 
-  // Used to slice data for local pagination
-  const paginateData = (fullData: any[], page: number, limit: number) => {
-    const start = (page - 1) * limit;
-    const paginated = fullData.slice(start, start + limit);
-
-    setData(paginated);
-    setCurrentPage(page);
-
-    const total = fullData.length;
-    const pages = Math.ceil(total / limit);
-
-    setTotalPages(pages);
-    setHasPrevPage(page > 1);
-    setHasNextPage(page < pages);
-  };
-
-  // Fetch a large dataset (1000 items) in one shot
-  const fetchInvoices = async () => {
+  // Fetch invoices with pagination
+  const fetchInvoices = async (page: number = 1) => {
     try {
       setLoading(true);
 
-      // The Next.js API route is /api/list-invoices
-      // This route itself will fetch from your backend with 1000-limit
-      const response = await axios.get('/api/list-invoices');
-      // response.data.data is the array of invoices
-      const invoices = response.data?.data || [];
+      const response = await axios.get('/api/list-invoices', {
+        params: { page, limit: 1000 } // Always fetch 1000 items as per API design
+      });
 
-      setAllData(invoices);
-      paginateData(invoices, 1, rowsPerPage);
+      const responseData = response.data;
+      console.log("🚀 ~ fetchInvoices ~ responseData:", responseData)
+      
+      if (responseData.status === 'success') {
+        setData(responseData.data || []);
+        setPagination({
+          totalCount: responseData.pagination?.totalCount || 0,
+          totalPages: responseData.pagination?.totalPages || 0,
+          currentPage: responseData.pagination?.currentPage || 1,
+          hasMorePages: responseData.pagination?.hasMorePages || false
+        });
+        setCurrentPage(responseData.pagination?.currentPage || 1);
+      }
     } catch (error) {
       console.error('Error fetching invoices:', error);
     } finally {
@@ -56,75 +60,110 @@ const ListInvoices: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchInvoices();
+    fetchInvoices(1);
+    // Get user role from localStorage or context if available
+    const storedRole = localStorage.getItem('userRole');
+    if (storedRole) {
+      setUserRole(parseInt(storedRole));
+    }
   }, []);
 
-  // If either currentPage or rowsPerPage changes,
-  // we re-slice the data from allData
-  useEffect(() => {
-    paginateData(allData, currentPage, rowsPerPage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, rowsPerPage]);
-
   const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
-
-  const handleChangeRowsPerPage = (value: number) => {
-    setRowsPerPage(value);
-    setCurrentPage(1);
+    fetchInvoices(pageNumber);
   };
 
   // Handle editing a row
-  const handleEdit = (row: { [key: string]: any }) => {
+  const handleEdit = (row: InvoiceData) => {
     router.push(`/dashboard/see-invoices/${row.invoice_id}`);
   };
 
+  // Handle approving a row
+  const handleApprove = async (row: InvoiceData) => {
+    console.log("🚀 ~ handleApprove ~ row:", row)
+    try {
+      const invoiceId = row.invoice_id || row.id || row.invoice_number;
+      if (!invoiceId) {
+        Swal.fire('Error', 'No se encontró el ID de la factura.', 'error');
+        return;
+      }
+      const response = await axios.post('/api/approve-invoices', {
+        invoice_ids: [invoiceId]
+      });
+      if (response.data && response.status === 200) {
+        Swal.fire('Éxito', 'Factura aprobada correctamente.', 'success');
+        fetchInvoices(currentPage);
+      } else {
+        Swal.fire('Error', 'No se pudo aprobar la factura.', 'error');
+      }
+    } catch (error: any) {
+      console.error('Error approving invoice:', error);
+      Swal.fire('Error', error?.response?.data?.message || 'No se pudo aprobar la factura.', 'error');
+    }
+  };
+
+  // Handle selecting a row
+  const handleSelect = (row: InvoiceData, checked: boolean) => {
+    console.log('Seleccionar checklist for:', row, 'Checked:', checked);
+    // Implement select logic here
+  };
+
   // For bulk updates
-  const handleGetSelectedIds = async (selectedIds: string[]) => {
+  const handleBulkAction = async (selectedIds: string[], action: 'update' | 'delete' = 'update') => {
     if (selectedIds.length === 0) {
       alert('No se han seleccionado facturas.');
       return;
     }
 
     try {
-      const responses = await Promise.all(
-        selectedIds.map((id) =>
-          axios.post(`/api/set-invoice-approve?invoiceId=${encodeURIComponent(id)}`)
-        )
-      );
+      if (action === 'update') {
+        const responses = await Promise.all(
+          selectedIds.map((id) =>
+            axios.post(`/api/set-invoice-approve?invoiceId=${encodeURIComponent(id)}`)
+          )
+        );
 
-      console.log('Updated Invoices:', responses.map((r) => r.data));
-      alert('Facturas actualizadas correctamente.');
-      fetchInvoices(); // Re-fetch to update the list
+        console.log('Updated Invoices:', responses.map((r) => r.data));
+        alert('Facturas actualizadas correctamente.');
+      } else if (action === 'delete') {
+        // Handle delete action if needed
+        alert('Función de eliminación no implementada.');
+        return;
+      }
+      
+      fetchInvoices(currentPage); // Re-fetch to update the list
     } catch (error) {
       console.error('Error updating invoices:', error);
       alert('Error al actualizar las facturas.');
     }
   };
 
+  // Handle bulk approve
+  const handleApproveSelected = (selectedRows: InvoiceData[]) => {
+    console.log('Aprobar seleccionados:', selectedRows);
+    // Implement bulk approve logic here
+  };
+
   return (
     <div className="w-full p-6 bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-white mb-6">Listado de Facturas</h1>
 
-      {/* Table component for displaying invoice data with pagination, row selection,
-          and action buttons for viewing/editing individual invoices 
-      <TableForDisbursement
+      <TableForInvoices
         data={data}
-        rowsPerPage={rowsPerPage}
-        onChangeRowsPerPage={handleChangeRowsPerPage}
+        pagination={pagination}
         title="Facturas"
         currentPage={currentPage}
-        totalPages={totalPages}
-        hasPrevPage={hasPrevPage}
-        hasNextPage={hasNextPage}
+        setCurrentPage={setCurrentPage}
         onPageChange={handlePageChange}
         onEdit={handleEdit}
-        onGetSelectedIds={handleGetSelectedIds}
-        showActionButtons={true}
+        onGetSelectedIds={handleBulkAction}
         loading={loading}
-        buttonText="Ver"
-      />*/}
+        lawyerFilter={lawyerFilter}
+        setLawyerFilter={setLawyerFilter}
+        role={userRole}
+        onApprove={handleApprove}
+        onSelect={handleSelect}
+        onApproveSelected={handleApproveSelected}
+      />
     </div>
   );
 };
