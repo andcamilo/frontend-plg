@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Only POST requests are allowed' });
   }
 
-  const { customer_id, payment_mode, amount, invoices } = req.body;
+  const { customer_id, payment_mode, amount, invoices, email } = req.body;
 
   if (!customer_id || typeof customer_id !== 'string') {
     return res.status(400).json({ message: 'customer_id is required and must be a string' });
@@ -21,6 +21,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!Array.isArray(invoices)) {
     return res.status(400).json({ message: 'invoices must be an array' });
   }
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ message: 'email is required and must be a string' });
+  }
 
   try {
     const payload = {
@@ -28,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       payment_mode,
       amount,
       invoices,
+      email,
     };
 
     const lambdaUrl = `${backendBaseUrl}/${backendEnv}/create-payment`;

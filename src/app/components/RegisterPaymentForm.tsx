@@ -179,6 +179,7 @@ const RegisterPaymentForm: React.FC<RegisterPaymentFormProps> = ({ onClose }) =>
         customer_id: registerPaymentForm.customer_id,
         payment_mode: registerPaymentForm.payment_mode,
         amount: parseFloat(registerPaymentForm.amount),
+        email: registerPaymentForm.correo,
         invoices: [
           {
             invoice_id: registerPaymentForm.invoice_id,
