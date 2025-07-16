@@ -20,6 +20,7 @@ const tramites: Tramite[] = [
   { tramite: 'Salida de Menores al Extranjero', redirect: '/request/menores-extranjero' },
   { tramite: 'Sociedades / Empresas', redirect: '/request/sociedad-empresa' },
   { tramite: 'Fundaciones de Interés Privado', redirect: '/request/fundacion' },
+  { tramite: 'Paz y Salvos', redirect: '/request/paz-salvos' },
 ];
 
 const NavBar = () => {
