@@ -250,6 +250,9 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           <Link href="/request/fundacion" className="block mb-4">
             Fundaciones de Interés Privado
           </Link>
+          <Link href="/request/paz-salvos" className="block mb-4">
+            Paz y Salvos
+          </Link>
         </div>
       )}
       {formData?.rol && (

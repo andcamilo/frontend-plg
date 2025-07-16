@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
 import { uploadFile } from '@/src/app/utils/firebase-upload';
+import { auth } from '@configuration/firebase';
 
 interface FileInput {
   id: number;
@@ -42,13 +43,11 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
 
       // 2. Create tramite request
       const tramiteData = {
-        nombreSolicita: formData.nombre || '',
-        emailSolicita: formData.email || '',
+        nombre: formData.nombre || '',
+        email: formData.email || '',
+        rol: 'cliente',
         telefonoSolicita: formData.telefono || '',
-        tipoServicio: formData.tipoServicio || '',
-        nivelUrgencia: formData.nivelUrgencia || '',
-        descripcion: formData.descripcion || '',
-        documentos: fileUrls, // Array of URLs
+        cedulaPasaporte: formData.cedulaPasaporte || ''
       };
 
       const tramiteRes = await fetch('/api/create-request-tramite', {
@@ -71,7 +70,9 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
         phone: formData.telefono || '',
         tipoServicio: formData.tipoServicio || '',
         nivelUrgencia: formData.nivelUrgencia || '',
-        descripcion: formData.descripcion || ''
+        descripcion: formData.descripcion || '',
+        lawyer: auth.currentUser?.email || '',
+        type: 'tramite-general'
       };
       const recordRes = await fetch('/api/create-record', {
         method: 'POST',
@@ -108,7 +109,7 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
         background: '#2c2c3e',
         color: '#fff',
       });
-      router.push(`/request/tramite-general/${solicitudId}`);
+      router.push(`/dashboard/my-records`);
     } catch (err: any) {
       setError(err.message || 'Error desconocido');
       await Swal.fire({
@@ -152,6 +153,16 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
         placeholder="Teléfono"
         value={formData.telefono || ''}
         onChange={e => setFormData((prev: any) => ({ ...prev, telefono: e.target.value }))}
+        className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2"
+        required
+      />
+      <label className="font-bold text-white">Cédula o Pasaporte</label>
+      <input
+        type="text"
+        name="cedulaPasaporte"
+        placeholder="Cédula o Pasaporte"
+        value={formData.cedulaPasaporte || ''}
+        onChange={e => setFormData((prev: any) => ({ ...prev, cedulaPasaporte: e.target.value }))}
         className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2"
         required
       />

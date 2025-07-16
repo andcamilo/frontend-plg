@@ -22,11 +22,10 @@ import { FaPlay } from 'react-icons/fa';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
-    firebaseProjectId,
     firebaseStorageBucket,
     firebaseMessagingSenderId,
     firebaseAppId
-} from '@utils/env';
+  } from '@utils/env';
 import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 
@@ -34,7 +33,7 @@ import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 const firebaseConfig = {
     apiKey: firebaseApiKey,
     authDomain: firebaseAuthDomain,
-    projectId: firebaseProjectId,
+    projectId: "legix-dev",
     storageBucket: firebaseStorageBucket,
     messagingSenderId: firebaseMessagingSenderId,
     appId: firebaseAppId,
