@@ -104,8 +104,8 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
             50: "Caja Chica",
             40: "Abogados",
             35: "Asistente",
-            17: "Cliente recurrente",
-            10: "Cliente",
+            17: "cliente recurrente",
+            10: "cliente",
           };
           const stringRole = typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || "Desconocido";
           console.log("🚀 ~ fetchUser ~ stringRole:", stringRole)
@@ -220,7 +220,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         </div>
       )}
 
-      {formData?.rol && (formData.rol === "Cliente recurrente" || formData.rol === "Super Admin") && (
+      {formData?.rol && (formData.rol === "cliente recurrente" || formData.rol === "Super Admin") && (
         <div
           className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/nuevo')}`}
           onClick={toggleDropdown}
@@ -252,7 +252,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </Link>
         </div>
       )}
-      {formData?.rol && (
+      {/* {formData?.rol && (
         ["Asistente", "Abogados", "Caja Chica", "Auditor", "Administrador", "Super Admin"].includes(formData.rol)
       ) && (
           <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}>
@@ -261,7 +261,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
               Balances
             </Link>
           </div>
-        )}
+        )} */}
       {formData?.rol && (
         ["Caja Chica", "Auditor", "Administrador", "Super Admin"].includes(formData.rol)
       ) && (
@@ -310,12 +310,12 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
                   </Link>
                 </div>
               )}
-              <div className={`flex w-full items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}> 
+              {/* <div className={`flex w-full items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}> 
                 <PaidIcon className="mr-2" />
                 <Link href="/dashboard/balances" className='font-semibold' onClick={closeMenu}>
                   Balances
                 </Link>
-              </div>
+              </div> */}
 
 
               <div className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/create-process') || isActive('/dashboard/my-records')}`}

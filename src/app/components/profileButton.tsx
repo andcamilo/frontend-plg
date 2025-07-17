@@ -13,8 +13,8 @@ const ROLES: Record<number, string> = {
   50: "Caja Chica",
   40: "Abogados",
   35: "Asistente",
-  17: "Cliente Recurrente",
-  10: "Cliente",
+  17: "cliente recurrente",
+  10: "cliente",
 };
 
 // Function to decode JWT token

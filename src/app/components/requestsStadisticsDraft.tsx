@@ -80,12 +80,12 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
 
   // Logic for showing the delete/pay icons
   const canShowDelete =
-    (status === 1 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-    (rol !== 'Cliente recurrente' && rol !== 'Cliente' && rol !== 'Asistente' && rol !== 'Abogados');
+    (status === 1 && (rol === 'cliente recurrente' || rol === 'cliente')) ||
+    (rol !== 'cliente recurrente' && rol !== 'cliente' && rol !== 'Asistente' && rol !== 'Abogados');
 
   const canShowPagar =
-    (status < 19 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-    (rol !== 'Cliente recurrente' && rol !== 'Cliente');
+    (status < 19 && (rol === 'cliente recurrente' || rol === 'cliente')) ||
+    (rol !== 'cliente recurrente' && rol !== 'cliente');
 
   return (
     <div className="flex gap-2">
@@ -184,8 +184,8 @@ const RequestsStatistics: React.FC = () => {
           50: 'Caja Chica',
           40: 'Abogados',
           35: 'Asistente',
-          17: 'Cliente recurrente',
-          10: 'Cliente',
+          17: 'cliente recurrente',
+          10: 'cliente',
         };
         const stringRole =
           typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || 'Desconocido';
@@ -218,9 +218,9 @@ const RequestsStatistics: React.FC = () => {
   // ---- Helper function for filtering ----
   const getSolicitudesFiltradas = (array: any[]) => {
     return array
-      // If user is "Cliente" or "Cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
+      // If user is "cliente" or "cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
       .filter((solicitud) => {
-        const esCliente = formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente';
+        const esCliente = formData.rol === 'cliente' || formData.rol === 'cliente recurrente';
         const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
 
         if (esCliente) {

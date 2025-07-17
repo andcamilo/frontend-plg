@@ -68,7 +68,7 @@ const User: React.FC = () => {
 
                 const user = response.data.user;
                 console.log("USER ", user)
-                const rolLabels = {
+                const rolesMap: Record<number, string> = {
                     99: "Super Administrador",
                     90: "Administrador",
                     80: "Auditor",
@@ -76,11 +76,16 @@ const User: React.FC = () => {
                     45: "Solicitante de gastos",
                     40: "Abogado",
                     35: "Asistente",
-                    17: "Cliente recurrente",
-                    10: "Cliente",
+                    17: "cliente recurrente",
+                    10: "cliente",
                 };
-                // Mapear el rol numérico al valor de rolLabels
-                const mappedRol = rolLabels[user.rol] || '';
+
+                const value = user.rol;
+                const mappedRol = typeof value === 'number'
+                    ? rolesMap[value] || ''
+                    : Object.values(rolesMap).includes(value)
+                        ? value
+                        : '';
 
                 setFormData({
                     nombre: user.nombre || '',
@@ -151,8 +156,8 @@ const User: React.FC = () => {
                     "Solicitante de gastos": 45,
                     "Abogado": 40,
                     "Asistente": 35,
-                    "Cliente recurrente": 17,
-                    "Cliente": 10,
+                    "cliente recurrente": 17,
+                    "cliente": 10,
                 };
 
                 let archivoURL = formData.archivoURL;
@@ -213,8 +218,8 @@ const User: React.FC = () => {
                     "Solicitante de gastos": 45,
                     "Abogado": 40,
                     "Asistente": 35,
-                    "Cliente recurrente": 17,
-                    "Cliente": 10,
+                    "cliente recurrente": 17,
+                    "cliente": 10,
                 };
 
                 const responseData = {
@@ -307,6 +312,8 @@ const User: React.FC = () => {
         router.push('/dashboard/users');
     };
 
+    const mostrarPermisos = formData.rol !== "cliente" && formData.rol !== "cliente recurrente";
+
     return (
         <div className="p-8 bg-gray-900 rounded-lg w-full">
             <h3 className="text-lg font-bold text-white mb-4">Datos básicos</h3>
@@ -375,8 +382,8 @@ const User: React.FC = () => {
                         <option value="Solicitante de gastos">Solicitante de gastos</option>
                         <option value="Abogado">Abogados</option>
                         <option value="Asistente">Asistente</option>
-                        <option value="Cliente recurrente">Cliente recurrente</option>
-                        <option value="Cliente">Cliente</option>
+                        <option value="cliente recurrente">Cliente recurrente</option>
+                        <option value="cliente">Cliente</option>
                     </select>
                 </div>
 
@@ -397,34 +404,36 @@ const User: React.FC = () => {
                     )}
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                <div>
-                    <label className="block text-gray-300 mb-1">Permisos</label>
-                    <select
-                        name="permisos"
-                        value={formData.permisos}
-                        onChange={handleChange}
-                        className="w-full p-3 rounded bg-gray-800 text-white"
-                        required
-                    >
-                        <option value="">Selecciona un permiso</option>
-                        <option value="caja chica">caja chica</option>
-                        <option value="expediente">expediente</option>
-                        <option value="administrador">administrador</option>
-                    </select>
+            {mostrarPermisos && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div>
+                        <label className="block text-gray-300 mb-1">Permisos</label>
+                        <select
+                            name="permisos"
+                            value={formData.permisos}
+                            onChange={handleChange}
+                            className="w-full p-3 rounded bg-gray-800 text-white"
+                            required
+                        >
+                            <option value="">Selecciona un permiso</option>
+                            <option value="caja chica">caja chica</option>
+                            <option value="expediente">expediente</option>
+                            <option value="administrador">administrador</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-gray-300 mb-1">Fecha de caducidad permiso</label>
+                        <input
+                            type="date"
+                            name="fechaCaducidadPermiso"
+                            value={formData.fechaCaducidadPermiso}
+                            onChange={handleChange}
+                            className="w-full p-3 rounded bg-gray-800 text-white"
+                            placeholder="Fecha de caducidad permiso"
+                        />
+                    </div>
                 </div>
-                <div>
-                    <label className="block text-gray-300 mb-1">Fecha de caducidad permiso</label>
-                    <input
-                        type="date"
-                        name="fechaCaducidadPermiso"
-                        value={formData.fechaCaducidadPermiso}
-                        onChange={handleChange}
-                        className="w-full p-3 rounded bg-gray-800 text-white"
-                        placeholder="Fecha de caducidad permiso"
-                    />
-                </div>
-            </div>
+            )}
 
             <div className="flex space-x-4 mt-6">
                 <button

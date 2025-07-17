@@ -1,7 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import AppStateContext from '@context/sociedadesContext';
 import ClipLoader from 'react-spinners/ClipLoader';
-import ModalAccionistas from '@components/modalAccionista';
+import ModalAccionistas from '@components/modalAccionista'; 
+import ModalAccionistasDeclaracion from '@components/modalAccionistaDeclaracion';
 import axios from 'axios';
 import TableWithRequests from '@components/TableWithRequests';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -9,6 +10,7 @@ import Swal from 'sweetalert2';
 import '@fortawesome/fontawesome-free/css/all.css';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FaPlay } from 'react-icons/fa';
+import UploadDeclaracionAccionista from '@components/UploadDeclaracionAccionista';
 
 interface AccionistaData {
     numero: number;
@@ -17,7 +19,7 @@ interface AccionistaData {
     acciones: string;
 }
 
-const Actions: React.FC<{ id: string, solicitudId: string; }> = ({ id, solicitudId }) => {
+const Actions: React.FC<{ id: string; solicitudId: string; documentoFirmadoUrl?: string }> = ({ id, solicitudId, documentoFirmadoUrl }) => {
     const handleDelete = async () => {
         const result = await Swal.fire({
             title: '¿Estás seguro?',
@@ -53,7 +55,7 @@ const Actions: React.FC<{ id: string, solicitudId: string; }> = ({ id, solicitud
     };
 
     return (
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
             <DeleteIcon className="cursor-pointer" onClick={handleDelete} titleAccess="Eliminar" />
         </div>
     );
@@ -86,7 +88,8 @@ const SociedadEmpresaAccionistas: React.FC = () => {
     };
 
     const [isLoading, setIsLoading] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [isModalOpenDeclaracion, setIsModalOpenDeclaracion] = useState(false);
 
     const handleContinue = () => {
         // Validar si hay accionistas asignados
@@ -122,6 +125,12 @@ const SociedadEmpresaAccionistas: React.FC = () => {
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => {
         setIsModalOpen(false);
+        fetchData();
+    };
+
+    const openModalDeclaracion = () => setIsModalOpenDeclaracion(true);
+    const closeModalDeclaracion = () => {
+        setIsModalOpenDeclaracion(false);
         fetchData();
     };
 
@@ -164,6 +173,14 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                     )
                     : persona.nombre || '---',
                 '% de Acciones': accionistasMap[persona.id] || '---',  // Se toma del map
+                'Declaración Jurada': (
+                    <UploadDeclaracionAccionista
+                        personaId={persona.id}
+                        solicitudId={store.solicitudId}
+                        nombreAccionista={persona.nombreApellido}
+                        onUploaded={fetchData} // si deseas recargar automáticamente
+                    />
+                ),
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
             }));
             if (!people || people.length === 0) {
@@ -201,6 +218,14 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                     )
                     : persona?.nombreApellido || persona?.nombre || '---',
                 '% de Acciones': persona.accionista.porcentajeAcciones || '---',
+                'Declaración Jurada': (
+                    <UploadDeclaracionAccionista
+                        personaId={persona.id}
+                        solicitudId={store.solicitudId}
+                        nombreAccionista={persona.nombreApellido}
+                        onUploaded={fetchData}
+                    />
+                ),
                 Opciones: <Actions id={persona.id} solicitudId={store.solicitudId} />,
             }));
             // 7. Combinar los datos de `formattedData` (accionistas en `people`) con `formattedAccionistas`
@@ -235,7 +260,7 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <FaPlay className="text-sm" /> 
+                        <FaPlay className="text-sm" />
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>
@@ -322,6 +347,14 @@ const SociedadEmpresaAccionistas: React.FC = () => {
                             )}
                         </button>
 
+                        <button
+                            className="bg-profile text-white py-2 px-4 rounded-lg inline-block"
+                            type="button"
+                            onClick={openModalDeclaracion}
+                        >
+                            Subir Declaración
+                        </button>
+
                     </>
                 )}
 
@@ -344,6 +377,10 @@ const SociedadEmpresaAccionistas: React.FC = () => {
 
             {isModalOpen
                 && <ModalAccionistas onClose={closeModal} />
+            }
+            
+            {isModalOpenDeclaracion
+                && <ModalAccionistasDeclaracion onClose={closeModalDeclaracion} />
             }
         </div>
     );

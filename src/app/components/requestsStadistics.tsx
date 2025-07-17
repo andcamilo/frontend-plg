@@ -68,6 +68,8 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
         return `/request/menores-extranjero/${id}`;
       case 'pension':
         return `/request/pension-alimenticia/${id}`;
+      case "pension-alimenticia":
+        return `/request/pension-alimenticia/${id}`;
       case 'tramite-general':
         return `/dashboard/tramite-general/${id}`;
       case 'cliente-recurrente':
@@ -80,13 +82,13 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
 
   // Logic for showing the delete/pay icons
   const canShowDelete =
-    (status === 1 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-    (rol !== 'Cliente recurrente' && rol !== 'Cliente' && rol !== 'Asistente' && rol !== 'Abogados');
+    (status === 1 && (rol === 'cliente recurrente' || rol === 'cliente')) ||
+    (rol !== 'cliente recurrente' && rol !== 'cliente' && rol !== 'Asistente' && rol !== 'Abogados');
 
   const canShowPagar =
     ![12, 20, 30, 70].includes(status) && (
-      (status < 19 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-      (rol !== 'Cliente recurrente' && rol !== 'Cliente')
+      (status < 19 && (rol === 'cliente recurrente' || rol === 'cliente')) ||
+      (rol !== 'cliente recurrente' && rol !== 'cliente')
     );
 
   return (
@@ -159,7 +161,7 @@ const RequestsStatistics: React.FC = () => {
   // ✅ Agrega aquí esta función ↓↓↓↓↓↓↓↓↓↓
   const getSolicitudesVisiblesPorRol = () => {
     return solicitudes.filter((solicitud) => {
-      const esCliente = formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente';
+      const esCliente = formData.rol === 'cliente' || formData.rol === 'cliente recurrente';
       const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
 
       if (esCliente) {
@@ -208,8 +210,8 @@ const RequestsStatistics: React.FC = () => {
           50: 'Caja Chica',
           40: 'Abogados',
           35: 'Asistente',
-          17: 'Cliente recurrente',
-          10: 'Cliente',
+          17: 'cliente recurrente',
+          10: 'cliente',
         };
         const stringRole =
           typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || 'Desconocido';
@@ -245,7 +247,7 @@ const RequestsStatistics: React.FC = () => {
   const getSolicitudesFiltradas = (array: any[]) => {
     return array
       .filter((solicitud) => {
-        const esCliente = formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente';
+        const esCliente = formData.rol === 'cliente' || formData.rol === 'cliente recurrente';
         const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
 
         if (esCliente) {

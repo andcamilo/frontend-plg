@@ -17,7 +17,19 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
     const { store, setStore } = context;
     const solicitudId = store.solicitudId; // Obtenemos el `solicitudId` del contexto
 
-    const [personas, setPersonas] = useState([]); // Estado para guardar las personas de la base de datos
+    interface Persona {
+        id: string;
+        nombre?: string;
+        nombreApellido?: string;
+        tipo?: string;
+        tipoPersona?: string;
+        personaJuridica?: {
+            nombreJuridico?: string;
+        };
+        ['nombre PersonaJuridica']?: string;
+    }
+
+    const [personas, setPersonas] = useState<Persona[]>([]);
     const [accionistasExistentes, setAccionistasExistentes] = useState([]); // Guardar los accionistas ya existentes
     const [isLoading, setIsLoading] = useState(false); // Estado de carga
     const [formData, setFormData] = useState({
@@ -36,7 +48,6 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
             const accionistas = store.request.accionistas;
             const personas = response.data || [];
 
-            // Extraer los id_persona de los directores actuales
             const idsAccionistas = new Set(
                 Array.isArray(store.request?.accionistas) ? store.request.accionistas.map((d: any) => d.id_persona) : []
             );
@@ -105,9 +116,7 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
 
         // Sumar el porcentaje del nuevo accionista
         const porcentajeTotalConNuevo = totalPorcentajeExistente + porcentajeAccionesNuevo;
-        console.log("% nuevo  ", porcentajeAccionesNuevo)
-        console.log("% existente  ", totalPorcentajeExistente)
-        console.log("% ", porcentajeTotalConNuevo)
+
         // Validar que el porcentaje total no exceda el 100%
         if (porcentajeTotalConNuevo > 100) {
             Swal.fire({
@@ -147,7 +156,41 @@ const ModalAccionistas: React.FC<ModalAccionistasProps> = ({ onClose }) => {
 
             if (response.status === 200) {
                 console.log("Accionista actualizado");
+
+                let nombre = 'Accionista';
+                const personaSeleccionada = personas.find((p: any) => p.id === formData.seleccionar);
+
+                if (personaSeleccionada) {
+                    const esJuridica = personaSeleccionada.tipoPersona === 'Persona Jurídica' || personaSeleccionada.tipo === 'Persona Jurídica';
+                    const nombreJuridico = personaSeleccionada?.personaJuridica?.nombreJuridico || personaSeleccionada?.['nombre PersonaJuridica'];
+                    const nombreNatural = personaSeleccionada?.nombreApellido || personaSeleccionada?.nombre;
+
+                    if (esJuridica) {
+                        nombre = `${nombreJuridico || ''} - ${nombreNatural || ''}`;
+                    } else {
+                        nombre = nombreNatural || 'Accionista';
+                    }
+                }
+
                 onClose(); // Cerrar el modal solo si la actualización es exitosa
+
+                Swal.fire({
+                    icon: "info",
+                    title: `El accionista ${nombre} debe firmar la declaración jurada y enviarla a su abogado asignado.`,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Continuar',
+                    background: '#2c2c3e',
+                    color: '#fff',
+                    width: '700px',
+                    padding: '2rem',
+                    customClass: {
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        icon: 'custom-swal-icon',
+                        confirmButton: 'bg-profile text-white py-2 px-4 rounded-lg inline-block',
+                    },
+                });
+
             } else {
                 throw new Error('Error al actualizar el accionista.');
             }

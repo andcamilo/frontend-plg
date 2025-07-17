@@ -70,6 +70,7 @@ const Actividades: React.FC = () => {
         paisRegistros: string;
         direccionRegistros: string;
         servicioDireccionComercial: boolean;
+        servicioAvisoOperacion: boolean;
         tipoActividades: string;
         actividadOffshore1: string;
         actividadOffshore2: string;
@@ -106,6 +107,7 @@ const Actividades: React.FC = () => {
         paisRegistros: 'Panamá',
         direccionRegistros: '',
         servicioDireccionComercial: false,
+        servicioAvisoOperacion: false,
         tipoActividades: 'offshore',
         actividadOffshore1: '',
         actividadOffshore2: '',
@@ -519,6 +521,7 @@ const Actividades: React.FC = () => {
                             direccionRegistros: formData.direccionRegistros,
                         }),
                         servicioDireccionComercial: formData.servicioDireccionComercial,
+                        servicioAvisoOperacion: formData.servicioAvisoOperacion,
                         adjuntoDocumentoContribuyente: archivoURL || '',
                     }),
 
@@ -612,7 +615,7 @@ const Actividades: React.FC = () => {
                         type="button"
                         onClick={toggleModal}
                     >
-                        <FaPlay className="text-sm" /> 
+                        <FaPlay className="text-sm" />
                     </button>
                     <span className="hidden md:inline text-white text-xs mt-1">Ver video</span>
                 </div>
@@ -1165,6 +1168,25 @@ const Actividades: React.FC = () => {
                                     <span className="text-sm texto_justificado">
                                         Le brindamos servicio de dirección comercial en caso de que su sociedad lo requiera, sin embargo, no ejecutamos ni somos parte de la ejecución
                                         de sus actividades comerciales. Si desea este servicio, se le adicionará un costo anual de 250.00 dólares.
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <label className="text-white block mb-2">¿Desea solicitar el servicio de Aviso de Operaciones?</label>
+                            <div className="flex items-start">
+                                <input
+                                    type="checkbox"
+                                    id="servicioAvisoOperacion"
+                                    name="servicioAvisoOperacion"
+                                    checked={formData.servicioAvisoOperacion}
+                                    onChange={(e) => setFormData({ ...formData, servicioAvisoOperacion: e.target.checked })}
+                                    className="mr-3"
+                                />
+                                <label htmlFor="servicioAvisoOperacion" className="text-white">
+                                    <span className="text-sm texto_justificado">
+                                        Le brindamos el servicio de gestión del Aviso de Operaciones en caso de que su sociedad vaya a tener operaciones en Panamá. Si desea este servicio, se añadirá un costo único de 650.00 dólares.
                                     </span>
                                 </label>
                             </div>
