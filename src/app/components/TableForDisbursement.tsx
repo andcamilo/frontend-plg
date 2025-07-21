@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getSpanishTitle } from '../utils/translateColumnTitle';
 import { LAWYERS_EMAILS } from '../utils/lawyers';
+import cookie from "js-cookie";
+import { db } from "@utils/firebase-upload";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import jwt_decode from "jwt-decode";
 
 interface TableForDisbursementProps {
   data: { [key: string]: any }[];
@@ -43,7 +47,6 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   onEdit,
   onGetSelectedIds,
   buttonText = 'Editar',
-  role,
   deleteButtonText = 'Eliminar',
   loading = false,
   onDelete,
@@ -53,6 +56,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   const columns = data.length > 0 ? Object.keys(data[0]).filter(col => col !== 'id') : [];
   const [selectedRows, setSelectedRows] = useState<{ [key: number]: boolean }>({});
   const [selectAll, setSelectAll] = useState(false);
+  const [role, setRole] = useState<number>(0);
 
   // 👇 Filtros
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -62,6 +66,20 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   const statusValues = useMemo(() => {
     return Array.from(new Set(data.map(row => row['status']).filter(val => val)));
   }, [data]);
+
+  const decodeJWT = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  };
 
   const filteredData = useMemo(() => {
     return data.filter(row => {
@@ -75,6 +93,32 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
     setSelectedRows({});
     setSelectAll(false);
   }, [data]);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const token = cookie.get("AuthToken");
+        console.log("🚀 ~ fetchUserRole ~ token:", token)
+        if (!token) return;
+
+        const decodedToken = decodeJWT(token);
+        const email = decodedToken.email;
+        if (!email) return;
+
+        const q = query(collection(db, "usuarios"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0];
+          console.log("🚀 ~ fetchUserRole ~ doc:", doc)
+          setRole(doc.data().rol || 0);
+        }
+      } catch (err) {
+        console.error("Error fetching user role from Firestore:", err);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   const handleRowSelect = (rowIndex: number) => {
     setSelectedRows((prev) => ({
@@ -216,12 +260,14 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
                   ))}
                   <td className="py-2 px-2 min-w-[160px]">
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => onEdit(row)}
-                        className="bg-profile text-white px-3 py-1 rounded-lg hover:bg-blue-500"
-                      >
-                        {buttonText}
-                      </button>
+                      {(role > 49 || row.status === 'creada') && (
+                        <button
+                          onClick={() => onEdit(row)}
+                          className="bg-profile text-white px-3 py-1 rounded-lg hover:bg-blue-500"
+                        >
+                          {buttonText}
+                        </button>
+                      )}
                       {canDelete && onDelete && (
                         <button
                           onClick={() => onDelete(row)}

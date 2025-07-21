@@ -20,6 +20,7 @@ const ListDisbursement: React.FC = () => {
   const [lastDate, setLastDate] = useState<string | null>(null);
   const [lastDateStack, setLastDateStack] = useState<string[]>([]);
   const [lawyerFilter, setLawyerFilter] = useState<string>('');
+  const [billFilter, setBillFilter] = useState<string>('');
   const [hasMorePages, setHasMorePages] = useState<boolean>(false);
 
   // Auth listener
@@ -67,6 +68,9 @@ const ListDisbursement: React.FC = () => {
       } else {
         params.email = email;
       }
+      if (billFilter) {
+        params.bill = billFilter;
+      }
 
       console.log("🚀 ~ fetchDisbursements ~ params:", params);
       const response = await axios.get('/api/list-disbursements', { params });
@@ -90,7 +94,7 @@ const ListDisbursement: React.FC = () => {
         fetchDisbursements(rowsPerPage, lastDate ?? undefined);
       }
     }
-  }, [rowsPerPage, email, role, lastDate, lawyerFilter]);
+  }, [rowsPerPage, email, role, lastDate, lawyerFilter, billFilter]);
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -185,9 +189,52 @@ const ListDisbursement: React.FC = () => {
     }
   };
 
+  const handleBillSearch = () => {
+    // Reset pagination when searching
+    setLastDate(null);
+    setLastDateStack([]);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="w-full p-6 bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-white mb-6">Listado de Desembolsos</h1>
+
+      {/* Bill Filter */}
+      <div className="mb-4 flex gap-4 items-center">
+        <div className="flex items-center gap-2">
+          <label htmlFor="bill-filter" className="text-white text-sm font-medium">
+            Filtrar por Factura:
+          </label>
+          <input
+            type="text"
+            id="bill-filter"
+            value={billFilter}
+            onChange={(e) => setBillFilter(e.target.value)}
+            placeholder="Ingrese número de factura"
+            className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+          />
+          <button
+            onClick={handleBillSearch}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          >
+            Buscar
+          </button>
+          {billFilter && (
+            <button
+              onClick={() => {
+                setBillFilter('');
+                setLastDate(null);
+                setLastDateStack([]);
+                setCurrentPage(1);
+              }}
+              className="bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 transition-colors"
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
+      </div>
 
       <TableForDisbursement
         data={data}

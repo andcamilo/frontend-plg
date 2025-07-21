@@ -34,6 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const role = parseInt(req.query.role as string, 10);
   const lastDate = req.query.lastDate as string;
   const filter = req.query.filter === 'true';
+  const bill = req.query.bill as string;
 
   const params: Record<string, any> = {
     limit,
@@ -50,6 +51,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Add lastDate if provided (used for cursor-based pagination)
   if (lastDate) {
     params.lastDate = lastDate;
+  }
+
+  // Add bill filter if provided
+  if (bill) {
+    params.bill = bill;
   }
 
   try {

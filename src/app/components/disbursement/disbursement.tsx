@@ -137,6 +137,11 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
   // Convert role to a number for comparison
   const numericRole = role ? Number(role) : null;
 
+  // Lock selects if already set
+  const lockDisbursementType = !!(state.solicita && state.solicita !== '');
+  const lockExpenseType = !!(state.solicita && state.solicita !== '');
+  const lockStatus = !!(state.solicita && state.solicita !== '' && (!numericRole || numericRole <= 49));
+
   return (
     <div className="w-full p-6 bg-gray-900 min-h-screen">
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
@@ -153,6 +158,7 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
               value={state.disbursementType || ''}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+              disabled={lockDisbursementType}
             >
               <option value="" disabled>Selecciona una opción</option>
               <option value="desembolso-gastos">Desembolso de gastos</option>
@@ -170,6 +176,7 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
               value={state.expenseType || ''}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+              disabled={lockExpenseType}
             >
               <option value="" disabled>Selecciona una opción</option>
               <option value="de-oficina">De oficina</option>
@@ -187,7 +194,7 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
               value={numericRole === 50 || numericRole === 99 || numericRole === 90 ? state.status : 'Creada'}
               onChange={handleChange}
               className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
-              disabled={!(numericRole === 50 || numericRole === 99 || numericRole === 90)}
+              disabled={lockStatus || !(numericRole === 50 || numericRole === 99 || numericRole === 90)}
             >
               <option value="Creada">Creada</option>
               <option value="Rechazada">Rechazada</option>
