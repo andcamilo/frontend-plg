@@ -60,9 +60,9 @@ type FormDataType = {
 
 // Initial state for formData
 const initialFormData: FormDataType = {
-    disbursementType: 'desembolso-gastos',
+    disbursementType: '',
     solicita: '',
-    expenseType: 'de-oficina',
+    expenseType: '',
     status: 'creada',
     desemboloOficina: [
         {

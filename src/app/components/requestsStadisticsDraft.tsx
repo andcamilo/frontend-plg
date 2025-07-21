@@ -1,6 +1,7 @@
 "use client"
 import React, { useEffect, useState, useMemo } from 'react';
 import TableWithRequests from '@components/TableWithRequests';
+import { getRequestsCuenta } from '@api/request-cuenta';
 import { getRequests } from '@api/request';
 import axios from 'axios';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -195,11 +196,17 @@ const RequestsStatistics: React.FC = () => {
         }));
 
         // Fetch the “big chunk” of requests once
-        const { solicitudes: entireSolicitudes } = await getRequests(
-          userData.email, // though you never use email on the server?
-          1000,           // large limit
-          1               // always page 1
-        );
+        let entireSolicitudes;
+        if (
+          (typeof rawRole === 'number' && rawRole < 20) ||
+          (typeof stringRole === 'string' && (stringRole === 'Cliente' || stringRole === 'Cliente recurrente'))
+        ) {
+          const result = await getRequestsCuenta(1000, userData.user_id, null);
+          entireSolicitudes = result.solicitudes;
+        } else {
+          const result = await getRequests(userData.email, 1000, 1);
+          entireSolicitudes = result.solicitudes;
+        }
 
         setSolicitudes(entireSolicitudes);
       } catch (err: any) {
