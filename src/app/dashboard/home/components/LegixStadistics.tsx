@@ -10,24 +10,7 @@ import { getRequestsCuenta } from "@/src/app/dashboard/home/services/request-cue
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import get from "lodash/get";
-
-// Function to format date as dd/mm/yyyy
-const formatDate = (timestamp?: {
-  _seconds: number;
-  _nanoseconds: number;
-}): string => {
-  if (!timestamp || typeof timestamp._seconds !== "number") {
-    console.error("Invalid or missing timestamp:", timestamp);
-    return "Invalid date"; // Return a fallback message if the timestamp is invalid
-  }
-
-  const date = new Date(timestamp._seconds * 1000);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-
-  return `${day}/${month}/${year}`;
-};
+import { formatDate } from "../utils/format-date.util";
 
 const LegixStatistics: React.FC = () => {
   const [solicitudes, setSolicitudes] = useState<any[]>([]);
