@@ -11,16 +11,14 @@ import { checkAuthToken } from "@utils/checkAuthToken";
 import { formatDate } from "../utils/format-date.util";
 import { CURRENT_PAGE } from "../constants/current-page.constant";
 import { fetchUser } from "../services/request-user-cuenta.service";
-import { TIPO_MAPPING } from "../constants/tipo-mapping.constant";
-import { STATUS_MAPPING } from "../constants/status-mapping.constant";
-import { STATUS_CLASSES } from "../constants/status-classes.constant";
-import { getSolicitudesFiltradasPorRol } from "../utils/solicitudes-filtradas-por-rol.util";
 import { FormData } from "../types/form-data.types";
 import { solicitudesFiltradas } from "../utils/solicitudes-filtradas.util";
 import { solicitudFinalizada } from "../utils/solicitud-finalizada.util";
 import { solicitudEnProceso } from "../utils/solicitud-en-proceso.util";
 import { solicitudesEnProceso } from "../utils/solicitudes-en-proceso.util";
 import { paginatedSolicitudesEnProceso } from "../utils/solicitudes-en-proceso-paginated.util";
+import { solicitudesFinalizadas } from "../utils/solicitudes-finalizadas.util";
+import { paginatedSolicitudesFinalizadas } from "../utils/solicitudes-finalizadas-paginated.util";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -178,35 +176,11 @@ const LegixStatistics: React.FC = () => {
     }
   }, [CURRENT_PAGE]);
 
-  const solicitudesFinalizadas = getSolicitudesFiltradasPorRol(
-    allSolicitudes,
-    formData
-  )
-    .filter((solicitud) => parseInt(solicitud.status) === 70)
-    .map(({ tipo, emailSolicita, date, status }) => ({
-      Tipo: TIPO_MAPPING[tipo] || tipo,
-      Fecha: formatDate(date),
-      Email: emailSolicita,
-      Estatus: (
-        <span className={`status-badge ${STATUS_CLASSES[status]}`}>
-          {STATUS_MAPPING[status]}
-        </span>
-      ),
-    }));
-
   const tipoCountsFiltrados: { [key: string]: number } = {};
   solicitudesFiltradas(allSolicitudes, formData).forEach((solicitud) => {
     tipoCountsFiltrados[solicitud.tipo] =
       (tipoCountsFiltrados[solicitud.tipo] || 0) + 1;
   });
-
-  // Paginación de solicitudes finalizadas
-
-  // Paginación de solicitudes finalizadas
-  const paginatedSolicitudesFinalizadas = solicitudesFinalizadas.slice(
-    (currentPageFinalizadas - 1) * rowsPerPage,
-    currentPageFinalizadas * rowsPerPage
-  );
 
   // Calcular el número de páginas
   useEffect(() => {
@@ -336,7 +310,12 @@ const LegixStatistics: React.FC = () => {
           />
 
           <TableWithPagination
-            data={paginatedSolicitudesFinalizadas}
+            data={paginatedSolicitudesFinalizadas(
+              allSolicitudes,
+              formData,
+              currentPageFinalizadas,
+              rowsPerPage
+            )}
             rowsPerPage={rowsPerPage}
             title="Solicitudes finalizadas"
             currentPage={currentPageFinalizadas}
