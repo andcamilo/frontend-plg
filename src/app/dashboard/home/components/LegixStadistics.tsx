@@ -8,8 +8,6 @@ import PivotTable from "@components/pivotTable";
 import { getRequests } from "@api/request";
 import { getRequestsCuenta } from "@/src/app/dashboard/home/services/request-cuenta.service";
 import { checkAuthToken } from "@utils/checkAuthToken";
-import axios from "axios";
-import get from "lodash/get";
 import { formatDate } from "../utils/format-date.util";
 import { CURRENT_PAGE } from "../constants/current-page.constant";
 import { fetchUser } from "../services/request-user-cuenta.service";
@@ -93,11 +91,8 @@ const LegixStatistics: React.FC = () => {
     });
   };
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
   useEffect(() => {
     const userData = checkAuthToken();
-    console.log("userData ", userData);
     if (userData) {
       setFormData((prevData) => ({
         ...prevData,
@@ -105,7 +100,6 @@ const LegixStatistics: React.FC = () => {
         confirmEmail: userData?.email,
         cuenta: userData?.user_id,
       }));
-      setIsLoggedIn(true);
     }
   }, []);
 
@@ -186,7 +180,7 @@ const LegixStatistics: React.FC = () => {
         );
       }
 
-      const { solicitudes, pagination } = solicitudesData;
+      const { pagination } = solicitudesData;
 
       setLastVisibleCursor(pagination.nextCursor || null);
       setHasNextPage(pagination.hasNextPage);
