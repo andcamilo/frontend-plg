@@ -1,5 +1,5 @@
 import React from "react";
-import LegixStatistics from "./components/legixStadistics";
+import LegixStatistics from "./components/LegixStadistics";
 
 export default function Requests() {
   return (
