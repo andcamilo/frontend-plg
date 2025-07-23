@@ -33,8 +33,8 @@ const roleMapping: { [key: number]: string } = {
     50: "Caja Chica",
     40: "Abogados",
     35: "Asistente",
-    17: "Cliente Recurrente",
-    10: "Cliente",
+    17: "cliente recurrente",
+    10: "cliente",
 };
 
 // Configuración de Firebase
@@ -109,6 +109,11 @@ const Request: React.FC = () => {
             case 19: return "Confirmando pago";
             case 20: return "Pagada";
             case 30: return "En proceso";
+            case 40: return "Inscrita";
+            case 45: return "Activa";
+            case 50: return "Suspendida";
+            case 55: return "Renuncia de Agente";
+            case 60: return "Disuelta";
             case 70: return "Finalizada";
             default: return "";
         }
@@ -1817,13 +1822,13 @@ const Request: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
             <div className="flex flex-col gap-8 md:w-1/2">
                 {/* Sección de Actualizar */}
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") && (
+                {(formData.rol !== "cliente" && formData.rol !== "cliente recurrente") && (
                     <>
                         <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
                             <h3 className="text-lg font-bold text-white mb-4">Actualizar:</h3>
                             <div className="mb-4">
                                 <label className="block text-gray-300">Estatus</label>
-                                <select
+                                {/* <select
                                     id="statusSelect"
                                     className="w-full p-2 rounded bg-gray-900 text-white"
                                     value={status}
@@ -1837,7 +1842,25 @@ const Request: React.FC = () => {
                                     <option value="19">Confirmando pago</option>
                                     <option value="20">Pagada</option>
                                     <option value="30">En proceso</option>
+                                    <option value="40">Inscrita</option>
+                                    <option value="45">Activa</option>
+                                    <option value="50">Suspendida</option>
+                                    <option value="55">Renuncia de Agente residente</option>
+                                    <option value="60">Disuelta</option>
                                     <option value="70">Finalizada</option>
+                                </select> */}
+                                <select
+                                    id="statusSelect"
+                                    className="w-full p-2 rounded bg-gray-900 text-white"
+                                    value={status}
+                                    onChange={(e) => setStatus(parseInt(e.target.value))}
+                                >
+                                    <option value={-1}>Selecciona un estatus</option>
+                                    {getAvailableStatusOptions().map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="mb-4">
@@ -1879,7 +1902,7 @@ const Request: React.FC = () => {
 
 
                 {/* Sección de Asignar abogado */}
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && formData.rol !== "Auditor"
+                {(formData.rol !== "cliente" && formData.rol !== "cliente recurrente" && formData.rol !== "Auditor"
                 ) && (
                         <>
                             <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
@@ -2313,7 +2336,7 @@ const Request: React.FC = () => {
                     </div>
                 )}
 
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && formData.rol !== "Asistente"
+                {(formData.rol !== "cliente" && formData.rol !== "cliente recurrente" && formData.rol !== "Asistente"
                     && formData.rol !== "Abogados" && formData.rol !== "Auditor"
                 ) && (
                         <>
@@ -2344,71 +2367,71 @@ const Request: React.FC = () => {
 
                 {/* Expediente Table */}
                 {roleLoading ? (
-                  <p className="text-gray-400 mt-2">Cargando permisos...</p>
+                    <p className="text-gray-400 mt-2">Cargando permisos...</p>
                 ) : userRole !== null && userRole > 1 && expedienteRecord ? (
-                  (() => {
-                    // There is a record, check for items
-                    let items = expedienteRecord?.items;
-                    if (typeof items === 'string') {
-                      try { items = JSON.parse(items); } catch {}
-                    }
-                    const itemValues = items && typeof items === 'object' ? Object.values(items) : [];
-                    
-                    return (
-                      <>
-                        <h3 className="text-lg font-bold text-white mt-6">Expediente relacionado</h3>
-                        {userRole > 34 && (
-                          <div className="flex justify-between items-center mb-4">
-                            <div></div>
-                            <button
-                              className="bg-profile text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-                              onClick={openExpedienteModal}
-                            >
-                              Agregar Item en Expediente
-                            </button>
-                          </div>
-                        )}
-                        {itemValues.length > 0 ? (
-                          <table className="w-full text-gray-300 mt-2">
-                            <thead>
-                              <tr className="border-b border-gray-600">
-                                <th className="p-2 text-left">Título</th>
-                                <th className="p-2 text-left">Etapa</th>
-                                <th className="p-2 text-left">Descripción</th>
-                                <th className="p-2 text-left">Fecha</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {itemValues.map((item: any, idx: number) => {
-                                let body = item.body;
-                                let date = item.date;
-                                if (typeof body === 'string') {
-                                  try { body = JSON.parse(body); } catch {}
-                                }
-                                let dateStr = '';
-                                if (typeof date === 'string') {
-                                  dateStr = date;
-                                } else if (date && date.seconds) {
-                                  const d = new Date(date.seconds * 1000);
-                                  dateStr = d.toLocaleString();
-                                }
-                                return (
-                                  <tr key={idx} className="border-b border-gray-600">
-                                    <td className="p-2">{body?.title || ''}</td>
-                                    <td className="p-2">{body?.stage || ''}</td>
-                                    <td className="p-2">{body?.descripcion || ''}</td>
-                                    <td className="p-2">{dateStr}</td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        ) : (
-                          <p className="text-gray-400 mt-2">Expediente creado pero no hay items.</p>
-                        )}
-                      </>
-                    );
-                  })()
+                    (() => {
+                        // There is a record, check for items
+                        let items = expedienteRecord?.items;
+                        if (typeof items === 'string') {
+                            try { items = JSON.parse(items); } catch { }
+                        }
+                        const itemValues = items && typeof items === 'object' ? Object.values(items) : [];
+
+                        return (
+                            <>
+                                <h3 className="text-lg font-bold text-white mt-6">Expediente relacionado</h3>
+                                {userRole > 34 && (
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div></div>
+                                        <button
+                                            className="bg-profile text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                                            onClick={openExpedienteModal}
+                                        >
+                                            Agregar Item en Expediente
+                                        </button>
+                                    </div>
+                                )}
+                                {itemValues.length > 0 ? (
+                                    <table className="w-full text-gray-300 mt-2">
+                                        <thead>
+                                            <tr className="border-b border-gray-600">
+                                                <th className="p-2 text-left">Título</th>
+                                                <th className="p-2 text-left">Etapa</th>
+                                                <th className="p-2 text-left">Descripción</th>
+                                                <th className="p-2 text-left">Fecha</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {itemValues.map((item: any, idx: number) => {
+                                                let body = item.body;
+                                                let date = item.date;
+                                                if (typeof body === 'string') {
+                                                    try { body = JSON.parse(body); } catch { }
+                                                }
+                                                let dateStr = '';
+                                                if (typeof date === 'string') {
+                                                    dateStr = date;
+                                                } else if (date && date.seconds) {
+                                                    const d = new Date(date.seconds * 1000);
+                                                    dateStr = d.toLocaleString();
+                                                }
+                                                return (
+                                                    <tr key={idx} className="border-b border-gray-600">
+                                                        <td className="p-2">{body?.title || ''}</td>
+                                                        <td className="p-2">{body?.stage || ''}</td>
+                                                        <td className="p-2">{body?.descripcion || ''}</td>
+                                                        <td className="p-2">{dateStr}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p className="text-gray-400 mt-2">Expediente creado pero no hay items.</p>
+                                )}
+                            </>
+                        );
+                    })()
                 ) : null}
                 {!roleLoading && userRole !== null && userRole >= 100 && (
                     <p className="text-gray-400 mt-2">No tienes permisos para ver el expediente relacionado.</p>
@@ -2449,7 +2472,7 @@ const Request: React.FC = () => {
                                     const expedienteRef = collection(db, 'expediente');
                                     const q = query(expedienteRef, where('solicitud', '==', id));
                                     const querySnapshot = await getDocs(q);
-                         
+
                                     if (!querySnapshot.empty) {
                                         setExpedienteRecord(querySnapshot.docs[0].data());
                                     } else {

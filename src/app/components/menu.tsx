@@ -104,8 +104,8 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
             50: "Caja Chica",
             40: "Abogados",
             35: "Asistente",
-            17: "Cliente recurrente",
-            10: "Cliente",
+            17: "cliente recurrente",
+            10: "cliente",
           };
           const stringRole = typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || "Desconocido";
           console.log("🚀 ~ fetchUser ~ stringRole:", stringRole)
@@ -220,7 +220,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         </div>
       )}
 
-      {formData?.rol && (formData.rol === "Cliente recurrente" || formData.rol === "Super Admin") && (
+      {formData?.rol && (formData.rol === "cliente recurrente" || formData.rol === "Super Admin") && (
         <div
           className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/nuevo')}`}
           onClick={toggleDropdown}
