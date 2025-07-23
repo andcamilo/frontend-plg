@@ -1944,7 +1944,6 @@ const Request: React.FC = () => {
                             <h3 className="text-lg font-bold text-white mb-4">Actualizar:</h3>
                             <div className="mb-4">
                                 <label className="block text-gray-300">Estatus</label>
-
                                 <select
                                     id="statusSelect"
                                     className="w-full p-2 rounded bg-gray-900 text-white"
