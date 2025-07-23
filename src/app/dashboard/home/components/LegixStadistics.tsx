@@ -352,9 +352,6 @@ const LegixStatistics: React.FC = () => {
     }
   }, [currentPage]);
 
-  useEffect(() => {
-    console.log("🚀 ~ tipoCounts:", tipoCounts);
-  }, [tipoCounts]);
 
   return (
     <div className="flex flex-col gap-4 p-8 w-full">
