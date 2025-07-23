@@ -115,7 +115,7 @@ const LegixStatistics: React.FC = () => {
         const user = await fetchUser(formData.cuenta);
         setFormData((prevData) => ({
           ...prevData,
-          rol: get(user, "solicitud.rol", 0),
+          rol: user.rol,
         }));
       };
 
