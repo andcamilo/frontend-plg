@@ -15,6 +15,7 @@ import { TIPO_MAPPING } from "../constants/tipo-mapping.constant";
 import { STATUS_MAPPING } from "../constants/status-mapping.constant";
 import { STATUS_CLASSES } from "../constants/status-classes.constant";
 import { getSolicitudesFiltradasPorRol } from "../utils/solicitudes-filtradas-por-rol.util";
+import { FormData } from "../types/form-data.types";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -53,12 +54,6 @@ const LegixStatistics: React.FC = () => {
       setCurrentPageFinalizadas(newPage);
     }
   };
-
-  interface FormData {
-    email: string;
-    cuenta: string;
-    rol: string | number;
-  }
 
   const [formData, setFormData] = useState<FormData>({
     email: "",
