@@ -13,6 +13,7 @@ import { CURRENT_PAGE } from "../constants/current-page.constant";
 import { fetchUser } from "../services/request-user-cuenta.service";
 import { TIPO_MAPPING } from "../constants/tipo-mapping.constant";
 import { STATUS_MAPPING } from "../constants/status-mapping.constant";
+import { STATUS_CLASSES } from "../constants/status-classes.constant";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -205,17 +206,6 @@ const LegixStatistics: React.FC = () => {
     }
   }, [CURRENT_PAGE]);
 
-  const statusClasses: { [key: number]: string } = {
-    0: "status-rechazada",
-    1: "status-borrador",
-    10: "status-enviada",
-    12: "status-aprobada",
-    19: "status-confirmando-pago",
-    20: "status-pagada",
-    30: "status-en-proceso",
-    70: "status-finalizada",
-  };
-
   const solicitudesFiltradas = getSolicitudesFiltradasPorRol(allSolicitudes);
   const solicitudFinalizada = solicitudesFiltradas.filter(
     (solicitud) => parseInt(solicitud.status) === 70
@@ -233,7 +223,7 @@ const LegixStatistics: React.FC = () => {
       Fecha: formatDate(date),
       Email: emailSolicita,
       Estatus: (
-        <span className={`status-badge ${statusClasses[status]}`}>
+        <span className={`status-badge ${STATUS_CLASSES[status]}`}>
           {STATUS_MAPPING[status]}
         </span>
       ),
@@ -246,7 +236,7 @@ const LegixStatistics: React.FC = () => {
       Fecha: formatDate(date),
       Email: emailSolicita,
       Estatus: (
-        <span className={`status-badge ${statusClasses[status]}`}>
+        <span className={`status-badge ${STATUS_CLASSES[status]}`}>
           {STATUS_MAPPING[status]}
         </span>
       ),
