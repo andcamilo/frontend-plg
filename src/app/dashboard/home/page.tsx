@@ -1,6 +1,5 @@
-"use client";
 import React from "react";
-import LegixStatistics from "../../components/legixStadistics";
+import LegixStatistics from "./components/legixStadistics";
 
 export default function Requests() {
   return (
