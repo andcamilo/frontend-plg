@@ -19,6 +19,7 @@ import { FormData } from "../types/form-data.types";
 import { solicitudesFiltradas } from "../utils/solicitudes-filtradas.util";
 import { solicitudFinalizada } from "../utils/solicitud-finalizada.util";
 import { solicitudEnProceso } from "../utils/solicitud-en-proceso.util";
+import { solicitudesEnProceso } from "../utils/solicitudes-en-proceso.util";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -192,22 +193,6 @@ const LegixStatistics: React.FC = () => {
       ),
     }));
 
-  const solicitudesEnProceso = getSolicitudesFiltradasPorRol(
-    allSolicitudes,
-    formData
-  )
-    .filter((solicitud) => parseInt(solicitud.status) !== 70)
-    .map(({ tipo, emailSolicita, date, status }) => ({
-      Tipo: TIPO_MAPPING[tipo] || tipo,
-      Fecha: formatDate(date),
-      Email: emailSolicita,
-      Estatus: (
-        <span className={`status-badge ${STATUS_CLASSES[status]}`}>
-          {STATUS_MAPPING[status]}
-        </span>
-      ),
-    }));
-
   const tipoCountsFiltrados: { [key: string]: number } = {};
   solicitudesFiltradas(allSolicitudes, formData).forEach((solicitud) => {
     tipoCountsFiltrados[solicitud.tipo] =
@@ -215,7 +200,10 @@ const LegixStatistics: React.FC = () => {
   });
 
   // Paginación de solicitudes finalizadas
-  const paginatedSolicitudesEnProceso = solicitudesEnProceso.slice(
+  const paginatedSolicitudesEnProceso = solicitudesEnProceso(
+    allSolicitudes,
+    formData
+  ).slice(
     (currentPageEnProceso - 1) * rowsPerPage,
     currentPageEnProceso * rowsPerPage
   );
