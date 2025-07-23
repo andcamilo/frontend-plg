@@ -83,7 +83,7 @@ const LegixStatistics: React.FC = () => {
 
       const esCliente =
         (typeof rol === 'number' && rol < 20) ||
-        rol === 'Cliente' || rol === 'Cliente recurrente';
+        rol === 'cliente' || rol === 'cliente recurrente';
 
       const esAbogadoOAsistente =
         rol === 'Abogados' || rol === 'Asistente' || rol === 40 || rol === 35;
@@ -152,7 +152,7 @@ const LegixStatistics: React.FC = () => {
     try {
 
       if ((typeof formData.rol === 'number' && formData.rol < 20) ||
-        (typeof formData.rol === 'string' && (formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente'))) {
+        (typeof formData.rol === 'string' && (formData.rol === 'cliente' || formData.rol === 'cliente recurrente'))) {
 
         const solicitudesData = await getRequestsCuenta(rowsPerPage, formData.cuenta, lastVisibleCursor);
 
@@ -194,7 +194,7 @@ const LegixStatistics: React.FC = () => {
 
       if (
         (typeof formData.rol === 'number' && formData.rol < 20) ||
-        (typeof formData.rol === 'string' && (formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente'))
+        (typeof formData.rol === 'string' && (formData.rol === 'cliente' || formData.rol === 'cliente recurrente'))
       ) {
         solicitudesData = await getRequestsCuenta(rowsPerPage, formData.cuenta, lastVisibleCursor);
       } else {
@@ -234,7 +234,6 @@ const LegixStatistics: React.FC = () => {
     "consulta-escrita": "Consulta Escrita",
     "consulta-virtual": "Consulta Virtual",
     "consulta-presencial": "Consulta Presencial",
-    "new-fundacion-interes-privado": "Fundación de Interés Privado",
     "new-fundacion": "Fundación de Interés Privado",
     "new-sociedad-empresa": "Sociedad / Empresa",
     "menores-al-extranjero": "Salida de Menores al Extranjero",
@@ -361,7 +360,7 @@ const LegixStatistics: React.FC = () => {
         <HomeBox title="Sociedades" number={tipoCountsFiltrados['new-sociedad-empresa'] || 0} color="bg-[#9694FF]" />
         <HomeBox
           title="Fundaciones"
-          number={(tipoCountsFiltrados['new-fundacion-interes-privado'] || 0) + (tipoCountsFiltrados['new-fundacion'] || 0)}
+          number={(tipoCountsFiltrados['new-fundacion'] || 0)}
           color="bg-[#57caeb]"
         />
         <HomeBox
@@ -376,7 +375,7 @@ const LegixStatistics: React.FC = () => {
         <HomeBox title="Pensiones" number={(tipoCountsFiltrados['pension-alimenticia'] || 0) + (tipoCountsFiltrados['pension'] || 0)} color="bg-[#2a9d8f]" />
         <HomeBox title="Pension Desacato" number={tipoCountsFiltrados['pension-desacato'] || 0} color="bg-[#264653]" />
         <HomeBox title="Salida de Menores al Extranjero" number={tipoCountsFiltrados['menores-al-extranjero'] || 0} color="bg-[#e9c46a]" />
-        <HomeBox title="Cliente Recurrente" number={tipoCountsFiltrados['solicitud-cliente-recurrente'] || 0} color="bg-[#264653]" />
+        <HomeBox title="cliente recurrente" number={tipoCountsFiltrados['solicitud-cliente-recurrente'] || 0} color="bg-[#264653]" />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
         <div className="lg:col-span-2">
@@ -404,16 +403,16 @@ const LegixStatistics: React.FC = () => {
 
           {!(
             (typeof formData.rol === 'number' && formData.rol < 50) ||
-            (typeof formData.rol === 'string' && formData.rol === 'Cliente') ||
-            (typeof formData.rol === 'string' && formData.rol === 'Cliente recurrente')
+            (typeof formData.rol === 'string' && formData.rol === 'cliente') ||
+            (typeof formData.rol === 'string' && formData.rol === 'cliente recurrente')
           ) && <PivotTable months={months} />}
 
         </div>
         <div className="lg:col-span-1">
           {!(
             (typeof formData.rol === 'number' && formData.rol < 50) ||
-            (typeof formData.rol === 'string' && formData.rol === 'Cliente') ||
-            (typeof formData.rol === 'string' && formData.rol === 'Cliente recurrente')
+            (typeof formData.rol === 'string' && formData.rol === 'cliente') ||
+            (typeof formData.rol === 'string' && formData.rol === 'cliente recurrente')
           ) &&
             <>
               <DashboardCard title={"Solicitudes pendientes de pago"} value={statusCounts.status10} />

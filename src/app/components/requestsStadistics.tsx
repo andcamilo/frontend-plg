@@ -69,6 +69,8 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
         return `/request/menores-extranjero/${id}`;
       case 'pension':
         return `/request/pension-alimenticia/${id}`;
+      case 'pension-alimenticia':
+        return `/request/pension-alimenticia/${id}`;
       case 'tramite-general':
         return `/dashboard/tramite-general/${id}`;
       case 'cliente-recurrente':
@@ -81,13 +83,13 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
 
   // Logic for showing the delete/pay icons
   const canShowDelete =
-    (status === 1 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-    (rol !== 'Cliente recurrente' && rol !== 'Cliente' && rol !== 'Asistente' && rol !== 'Abogados');
+    (status === 1 && (rol === 'cliente recurrente' || rol === 'cliente')) ||
+    (rol !== 'cliente recurrente' && rol !== 'cliente' && rol !== 'Asistente' && rol !== 'Abogados');
 
   const canShowPagar =
     ![12, 20, 30, 70].includes(status) && (
-      (status < 19 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-      (rol !== 'Cliente recurrente' && rol !== 'Cliente')
+      (status < 19 && (rol === 'cliente recurrente' || rol === 'cliente')) ||
+      (rol !== 'cliente recurrente' && rol !== 'cliente')
     );
 
   return (
@@ -160,7 +162,7 @@ const RequestsStatistics: React.FC = () => {
   // ✅ Agrega aquí esta función ↓↓↓↓↓↓↓↓↓↓
   const getSolicitudesVisiblesPorRol = () => {
     return solicitudes.filter((solicitud) => {
-      const esCliente = formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente';
+      const esCliente = formData.rol === 'cliente' || formData.rol === 'cliente recurrente';
       const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
 
       if (esCliente) {
@@ -209,8 +211,8 @@ const RequestsStatistics: React.FC = () => {
           50: 'Caja Chica',
           40: 'Abogados',
           35: 'Asistente',
-          17: 'Cliente recurrente',
-          10: 'Cliente',
+          17: 'cliente recurrente',
+          10: 'cliente',
         };
         const stringRole =
           typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || 'Desconocido';
@@ -225,7 +227,7 @@ const RequestsStatistics: React.FC = () => {
         let entireSolicitudes;
         if (
           (typeof rawRole === 'number' && rawRole < 20) ||
-          (typeof stringRole === 'string' && (stringRole === 'Cliente' || stringRole === 'Cliente recurrente'))
+          (typeof stringRole === 'string' && (stringRole === 'cliente' || stringRole === 'cliente recurrente'))
         ) {
           const result = await getRequestsCuenta(1000, userData.user_id, null);
           entireSolicitudes = result.solicitudes;
@@ -251,7 +253,7 @@ const RequestsStatistics: React.FC = () => {
   const getSolicitudesFiltradas = (array: any[]) => {
     return array
       .filter((solicitud) => {
-        const esCliente = formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente';
+        const esCliente = formData.rol === 'cliente' || formData.rol === 'cliente recurrente';
         const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
 
         if (esCliente) {
@@ -274,7 +276,6 @@ const RequestsStatistics: React.FC = () => {
           'consulta-escrita': 'Consulta Escrita',
           'consulta-virtual': 'Consulta Virtual',
           'consulta-presencial': 'Consulta Presencial',
-          'new-fundacion-interes-privado': 'Fundación de Interés Privado',
           'new-fundacion': 'Fundación de Interés Privado',
           'new-sociedad-empresa': 'Sociedad / Empresa',
           'menores-al-extranjero': 'Salida de Menores al Extranjero',
@@ -388,6 +389,11 @@ const RequestsStatistics: React.FC = () => {
           19: 'Confirmando pago',
           20: 'Pagada',
           30: 'En proceso',
+          40: 'Inscrita',
+          45: 'Activa',
+          50: 'Suspendida',
+          55: 'Renuncia de Agente residente',
+          60: 'Disuelta',
           70: 'Finalizada',
         };
 
@@ -399,6 +405,11 @@ const RequestsStatistics: React.FC = () => {
           19: 'status-confirmando-pago',
           20: 'status-pagada',
           30: 'status-en-proceso',
+          40: 'status-inscrita',
+          45: 'status-activa',
+          50: 'status-suspendida',
+          55: 'status-renuncia-agente',
+          60: 'status-disuelta',
           70: 'status-finalizada',
         };
 
@@ -408,7 +419,6 @@ const RequestsStatistics: React.FC = () => {
           'consulta-escrita': 'Consulta Escrita',
           'consulta-virtual': 'Consulta Virtual',
           'consulta-presencial': 'Consulta Presencial',
-          'new-fundacion-interes-privado': 'Fundación de Interés Privado',
           'new-fundacion': 'Fundación de Interés Privado',
           'new-sociedad-empresa': 'Sociedad / Empresa',
           'menores-al-extranjero': 'Salida de Menores al Extranjero',
@@ -440,7 +450,7 @@ const RequestsStatistics: React.FC = () => {
           'consulta-escrita',
           'consulta-virtual',
           'consulta-presencial',
-          'new-fundacion-interes-privado',
+          'new-fundacion',
           'new-sociedad-empresa',
           'menores-al-extranjero',
           'pension',
@@ -456,7 +466,7 @@ const RequestsStatistics: React.FC = () => {
           ].includes(tipo)) {
             mappedExpedienteType = 'Consultas y Propuestas';
           } else if ([
-            'new-fundacion-interes-privado',
+            'new-fundacion',
             'new-sociedad-empresa'
           ].includes(tipo)) {
             mappedExpedienteType = 'Corporativo';
