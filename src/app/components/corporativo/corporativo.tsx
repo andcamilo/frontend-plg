@@ -299,7 +299,7 @@ const SolicitudForm: React.FC = () => {
                 total: 0,
                 accion: "Creación de solicitud",
                 tipo: "cliente-recurrente",
-                item: "Cliente Recurrente",
+                item: "cliente recurrente",
             };
 
             // Crear la solicitud inicial

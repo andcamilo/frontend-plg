@@ -46,7 +46,7 @@ const CreateProcessFormNO = ({
             <option value="consulta-escrita">Consulta Escrita</option>
             <option value="consulta-virtual">Consulta Virtual</option>
             <option value="consulta-presencial">Consulta Presencial</option>
-            <option value="new-fundacion-interes-privado">Fundación de Interés Privado</option>
+            <option value="new-fundacion">Fundación de Interés Privado</option>
             <option value="new-sociedad-empresa">Sociedad / Empresa</option>
             <option value="menores-al-extranjero">Salida de Menores al Extranjero</option>
             <option value="pension">Pensión Alimenticia</option>
@@ -83,7 +83,7 @@ const CreateProcessFormNO = ({
               isSubmitting={isSubmitting}
             />
           )}
-          {(form2.tipoSolicitud === 'new-fundacion-interes-privado' || form2.tipoSolicitud === 'new-fundacion') && (
+          {form2.tipoSolicitud === 'new-fundacion' && (
             <FundacionInteresPrivadoForm
               formData={form2}
               setFormData={setForm2}
