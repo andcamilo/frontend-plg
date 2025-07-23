@@ -8,7 +8,6 @@ import PivotTable from "@components/pivotTable";
 import { getRequests } from "@api/request";
 import { getRequestsCuenta } from "@/src/app/dashboard/home/services/request-cuenta.service";
 import { checkAuthToken } from "@utils/checkAuthToken";
-import { formatDate } from "../utils/format-date.util";
 import { CURRENT_PAGE } from "../constants/current-page.constant";
 import { fetchUser } from "../services/request-user-cuenta.service";
 import { FormData } from "../types/form-data.types";
