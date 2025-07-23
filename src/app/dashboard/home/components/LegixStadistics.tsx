@@ -20,6 +20,7 @@ import { solicitudesFiltradas } from "../utils/solicitudes-filtradas.util";
 import { solicitudFinalizada } from "../utils/solicitud-finalizada.util";
 import { solicitudEnProceso } from "../utils/solicitud-en-proceso.util";
 import { solicitudesEnProceso } from "../utils/solicitudes-en-proceso.util";
+import { paginatedSolicitudesEnProceso } from "../utils/solicitudes-en-proceso-paginated.util";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -200,13 +201,6 @@ const LegixStatistics: React.FC = () => {
   });
 
   // Paginación de solicitudes finalizadas
-  const paginatedSolicitudesEnProceso = solicitudesEnProceso(
-    allSolicitudes,
-    formData
-  ).slice(
-    (currentPageEnProceso - 1) * rowsPerPage,
-    currentPageEnProceso * rowsPerPage
-  );
 
   // Paginación de solicitudes finalizadas
   const paginatedSolicitudesFinalizadas = solicitudesFinalizadas.slice(
@@ -326,7 +320,12 @@ const LegixStatistics: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
         <div className="lg:col-span-2">
           <TableWithPagination
-            data={paginatedSolicitudesEnProceso}
+            data={paginatedSolicitudesEnProceso(
+              allSolicitudes,
+              formData,
+              currentPageEnProceso,
+              rowsPerPage
+            )}
             rowsPerPage={rowsPerPage}
             title="Últimas solicitudes"
             currentPage={currentPageEnProceso}
