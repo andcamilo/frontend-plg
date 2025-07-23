@@ -11,6 +11,7 @@ import { checkAuthToken } from "@utils/checkAuthToken";
 import { formatDate } from "../utils/format-date.util";
 import { CURRENT_PAGE } from "../constants/current-page.constant";
 import { fetchUser } from "../services/request-user-cuenta.service";
+import { TIPO_MAPPING } from "../constants/tipo-mapping.constant";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -202,23 +203,6 @@ const LegixStatistics: React.FC = () => {
       fetchPaginatedSolicitudes();
     }
   }, [CURRENT_PAGE]);
-
-  const tipoMapping: { [key: string]: string } = {
-    "propuesta-legal": "Propuesta Legal",
-    "consulta-legal": "Propuesta Legal",
-    "consulta-escrita": "Consulta Escrita",
-    "consulta-virtual": "Consulta Virtual",
-    "consulta-presencial": "Consulta Presencial",
-    "new-fundacion-interes-privado": "Fundación de Interés Privado",
-    "new-fundacion": "Fundación de Interés Privado",
-    "new-sociedad-empresa": "Sociedad / Empresa",
-    "menores-al-extranjero": "Salida de Menores al Extranjero",
-    "pension-alimenticia": "Pensión Alimenticia",
-    pension: "Pensión Alimenticia",
-    "tramite-general": "Trámite General",
-    "pension-desacato": "Pensión Desacato",
-    "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
-  };
 
   const statusMapping: { [key: number]: string } = {
     0: "Rechazada",
