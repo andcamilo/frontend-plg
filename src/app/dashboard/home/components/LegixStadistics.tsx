@@ -239,7 +239,7 @@ const LegixStatistics: React.FC = () => {
   const solicitudesFinalizadas = getSolicitudesFiltradasPorRol(allSolicitudes)
     .filter((solicitud) => parseInt(solicitud.status) === 70)
     .map(({ tipo, emailSolicita, date, status }) => ({
-      Tipo: tipoMapping[tipo] || tipo,
+      Tipo: TIPO_MAPPING[tipo] || tipo,
       Fecha: formatDate(date),
       Email: emailSolicita,
       Estatus: (
@@ -252,7 +252,7 @@ const LegixStatistics: React.FC = () => {
   const solicitudesEnProceso = getSolicitudesFiltradasPorRol(allSolicitudes)
     .filter((solicitud) => parseInt(solicitud.status) !== 70)
     .map(({ tipo, emailSolicita, date, status }) => ({
-      Tipo: tipoMapping[tipo] || tipo,
+      Tipo: TIPO_MAPPING[tipo] || tipo,
       Fecha: formatDate(date),
       Email: emailSolicita,
       Estatus: (
