@@ -250,9 +250,6 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           <Link href="/request/fundacion" className="block mb-4">
             Fundaciones de Interés Privado
           </Link>
-          <Link href="/request/paz-salvos" className="block mb-4">
-            Paz y Salvos
-          </Link>
         </div>
       )}
       {formData?.rol && (
@@ -321,6 +318,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
               </div>
 
 
+              {/*
               <div className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/create-process') || isActive('/dashboard/my-records')}`}
                 onClick={toggleDropdownTramites}
               >
@@ -328,6 +326,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
                 <span className="flex-grow">Trámites</span>
                 {dropdownOpenTramites ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
               </div>
+              */}
               {dropdownOpenTramites && (
                 <div className="ml-6 mt-2 transition-all">
                   <Link href="/dashboard/create-process" className={`block mb-2 ${isActive('/dashboard/create-process')}`} onClick={closeMenu}>
