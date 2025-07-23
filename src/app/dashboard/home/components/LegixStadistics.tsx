@@ -18,7 +18,7 @@ import { getSolicitudesFiltradasPorRol } from "../utils/solicitudes-filtradas-po
 import { FormData } from "../types/form-data.types";
 import { solicitudesFiltradas } from "../utils/solicitudes-filtradas.util";
 import { solicitudFinalizada } from "../utils/solicitud-finalizada.util";
-import { solicitudEnProceso } from "../utils/solicitudes-en-proceso.util";
+import { solicitudEnProceso } from "../utils/solicitud-en-proceso.util";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
