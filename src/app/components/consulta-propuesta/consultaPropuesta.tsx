@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useParams } from "next/navigation";
+import "@configuration/firebase";
 import { useRouter } from "next/navigation";
 import AppStateContext from "@context/consultaContext";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -24,7 +25,8 @@ import {
     firebaseAuthDomain,
     firebaseStorageBucket,
     firebaseMessagingSenderId,
-    firebaseAppId
+    firebaseAppId,
+    firebaseProjectId
   } from '@utils/env';
 import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
@@ -33,7 +35,7 @@ import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 const firebaseConfig = {
     apiKey: firebaseApiKey,
     authDomain: firebaseAuthDomain,
-    projectId: "legix-dev",
+    projectId: firebaseProjectId,
     storageBucket: firebaseStorageBucket,
     messagingSenderId: firebaseMessagingSenderId,
     appId: firebaseAppId,
