@@ -12,6 +12,7 @@ import { formatDate } from "../utils/format-date.util";
 import { CURRENT_PAGE } from "../constants/current-page.constant";
 import { fetchUser } from "../services/request-user-cuenta.service";
 import { TIPO_MAPPING } from "../constants/tipo-mapping.constant";
+import { STATUS_MAPPING } from "../constants/status-mapping.constant";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -204,17 +205,6 @@ const LegixStatistics: React.FC = () => {
     }
   }, [CURRENT_PAGE]);
 
-  const statusMapping: { [key: number]: string } = {
-    0: "Rechazada",
-    1: "Borrador",
-    10: "Pendiente de pago",
-    12: "Aprobada",
-    19: "Confirmando pago",
-    20: "Pagada",
-    30: "En proceso",
-    70: "Finalizada",
-  };
-
   const statusClasses: { [key: number]: string } = {
     0: "status-rechazada",
     1: "status-borrador",
@@ -244,7 +234,7 @@ const LegixStatistics: React.FC = () => {
       Email: emailSolicita,
       Estatus: (
         <span className={`status-badge ${statusClasses[status]}`}>
-          {statusMapping[status]}
+          {STATUS_MAPPING[status]}
         </span>
       ),
     }));
@@ -257,7 +247,7 @@ const LegixStatistics: React.FC = () => {
       Email: emailSolicita,
       Estatus: (
         <span className={`status-badge ${statusClasses[status]}`}>
-          {statusMapping[status]}
+          {STATUS_MAPPING[status]}
         </span>
       ),
     }));
