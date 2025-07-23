@@ -18,6 +18,7 @@ import { getSolicitudesFiltradasPorRol } from "../utils/solicitudes-filtradas-po
 import { FormData } from "../types/form-data.types";
 import { solicitudesFiltradas } from "../utils/solicitudes-filtradas.util";
 import { solicitudFinalizada } from "../utils/solicitud-finalizada.util";
+import { solicitudEnProceso } from "../utils/solicitudes-en-proceso.util";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -174,14 +175,6 @@ const LegixStatistics: React.FC = () => {
       fetchPaginatedSolicitudes();
     }
   }, [CURRENT_PAGE]);
-
-  const solicitudEnProceso = solicitudesFiltradas(
-    allSolicitudes,
-    formData
-  ).filter((solicitud) => {
-    const status = parseInt(solicitud.status);
-    return status !== 70 && status !== 1;
-  }).length;
 
   const solicitudesFinalizadas = getSolicitudesFiltradasPorRol(
     allSolicitudes,
@@ -394,7 +387,7 @@ const LegixStatistics: React.FC = () => {
           )}
           <FormalitiesChart
             solicitudFinalizada={solicitudFinalizada(allSolicitudes, formData)}
-            solicitudEnProceso={solicitudEnProceso}
+            solicitudEnProceso={solicitudEnProceso(allSolicitudes, formData)}
           />
         </div>
       </div>
