@@ -16,6 +16,7 @@ import { STATUS_MAPPING } from "../constants/status-mapping.constant";
 import { STATUS_CLASSES } from "../constants/status-classes.constant";
 import { getSolicitudesFiltradasPorRol } from "../utils/solicitudes-filtradas-por-rol.util";
 import { FormData } from "../types/form-data.types";
+import { solicitudesFiltradas } from "../utils/solicitudes-filtradas.util";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -173,18 +174,21 @@ const LegixStatistics: React.FC = () => {
     }
   }, [CURRENT_PAGE]);
 
-  const solicitudesFiltradas = getSolicitudesFiltradasPorRol(
+
+  const solicitudFinalizada = solicitudesFiltradas(
     allSolicitudes,
     formData
-  );
-  const solicitudFinalizada = solicitudesFiltradas.filter(
+  ).filter(
     (solicitud) => parseInt(solicitud.status) === 70
   ).length;
 
-  const solicitudEnProceso = solicitudesFiltradas.filter((solicitud) => {
+  const solicitudEnProceso = solicitudesFiltradas(
+    allSolicitudes,
+    formData
+  ).filter((solicitud) => {
     const status = parseInt(solicitud.status);
     return status !== 70 && status !== 1;
-  }).length;
+  }).length
 
   const solicitudesFinalizadas = getSolicitudesFiltradasPorRol(
     allSolicitudes,
@@ -219,7 +223,7 @@ const LegixStatistics: React.FC = () => {
     }));
 
   const tipoCountsFiltrados: { [key: string]: number } = {};
-  solicitudesFiltradas.forEach((solicitud) => {
+  solicitudesFiltradas(allSolicitudes, formData).forEach((solicitud) => {
     tipoCountsFiltrados[solicitud.tipo] =
       (tipoCountsFiltrados[solicitud.tipo] || 0) + 1;
   });
