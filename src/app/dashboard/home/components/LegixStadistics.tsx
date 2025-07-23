@@ -13,9 +13,7 @@ import get from "lodash/get";
 import { formatDate } from "../utils/format-date.util";
 
 const LegixStatistics: React.FC = () => {
-  const [solicitudes, setSolicitudes] = useState<any[]>([]);
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
-  const [tipoCounts, setTipoCounts] = useState<{ [key: string]: number }>({});
   const [statusCounts, setStatusCounts] = useState<{
     status10: number;
     status20: number;
@@ -152,10 +150,9 @@ const LegixStatistics: React.FC = () => {
           lastVisibleCursor
         );
 
-        const { solicitudes = [], tipoCounts } = solicitudesData;
+        const { solicitudes = [] } = solicitudesData;
         console.log("All Solicituds ", solicitudes);
         setAllSolicitudes(solicitudes);
-        setTipoCounts(tipoCounts);
       } else {
         const userData = checkAuthToken();
         const solicitudesData = await getRequests(
@@ -164,15 +161,9 @@ const LegixStatistics: React.FC = () => {
           currentPage
         );
 
-        const {
-          allSolicitudes = [],
-          tipoCounts,
-          statusCounts,
-          months,
-        } = solicitudesData;
+        const { allSolicitudes = [], statusCounts, months } = solicitudesData;
 
         setAllSolicitudes(allSolicitudes);
-        setTipoCounts(tipoCounts);
         setStatusCounts(statusCounts);
         setMonths(months);
       }
@@ -206,7 +197,6 @@ const LegixStatistics: React.FC = () => {
 
       const { solicitudes, pagination } = solicitudesData;
 
-      setSolicitudes(solicitudes);
       setLastVisibleCursor(pagination.nextCursor || null);
       setHasNextPage(pagination.hasNextPage);
     } catch (error) {
@@ -351,7 +341,6 @@ const LegixStatistics: React.FC = () => {
       fetchPaginatedSolicitudes(true);
     }
   }, [currentPage]);
-
 
   return (
     <div className="flex flex-col gap-4 p-8 w-full">
