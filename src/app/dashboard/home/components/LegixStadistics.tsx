@@ -11,6 +11,7 @@ import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import get from "lodash/get";
 import { formatDate } from "../utils/format-date.util";
+import { CURRENT_PAGE } from "../constants/current-page.constant";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -23,7 +24,6 @@ const LegixStatistics: React.FC = () => {
   });
   const [months, setMonths] = useState<{ [key: string]: number }>({});
 
-  const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(10);
 
   const [currentPageEnProceso, setCurrentPageEnProceso] = useState(1);
@@ -158,7 +158,7 @@ const LegixStatistics: React.FC = () => {
         const solicitudesData = await getRequests(
           userData?.email,
           rowsPerPage,
-          currentPage
+          CURRENT_PAGE
         );
 
         const { allSolicitudes = [], statusCounts, months } = solicitudesData;
@@ -191,7 +191,7 @@ const LegixStatistics: React.FC = () => {
         solicitudesData = await getRequests(
           userData?.email,
           rowsPerPage,
-          currentPage
+          CURRENT_PAGE
         );
       }
 
@@ -213,10 +213,10 @@ const LegixStatistics: React.FC = () => {
   }, [formData.cuenta, formData.rol]);
 
   useEffect(() => {
-    if (currentPage > 1 && hasNextPage) {
+    if (CURRENT_PAGE > 1 && hasNextPage) {
       fetchPaginatedSolicitudes();
     }
-  }, [currentPage]);
+  }, [CURRENT_PAGE]);
 
   const tipoMapping: { [key: string]: string } = {
     "propuesta-legal": "Propuesta Legal",
@@ -340,7 +340,7 @@ const LegixStatistics: React.FC = () => {
     if (formData.cuenta) {
       fetchPaginatedSolicitudes(true);
     }
-  }, [currentPage]);
+  }, [CURRENT_PAGE]);
 
   return (
     <div className="flex flex-col gap-4 p-8 w-full">
