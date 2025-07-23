@@ -14,6 +14,7 @@ import { fetchUser } from "../services/request-user-cuenta.service";
 import { TIPO_MAPPING } from "../constants/tipo-mapping.constant";
 import { STATUS_MAPPING } from "../constants/status-mapping.constant";
 import { STATUS_CLASSES } from "../constants/status-classes.constant";
+import { getSolicitudesFiltradasPorRol } from "../utils/solicitudes-filtradas-por-rol.util";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -64,35 +65,6 @@ const LegixStatistics: React.FC = () => {
     cuenta: "",
     rol: 0,
   });
-
-  const getSolicitudesFiltradasPorRol = (solicitudes: any[]) => {
-    return solicitudes.filter((solicitud) => {
-      const rol = formData.rol;
-      const cuenta = formData.cuenta;
-
-      const esCliente =
-        (typeof rol === "number" && rol < 20) ||
-        rol === "Cliente" ||
-        rol === "Cliente recurrente";
-
-      const esAbogadoOAsistente =
-        rol === "Abogados" || rol === "Asistente" || rol === 40 || rol === 35;
-
-      if (esCliente) {
-        return solicitud.cuenta === cuenta;
-      }
-
-      if (esAbogadoOAsistente) {
-        const abogadoAsignado = (solicitud.abogados || []).some(
-          (abogado: any) => abogado?.id === cuenta || abogado?._id === cuenta
-        );
-        return solicitud.cuenta === cuenta || abogadoAsignado;
-      }
-
-      // Otros roles (admin, etc.) ven todo
-      return true;
-    });
-  };
 
   useEffect(() => {
     const userData = checkAuthToken();
@@ -206,7 +178,10 @@ const LegixStatistics: React.FC = () => {
     }
   }, [CURRENT_PAGE]);
 
-  const solicitudesFiltradas = getSolicitudesFiltradasPorRol(allSolicitudes);
+  const solicitudesFiltradas = getSolicitudesFiltradasPorRol(
+    allSolicitudes,
+    formData
+  );
   const solicitudFinalizada = solicitudesFiltradas.filter(
     (solicitud) => parseInt(solicitud.status) === 70
   ).length;
@@ -216,7 +191,10 @@ const LegixStatistics: React.FC = () => {
     return status !== 70 && status !== 1;
   }).length;
 
-  const solicitudesFinalizadas = getSolicitudesFiltradasPorRol(allSolicitudes)
+  const solicitudesFinalizadas = getSolicitudesFiltradasPorRol(
+    allSolicitudes,
+    formData
+  )
     .filter((solicitud) => parseInt(solicitud.status) === 70)
     .map(({ tipo, emailSolicita, date, status }) => ({
       Tipo: TIPO_MAPPING[tipo] || tipo,
@@ -229,7 +207,10 @@ const LegixStatistics: React.FC = () => {
       ),
     }));
 
-  const solicitudesEnProceso = getSolicitudesFiltradasPorRol(allSolicitudes)
+  const solicitudesEnProceso = getSolicitudesFiltradasPorRol(
+    allSolicitudes,
+    formData
+  )
     .filter((solicitud) => parseInt(solicitud.status) !== 70)
     .map(({ tipo, emailSolicita, date, status }) => ({
       Tipo: TIPO_MAPPING[tipo] || tipo,
