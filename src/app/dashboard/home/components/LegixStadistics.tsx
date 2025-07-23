@@ -12,6 +12,7 @@ import axios from "axios";
 import get from "lodash/get";
 import { formatDate } from "../utils/format-date.util";
 import { CURRENT_PAGE } from "../constants/current-page.constant";
+import { fetchUser } from "../services/request-user-cuenta.service";
 
 const LegixStatistics: React.FC = () => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
@@ -110,25 +111,15 @@ const LegixStatistics: React.FC = () => {
 
   useEffect(() => {
     if (formData.cuenta) {
-      const fetchUser = async () => {
-        try {
-          console.log("Cuenta ", formData.cuenta);
-          const response = await axios.get("/api/get-user-cuenta", {
-            params: { userCuenta: formData.cuenta },
-          });
-
-          const user = response.data;
-          console.log("Usuario ", user);
-          setFormData((prevData) => ({
-            ...prevData,
-            rol: get(user, "solicitud.rol", 0),
-          }));
-        } catch (error) {
-          console.error("Failed to fetch solicitudes:", error);
-        }
+      const getUser = async () => {
+        const user = await fetchUser(formData.cuenta);
+        setFormData((prevData) => ({
+          ...prevData,
+          rol: get(user, "solicitud.rol", 0),
+        }));
       };
 
-      fetchUser();
+      getUser();
     }
   }, [formData.cuenta]);
 
