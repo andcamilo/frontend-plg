@@ -5,7 +5,7 @@ import FormalitiesChart from "@components/formalitiesChart";
 import TableWithPagination from "@components/TableWithPagination";
 import DashboardCard from "@components/dashboardCard";
 import PivotTable from "@components/pivotTable";
-import { getRequests } from "@api/request";
+import { getRequests } from "@/src/app/dashboard/home/services/requests-by-email.service";
 import { getRequestsCuenta } from "@/src/app/dashboard/home/services/request-cuenta.service";
 import { checkAuthToken } from "@utils/checkAuthToken";
 import { CURRENT_PAGE } from "../constants/current-page.constant";
