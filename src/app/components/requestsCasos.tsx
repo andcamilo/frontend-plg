@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 import Link from 'next/link';
 import get from 'lodash/get';
 import { checkAuthToken } from "@utils/checkAuthToken";
+import { Rol } from '@constants/roles';
 
 const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): string => {
     const date = new Date(timestamp._seconds * 1000);
@@ -100,14 +101,14 @@ const CasosStatistics: React.FC = () => {
                 const user = userResponse.data;
                 const rawRole = get(user, 'solicitud.rol', 0);
                 const roleMapping: { [key: number]: string } = {
-                    99: "Super Admin",
-                    90: "Administrador",
-                    80: "Auditor",
-                    50: "Caja Chica",
-                    40: "Abogados",
-                    35: "Asistente",
-                    17: "cliente recurrente",
-                    10: "cliente",
+                    99: Rol.SUPER_ADMIN,
+                    90: Rol.ADMINISTRADOR,
+                    80: Rol.AUDITOR,
+                    50: Rol.CAJA_CHICA,
+                    40: Rol.ABOGADOS,
+                    35: Rol.ASISTENTE,
+                    17: Rol.CLIENTE_RECURRENTE,
+                    10: Rol.CLIENTE,
                 };
                 const stringRole = typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || "Desconocido";
 

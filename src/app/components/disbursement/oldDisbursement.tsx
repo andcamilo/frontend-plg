@@ -3,6 +3,7 @@ import React, { useContext } from 'react';
 import OldDesembolsoContext from '@context/oldDesembolsoContext';
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
+import { Rol } from '@constants/roles';
 
 interface OldDisbursementProps {
   id: string;
@@ -46,7 +47,7 @@ const OldDisbursement: React.FC<OldDisbursementProps> = ({ id }) => {
           [field]: value
         }
       }));
-    } else if (section === 'cliente') {
+    } else if (section === Rol.CLIENTE) {
       setState(prev => ({
         ...prev,
         cliente: {
@@ -271,7 +272,7 @@ const OldDisbursement: React.FC<OldDisbursementProps> = ({ id }) => {
           </div>
         )}
 
-        {state.tipo === 'cliente' && (
+        {state.tipo === Rol.CLIENTE && (
           <div className="mt-6">
             <h3 className="font-semibold text-gray-300 mb-4">Cliente</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-700/50 p-4 rounded-lg">

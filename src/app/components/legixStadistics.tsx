@@ -9,6 +9,7 @@ import { getRequestsCuenta } from '@api/request-cuenta';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import axios from "axios";
 import get from 'lodash/get';
+import { Rol } from '@constants/roles';
 
 // Function to format date as dd/mm/yyyy
 const formatDate = (timestamp?: { _seconds: number; _nanoseconds: number }): string => {
@@ -83,10 +84,10 @@ const LegixStatistics: React.FC = () => {
 
       const esCliente =
         (typeof rol === 'number' && rol < 20) ||
-        rol === 'cliente' || rol === 'cliente recurrente';
+        rol === Rol.CLIENTE || rol === Rol.CLIENTE_RECURRENTE;
 
       const esAbogadoOAsistente =
-        rol === 'Abogados' || rol === 'Asistente' || rol === 40 || rol === 35;
+        rol === Rol.ABOGADOS || rol === Rol.ASISTENTE || rol === 40 || rol === 35;
 
       if (esCliente) {
         return solicitud.cuenta === cuenta;
@@ -152,7 +153,7 @@ const LegixStatistics: React.FC = () => {
     try {
 
       if ((typeof formData.rol === 'number' && formData.rol < 20) ||
-        (typeof formData.rol === 'string' && (formData.rol === 'cliente' || formData.rol === 'cliente recurrente'))) {
+        (typeof formData.rol === 'string' && (formData.rol === Rol.CLIENTE || formData.rol === Rol.CLIENTE_RECURRENTE))) {
 
         const solicitudesData = await getRequestsCuenta(rowsPerPage, formData.cuenta, lastVisibleCursor);
 
@@ -194,7 +195,7 @@ const LegixStatistics: React.FC = () => {
 
       if (
         (typeof formData.rol === 'number' && formData.rol < 20) ||
-        (typeof formData.rol === 'string' && (formData.rol === 'cliente' || formData.rol === 'cliente recurrente'))
+        (typeof formData.rol === 'string' && (formData.rol === Rol.CLIENTE || formData.rol === Rol.CLIENTE_RECURRENTE))
       ) {
         solicitudesData = await getRequestsCuenta(rowsPerPage, formData.cuenta, lastVisibleCursor);
       } else {
@@ -403,16 +404,16 @@ const LegixStatistics: React.FC = () => {
 
           {!(
             (typeof formData.rol === 'number' && formData.rol < 50) ||
-            (typeof formData.rol === 'string' && formData.rol === 'cliente') ||
-            (typeof formData.rol === 'string' && formData.rol === 'cliente recurrente')
+            (typeof formData.rol === 'string' && formData.rol === Rol.CLIENTE) ||
+            (typeof formData.rol === 'string' && formData.rol === Rol.CLIENTE_RECURRENTE)
           ) && <PivotTable months={months} />}
 
         </div>
         <div className="lg:col-span-1">
           {!(
             (typeof formData.rol === 'number' && formData.rol < 50) ||
-            (typeof formData.rol === 'string' && formData.rol === 'cliente') ||
-            (typeof formData.rol === 'string' && formData.rol === 'cliente recurrente')
+            (typeof formData.rol === 'string' && formData.rol === Rol.CLIENTE) ||
+            (typeof formData.rol === 'string' && formData.rol === Rol.CLIENTE_RECURRENTE)
           ) &&
             <>
               <DashboardCard title={"Solicitudes pendientes de pago"} value={statusCounts.status10} />

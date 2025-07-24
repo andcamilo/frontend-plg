@@ -32,6 +32,9 @@
       "@components/*": [
         "./src/app/components/*"
       ],
+      "@constants/*": [
+        "./src/app/constants/*"
+      ],
       "@app/*": [
         "./src/app/*"
       ],
@@ -55,8 +58,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/pages/api/request.js"
-, "src/app/_app.ts", "src/app/_app.ss"  ],
+    "src/pages/api/request.js",
+    "src/app/_app.ts",
+    "src/app/_app.ss"
+  ],
   "exclude": [
     "node_modules"
   ]

@@ -7,6 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation'
 import Link from 'next/link';
+import { Rol } from '@constants/roles';
 
 const Actions: React.FC<{ id: string }> = ({ id }) => {
   const handleDelete = async () => {
@@ -104,13 +105,15 @@ const UsersStatistics: React.FC = () => {
         };
 
         const rolLabels = {
-          99: "Super Administrador ",
-          90: "Administrador ",
-          80: "Auditor ",
-          50: "Caja Chica",
-          45: "Solicitante de gastos",
-          40: "Abogado",
-          35: "Asistente",
+          99: Rol.SUPER_ADMIN,
+          90: Rol.ADMINISTRADOR,
+          80: Rol.AUDITOR,
+          50: Rol.CAJA_CHICA,
+          45: Rol.SOLICITANTE_GASTOS,
+          40: Rol.ABOGADOS,
+          35: Rol.ASISTENTE,
+          17: Rol.CLIENTE_RECURRENTE,
+          10: Rol.CLIENTE,
         };
 
         // Filtrar usuarios según el rol
