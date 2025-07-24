@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import BannerPazsalvos from '@components/BannerPazsalvos';
 import CountrySelect from '@components/CountrySelect';
+import "@configuration/firebase";
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
