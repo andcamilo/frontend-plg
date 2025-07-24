@@ -5,17 +5,14 @@ import FormalitiesChart from "@components/formalitiesChart";
 import TableWithPagination from "@components/TableWithPagination";
 import DashboardCard from "@components/dashboardCard";
 import PivotTable from "@components/pivotTable";
-import { getRequests } from "@/src/app/dashboard/home/services/requests-by-email.service";
-import { getRequestsCuenta } from "@/src/app/dashboard/home/services/request-cuenta.service";
 import { checkAuthToken } from "@utils/checkAuthToken";
-import { CURRENT_PAGE } from "../constants/current-page.constant";
-import { solicitudesFiltradas } from "../utils/solicitudes-filtradas.util";
 import { solicitudFinalizada } from "../utils/solicitud-finalizada.util";
 import { solicitudEnProceso } from "../utils/solicitud-en-proceso.util";
 import { solicitudesEnProceso } from "../utils/solicitudes-en-proceso.util";
 import { paginatedSolicitudesEnProceso } from "../utils/solicitudes-en-proceso-paginated.util";
 import { solicitudesFinalizadas } from "../utils/solicitudes-finalizadas.util";
 import { paginatedSolicitudesFinalizadas } from "../utils/solicitudes-finalizadas-paginated.util";
+import { tipoCountsFiltrados } from "../utils/tipo-counts-filtrados.util";
 
 const LegixStatistics: React.FC<{
   rol: number;
@@ -58,12 +55,6 @@ const LegixStatistics: React.FC<{
     cuenta: userData?.user_id || "",
     rol: rol,
   };
-
-  const tipoCountsFiltrados: { [key: string]: number } = {};
-  solicitudesFiltradas(allSolicitudes, formData).forEach((solicitud) => {
-    tipoCountsFiltrados[solicitud.tipo] =
-      (tipoCountsFiltrados[solicitud.tipo] || 0) + 1;
-  });
 
   // Calcular el número de páginas
   useEffect(() => {
