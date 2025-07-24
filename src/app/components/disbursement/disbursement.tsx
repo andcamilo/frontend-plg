@@ -102,15 +102,65 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
       const data = await response.json();
       console.log(`Disbursement ${id ? 'updated' : 'created'} successfully:`, data);
 
-      // Optionally update the context with the new data (if needed)
-      setState(prev => ({ ...prev, ...data }));
-
       // Show success alert and then navigate
       Swal.fire({
         icon: 'success',
         title: 'Éxito',
         text: `¡El desembolso fue ${id ? 'actualizado' : 'guardado'} exitosamente!`,
       }).then(() => {
+        // Reset context to empty values
+        setState({
+          disbursementType: '',
+          solicita: '',
+          expenseType: '',
+          status: 'creada',
+          desemboloOficina: [
+            {
+              expenseType: '', 
+              otherExpenseType: '',
+              expenseDetail: '', 
+              amount: 0,
+              invoiceNumber: '',
+              status: false,
+            },
+          ],
+          desembolsoCliente: [
+            {
+              invoiceNumber: '',
+              amount: 0,
+              expenseObject: '', 
+              otherExpenses: '', 
+              billedExpensesSent: '', 
+              clientPaidExpensesSent:'',
+              associatedExpenseDetail: '',
+              status: false,
+            },
+          ],
+          desembolsoCajaChica: [{
+            date: '',
+            amount: 0,
+            invoiceNumber: '',
+            disbursementType: '',
+            reason: '',
+            observation: '',
+            status: false,
+            fileRef: '',
+          }],
+          detalleDesembolsoPagado: {
+            paymentDate: '',
+            transactionNumber: '',
+            attachedFile: '',
+          },
+          detalleTransferenciaPago: {
+            selectOption: '',
+            name: '', 
+            number: '',
+            bank: '', 
+            observation: '', 
+            paymentDate: '', 
+          }
+        });
+        
         // Navigate to the dashboard page after the alert is confirmed.
         router.push('/dashboard/see');
       });
