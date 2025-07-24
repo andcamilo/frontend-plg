@@ -1,9 +1,9 @@
 "use client";
-import { useUserCuentaQuery } from "../hooks/useUserCuenta.query";
+import { useUserCuenta } from "../hooks/useUserCuenta.query";
 import LegixStatistics from "./LegixStadistics";
 
 const LegixStadisticsContainer = () => {
-  const { data: userCuenta, isLoading, isError } = useUserCuentaQuery();
+  const { data: userCuenta, isLoading, isError } = useUserCuenta();
 
   if (isLoading) {
     return <div>Cargando...</div>;
