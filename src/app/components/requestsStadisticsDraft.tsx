@@ -12,6 +12,7 @@ import Swal from 'sweetalert2';
 import Link from 'next/link';
 import get from 'lodash/get';
 import { checkAuthToken } from "@utils/checkAuthToken";
+import { Rol } from '@constants/roles';
 
 const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): string => {
   const date = new Date(timestamp._seconds * 1000);
@@ -83,12 +84,12 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
 
   // Logic for showing the delete/pay icons
   const canShowDelete =
-    (status === 1 && (rol === 'cliente recurrente' || rol === 'cliente')) ||
-    (rol !== 'cliente recurrente' && rol !== 'cliente' && rol !== 'Asistente' && rol !== 'Abogados');
+    (status === 1 && (rol === Rol.CLIENTE_RECURRENTE || rol === Rol.CLIENTE)) ||
+    (rol !== Rol.CLIENTE_RECURRENTE && rol !== Rol.CLIENTE && rol !== Rol.ASISTENTE && rol !== Rol.ABOGADOS);
 
   const canShowPagar =
-    (status < 19 && (rol === 'cliente recurrente' || rol === 'cliente')) ||
-    (rol !== 'cliente recurrente' && rol !== 'cliente');
+    (status < 19 && (rol === Rol.CLIENTE_RECURRENTE || rol === Rol.CLIENTE)) ||
+    (rol !== Rol.CLIENTE_RECURRENTE && rol !== Rol.CLIENTE);
 
   return (
     <div className="flex gap-2">
@@ -181,14 +182,14 @@ const RequestsStatistics: React.FC = () => {
 
         const rawRole = get(user, 'solicitud.rol', 0);
         const roleMapping: { [key: number]: string } = {
-          99: 'Super Admin',
-          90: 'Administrador',
-          80: 'Auditor',
-          50: 'Caja Chica',
-          40: 'Abogados',
-          35: 'Asistente',
-          17: 'cliente recurrente',
-          10: 'cliente',
+          99: Rol.SUPER_ADMIN,
+          90: Rol.ADMINISTRADOR,
+          80: Rol.AUDITOR,
+          50: Rol.CAJA_CHICA,
+          40: Rol.ABOGADOS,
+          35: Rol.ASISTENTE,
+          17: Rol.CLIENTE_RECURRENTE,
+          10: Rol.CLIENTE,
         };
         const stringRole =
           typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || 'Desconocido';
@@ -203,7 +204,7 @@ const RequestsStatistics: React.FC = () => {
         let entireSolicitudes;
         if (
           (typeof rawRole === 'number' && rawRole < 20) ||
-          (typeof stringRole === 'string' && (stringRole === 'cliente' || stringRole === 'cliente recurrente'))
+          (typeof stringRole === 'string' && (stringRole === Rol.CLIENTE || stringRole === Rol.CLIENTE_RECURRENTE))
         ) {
           const result = await getRequestsCuenta(1000, userData.user_id, null);
           entireSolicitudes = result.solicitudes;
@@ -227,10 +228,10 @@ const RequestsStatistics: React.FC = () => {
   // ---- Helper function for filtering ----
   const getSolicitudesFiltradas = (array: any[]) => {
     return array
-      // If user is "cliente" or "cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
+      // If user is Rol.CLIENTE or "cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
       .filter((solicitud) => {
-        const esCliente = formData.rol === 'cliente' || formData.rol === 'cliente recurrente';
-        const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
+        const esCliente = formData.rol === Rol.CLIENTE || formData.rol === Rol.CLIENTE_RECURRENTE;
+        const esAsistenteOAbogado = formData.rol === Rol.ASISTENTE || formData.rol === Rol.ABOGADOS;
 
         if (esCliente) {
           return solicitud.cuenta === formData.cuenta;

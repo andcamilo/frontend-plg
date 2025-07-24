@@ -6,6 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 import Link from 'next/link';
+import { Rol } from '@constants/roles';
 
 const Actions: React.FC<{ id: string }> = ({ id }) => {
   const handleDelete = async () => {
@@ -93,7 +94,7 @@ const ClientsStatistics: React.FC = () => {
 
         // Filtra los usuarios con rol <= 17
         const filteredUsers = allUsers.filter(
-          (user: any) => user.rol <= 17 || user.rol === "cliente"
+          (user: any) => user.rol <= 17 || user.rol === Rol.CLIENTE
         );
 
         // Aplica la paginación localmente

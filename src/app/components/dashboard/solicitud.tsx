@@ -12,6 +12,7 @@ import { auth } from "@configuration/firebase";
 import ModalNominales from '@/src/app/components/modalNominales';
 import ModalExpediente from '@/src/app/components/ModalExpediente';
 import Link from 'next/link';
+import { Rol } from '@constants/roles';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -27,14 +28,14 @@ import { getFirestore, collection, query, where, getDocs } from 'firebase/firest
 import { onAuthStateChanged } from "firebase/auth";
 
 const roleMapping: { [key: number]: string } = {
-    99: "Super Admin",
-    90: "Administrador",
-    80: "Auditor",
-    50: "Caja Chica",
-    40: "Abogados",
-    35: "Asistente",
-    17: "cliente recurrente",
-    10: "cliente",
+    99: Rol.SUPER_ADMIN,
+    90: Rol.ADMINISTRADOR,
+    80: Rol.AUDITOR,
+    50: Rol.CAJA_CHICA,
+    40: Rol.ABOGADOS,
+    35: Rol.ASISTENTE,
+    17: Rol.CLIENTE_RECURRENTE,
+    10: Rol.CLIENTE,
 };
 
 // Configuración de Firebase
@@ -1849,7 +1850,7 @@ const Request: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
             <div className="flex flex-col gap-8 md:w-1/2">
                 {/* Sección de Actualizar */}
-                {(formData.rol !== "cliente" && formData.rol !== "cliente recurrente") && (
+                {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE) && (
                     <>
                         <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
                             <h3 className="text-lg font-bold text-white mb-4">Actualizar:</h3>
@@ -1909,7 +1910,7 @@ const Request: React.FC = () => {
 
 
                 {/* Sección de Asignar abogado */}
-                {(formData.rol !== "cliente" && formData.rol !== "cliente recurrente" && formData.rol !== "Auditor"
+                {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && formData.rol !== Rol.AUDITOR
                 ) && (
                         <>
                             <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
@@ -2135,7 +2136,7 @@ const Request: React.FC = () => {
                         >
                             Descargar Resumen PDF
                         </button>
-                        {(formData.rol !== "cliente" && formData.rol !== "cliente recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
+                        {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
                             <>
                                 <button
                                     className="bg-profile text-white px-4 py-2 rounded mt-8"
@@ -2147,7 +2148,7 @@ const Request: React.FC = () => {
                         )}
                     </div>
 
-                    {(formData.rol !== "cliente" && formData.rol !== "cliente recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
+                    {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && solicitudData && solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
                         <>
                             <div className="flex space-x-4 ">
                                 <button
@@ -2162,8 +2163,8 @@ const Request: React.FC = () => {
                     )}
                 </div>
 
-                {(formData.rol !== "cliente" && formData.rol !== "cliente recurrente" && formData.rol !== "Asistente"
-                    && formData.rol !== "Abogados" && formData.rol !== "Auditor"
+                {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && formData.rol !== Rol.ASISTENTE
+                    && formData.rol !== Rol.ABOGADOS && formData.rol !== Rol.AUDITOR
                 ) && (
                         <>
                             <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
@@ -2182,7 +2183,7 @@ const Request: React.FC = () => {
                         </>
                     )}
 
-                {(formData.rol !== "cliente" && formData.rol !== "cliente recurrente" && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa"
+                {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa"
                     || solicitudData?.tipo === "new-fundacion")
                 ) && (
                         <>

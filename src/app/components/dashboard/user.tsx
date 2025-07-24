@@ -15,6 +15,7 @@ import {
     backendBaseUrl,
     backendEnv
 } from '@utils/env';
+import { Rol } from '@constants/roles';
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -42,7 +43,7 @@ const User: React.FC = () => {
         nombre: '',
         email: '',
         telefono: '',
-        rol: 'Administrador',
+        rol: Rol.ADMINISTRADOR,
         cedulaPasaporte: "",
         archivoURL: "",
         permisos: '',
@@ -69,15 +70,15 @@ const User: React.FC = () => {
                 const user = response.data.user;
                 console.log("USER ", user)
                 const rolLabels = {
-                    99: "Super Administrador",
-                    90: "Administrador",
-                    80: "Auditor",
-                    50: "Caja Chica",
-                    45: "Solicitante de gastos",
-                    40: "Abogado",
-                    35: "Asistente",
-                    17: "cliente recurrente",
-                    10: "cliente",
+                    99: Rol.SUPER_ADMIN,
+                    90: Rol.ADMINISTRADOR,
+                    80: Rol.AUDITOR,
+                    50: Rol.CAJA_CHICA,
+                    45: Rol.SOLICITANTE_GASTOS,
+                    40: Rol.ABOGADOS,
+                    35: Rol.ASISTENTE,
+                    17: Rol.CLIENTE_RECURRENTE,
+                    10: Rol.CLIENTE,
                 };
                 // Mapear el rol numérico al valor de rolLabels
                 const mappedRol = rolLabels[user.rol] || '';
@@ -144,15 +145,15 @@ const User: React.FC = () => {
             try {
 
                 const rolLabels = {
-                    "Super Administrador": 99,
-                    "Administrador": 90,
-                    "Auditor": 80,
-                    "Caja Chica": 50,
-                    "Solicitante de gastos": 45,
-                    "Abogado": 40,
-                    "Asistente": 35,
-                    "cliente recurrente": 17,
-                    "cliente": 10,
+                    [Rol.SUPER_ADMIN]: 99,
+                    [Rol.ADMINISTRADOR]: 90,
+                    [Rol.AUDITOR]: 80,
+                    [Rol.CAJA_CHICA]: 50,
+                    [Rol.SOLICITANTE_GASTOS]: 45,
+                    [Rol.ABOGADOS]: 40,
+                    [Rol.ASISTENTE]: 35,
+                    [Rol.CLIENTE_RECURRENTE]: 17,
+                    [Rol.CLIENTE]: 10,
                 };
 
                 let archivoURL = formData.archivoURL;
@@ -206,15 +207,15 @@ const User: React.FC = () => {
         } else {
             try {
                 const rolLabels = {
-                    "Super Administrador": 99,
-                    "Administrador": 90,
-                    "Auditor": 80,
-                    "Caja Chica": 50,
-                    "Solicitante de gastos": 45,
-                    "Abogado": 40,
-                    "Asistente": 35,
-                    "cliente recurrente": 17,
-                    "cliente": 10,
+                    [Rol.SUPER_ADMIN]: 99,
+                    [Rol.ADMINISTRADOR]: 90,
+                    [Rol.AUDITOR]: 80,
+                    [Rol.CAJA_CHICA]: 50,
+                    [Rol.SOLICITANTE_GASTOS]: 45,
+                    [Rol.ABOGADOS]: 40,
+                    [Rol.ASISTENTE]: 35,
+                    [Rol.CLIENTE_RECURRENTE]: 17,
+                    [Rol.CLIENTE]: 10,
                 };
 
                 const responseData = {
