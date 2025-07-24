@@ -22,6 +22,7 @@ import { checkAuthToken } from "@utils/checkAuthToken";
 import LogoutButton from './profileButton';
 import axios from 'axios';
 import { tree } from 'next/dist/build/templates/app-page';
+import { Rol } from '@constants/roles';
 
 interface MenuProps {
   menuOpen: boolean;
@@ -40,7 +41,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
   const [formData, setFormData] = useState<{
     cuenta: string;
     email: string;
-    rol: string;
+    rol: Rol | string;
   }>({
     cuenta: "",
     email: "",
@@ -98,14 +99,14 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           console.log("🚀 ~ fetchUser ~ rawRole:", rawRole)
 
           const roleMapping: { [key: number]: string } = {
-            99: "Super Admin",
-            90: "Administrador",
-            80: "Auditor",
-            50: "Caja Chica",
-            40: "Abogados",
-            35: "Asistente",
-            17: "cliente recurrente",
-            10: "cliente",
+            99: Rol.SUPER_ADMIN,
+            90: Rol.ADMINISTRADOR,
+            80: Rol.AUDITOR,
+            50: Rol.CAJA_CHICA,
+            40: Rol.ABOGADOS,
+            35: Rol.ASISTENTE,
+            17: Rol.CLIENTE_RECURRENTE,
+            10: Rol.CLIENTE,
           };
           const stringRole = typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || "Desconocido";
           console.log("🚀 ~ fetchUser ~ stringRole:", stringRole)
@@ -220,7 +221,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         </div>
       )}
 
-      {formData?.rol && (formData.rol === "cliente recurrente" || formData.rol === "Super Admin") && (
+      {formData?.rol && (formData.rol === Rol.CLIENTE_RECURRENTE || formData.rol === Rol.SUPER_ADMIN) && (
         <div
           className={`flex items-center cursor-pointer p-2 rounded ${isActive('/dashboard/nuevo')}`}
           onClick={toggleDropdown}
@@ -256,7 +257,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
         </div>
       )}
       {formData?.rol && (
-        ["Asistente", "Abogados", "Caja Chica", "Auditor", "Administrador", "Super Admin"].includes(formData.rol)
+        [Rol.ASISTENTE, Rol.ABOGADOS, Rol.CAJA_CHICA, Rol.AUDITOR, Rol.ADMINISTRADOR, Rol.SUPER_ADMIN].includes(formData.rol as Rol)
       ) && (
           <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/balances')}`}>
             <PaidIcon className="mr-2" />
@@ -266,7 +267,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </div>
         )}
       {formData?.rol && (
-        ["Caja Chica", "Auditor", "Administrador", "Super Admin"].includes(formData.rol)
+        [Rol.CAJA_CHICA, Rol.AUDITOR, Rol.ADMINISTRADOR, Rol.SUPER_ADMIN].includes(formData.rol as Rol)
       ) && (
           <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/clients')}`}>
             <PeopleIcon className="mr-2" />
@@ -276,7 +277,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </div>
         )}
       {formData?.rol && (
-        ["Auditor", "Administrador", "Super Admin"].includes(formData.rol)
+        [Rol.AUDITOR, Rol.ADMINISTRADOR, Rol.SUPER_ADMIN].includes(formData.rol as Rol)
       ) && (
           <div className={`flex items-center mb-1 p-2 rounded ${isActive('/dashboard/users')}`}>
             <PeopleIcon className="mr-2" />
@@ -286,7 +287,7 @@ const MenuComponent: React.FC<MenuProps> = ({ menuOpen, handleStateChange, close
           </div>
         )}
       {formData?.rol && (
-        ["Asistente", "Abogados", "Caja Chica", "Auditor", "Administrador", "Super Admin"].includes(formData.rol)
+        [Rol.ASISTENTE, Rol.ABOGADOS, Rol.CAJA_CHICA, Rol.AUDITOR, Rol.ADMINISTRADOR, Rol.SUPER_ADMIN].includes(formData.rol as Rol)
       ) && (
           <>
             <p className='font-bold'>Trámites internos</p>
