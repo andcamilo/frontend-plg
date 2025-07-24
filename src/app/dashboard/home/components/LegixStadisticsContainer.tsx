@@ -1,3 +1,4 @@
+"use client";
 import { useUserCuentaQuery } from "../hooks/useUserCuenta.query";
 import LegixStatistics from "./LegixStadistics";
 
