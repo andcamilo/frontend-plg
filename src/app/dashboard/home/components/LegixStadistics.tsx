@@ -19,7 +19,7 @@ import { paginatedSolicitudesEnProceso } from "../utils/solicitudes-en-proceso-p
 import { solicitudesFinalizadas } from "../utils/solicitudes-finalizadas.util";
 import { paginatedSolicitudesFinalizadas } from "../utils/solicitudes-finalizadas-paginated.util";
 
-const LegixStatistics: React.FC = () => {
+const LegixStatistics: React.FC<{ rol: number }> = ({ rol }) => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
   const [statusCounts, setStatusCounts] = useState<{
     status10: number;
@@ -60,7 +60,7 @@ const LegixStatistics: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     email: "",
     cuenta: "",
-    rol: 0,
+    rol: rol,
   });
 
   useEffect(() => {
@@ -74,20 +74,6 @@ const LegixStatistics: React.FC = () => {
       }));
     }
   }, []);
-
-  useEffect(() => {
-    if (formData.cuenta) {
-      const getUser = async () => {
-        const user = await fetchUser(formData.cuenta);
-        setFormData((prevData) => ({
-          ...prevData,
-          rol: user.rol,
-        }));
-      };
-
-      getUser();
-    }
-  }, [formData.cuenta]);
 
   const [lastVisibleCursor, setLastVisibleCursor] = useState<string | null>(
     null
