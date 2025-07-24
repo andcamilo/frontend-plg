@@ -14,6 +14,7 @@ import SaleComponent from '@/src/app/components/saleComponent';
 import CountrySelect from '@components/CountrySelect';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Modal, Box, Button } from "@mui/material";
+import "@configuration/firebase";
 import BotonesPreguntasYContactos from '@components/botonesPreguntasYContactos';
 import Link from 'next/link';
 import BannerOpcionesMenores from '@components/BannerOpcionesMenores'; 

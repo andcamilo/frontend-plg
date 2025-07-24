@@ -36,6 +36,12 @@ const Home: React.FC = () => {
       imageUrl: '/images/process3.jpg',
       description: 'Descripción de las pensión alimenticia y desacato.',
       redirect: '/request/pension-alimenticia'
+    },
+    {
+      title: 'Paz y Salvos',
+      imageUrl: '/images/process3.jpg',
+      description: 'Descripción de las paz y salvos.',
+      redirect: '/request/paz-salvos'
     }
   ];
 
