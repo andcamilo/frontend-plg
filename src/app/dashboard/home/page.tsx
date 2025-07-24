@@ -1,5 +1,5 @@
 import React from "react";
-import LegixStatistics from "./components/LegixStadistics";
+import LegixStadisticsContainer from "./components/LegixStadisticsContainer";
 
 export default function Requests() {
   return (
@@ -7,7 +7,7 @@ export default function Requests() {
       <h1 className="text-4xl font-bold text-white pl-8 mb-4">
         Estadísticas de LEGIX
       </h1>
-      <LegixStatistics />
+      <LegixStadisticsContainer />
     </div>
   );
 }
