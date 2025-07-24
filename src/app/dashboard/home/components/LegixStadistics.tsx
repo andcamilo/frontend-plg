@@ -17,7 +17,10 @@ import { paginatedSolicitudesEnProceso } from "../utils/solicitudes-en-proceso-p
 import { solicitudesFinalizadas } from "../utils/solicitudes-finalizadas.util";
 import { paginatedSolicitudesFinalizadas } from "../utils/solicitudes-finalizadas-paginated.util";
 
-const LegixStatistics: React.FC<{ rol: number, pagination: any }> = ({ rol, pagination }) => {
+const LegixStatistics: React.FC<{ rol: number; pagination: any }> = ({
+  rol,
+  pagination,
+}) => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
   const [statusCounts, setStatusCounts] = useState<{
     status10: number;
@@ -63,10 +66,8 @@ const LegixStatistics: React.FC<{ rol: number, pagination: any }> = ({ rol, pagi
     rol: rol,
   };
 
-  const [lastVisibleCursor, setLastVisibleCursor] = useState<string | null>(
-    null
-  );
-  const [hasNextPage, setHasNextPage] = useState(false);
+  const lastVisibleCursor = pagination.nextCursor || null;
+
 
   const fetchAllSolicitudes = async () => {
     try {
@@ -103,24 +104,12 @@ const LegixStatistics: React.FC<{ rol: number, pagination: any }> = ({ rol, pagi
     }
   };
 
-  const fetchPaginatedSolicitudes = async () => {
-      setLastVisibleCursor(pagination.nextCursor || null);
-      setHasNextPage(pagination.hasNextPage);
-  };
-
   useEffect(() => {
     if (formData.cuenta && formData.rol !== 0) {
       console.log("✔️ Rol y cuenta listos:", formData.rol, formData.cuenta);
       fetchAllSolicitudes();
-      fetchPaginatedSolicitudes();
     }
   }, [formData.cuenta, formData.rol]);
-
-  useEffect(() => {
-    if (CURRENT_PAGE > 1 && hasNextPage) {
-      fetchPaginatedSolicitudes();
-    }
-  }, [CURRENT_PAGE]);
 
   const tipoCountsFiltrados: { [key: string]: number } = {};
   solicitudesFiltradas(allSolicitudes, formData).forEach((solicitud) => {
@@ -152,12 +141,6 @@ const LegixStatistics: React.FC<{ rol: number, pagination: any }> = ({ rol, pagi
     currentPageFinalizadas,
     rowsPerPage,
   ]);
-
-  useEffect(() => {
-    if (formData.cuenta) {
-      fetchPaginatedSolicitudes();
-    }
-  }, [CURRENT_PAGE]);
 
   return (
     <div className="flex flex-col gap-4 p-8 w-full">
