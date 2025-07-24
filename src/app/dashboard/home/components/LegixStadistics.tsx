@@ -9,8 +9,6 @@ import { getRequests } from "@api/request";
 import { getRequestsCuenta } from "@/src/app/dashboard/home/services/request-cuenta.service";
 import { checkAuthToken } from "@utils/checkAuthToken";
 import { CURRENT_PAGE } from "../constants/current-page.constant";
-import { fetchUser } from "../services/request-user-cuenta.service";
-import { FormData } from "../types/form-data.types";
 import { solicitudesFiltradas } from "../utils/solicitudes-filtradas.util";
 import { solicitudFinalizada } from "../utils/solicitud-finalizada.util";
 import { solicitudEnProceso } from "../utils/solicitud-en-proceso.util";
@@ -57,23 +55,13 @@ const LegixStatistics: React.FC<{ rol: number }> = ({ rol }) => {
     }
   };
 
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    cuenta: "",
-    rol: rol,
-  });
+  const userData = checkAuthToken();
 
-  useEffect(() => {
-    const userData = checkAuthToken();
-    if (userData) {
-      setFormData((prevData) => ({
-        ...prevData,
-        email: userData?.email,
-        confirmEmail: userData?.email,
-        cuenta: userData?.user_id,
-      }));
-    }
-  }, []);
+  const formData = {
+    email: userData?.email || "",
+    cuenta: userData?.user_id || "",
+    rol: rol,
+  };
 
   const [lastVisibleCursor, setLastVisibleCursor] = useState<string | null>(
     null
