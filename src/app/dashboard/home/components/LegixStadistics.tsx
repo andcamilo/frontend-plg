@@ -12,7 +12,7 @@ import { solicitudesEnProceso } from "../utils/solicitudes-en-proceso.util";
 import { paginatedSolicitudesEnProceso } from "../utils/solicitudes-en-proceso-paginated.util";
 import { solicitudesFinalizadas } from "../utils/solicitudes-finalizadas.util";
 import { paginatedSolicitudesFinalizadas } from "../utils/solicitudes-finalizadas-paginated.util";
-import { tipoCountsFiltrados } from "../utils/tipo-counts-filtrados.util";
+import { tipoCountsFiltradosUtil } from "../utils/tipo-counts-filtrados.util";
 
 const LegixStatistics: React.FC<{
   rol: number;
@@ -55,6 +55,7 @@ const LegixStatistics: React.FC<{
     cuenta: userData?.user_id || "",
     rol: rol,
   };
+  const tipoCountsFiltrados = tipoCountsFiltradosUtil(allSolicitudes, formData);
 
   // Calcular el número de páginas
   useEffect(() => {
