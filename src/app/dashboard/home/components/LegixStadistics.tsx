@@ -17,7 +17,7 @@ import { paginatedSolicitudesEnProceso } from "../utils/solicitudes-en-proceso-p
 import { solicitudesFinalizadas } from "../utils/solicitudes-finalizadas.util";
 import { paginatedSolicitudesFinalizadas } from "../utils/solicitudes-finalizadas-paginated.util";
 
-const LegixStatistics: React.FC<{ rol: number }> = ({ rol }) => {
+const LegixStatistics: React.FC<{ rol: number, pagination: any }> = ({ rol, pagination }) => {
   const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
   const [statusCounts, setStatusCounts] = useState<{
     status10: number;
@@ -103,43 +103,16 @@ const LegixStatistics: React.FC<{ rol: number }> = ({ rol }) => {
     }
   };
 
-  const fetchPaginatedSolicitudes = async (reset = false) => {
-    try {
-      let solicitudesData;
-
-      if (
-        (typeof formData.rol === "number" && formData.rol < 20) ||
-        (typeof formData.rol === "string" &&
-          (formData.rol === "Cliente" || formData.rol === "Cliente recurrente"))
-      ) {
-        solicitudesData = await getRequestsCuenta(
-          rowsPerPage,
-          formData.cuenta,
-          lastVisibleCursor
-        );
-      } else {
-        const userData = checkAuthToken();
-        solicitudesData = await getRequests(
-          userData?.email,
-          rowsPerPage,
-          CURRENT_PAGE
-        );
-      }
-
-      const { pagination } = solicitudesData;
-
+  const fetchPaginatedSolicitudes = async () => {
       setLastVisibleCursor(pagination.nextCursor || null);
       setHasNextPage(pagination.hasNextPage);
-    } catch (error) {
-      console.error("Failed to fetch paginated solicitudes:", error);
-    }
   };
 
   useEffect(() => {
     if (formData.cuenta && formData.rol !== 0) {
       console.log("✔️ Rol y cuenta listos:", formData.rol, formData.cuenta);
       fetchAllSolicitudes();
-      fetchPaginatedSolicitudes(true);
+      fetchPaginatedSolicitudes();
     }
   }, [formData.cuenta, formData.rol]);
 
@@ -182,7 +155,7 @@ const LegixStatistics: React.FC<{ rol: number }> = ({ rol }) => {
 
   useEffect(() => {
     if (formData.cuenta) {
-      fetchPaginatedSolicitudes(true);
+      fetchPaginatedSolicitudes();
     }
   }, [CURRENT_PAGE]);
 
