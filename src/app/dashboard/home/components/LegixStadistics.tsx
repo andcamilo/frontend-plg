@@ -17,20 +17,13 @@ import { paginatedSolicitudesEnProceso } from "../utils/solicitudes-en-proceso-p
 import { solicitudesFinalizadas } from "../utils/solicitudes-finalizadas.util";
 import { paginatedSolicitudesFinalizadas } from "../utils/solicitudes-finalizadas-paginated.util";
 
-const LegixStatistics: React.FC<{ rol: number; pagination: any }> = ({
-  rol,
-  pagination,
-}) => {
-  const [allSolicitudes, setAllSolicitudes] = useState<any[]>([]);
-  const [statusCounts, setStatusCounts] = useState<{
-    status10: number;
-    status20: number;
-  }>({
-    status10: 0,
-    status20: 0,
-  });
-  const [months, setMonths] = useState<{ [key: string]: number }>({});
-
+const LegixStatistics: React.FC<{
+  rol: number;
+  pagination: any;
+  allSolicitudes: any[];
+  statusCounts: any;
+  months: any;
+}> = ({ rol, pagination, allSolicitudes, statusCounts, months }) => {
   const [rowsPerPage] = useState(10);
 
   const [currentPageEnProceso, setCurrentPageEnProceso] = useState(1);
@@ -65,51 +58,6 @@ const LegixStatistics: React.FC<{ rol: number; pagination: any }> = ({
     cuenta: userData?.user_id || "",
     rol: rol,
   };
-
-  const lastVisibleCursor = pagination.nextCursor || null;
-
-
-  const fetchAllSolicitudes = async () => {
-    try {
-      if (
-        (typeof formData.rol === "number" && formData.rol < 20) ||
-        (typeof formData.rol === "string" &&
-          (formData.rol === "Cliente" || formData.rol === "Cliente recurrente"))
-      ) {
-        const solicitudesData = await getRequestsCuenta(
-          rowsPerPage,
-          formData.cuenta,
-          lastVisibleCursor
-        );
-
-        const { solicitudes = [] } = solicitudesData;
-        console.log("All Solicituds ", solicitudes);
-        setAllSolicitudes(solicitudes);
-      } else {
-        const userData = checkAuthToken();
-        const solicitudesData = await getRequests(
-          userData?.email,
-          rowsPerPage,
-          CURRENT_PAGE
-        );
-
-        const { allSolicitudes = [], statusCounts, months } = solicitudesData;
-
-        setAllSolicitudes(allSolicitudes);
-        setStatusCounts(statusCounts);
-        setMonths(months);
-      }
-    } catch (error) {
-      console.error("Failed to fetch all solicitudes:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (formData.cuenta && formData.rol !== 0) {
-      console.log("✔️ Rol y cuenta listos:", formData.rol, formData.cuenta);
-      fetchAllSolicitudes();
-    }
-  }, [formData.cuenta, formData.rol]);
 
   const tipoCountsFiltrados: { [key: string]: number } = {};
   solicitudesFiltradas(allSolicitudes, formData).forEach((solicitud) => {
