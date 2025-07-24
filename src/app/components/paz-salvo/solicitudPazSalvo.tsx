@@ -11,7 +11,6 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import Link from 'next/link';
-import "@configuration/firebase";
 import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 

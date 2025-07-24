@@ -21,4 +21,5 @@ export interface FormDataPazSalvos {
   numeroCliente: string;
   tieneNumeroCliente: boolean;
   archivoCedulaImagenURL:string;
+  notificaciones:boolean;
 }
