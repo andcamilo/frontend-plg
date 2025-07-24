@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchUser } from "../services/request-user-cuenta.service";
 import { checkAuthToken } from "@app/utils/checkAuthToken";
 
-export const useUserCuentaQuery = () => {
+export const useUserCuenta = () => {
   return useQuery({
     queryKey: ["userCuenta"],
     queryFn: async () => {
