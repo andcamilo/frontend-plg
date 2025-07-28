@@ -6,6 +6,7 @@ import {
 } from "../../hooks/Alerts/useAlerts.query";
 import { useParams } from "next/navigation";
 import { AlertsSchema } from "../../schemas/alerts.schema";
+import swal from "sweetalert2";
 
 const AlertFormEdit = () => {
   const params = useParams();
@@ -21,7 +22,20 @@ const AlertFormEdit = () => {
   if (error) return <div>Error: {error.message}</div>;
 
   const onSubmit = (data: AlertsSchema) => {
-    updateAlert(data);
+    try {
+      updateAlert(data);
+      swal.fire({
+        title: "Alerta actualizada",
+        text: "La alerta ha sido actualizada correctamente",
+        icon: "success",
+      });
+    } catch (error) {
+      swal.fire({
+        title: "Error",
+        text: "Error al actualizar la alerta " + error,
+        icon: "error",
+      });
+    }
   };
   return (
     <>
