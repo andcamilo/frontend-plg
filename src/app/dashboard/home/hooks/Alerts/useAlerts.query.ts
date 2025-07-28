@@ -7,7 +7,7 @@ import {
 } from "../../services/Alerts/alerts.service";
 import { AlertsSchema } from "../../schemas/alerts.schema";
 
-export const useAlertsQuery = (id: string) => {
+export const useAlertById = (id: string) => {
   return useQuery({
     queryKey: ["alerts", id],
     queryFn: () => getAlertById(id),
