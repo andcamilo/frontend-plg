@@ -1,9 +1,9 @@
 import { AlertsSchema } from "../../schemas/alerts.schema";
 import { backendBaseUrl, backendEnv } from "@utils/env";
 
-export const getAlertById = async (id: string) => {
+export const getAlertById = async (idSolicitud: string) => {
   const response = await fetch(
-    `${backendBaseUrl}/${backendEnv}/get-alert/${id}`
+    `${backendBaseUrl}/${backendEnv}/get-alert/${idSolicitud}`
   );
   if (!response.ok) {
     throw new Error(`Error fetching alerts: ${response.statusText}`);

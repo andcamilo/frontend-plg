@@ -85,7 +85,7 @@ const TableRequests = ({ solicitudes }: { solicitudes: any[] }) => {
                   </div>
                 </Td>
                 <Td>
-                  <AlertButton id={solicitud.id} />
+                  <AlertButton idSolicitud={solicitud.id} />
                 </Td>
                 <Td>
                   <span

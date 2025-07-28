@@ -3,9 +3,9 @@ import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 import { useRouter } from "next/navigation";
 import { useAlertById } from "../../hooks/Alerts/useAlerts.query";
 
-const AlertButton = ({ id }: { id: string }) => {
+const AlertButton = ({ idSolicitud }: { idSolicitud: string }) => {
   const { openModal } = useModalContext();
-  const { data: alert, isLoading, error } = useAlertById(id);
+  const { data: alert, isLoading, error } = useAlertById(idSolicitud);
   const router = useRouter();
 
   if (isLoading) return <div>Loading...</div>;
@@ -13,7 +13,7 @@ const AlertButton = ({ id }: { id: string }) => {
   if (!alert) return <div>Alert not found</div>;
 
   const handleOpenModal = () => {
-    router.push(`/dashboard/home/alerts/${id}`);
+    router.push(`/dashboard/home/alerts/${idSolicitud}`);
     openModal("alert-form-edit");
   };
   return (

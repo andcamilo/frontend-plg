@@ -7,10 +7,10 @@ import {
 } from "../../services/Alerts/alerts.service";
 import { AlertsSchema } from "../../schemas/alerts.schema";
 
-export const useAlertById = (id: string) => {
+export const useAlertById = (idSolicitud: string) => {
   return useQuery({
-    queryKey: ["alerts", id],
-    queryFn: () => getAlertById(id),
+    queryKey: ["alerts", idSolicitud],
+    queryFn: () => getAlertById(idSolicitud),
   });
 };
 
