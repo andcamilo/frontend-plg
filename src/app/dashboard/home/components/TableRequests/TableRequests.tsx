@@ -5,7 +5,7 @@ import Th from "../Table/Th";
 import Td from "../Table/Td";
 import Tr from "../Table/Tr";
 import { getStatusInfo } from "../../utils/status-info.util";
-import AlertButton from "./AlertButton";
+import AlertButton from "./AlertButton/AlertButton";
 
 function formatDate(dateObj: any) {
   if (!dateObj || typeof dateObj !== "object") return "-";
