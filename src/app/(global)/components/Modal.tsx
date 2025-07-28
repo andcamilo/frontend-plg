@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useModalContext } from "../hooks/useModalContex/";
+import { useModalContext } from "../hooks/useModalContex.hook";
 import { twMerge } from "tailwind-merge";
 
 interface Props {
