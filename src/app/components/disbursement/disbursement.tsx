@@ -79,6 +79,22 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
       return;
     }
 
+    // Check if invoiceNumber is provided for client expenses with status true
+    if (state.desembolsoCliente && state.desembolsoCliente.length > 0) {
+      const hasEmptyInvoiceNumber = state.desembolsoCliente.some(item => 
+        item.status === true && (!item.invoiceNumber || item.invoiceNumber.trim() === '')
+      );
+      
+      if (hasEmptyInvoiceNumber) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'El número de factura es obligatorio para todos los gastos de cliente activos.',
+        });
+        return;
+      }
+    }
+
     setIsLoading(true);
     try {
       const endpoint = id 
@@ -212,7 +228,9 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
             >
               <option value="" disabled>Selecciona una opción</option>
               <option value="desembolso-gastos">Desembolso de gastos</option>
-              <option value="desembolso-caja-chica">Desembolso de caja chica</option>
+              {(numericRole && numericRole > 49) && (
+                <option value="desembolso-caja-chica">Desembolso de caja chica</option>
+              )}
             </select>
           </div>
 
