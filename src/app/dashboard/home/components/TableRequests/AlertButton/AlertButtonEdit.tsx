@@ -1,5 +1,6 @@
 import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 import { useRouter } from "next/navigation";
+import { MODAL_ALERT_EDIT_ID } from "../../../constants/modal-alert.constant";
 
 const AlertButtonEdit = ({ idSolicitud }: { idSolicitud: string }) => {
   const { openModal } = useModalContext();
@@ -7,7 +8,7 @@ const AlertButtonEdit = ({ idSolicitud }: { idSolicitud: string }) => {
 
   const handleOpenModal = () => {
     router.push(`/dashboard/home?idSolicitud=${idSolicitud}`);
-    openModal("alert-form-edit");
+    openModal(MODAL_ALERT_EDIT_ID);
   };
 
   return (

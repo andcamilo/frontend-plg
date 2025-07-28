@@ -1,12 +1,14 @@
 import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 import { useRouter } from "next/navigation";
+import { MODAL_ALERT_CREATE_ID } from "../../../constants/modal-alert.constant";
 
 const AlertButtonCreate = ({ idSolicitud }: { idSolicitud: string }) => {
   const { openModal } = useModalContext();
   const router = useRouter();
 
   const handleOpenModal = () => {
-    openModal("alert-form-create");
+    router.push(`/dashboard/home?idSolicitud=${idSolicitud}`);
+    openModal(MODAL_ALERT_CREATE_ID);
   };
 
   return (

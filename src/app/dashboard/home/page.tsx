@@ -4,6 +4,7 @@ import TableRequestsContainer from "./components/TableRequests/TableRequestsCont
 import { Modal } from "@app/(global)/components/Modal";
 import AlertFormEdit from "./components/Alerts/AlertFormEdit";
 import AlertFormCreate from "./components/Alerts/AlertFormCreate";
+import { MODAL_ALERT_CREATE_ID, MODAL_ALERT_EDIT_ID } from "./constants/modal-alert.constant";
 
 export default function Home() {
   return (
@@ -13,10 +14,10 @@ export default function Home() {
       </h1>
       <TableRequestsContainer />
       <LegixStadisticsContainer />
-      <Modal modalId="alert-form-edit">
+      <Modal modalId={MODAL_ALERT_EDIT_ID}>
         <AlertFormEdit />
       </Modal>
-      <Modal modalId="alert-form-create">
+      <Modal modalId={MODAL_ALERT_CREATE_ID}>
         <AlertFormCreate />
       </Modal>
     </div>
