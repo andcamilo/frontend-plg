@@ -205,7 +205,7 @@ const DisbursementGastosCliente: React.FC = () => {
                     <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="mb-4">
                             <label htmlFor={`invoiceNumber-${index}`} className="block text-gray-300 mb-2">
-                                Número de factura
+                                Número de factura <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
@@ -246,7 +246,8 @@ const DisbursementGastosCliente: React.FC = () => {
                                 <option value="certificado-registro-publico">Certificado de registro público</option>
                                 <option value="copias">Copias</option>
                                 <option value="carnet-trabajo">Carnet de trabajo</option>
-                                <option value="carnet-residente">Carnet de residente</option>
+                                <option value="carnet-residente">Carnet de residente permanente</option>
+                                <option value="carnet-residente-temporal">Carnet de residente temporal</option>
                                 <option value="carnet-tramite">Carnet de trámite</option>
                                 <option value="cheques-gerencia">Cheques de gerencia</option>
                                 <option value="cheque-tesoro-nacional">Cheque al tesoro nacional</option>
@@ -254,6 +255,7 @@ const DisbursementGastosCliente: React.FC = () => {
                                 <option value="gastos-institucion-tramite">Gastos institución por trámite</option>
                                 <option value="tasa-unica">Tasa única</option>
                                 <option value="inscripcion-registro-publico">Inscripción de registro público</option>
+                                <option value="reingreso-registro-publico">Reingreso registro público</option>
                                 <option value="timbre">Timbre</option>
                                 <option value="notaria">Notaría</option>
                                 <option value="otros">Otros</option>

@@ -145,7 +145,7 @@ const ListDisbursement: React.FC = () => {
     }
   };
 
-  const handleGetSelectedIds = async (selectedIds: string[], action: 'update' | 'delete' = 'update') => {
+  const handleGetSelectedIds = async (selectedIds: string[], action: 'update' | 'delete' = 'update', selectedStatus?: number) => {
     if (selectedIds.length === 0) {
       alert('No se han seleccionado desembolsos.');
       return;
@@ -156,8 +156,23 @@ const ListDisbursement: React.FC = () => {
         await axios.post('/api/delete-disbursements', { ids: selectedIds });
         alert('Desembolsos eliminados correctamente.');
       } else {
+        // Map status number to status string
+        const statusLabels: Record<number, string> = {
+          0: "rechazada",
+          1: "borrador",
+          10: "enviada",
+          11: "pre-aprobada",
+          12: "aprobada",
+          19: "confirmando-pago",
+          20: "pagada",
+          30: "en-proceso",
+          70: "finalizada",
+        };
+        
+        const statusString = selectedStatus !== undefined ? statusLabels[selectedStatus] : 'pre-aprobada';
+        
         const response = await axios.patch('/api/update-disbursements', {
-          fieldUpdate: { status: 'pre-aprobada' },
+          fieldUpdate: { status: statusString },
           ids: selectedIds,
         });
         alert('Desembolsos actualizados correctamente.');
