@@ -13,9 +13,13 @@ const AlertForm = ({
   onSubmit: (data: AlertsSchema) => void;
   defaultValues?: AlertsSchema;
 }) => {
-  const { control, handleSubmit } = useForm<AlertsSchema>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<AlertsSchema>({
     defaultValues,
-    resolver: zodResolver(alertsSchema),
+    resolver: zodResolver(alertsSchema), 
   });
   return (
     <>
@@ -26,6 +30,7 @@ const AlertForm = ({
           type="date"
           placeholder="Fecha"
           control={control}
+          error={errors.date}
         />
         <Button type="submit">Guardar</Button>
       </Form>
