@@ -15,36 +15,39 @@ import { TramiteStateProvider } from "@context/tramiteContext";
 import { CorporativoStateProvider } from "@context/corporativoContext";
 import { OldDesembolsoProvider } from "@context/oldDesembolsoContext";
 import ReactQueryProvider from "@app/(global)/providers/ReactQuery.provider";
+import { ModalProvider } from "@app/(global)/contexts/Modal.context";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Because we have `"use client"`, we can use or define React contexts/providers.
 
   return (
     <ReactQueryProvider>
-      <AppStateProvider>
-        <SociedadesStateProvider>
-          <FundacionStateProvider>
-            <ConsultaStateProvider>
-              <MenoresStateProvider>
-                <DesembolsoStateProvider>
-                  <TramiteStateProvider>
-                    <CorporativoStateProvider>
-                      <PaymentStateProvider>
-                        <ExpenseProvider>
-                          <OldDesembolsoProvider>
-                            {/* The entire app (all pages) get these providers. */}
-                            {children}
-                          </OldDesembolsoProvider>
-                        </ExpenseProvider>
-                      </PaymentStateProvider>
-                    </CorporativoStateProvider>
-                  </TramiteStateProvider>
-                </DesembolsoStateProvider>
-              </MenoresStateProvider>
-            </ConsultaStateProvider>
-          </FundacionStateProvider>
-        </SociedadesStateProvider>
-      </AppStateProvider>
+      <ModalProvider>
+        <AppStateProvider>
+          <SociedadesStateProvider>
+            <FundacionStateProvider>
+              <ConsultaStateProvider>
+                <MenoresStateProvider>
+                  <DesembolsoStateProvider>
+                    <TramiteStateProvider>
+                      <CorporativoStateProvider>
+                        <PaymentStateProvider>
+                          <ExpenseProvider>
+                            <OldDesembolsoProvider>
+                              {/* The entire app (all pages) get these providers. */}
+                              {children}
+                            </OldDesembolsoProvider>
+                          </ExpenseProvider>
+                        </PaymentStateProvider>
+                      </CorporativoStateProvider>
+                    </TramiteStateProvider>
+                  </DesembolsoStateProvider>
+                </MenoresStateProvider>
+              </ConsultaStateProvider>
+            </FundacionStateProvider>
+          </SociedadesStateProvider>
+        </AppStateProvider>
+      </ModalProvider>
     </ReactQueryProvider>
   );
 }

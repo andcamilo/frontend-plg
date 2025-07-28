@@ -57,6 +57,7 @@
     "sonner": "^1.7.1",
     "stream-browserify": "^3.0.0",
     "sweetalert2": "^11.22.0",
+    "tailwind-merge": "^3.3.1",
     "world-countries": "^5.1.0",
     "xml2js": "^0.6.2",
     "zod": "^4.0.10"
