@@ -5,11 +5,11 @@ import { AlertsSchema } from "../../schemas/alerts.schema";
 import swal from "sweetalert2";
 
 const AlertFormCreate = () => {
-  const { mutate: createAlert } = useCreateAlertMutation();
+  const { mutateAsync: createAlert } = useCreateAlertMutation();
 
-  const onSubmit = (data: AlertsSchema) => {
+  const onSubmit = async (data: AlertsSchema) => {
     try {
-      createAlert(data);
+      await createAlert(data);
       swal.fire({
         title: "Alerta creada",
         text: "La alerta ha sido creada correctamente",

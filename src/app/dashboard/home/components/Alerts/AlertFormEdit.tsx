@@ -13,7 +13,7 @@ const AlertFormEdit = () => {
   const id = params?.id as string;
 
   const { data: alert, isLoading, error } = useAlertById(id);
-  const { mutate: updateAlert } = useUpdateAlertMutation(id);
+  const { mutateAsync: updateAlert } = useUpdateAlertMutation(id);
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -21,9 +21,9 @@ const AlertFormEdit = () => {
 
   if (error) return <div>Error: {error.message}</div>;
 
-  const onSubmit = (data: AlertsSchema) => {
+  const onSubmit = async (data: AlertsSchema) => {
     try {
-      updateAlert(data);
+      await updateAlert(data);
       swal.fire({
         title: "Alerta actualizada",
         text: "La alerta ha sido actualizada correctamente",
