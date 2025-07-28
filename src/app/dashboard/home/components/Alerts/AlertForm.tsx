@@ -11,7 +11,7 @@ const AlertForm = ({
   defaultValues,
 }: {
   onSubmit: (data: AlertsSchema) => void;
-  defaultValues: AlertsSchema;
+  defaultValues?: AlertsSchema;
 }) => {
   const { control, handleSubmit } = useForm<AlertsSchema>({
     defaultValues,
@@ -27,7 +27,7 @@ const AlertForm = ({
           placeholder="Fecha"
           control={control}
         />
-        <Button type="submit">Crear Alerta</Button>
+        <Button type="submit">Guardar</Button>
       </Form>
     </>
   );
