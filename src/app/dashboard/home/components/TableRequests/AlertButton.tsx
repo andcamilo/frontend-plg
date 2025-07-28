@@ -11,15 +11,15 @@ const AlertButton = ({ id }: { id: string }) => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!alert) return <div>Alert not found</div>;
-  
-  const handleOpenModal = (id: string) => {
+
+  const handleOpenModal = () => {
     router.push(`/dashboard/home/alerts/${id}`);
     openModal("alert-form-edit");
   };
   return (
     <>
       <button
-        onClick={() => handleOpenModal(id)}
+        onClick={() => handleOpenModal()}
         className="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-300"
       >
         {alert.days} Día
