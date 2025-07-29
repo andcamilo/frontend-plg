@@ -5,6 +5,7 @@ import React from "react";
 // Import *all* your context providers here:
 import { AppStateProvider } from "@context/context";
 import { SociedadesStateProvider } from "@context/sociedadesContext";
+import { ActaSociedadFundacion } from "@context/actaSociedadFundacionContext";
 import { FundacionStateProvider } from "@context/fundacionContext";
 import { ConsultaStateProvider } from "@context/consultaContext";
 import { MenoresStateProvider } from "@context/menoresContext";
