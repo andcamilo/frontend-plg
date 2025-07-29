@@ -7,6 +7,7 @@ import {
 } from "../../services/Alerts/alerts.service";
 import { AlertsSchema } from "../../schemas/alerts.schema";
 import { decodeUserToken } from "@/src/app/(global)/utils/decode-user-token.util";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useAlerts = () => {
   const { user_id: cuenta } = decodeUserToken();
@@ -29,10 +30,13 @@ export const useAlertBySolicitudID = (solicitudId: string) => {
 
 export const useCreateAlertMutation = () => {
   const { email, user_id: cuenta } = decodeUserToken();
-
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (alert: { solicitudId: string; reminderDays: number }) =>
       createAlert({ ...alert, cuenta, email }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alerts", cuenta] });
+    },
   });
 };
 
