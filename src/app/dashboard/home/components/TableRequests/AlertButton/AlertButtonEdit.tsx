@@ -1,6 +1,7 @@
 import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 import { useRouter } from "next/navigation";
 import { MODAL_ALERT_EDIT_ID } from "../../../constants/modal-alert.constant";
+import { getAlertButtonClasses } from "../../../utils/AlertButton/get-classes-for-reminder-days.util";
 
 const AlertButtonEdit = ({
   reminderDays,
@@ -21,7 +22,9 @@ const AlertButtonEdit = ({
     <>
       <button
         onClick={handleOpenModal}
-        className="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-300"
+        className={`px-2 py-1 rounded text-xs ${getAlertButtonClasses(
+          reminderDays
+        )}`}
       >
         {reminderDays} días
       </button>
