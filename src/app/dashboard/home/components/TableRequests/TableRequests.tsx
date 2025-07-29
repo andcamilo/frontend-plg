@@ -7,8 +7,10 @@ import Tr from "@/src/app/(global)/components/Table/Tr";
 import { getStatusInfo } from "../../utils/status-info.util";
 import AlertButton from "./AlertButton/AlertButton";
 import { formatDate } from "../../utils/format-date-dd-mm-aaaa.util";
+import AbogadosField from "./AbogadosField";
+import { Solicitud } from "../../types/solicitud.types";
 
-const TableRequests = ({ solicitudes }: { solicitudes: any[] }) => {
+const TableRequests = ({ solicitudes }: { solicitudes: Solicitud[] }) => {
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -29,9 +31,7 @@ const TableRequests = ({ solicitudes }: { solicitudes: any[] }) => {
               <Tr key={solicitud.id || idx}>
                 <Td>
                   <div>
-                    <div className="font-medium">
-                      {solicitud.tipoConsulta || solicitud.tipo || "-"}
-                    </div>
+                    <div className="font-medium">{solicitud.tipo || "-"}</div>
                     <div className="text-gray-400 text-xs">
                       {solicitud.nombreSolicita || solicitud.nombre || "-"}
                     </div>
@@ -94,9 +94,7 @@ const TableRequests = ({ solicitudes }: { solicitudes: any[] }) => {
                   </span>
                 </Td>
                 <Td>
-                  <span className="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-300">
-                    María t.
-                  </span>
+                  <AbogadosField abogados={solicitud.abogados} />
                 </Td>
               </Tr>
             );

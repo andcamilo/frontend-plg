@@ -19,7 +19,7 @@ const TableRequestsContainer = () => {
 
   return (
     <>
-      <TableRequests solicitudes={solicitudes?.allSolicitudes.slice(0, 10)} />
+      <TableRequests solicitudes={solicitudes?.allSolicitudes} />
     </>
   );
 };
