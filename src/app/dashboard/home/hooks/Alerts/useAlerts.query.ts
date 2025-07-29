@@ -16,9 +16,25 @@ export const useAlerts = () => {
   });
 };
 
+export const useAlertBySolicitudID = (solicitudId: string) => {
+  const { data: alertsResponse, ...rest } = useAlerts();
+  const alertBySolicitudID = alertsResponse?.data?.find(
+    (alert: { solicitudId: string }) => alert.solicitudId === solicitudId
+  );
+  return {
+    data: alertBySolicitudID,
+    ...rest,
+  };
+};
+
 export const useCreateAlertMutation = () => {
   return useMutation({
-    mutationFn: (alert: AlertsSchema) => createAlert(alert),
+    mutationFn: (alert: {
+      cuenta: string;
+      email: string;
+      solicitudId: string;
+      reminderDays: number;
+    }) => createAlert(alert),
   });
 };
 
