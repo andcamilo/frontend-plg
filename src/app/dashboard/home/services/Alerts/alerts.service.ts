@@ -1,4 +1,3 @@
-import { AlertsSchema } from "../../schemas/alerts.schema";
 import { backendEnv } from "@utils/env";
 
 const backendBaseUrl = "http://localhost:4000";
