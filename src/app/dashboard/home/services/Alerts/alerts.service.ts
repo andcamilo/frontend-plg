@@ -1,9 +1,11 @@
 import { AlertsSchema } from "../../schemas/alerts.schema";
-import { backendBaseUrl, backendEnv } from "@utils/env";
+import { backendEnv } from "@utils/env";
 
-export const getAlertById = async (idSolicitud: string) => {
+const backendBaseUrl = "http://localhost:4000";
+
+export const getAlerts = async (cuenta: string) => {
   const response = await fetch(
-    `${backendBaseUrl}/${backendEnv}/get-alert/${idSolicitud}`
+    `${backendBaseUrl}/${backendEnv}/alerts?cuenta=${cuenta}`
   );
   if (!response.ok) {
     throw new Error(`Error fetching alerts: ${response.statusText}`);
@@ -11,10 +13,30 @@ export const getAlertById = async (idSolicitud: string) => {
   return response.json();
 };
 
-export const createAlert = async (alert: AlertsSchema) => {
-  const response = await fetch(`${backendBaseUrl}/${backendEnv}/create-alert`, {
+export const createAlert = async ({
+  cuenta,
+  email,
+  solicitudId,
+  reminderDays,
+}: {
+  cuenta: string;
+  email: string;
+  solicitudId: string;
+  reminderDays: number;
+}) => {
+  const body = {
+    cuenta,
+    email,
+    solicitudId,
+    reminderDays,
+  };
+
+  const response = await fetch(`${backendBaseUrl}/${backendEnv}/alerts`, {
     method: "POST",
-    body: JSON.stringify(alert),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
   });
   if (!response.ok) {
     throw new Error(`Error creating alert: ${response.statusText}`);

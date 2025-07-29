@@ -1,33 +1,11 @@
 import { z } from "zod";
 
 export const alertsSchema = z.object({
-  date: z
+  reminderDays: z
     .string()
-    .refine(
-      (val) => {
-        // Valida formato de fecha
-        return !isNaN(Date.parse(val));
-      },
-      { message: "Fecha inválida" }
-    )
-    .transform((val) => new Date(val))
-    .refine(
-      (date) => {
-        // Valida que la fecha sea posterior a hoy
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return date > today;
-      },
-      { message: "La fecha debe ser posterior a hoy" }
-    ),
-  mail: z
-    .string()
-    .email({ message: "Correo electrónico inválido" })
-    .min(5, { message: "El correo debe tener al menos 5 caracteres" })
-    .max(100, { message: "El correo no debe superar los 100 caracteres" })
-    .refine((val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
-      message: "El correo debe tener un formato válido",
-    }),
+    .min(1, { message: "El número de días debe ser mayor a 0" })
+    .max(30, { message: "El número de días debe ser menor a 30" })
+    .transform((val) => parseInt(val)),
 });
 
 export type AlertsSchema = z.infer<typeof alertsSchema>;
