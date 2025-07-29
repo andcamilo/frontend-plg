@@ -19,26 +19,18 @@ const AlertForm = ({
     formState: { errors },
   } = useForm<AlertsSchema>({
     defaultValues,
-    resolver: zodResolver(alertsSchema), 
+    resolver: zodResolver(alertsSchema),
   });
   return (
     <>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <ElementFormInput
-          name="date"
-          label="Fecha"
-          type="date"
-          placeholder="Fecha"
+          name="reminderDays"
+          label="Días de recordatorio"
+          type="number"
+          placeholder="Días de recordatorio"
           control={control}
-          error={errors.date}
-        />
-        <ElementFormInput
-          name="mail"
-          label="Mail"
-          type="text"
-          placeholder="Mail"
-          control={control}
-          error={errors.mail}
+          error={errors.reminderDays}
         />
         <Button type="submit">Guardar</Button>
       </Form>

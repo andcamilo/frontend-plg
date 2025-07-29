@@ -9,7 +9,12 @@ const AlertFormCreate = () => {
 
   const onSubmit = async (data: AlertsSchema) => {
     try {
-      await createAlert(data);
+      await createAlert({
+        cuenta: "dtCDAz5Fj3Nk0SU7Kl52iw3Tydh2",
+        email: "felipeftdev@gmail.com",
+        solicitudId: "FXa99wpdWzbeYY3dnZQn",
+        reminderDays: data.reminderDays,
+      });
       swal.fire({
         title: "Alerta creada",
         text: "La alerta ha sido creada correctamente",

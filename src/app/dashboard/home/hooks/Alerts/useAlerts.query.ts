@@ -2,21 +2,23 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createAlert,
   deleteAlert,
-  getAlertById,
+  getAlerts,
   updateAlert,
 } from "../../services/Alerts/alerts.service";
 import { AlertsSchema } from "../../schemas/alerts.schema";
+import { decodeUserToken } from "@/src/app/(global)/utils/decode-user-token.util";
 
-export const useAlertById = (idSolicitud: string) => {
+export const useAlerts = () => {
+  const { user_id: cuenta } = decodeUserToken();
   return useQuery({
-    queryKey: ["alerts", idSolicitud],
-    queryFn: () => getAlertById(idSolicitud),
+    queryKey: ["alerts", cuenta],
+    queryFn: () => getAlerts(cuenta),
   });
 };
 
 export const useCreateAlertMutation = () => {
   return useMutation({
-    mutationFn: createAlert,
+    mutationFn: (alert: AlertsSchema) => createAlert(alert),
   });
 };
 

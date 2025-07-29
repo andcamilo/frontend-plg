@@ -1,7 +1,7 @@
 "use client";
 import AlertForm from "./AlertForm";
 import {
-  useAlertById,
+  useAlerts,
   useUpdateAlertMutation,
 } from "../../hooks/Alerts/useAlerts.query";
 import { useParams } from "next/navigation";
@@ -12,7 +12,7 @@ const AlertFormEdit = () => {
   const params = useParams();
   const id = params?.id as string;
 
-  const { data: alert, isLoading, error } = useAlertById(id);
+  const { data: alert, isLoading, error } = useAlerts();
   const { mutateAsync: updateAlert } = useUpdateAlertMutation(id);
 
   if (isLoading) return <div>Loading...</div>;
