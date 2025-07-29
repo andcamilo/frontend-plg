@@ -1,9 +1,9 @@
-import Table from "../Table/Table";
-import Thead from "../Table/Thead";
-import Tbody from "../Table/Tbody";
-import Th from "../Table/Th";
-import Td from "../Table/Td";
-import Tr from "../Table/Tr";
+import Table from "../../../../(global)/components/Table/Table";
+import Thead from "../../../../(global)/components/Table/Thead";
+import Tbody from "../../../../(global)/components/Table/Tbody";
+import Th from "../../../../(global)/components/Table/Th";
+import Td from "../../../../(global)/components/Table/Td";
+import Tr from "../../../../(global)/components/Table/Tr";
 import { getStatusInfo } from "../../utils/status-info.util";
 import AlertButton from "./AlertButton/AlertButton";
 
