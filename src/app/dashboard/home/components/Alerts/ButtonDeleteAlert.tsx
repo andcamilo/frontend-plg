@@ -1,0 +1,31 @@
+"use client";
+import Button from "@app/(global)/components/Button";
+import { useDeleteAlertMutation } from "../../hooks/Alerts/useAlerts.query";
+import swal from "sweetalert2";
+import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
+import { useSearchParams } from "next/navigation";
+
+const ButtonDeleteAlert = ({ alertId }: { alertId: string }) => {
+  const { mutateAsync: deleteAlert } = useDeleteAlertMutation();
+  const { closeModal } = useModalContext();
+  const searchParams = useSearchParams();
+  const solicitudId = searchParams?.get("idSolicitud") as string;
+  const handleDeleteAlert = async () => {
+    await deleteAlert({ alertId, solicitudId });
+    swal.fire({
+      title: "Alerta eliminada",
+      text: "La alerta ha sido eliminada correctamente",
+      icon: "success",
+    });
+    closeModal();
+  };
+  return (
+    <>
+      <Button onClick={handleDeleteAlert} variant="danger">
+        Eliminar Alerta
+      </Button>
+    </>
+  );
+};
+
+export default ButtonDeleteAlert;

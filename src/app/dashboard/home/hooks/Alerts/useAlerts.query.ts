@@ -66,8 +66,20 @@ export const useUpdateAlertMutation = () => {
   });
 };
 
-export const useDeleteAlertMutation = (id: string) => {
+export const useDeleteAlertMutation = () => {
+  const { user_id: cuenta } = decodeUserToken();
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteAlert,
+    mutationKey: ["delete-alert"],
+    mutationFn: ({
+      alertId,
+      solicitudId,
+    }: {
+      alertId: string;
+      solicitudId: string;
+    }) => deleteAlert({ alertId, cuenta, solicitudId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alerts", cuenta] });
+    },
   });
 };

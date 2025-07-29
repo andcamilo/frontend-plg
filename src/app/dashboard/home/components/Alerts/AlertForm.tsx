@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { alertsSchema } from "../../schemas/alerts.schema";
 import { AlertsSchema } from "../../schemas/alerts.schema";
+import ButtonDeleteAlert from "./ButtonDeleteAlert";
 
 const AlertForm = ({
   onSubmit,
@@ -32,7 +33,10 @@ const AlertForm = ({
           control={control}
           error={errors.reminderDays}
         />
-        <Button type="submit">Guardar</Button>
+        <div className="flex justify-start items-center gap-4">
+          <Button type="submit">Guardar</Button>
+          {defaultValues && <ButtonDeleteAlert alertId={defaultValues.id} />}
+        </div>
       </Form>
     </>
   );
