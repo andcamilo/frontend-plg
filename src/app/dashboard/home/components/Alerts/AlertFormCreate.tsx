@@ -3,16 +3,17 @@ import AlertForm from "./AlertForm";
 import { useCreateAlertMutation } from "../../hooks/Alerts/useAlerts.query";
 import { AlertsSchema } from "../../schemas/alerts.schema";
 import swal from "sweetalert2";
+import { useSearchParams } from "next/navigation";
 
 const AlertFormCreate = () => {
+  const searchParams = useSearchParams();
+  const idSolicitud = searchParams?.get("idSolicitud") as string;
   const { mutateAsync: createAlert } = useCreateAlertMutation();
 
   const onSubmit = async (data: AlertsSchema) => {
     try {
       await createAlert({
-        cuenta: "dtCDAz5Fj3Nk0SU7Kl52iw3Tydh2",
-        email: "felipeftdev@gmail.com",
-        solicitudId: "FXa99wpdWzbeYY3dnZQn",
+        solicitudId: idSolicitud,
         reminderDays: data.reminderDays,
       });
       swal.fire({
