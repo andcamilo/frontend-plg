@@ -32,6 +32,14 @@ const AlertForm = ({
           control={control}
           error={errors.date}
         />
+        <ElementFormInput
+          name="mail"
+          label="Mail"
+          type="text"
+          placeholder="Mail"
+          control={control}
+          error={errors.mail}
+        />
         <Button type="submit">Guardar</Button>
       </Form>
     </>
