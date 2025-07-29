@@ -28,13 +28,11 @@ export const useAlertBySolicitudID = (solicitudId: string) => {
 };
 
 export const useCreateAlertMutation = () => {
+  const { email, user_id: cuenta } = decodeUserToken();
+
   return useMutation({
-    mutationFn: (alert: {
-      cuenta: string;
-      email: string;
-      solicitudId: string;
-      reminderDays: number;
-    }) => createAlert(alert),
+    mutationFn: (alert: { solicitudId: string; reminderDays: number }) =>
+      createAlert({ ...alert, cuenta, email }),
   });
 };
 

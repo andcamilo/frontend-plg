@@ -1,19 +1,19 @@
 "use client";
 import AlertForm from "./AlertForm";
 import {
-  useAlerts,
+  useAlertBySolicitudID,
   useUpdateAlertMutation,
 } from "../../hooks/Alerts/useAlerts.query";
-import { useParams } from "next/navigation";
 import { AlertsSchema } from "../../schemas/alerts.schema";
 import swal from "sweetalert2";
+import { useSearchParams } from "next/navigation";
 
 const AlertFormEdit = () => {
-  const params = useParams();
-  const id = params?.id as string;
+  const searchParams = useSearchParams();
+  const idSolicitud = searchParams?.get("idSolicitud") as string;
 
-  const { data: alert, isLoading, error } = useAlerts();
-  const { mutateAsync: updateAlert } = useUpdateAlertMutation(id);
+  const { data: alert, isLoading, error } = useAlertBySolicitudID(idSolicitud);
+  const { mutateAsync: updateAlert } = useUpdateAlertMutation(idSolicitud);
 
   if (isLoading) return <div>Loading...</div>;
 
