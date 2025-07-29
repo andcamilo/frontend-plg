@@ -56,13 +56,13 @@ export const Modal = ({ children, modalId, className }: Props) => {
     >
       <div
         className={twMerge(
-          "bg-white rounded-lg shadow-sm w-full max-w-2xl max-h-[90vh] overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200",
+          "bg-[#1F1D2B] rounded-lg shadow-sm w-full max-w-2xl max-h-[90vh] overflow-hidden border animate-in zoom-in-95 duration-200",
           className
         )}
         onClick={handleContentClick}
         ref={modalRef}
       >
-        <div className="flex justify-end p-3 border-b border-slate-200">
+        <div className="flex justify-end p-3 border-b">
           <button
             className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors duration-200"
             onClick={closeModal}
