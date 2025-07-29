@@ -44,14 +44,27 @@ export const createAlert = async ({
   return response.json();
 };
 
-export const updateAlert = async (id: string, alert: AlertsSchema) => {
-  const response = await fetch(
-    `${backendBaseUrl}/${backendEnv}/update-alert/${id}`,
-    {
-      method: "PUT",
-      body: JSON.stringify(alert),
-    }
-  );
+export const updateAlert = async ({
+  solicitudId,
+  reminderDays,
+  cuenta,
+  alertId,
+}: {
+  solicitudId: string;
+  cuenta: string;
+  reminderDays: number;
+  alertId: string;
+}) => {
+  const body = {
+    reminderDays,
+    solicitudId,
+    cuenta,
+    alertId,
+  };
+  const response = await fetch(`${backendBaseUrl}/${backendEnv}/alerts`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
   if (!response.ok) {
     throw new Error(`Error updating alert: ${response.statusText}`);
   }
