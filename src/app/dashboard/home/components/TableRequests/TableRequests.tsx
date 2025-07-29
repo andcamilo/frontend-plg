@@ -1,25 +1,12 @@
-import Table from "../../../../(global)/components/Table/Table";
-import Thead from "../../../../(global)/components/Table/Thead";
-import Tbody from "../../../../(global)/components/Table/Tbody";
-import Th from "../../../../(global)/components/Table/Th";
-import Td from "../../../../(global)/components/Table/Td";
-import Tr from "../../../../(global)/components/Table/Tr";
+import Table from "@/src/app/(global)/components/Table/Table";
+import Thead from "@/src/app/(global)/components/Table/Thead";
+import Tbody from "@/src/app/(global)/components/Table/Tbody";
+import Th from "@/src/app/(global)/components/Table/Th";
+import Td from "@/src/app/(global)/components/Table/Td";
+import Tr from "@/src/app/(global)/components/Table/Tr";
 import { getStatusInfo } from "../../utils/status-info.util";
 import AlertButton from "./AlertButton/AlertButton";
-
-function formatDate(dateObj: any) {
-  if (!dateObj || typeof dateObj !== "object") return "-";
-  try {
-    const d = new Date(dateObj._seconds * 1000);
-    return d.toLocaleDateString("es-PA", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch {
-    return "-";
-  }
-}
+import { formatDate } from "../../utils/format-date-dd-mm-aaaa.util";
 
 const TableRequests = ({ solicitudes }: { solicitudes: any[] }) => {
   return (
