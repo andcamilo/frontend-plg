@@ -16,10 +16,10 @@ const TextAreaForm = ({
       id={name}
       {...field}
       value={field.value ?? ""}
-      className={`w-full px-4 py-3 border rounded-xl transition-all duration-200 placeholder-gray-400 text-gray-900 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:border-transparent hover:border-gray-300 ${
+      className={`w-full px-4 py-3 border border-gray-700 bg-[#1F1D2B] text-white rounded-none transition-all duration-200 placeholder-gray-400 focus:bg-[#232135] focus:outline-none focus:ring-2 focus:border-transparent hover:border-gray-500 ${
         error
-          ? "border-red-300 focus:ring-red-200"
-          : "border-gray-200 focus:ring-blue-200"
+          ? "border-red-500 focus:ring-red-200"
+          : "border-gray-700 focus:ring-blue-200"
       }`}
       placeholder={placeholder}
       rows={4}

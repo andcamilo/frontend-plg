@@ -1,6 +1,6 @@
 const LabelForm = ({ text, name }: { text: string; name: string }) => {
   return (
-    <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+    <label htmlFor={name} className="block text-sm font-medium text-white">
       {text}
     </label>
   );
