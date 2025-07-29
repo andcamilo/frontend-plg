@@ -70,13 +70,24 @@ export const updateAlert = async ({
   return response.json();
 };
 
-export const deleteAlert = async (id: string) => {
-  const response = await fetch(
-    `${backendBaseUrl}/${backendEnv}/delete-alert/${id}`,
-    {
-      method: "DELETE",
-    }
-  );
+export const deleteAlert = async ({
+  alertId,
+  cuenta,
+  solicitudId,
+}: {
+  alertId: string;
+  cuenta: string;
+  solicitudId: string;
+}) => {
+  const body = {
+    alertId,
+    cuenta,
+    solicitudId,
+  };
+  const response = await fetch(`${backendBaseUrl}/${backendEnv}/alerts`, {
+    method: "DELETE",
+    body: JSON.stringify(body),
+  });
   if (!response.ok) {
     throw new Error(`Error deleting alert: ${response.statusText}`);
   }
