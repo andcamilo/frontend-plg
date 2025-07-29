@@ -12,7 +12,7 @@ const AlertButton = ({ idSolicitud }: { idSolicitud: string }) => {
 
   return (
     <>
-      <AlertButtonEdit idSolicitud={idSolicitud} />
+      <AlertButtonEdit reminderDays={alert.reminderDays} idSolicitud={idSolicitud} />
     </>
   );
 };
