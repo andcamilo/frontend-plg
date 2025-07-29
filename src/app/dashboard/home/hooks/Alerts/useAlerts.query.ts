@@ -5,7 +5,6 @@ import {
   getAlerts,
   updateAlert,
 } from "../../services/Alerts/alerts.service";
-import { AlertsSchema } from "../../schemas/alerts.schema";
 import { decodeUserToken } from "@/src/app/(global)/utils/decode-user-token.util";
 import { useQueryClient } from "@tanstack/react-query";
 
