@@ -13,7 +13,7 @@ const AlertFormEdit = () => {
   const idSolicitud = searchParams?.get("idSolicitud") as string;
 
   const { data: alert, isLoading, error } = useAlertBySolicitudID(idSolicitud);
-  const { mutateAsync: updateAlert } = useUpdateAlertMutation(idSolicitud);
+  const { mutateAsync: updateAlert } = useUpdateAlertMutation();
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -23,7 +23,11 @@ const AlertFormEdit = () => {
 
   const onSubmit = async (data: AlertsSchema) => {
     try {
-      await updateAlert(data);
+      await updateAlert({
+        solicitudId: idSolicitud,
+        alertId: alert.id,
+        reminderDays: data.reminderDays,
+      });
       swal.fire({
         title: "Alerta actualizada",
         text: "La alerta ha sido actualizada correctamente",
