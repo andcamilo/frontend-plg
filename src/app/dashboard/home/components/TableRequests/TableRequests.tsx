@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from "react";
 import Table from "@/src/app/(global)/components/Table/Table";
 import Thead from "@/src/app/(global)/components/Table/Thead";
 import Tbody from "@/src/app/(global)/components/Table/Tbody";
@@ -9,50 +8,13 @@ import { getStatusInfo } from "../../utils/status-info.util";
 import AlertButton from "./AlertButton/AlertButton";
 import { formatDate } from "../../utils/format-date-dd-mm-aaaa.util";
 import AbogadosField from "./AbogadosField";
-import { Solicitud, AbogadoFilter } from "../../types/solicitud.types";
+import { Solicitud } from "../../types/solicitud.types";
 
 interface TableRequestsProps {
   solicitudes: Solicitud[];
-  abogadosDisponibles: AbogadoFilter[];
-  selectedAbogado: AbogadoFilter | null;
-  onFilterByAbogado: (abogado: AbogadoFilter | null) => void;
 }
 
-const TableRequests = ({
-  solicitudes,
-  abogadosDisponibles,
-  selectedAbogado,
-  onFilterByAbogado,
-}: TableRequestsProps) => {
-  const [showAbogadosDropdown, setShowAbogadosDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Cerrar dropdown al hacer click fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowAbogadosDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const handleAbogadoHeaderClick = () => {
-    setShowAbogadosDropdown(!showAbogadosDropdown);
-  };
-
-  const handleAbogadoSelect = (abogado: AbogadoFilter | null) => {
-    onFilterByAbogado(abogado);
-    setShowAbogadosDropdown(false);
-  };
-
+const TableRequests = ({ solicitudes }: TableRequestsProps) => {
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -62,59 +24,7 @@ const TableRequests = ({
           <Th>Status</Th>
           <Th>ID</Th>
           <Th>Recordatorio</Th>
-          <Th>
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={handleAbogadoHeaderClick}
-                className="flex items-center gap-2 hover:bg-gray-700/50 p-2 rounded transition-colors"
-              >
-                Abogados
-                <span className="text-xs">
-                  {showAbogadosDropdown ? "▼" : "▶"}
-                </span>
-                {selectedAbogado && (
-                  <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs">
-                    {selectedAbogado.nombre}
-                  </span>
-                )}
-              </button>
-
-              {showAbogadosDropdown && (
-                <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 min-w-48 max-h-64 overflow-y-auto">
-                  <div className="p-2">
-                    <button
-                      onClick={() => handleAbogadoSelect(null)}
-                      className={`w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors ${
-                        !selectedAbogado
-                          ? "bg-purple-500/20 text-purple-300"
-                          : "text-gray-300"
-                      }`}
-                    >
-                      Todos los abogados
-                    </button>
-                    {abogadosDisponibles.map((abogado) => (
-                      <button
-                        key={abogado.id}
-                        onClick={() => handleAbogadoSelect(abogado)}
-                        className={`w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors ${
-                          selectedAbogado?.id === abogado.id
-                            ? "bg-purple-500/20 text-purple-300"
-                            : "text-gray-300"
-                        }`}
-                      >
-                        {abogado.nombre}
-                      </button>
-                    ))}
-                    {abogadosDisponibles.length === 0 && (
-                      <div className="px-3 py-2 text-gray-500 text-sm">
-                        No hay abogados disponibles
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </Th>
+          <Th>Abogados</Th>
         </Thead>
         <Tbody>
           {solicitudes.map((solicitud, idx) => {
