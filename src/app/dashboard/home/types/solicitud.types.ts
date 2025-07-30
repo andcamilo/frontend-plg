@@ -43,3 +43,9 @@ export interface Solicitud {
   status: number;
   nombre: string;
 }
+
+// Tipo para el abogado en el filtro
+export interface AbogadoFilter {
+  id: string;
+  nombre: string;
+}
