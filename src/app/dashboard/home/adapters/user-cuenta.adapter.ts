@@ -1,4 +1,5 @@
 import { User } from "../types/user-cuenta.types";
+import { decodeUserRol } from "@app/(global)/utils/decode-user-rol.util";
 
 export const userCuentaAdapter = (response: any): User => {
   const solicitud = response?.solicitud ?? {};
@@ -13,7 +14,7 @@ export const userCuentaAdapter = (response: any): User => {
     email: solicitud.email ?? "",
     nombre: solicitud.nombre ?? "",
     cedulaPasaporte: solicitud.cedulaPasaporte ?? "",
-    rol: solicitud.rol ?? "",
+    rol: decodeUserRol(solicitud.rol ?? ""),
     status: solicitud.status ?? 0,
     telefonoSolicita: solicitud.telefonoSolicita ?? "",
   };
