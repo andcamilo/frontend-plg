@@ -30,7 +30,7 @@ const TableRequests = ({ solicitudes }: TableRequestsProps) => {
           {solicitudes.map((solicitud, idx) => {
             const statusInfo = getStatusInfo(solicitud.status);
             return (
-              <Tr key={solicitud.id || idx}>
+              <Tr key={solicitud.id || idx} className="hover:bg-gray-700">
                 <Td>
                   <div>
                     <div className="font-medium">{solicitud.tipo || "-"}</div>
