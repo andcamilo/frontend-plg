@@ -14,7 +14,7 @@ const AlertFormEdit = () => {
   const idSolicitud = searchParams?.get("idSolicitud") as string;
 
   const { data: alert, isLoading, error } = useAlertBySolicitudID(idSolicitud);
-  const { mutateAsync: updateAlert } = useUpdateAlertMutation();
+  const { mutateAsync: updateAlert, isPending } = useUpdateAlertMutation();
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -22,7 +22,6 @@ const AlertFormEdit = () => {
 
   if (error) return <div>Error: {error.message}</div>;
 
-  // Transformar los datos del backend al formato del formulario
   const formData = transformBackendAlertToFormData(alert);
 
   const onSubmit = async (data: AlertsSchema) => {
@@ -32,8 +31,6 @@ const AlertFormEdit = () => {
         alertId: alert.id,
         reminderValue: data.reminderValue,
         reminderUnit: data.reminderUnit,
-        reminderText: data.reminderText,
-        isActive: data.isActive,
       });
       swal.fire({
         title: "Alerta actualizada",
@@ -50,7 +47,11 @@ const AlertFormEdit = () => {
   };
   return (
     <>
-      <AlertForm onSubmit={onSubmit} defaultValues={formData} />
+      <AlertForm
+        onSubmit={onSubmit}
+        defaultValues={formData}
+        isSubmitting={isPending}
+      />
     </>
   );
 };

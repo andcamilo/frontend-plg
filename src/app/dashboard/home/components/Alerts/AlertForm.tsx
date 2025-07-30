@@ -15,9 +15,11 @@ import ButtonDeleteAlert from "./ButtonDeleteAlert";
 const AlertForm = ({
   onSubmit,
   defaultValues,
+  isSubmitting,
 }: {
   onSubmit: (data: AlertsSchema) => void;
   defaultValues?: AlertsSchema;
+  isSubmitting: boolean;
 }) => {
   const formDefaultValues: AlertsInputSchema | undefined = defaultValues
     ? {
@@ -73,9 +75,13 @@ const AlertForm = ({
         </div>
 
         <div className="flex justify-start items-center gap-4">
-          <Button type="submit">Guardar</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Guardando..." : "Guardar"}
+          </Button>
           {defaultValues?.id && (
-            <ButtonDeleteAlert alertId={defaultValues.id} />
+            <ButtonDeleteAlert
+              alertId={defaultValues.id}
+            />
           )}
         </div>
       </Form>

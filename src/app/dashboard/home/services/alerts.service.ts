@@ -23,33 +23,21 @@ export const createAlert = async ({
   solicitudId,
   reminderValue,
   reminderUnit,
-  reminderText,
-  isActive = true,
 }: {
   cuenta: string;
   email: string;
   solicitudId: string;
   reminderValue: number;
   reminderUnit: ReminderUnit;
-  reminderText?: string;
-  isActive?: boolean;
 }) => {
-  // Preparar el cuerpo de la petición según la documentación del backend
   const body: any = {
     cuenta,
     email,
     solicitudId,
     reminderValue,
     reminderUnit,
-    isActive,
   };
 
-  // Agregar reminderText solo si se proporciona
-  if (reminderText && reminderText.trim()) {
-    body.reminderText = reminderText.trim();
-  }
-
-  // Mantener compatibilidad con backend legacy enviando reminderDays cuando sea "days"
   if (reminderUnit === "days") {
     body.reminderDays = reminderValue;
   }
