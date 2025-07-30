@@ -61,7 +61,6 @@ const TableRequests = ({
           <Th>Fecha de creación</Th>
           <Th>Status</Th>
           <Th>ID</Th>
-          <Th>Acciones</Th>
           <Th>Recordatorio</Th>
           <Th>
             <div className="relative" ref={dropdownRef}>
@@ -151,19 +150,6 @@ const TableRequests = ({
                   </span>
                 </Td>
                 <Td>{solicitud.expediente || solicitud.id || "-"}</Td>
-                <Td>
-                  <div className="flex gap-1">
-                    <button className="text-purple-400 hover:text-purple-300">
-                      👁️
-                    </button>
-                    <button className="text-yellow-400 hover:text-yellow-300">
-                      ✏️
-                    </button>
-                    <button className="text-green-400 hover:text-green-300">
-                      ⭐
-                    </button>
-                  </div>
-                </Td>
                 <Td>
                   <AlertButton idSolicitud={solicitud.id} />
                 </Td>
