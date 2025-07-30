@@ -13,9 +13,13 @@ const AlertButton = ({ idSolicitud }: { idSolicitud: string }) => {
   return (
     <>
       <AlertButtonEdit
-        reminderValue={alert.reminderValue}
-        reminderUnit={alert.reminderUnit}
+        timeRemainingValue={alert.timeRemainingValue}
+        timeRemainingUnit={alert.timeRemainingUnit}
+        isOverdue={alert.isOverdue}
         idSolicitud={idSolicitud}
+        // Mantener valores originales para referencia si es necesario
+        originalReminderValue={alert.reminderValue}
+        originalReminderUnit={alert.reminderUnit}
       />
     </>
   );
