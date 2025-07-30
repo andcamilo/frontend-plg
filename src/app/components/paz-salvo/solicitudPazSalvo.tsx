@@ -553,7 +553,6 @@ export default function SolicitudPazSalvo() {
         </div>
 
         {/* ¿Tiene número de cliente? */}
-
 {formData.tipoPazSalvo && (
   <div className="mb-6">
     <label className="text-white block mb-2">¿Tiene número de cliente?</label>
@@ -566,7 +565,6 @@ export default function SolicitudPazSalvo() {
           onChange={() => {
             setFormData((prev) => ({ ...prev, tieneNumeroCliente: true }));
             setCargoSinCliente(0);
-            setMostrarAdvertenciaCliente(false);
           }}
         />{' '}
         Sí
@@ -580,31 +578,22 @@ export default function SolicitudPazSalvo() {
           onChange={() => {
             setFormData((prev) => ({ ...prev, tieneNumeroCliente: false }));
             setCargoSinCliente(25);
-            setMostrarAdvertenciaCliente(true);
+
+            // 🎯 Alerta con el mismo diseño oscuro que el resto del formulario
+            Swal.fire({
+              icon: 'warning',
+              title: 'Advertencia',
+              text: 'Para Solicitar Paz y Salvo, necesita un número de cliente, Si no lo tiene, primero debe solicitar una inspección en su finca para que le asignen uno. Podemos ayudarte con esta gestión. El tiempo puede variar según la disponibilidad de la institución, esta gestión genera un recargo a la solicitud, se adiciona un cargo de $25.00.',
+              background: '#2c2c3e',
+              color: '#fff',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'Aceptar',
+            });
           }}
         />{' '}
         No
       </label>
     </div>
-
-    {mostrarAdvertenciaCliente && (
-       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white text-black p-6 rounded-lg shadow-lg max-w-md w-full">
-      <h2 className="text-lg font-semibold mb-4">Advertencia</h2>
-      <p className="mb-4">
-        Al no contar con número de cliente, el trámite puede tardar más en gestionarse y se adiciona un cargo de <strong>$25.00</strong>.
-      </p>
-      <div className="text-right">
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => setMostrarAdvertenciaCliente(false)}
-        >
-          Aceptar
-        </button>
-      </div>
-    </div>
-  </div>
-    )}
 
     {formData.tieneNumeroCliente === true && (
       <div className="mt-6">
