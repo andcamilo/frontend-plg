@@ -3,10 +3,14 @@ import { ReminderUnit } from "../schemas/alerts.schema";
 
 const backendBaseUrl = "http://localhost:4000";
 
-export const getAlerts = async (cuenta: string) => {
-  const response = await fetch(
-    `${backendBaseUrl}/${backendEnv}/alerts?cuenta=${cuenta}`
-  );
+export const getAlerts = async (cuenta: string, solicitudId?: string) => {
+  let endpoint = `${backendBaseUrl}/${backendEnv}/alerts?cuenta=${cuenta}`;
+
+  if (solicitudId) {
+    endpoint += `&solicitudId=${solicitudId}`;
+  }
+
+  const response = await fetch(endpoint);
   if (!response.ok) {
     throw new Error(`Error fetching alerts: ${response.statusText}`);
   }
