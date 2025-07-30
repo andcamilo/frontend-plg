@@ -1,5 +1,3 @@
-import { userCuentaAdapter } from "../adapters/user-cuenta.adapter";
-
 export const fetchUser = async (userCuenta: string) => {
   const endpoint = `/api/get-user-cuenta?userCuenta=${encodeURIComponent(
     userCuenta
@@ -17,5 +15,5 @@ export const fetchUser = async (userCuenta: string) => {
 
   const user = await response.json();
 
-  return userCuentaAdapter(user);
+  return user;
 };
