@@ -1,6 +1,5 @@
 import { backendEnv } from "@utils/env";
-import { ReminderUnit } from "../../schemas/alerts.schema";
-import { convertToMinutes } from "../../utils/time-converter.util";
+import { ReminderUnit } from "../schemas/alerts.schema";
 
 const backendBaseUrl = "http://localhost:4000";
 

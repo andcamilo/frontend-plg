@@ -18,7 +18,5 @@ export const getSolicitudes = async (userId: string) => {
 
   const solicitudes = await response.json();
 
-  console.log("solicitudes", solicitudes);
-
   return solicitudes;
 };
