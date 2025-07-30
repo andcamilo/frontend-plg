@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation";
 const AlertFormCreate = () => {
   const searchParams = useSearchParams();
   const idSolicitud = searchParams?.get("idSolicitud") as string;
-  const { mutateAsync: createAlert } = useCreateAlertMutation();
+  const { mutateAsync: createAlert, isPending } = useCreateAlertMutation();
 
   const onSubmit = async (data: AlertsSchema) => {
     try {
@@ -16,8 +16,6 @@ const AlertFormCreate = () => {
         solicitudId: idSolicitud,
         reminderValue: data.reminderValue,
         reminderUnit: data.reminderUnit,
-        reminderText: data.reminderText,
-        isActive: data.isActive,
       });
       swal.fire({
         title: "Alerta creada",
@@ -35,7 +33,7 @@ const AlertFormCreate = () => {
 
   return (
     <>
-      <AlertForm onSubmit={onSubmit} />
+      <AlertForm onSubmit={onSubmit} isSubmitting={isPending} />
     </>
   );
 };

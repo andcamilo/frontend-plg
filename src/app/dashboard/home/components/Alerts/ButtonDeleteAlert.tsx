@@ -6,7 +6,7 @@ import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 import { useSearchParams } from "next/navigation";
 
 const ButtonDeleteAlert = ({ alertId }: { alertId: string }) => {
-  const { mutateAsync: deleteAlert } = useDeleteAlertMutation();
+  const { mutateAsync: deleteAlert, isPending } = useDeleteAlertMutation();
   const { closeModal } = useModalContext();
   const searchParams = useSearchParams();
   const solicitudId = searchParams?.get("idSolicitud") as string;
@@ -21,8 +21,8 @@ const ButtonDeleteAlert = ({ alertId }: { alertId: string }) => {
   };
   return (
     <>
-      <Button onClick={handleDeleteAlert} variant="danger">
-        Eliminar Alerta
+      <Button onClick={handleDeleteAlert} variant="danger" disabled={isPending}>
+        {isPending ? "Eliminando..." : "Eliminar Alerta"}
       </Button>
     </>
   );
