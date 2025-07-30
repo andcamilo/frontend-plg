@@ -14,7 +14,10 @@ const AlertFormCreate = () => {
     try {
       await createAlert({
         solicitudId: idSolicitud,
-        reminderDays: data.reminderDays,
+        reminderValue: data.reminderValue,
+        reminderUnit: data.reminderUnit,
+        reminderText: data.reminderText,
+        isActive: data.isActive,
       });
       swal.fire({
         title: "Alerta creada",

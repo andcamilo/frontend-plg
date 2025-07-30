@@ -7,6 +7,7 @@ import {
 import { AlertsSchema } from "../../schemas/alerts.schema";
 import swal from "sweetalert2";
 import { useSearchParams } from "next/navigation";
+import { transformBackendAlertToFormData } from "../../utils/alert-data-transformer.util";
 
 const AlertFormEdit = () => {
   const searchParams = useSearchParams();
@@ -21,12 +22,18 @@ const AlertFormEdit = () => {
 
   if (error) return <div>Error: {error.message}</div>;
 
+  // Transformar los datos del backend al formato del formulario
+  const formData = transformBackendAlertToFormData(alert);
+
   const onSubmit = async (data: AlertsSchema) => {
     try {
       await updateAlert({
         solicitudId: idSolicitud,
         alertId: alert.id,
-        reminderDays: data.reminderDays,
+        reminderValue: data.reminderValue,
+        reminderUnit: data.reminderUnit,
+        reminderText: data.reminderText,
+        isActive: data.isActive,
       });
       swal.fire({
         title: "Alerta actualizada",
@@ -43,7 +50,7 @@ const AlertFormEdit = () => {
   };
   return (
     <>
-      <AlertForm onSubmit={onSubmit} defaultValues={alert} />
+      <AlertForm onSubmit={onSubmit} defaultValues={formData} />
     </>
   );
 };

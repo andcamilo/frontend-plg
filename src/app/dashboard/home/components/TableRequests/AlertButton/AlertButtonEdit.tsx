@@ -4,10 +4,12 @@ import { MODAL_ALERT_EDIT_ID } from "../../../constants/modal-alert.constant";
 import { getAlertButtonClasses } from "../../../utils/AlertButton/get-classes-for-reminder-days.util";
 
 const AlertButtonEdit = ({
-  reminderDays,
+  reminderValue,
+  reminderUnit,
   idSolicitud,
 }: {
-  reminderDays: number;
+  reminderValue: number;
+  reminderUnit: string;
   idSolicitud: string;
 }) => {
   const { openModal } = useModalContext();
@@ -23,10 +25,10 @@ const AlertButtonEdit = ({
       <button
         onClick={handleOpenModal}
         className={`px-2 py-1 rounded text-xs ${getAlertButtonClasses(
-          reminderDays
+          reminderValue
         )}`}
       >
-        {reminderDays} días
+        {reminderValue} {reminderUnit}
       </button>
     </>
   );
