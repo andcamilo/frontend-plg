@@ -1,4 +1,6 @@
 import { backendEnv } from "@utils/env";
+import { ReminderUnit } from "../../schemas/alerts.schema";
+import { convertToMinutes } from "../../utils/time-converter.util";
 
 const backendBaseUrl = "http://localhost:4000";
 
@@ -16,19 +18,38 @@ export const createAlert = async ({
   cuenta,
   email,
   solicitudId,
-  reminderDays,
+  reminderValue,
+  reminderUnit,
+  reminderText,
+  isActive = true,
 }: {
   cuenta: string;
   email: string;
   solicitudId: string;
-  reminderDays: number;
+  reminderValue: number;
+  reminderUnit: ReminderUnit;
+  reminderText?: string;
+  isActive?: boolean;
 }) => {
-  const body = {
+  // Preparar el cuerpo de la petición según la documentación del backend
+  const body: any = {
     cuenta,
     email,
     solicitudId,
-    reminderDays,
+    reminderValue,
+    reminderUnit,
+    isActive,
   };
+
+  // Agregar reminderText solo si se proporciona
+  if (reminderText && reminderText.trim()) {
+    body.reminderText = reminderText.trim();
+  }
+
+  // Mantener compatibilidad con backend legacy enviando reminderDays cuando sea "days"
+  if (reminderUnit === "days") {
+    body.reminderDays = reminderValue;
+  }
 
   const response = await fetch(`${backendBaseUrl}/${backendEnv}/alerts`, {
     method: "POST",
@@ -45,23 +66,49 @@ export const createAlert = async ({
 
 export const updateAlert = async ({
   solicitudId,
-  reminderDays,
+  reminderValue,
+  reminderUnit,
   cuenta,
   alertId,
+  reminderText,
+  isActive,
 }: {
   solicitudId: string;
   cuenta: string;
-  reminderDays: number;
+  reminderValue: number;
+  reminderUnit: ReminderUnit;
   alertId: string;
+  reminderText?: string;
+  isActive?: boolean;
 }) => {
-  const body = {
-    reminderDays,
+  // Preparar el cuerpo de la petición según la documentación del backend
+  const body: any = {
+    alertId,
     solicitudId,
     cuenta,
-    alertId,
+    reminderValue,
+    reminderUnit,
   };
+
+  // Agregar campos opcionales solo si se proporcionan
+  if (reminderText !== undefined) {
+    body.reminderText = reminderText.trim();
+  }
+
+  if (isActive !== undefined) {
+    body.isActive = isActive;
+  }
+
+  // Mantener compatibilidad con backend legacy enviando reminderDays cuando sea "days"
+  if (reminderUnit === "days") {
+    body.reminderDays = reminderValue;
+  }
+
   const response = await fetch(`${backendBaseUrl}/${backendEnv}/alerts`, {
     method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
@@ -86,6 +133,9 @@ export const deleteAlert = async ({
   };
   const response = await fetch(`${backendBaseUrl}/${backendEnv}/alerts`, {
     method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(body),
   });
   if (!response.ok) {

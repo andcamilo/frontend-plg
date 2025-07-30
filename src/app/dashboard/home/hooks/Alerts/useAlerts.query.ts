@@ -32,8 +32,13 @@ export const useCreateAlertMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: ["create-alert"],
-    mutationFn: (alert: { solicitudId: string; reminderDays: number }) =>
-      createAlert({ ...alert, cuenta, email }),
+    mutationFn: (alert: {
+      solicitudId: string;
+      reminderValue: number;
+      reminderUnit: import("../../schemas/alerts.schema").ReminderUnit;
+      reminderText?: string;
+      isActive?: boolean;
+    }) => createAlert({ ...alert, cuenta, email }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alerts", cuenta] });
     },
@@ -48,16 +53,25 @@ export const useUpdateAlertMutation = () => {
     mutationFn: ({
       alertId,
       solicitudId,
-      reminderDays,
+      reminderValue,
+      reminderUnit,
+      reminderText,
+      isActive,
     }: {
       alertId: string;
       solicitudId: string;
-      reminderDays: number;
+      reminderValue: number;
+      reminderUnit: import("../../schemas/alerts.schema").ReminderUnit;
+      reminderText?: string;
+      isActive?: boolean;
     }) =>
       updateAlert({
         alertId,
         solicitudId,
-        reminderDays,
+        reminderValue,
+        reminderUnit,
+        reminderText,
+        isActive,
         cuenta,
       }),
     onSuccess: () => {
