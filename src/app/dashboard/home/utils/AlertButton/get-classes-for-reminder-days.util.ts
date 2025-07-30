@@ -1,4 +1,4 @@
-export function getAlertButtonClasses(reminderDays: number) {
+export function getAlertsClasses(reminderDays: number) {
   if (reminderDays >= 3) {
     return "bg-green-500/20 text-green-600";
   } else if (reminderDays === 2) {

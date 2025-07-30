@@ -1,5 +1,17 @@
-const Tr = ({ children }: { children: React.ReactNode }) => {
-  return <tr className="border-b border-gray-700">{children}</tr>;
+import { twMerge } from "tailwind-merge";
+
+const Tr = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return (
+    <tr className={twMerge("border-b border-gray-700", className)}>
+      {children}
+    </tr>
+  );
 };
 
 export default Tr;
