@@ -16,7 +16,7 @@ interface TableRequestsProps {
 
 const TableRequests = ({ solicitudes }: TableRequestsProps) => {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
       <Table>
         <Thead>
           <Th>Tipo trámite</Th>
