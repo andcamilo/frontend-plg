@@ -4,7 +4,10 @@ import TableRequestsContainer from "./components/TableRequests/TableRequestsCont
 import { Modal } from "@app/(global)/components/Modal";
 import AlertFormEdit from "./components/Alerts/AlertFormEdit";
 import AlertFormCreate from "./components/Alerts/AlertFormCreate";
-import { MODAL_ALERT_CREATE_ID, MODAL_ALERT_EDIT_ID } from "./constants/modal-alert.constant";
+import {
+  MODAL_ALERT_CREATE_ID,
+  MODAL_ALERT_EDIT_ID,
+} from "./constants/modal-alert.constant";
 
 export default function Home() {
   return (

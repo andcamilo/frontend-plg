@@ -15,7 +15,7 @@ const LegixStadisticsContainer = () => {
     data: allSolicitudes,
     isLoading: isLoadingAllSolicitudes,
     isError: isErrorAllSolicitudes,
-  } = useAllSolicitudes(paginatedSolicitudes?.pagination || {});
+  } = useAllSolicitudes();
 
   if (isLoading || isLoadingPaginatedSolicitudes || isLoadingAllSolicitudes) {
     return <div>Cargando...</div>;
@@ -30,7 +30,7 @@ const LegixStadisticsContainer = () => {
       <LegixStatistics
         rol={userCuenta?.rol || 0}
         pagination={paginatedSolicitudes?.pagination || {}}
-        allSolicitudes={allSolicitudes?.allSolicitudes || []}
+        allSolicitudes={allSolicitudes || []}
         statusCounts={allSolicitudes?.statusCounts || {}}
         months={allSolicitudes?.months || {}}
       />
