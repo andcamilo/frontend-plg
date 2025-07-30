@@ -4,7 +4,9 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@configuration/firebase';
 import axios from 'axios';
 import { onAuthStateChanged } from 'firebase/auth';
+import "@configuration/firebase";
 import { getFirestore, collection, query, where, getDocs, DocumentData } from 'firebase/firestore';
+import cookie from "js-cookie";
 
 const rowsPerPage = 10;
 
@@ -14,17 +16,65 @@ const MyRecordsTable: React.FC = () => {
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState<DocumentData | null>(null);
+  const [role, setRole] = useState<number | null>(null);
+  const [permisos, setPermisos] = useState<string | null>(null);
   const router = useRouter();
 
+  const decodeJWT = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserEmail(user.email || '');
+    const fetchUserData = async () => {
+      const authToken = cookie.get('AuthToken');
+      
+      if (authToken) {
+        const decodedToken = decodeJWT(authToken);
+        console.log("🚀 ~ fetchUserData ~ decodedToken:", decodedToken)
+        
+        if (decodedToken) {
+          setUserEmail(decodedToken.email);
+          
+          try {
+            console.log("entreeee")
+            const db = getFirestore();
+            const q = query(collection(db, "usuarios"), where("email", "==", decodedToken.email));
+
+            const querySnapshot = await getDocs(q);
+            console.log("🚀 ~ fetchUserData ~ querySnapshot:", querySnapshot)
+            
+            if (!querySnapshot.empty) {
+              const doc = querySnapshot.docs[0];
+              const data = doc.data();
+              setRole(data.rol || null);
+              setPermisos(data.permisos || null);
+            } else {
+              setRole(null);
+            }
+          } catch (error) {
+            console.error("Error fetching user role:", error);
+          }
+        } else {
+          setUserEmail('');
+          setRole(null);
+        }
       } else {
         setUserEmail('');
+        setRole(null);
       }
-    });
-    return () => unsubscribe();
+    };
+
+    fetchUserData();
   }, []);
 
   useEffect(() => {
@@ -36,7 +86,11 @@ const MyRecordsTable: React.FC = () => {
       setLoading(true);
       try {
         const response = await axios.get('/api/list-records', {
-          params: { lawyer: userEmail },
+          params: { 
+            lawyer: userEmail,
+            role: role,
+            permisos: permisos
+          },
         });
         console.log('API response:', response.data);
         setRecords(response.data.records || []);
@@ -48,7 +102,7 @@ const MyRecordsTable: React.FC = () => {
       }
     };
     fetchRecords();
-  }, [userEmail]);
+  }, [userEmail, role]);
 
   useEffect(() => {
     if (!userEmail) return;
@@ -59,7 +113,6 @@ const MyRecordsTable: React.FC = () => {
   const hasPrevPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
   const paginatedData = records.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage).map(row => ({
-    id: row.id || '',
     Tipo: row.tipoServicio || '',
     Fecha: row.createdAt?._seconds ? new Date(row.createdAt._seconds * 1000).toLocaleDateString() : '',
     Email: row.email || '',
@@ -73,12 +126,14 @@ const MyRecordsTable: React.FC = () => {
         >
           Ver
         </button>
-        <button
-          className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition-colors"
-          onClick={() => router.push(`/dashboard/record/${row.id || ''}`)}
-        >
-          Actualizar
-        </button>
+        {row.lawyer === userEmail && (
+          <button
+            className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition-colors"
+            onClick={() => router.push(`/dashboard/record/${row.id || ''}`)}
+          >
+            Actualizar
+          </button>
+        )}
       </div>
     )
   }));
