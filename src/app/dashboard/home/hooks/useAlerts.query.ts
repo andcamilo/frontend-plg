@@ -8,19 +8,25 @@ import {
 import { decodeUserToken } from "@app/(global)/utils/decode-user-token.util";
 import { useQueryClient } from "@tanstack/react-query";
 
-export const useAlerts = () => {
+export const useAlerts = (solicitudId?: string) => {
   const { user_id: cuenta } = decodeUserToken();
   return useQuery({
-    queryKey: ["alerts", cuenta],
-    queryFn: () => getAlerts(cuenta),
+    queryKey: ["alerts", cuenta, solicitudId],
+    queryFn: () => getAlerts(cuenta, solicitudId),
   });
 };
 
 export const useAlertBySolicitudID = (solicitudId: string) => {
-  const { data: alertsResponse, ...rest } = useAlerts();
-  const alertBySolicitudID = alertsResponse?.data?.find(
-    (alert: { solicitudId: string }) => alert.solicitudId === solicitudId
-  );
+  const { user_id: cuenta } = decodeUserToken();
+
+  const { data: alertsResponse, ...rest } = useQuery({
+    queryKey: ["alerts", cuenta, "solicitud", solicitudId],
+    queryFn: () => getAlerts(cuenta, solicitudId),
+    enabled: !!cuenta && !!solicitudId,
+  });
+
+  const alertBySolicitudID = alertsResponse?.data?.[0] || null;
+
   return {
     data: alertBySolicitudID,
     ...rest,
