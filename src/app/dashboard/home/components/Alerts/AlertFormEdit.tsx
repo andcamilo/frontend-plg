@@ -8,8 +8,10 @@ import { AlertsSchema } from "../../schemas/alerts.schema";
 import swal from "sweetalert2";
 import { useSearchParams } from "next/navigation";
 import { transformBackendAlertToFormData } from "../../utils/alert-data-transformer.util";
+import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 
 const AlertFormEdit = () => {
+  const { closeModal } = useModalContext();
   const searchParams = useSearchParams();
   const idSolicitud = searchParams?.get("idSolicitud") as string;
 
@@ -37,6 +39,7 @@ const AlertFormEdit = () => {
         text: "La alerta ha sido actualizada correctamente",
         icon: "success",
       });
+      closeModal();
     } catch (error) {
       swal.fire({
         title: "Error",
