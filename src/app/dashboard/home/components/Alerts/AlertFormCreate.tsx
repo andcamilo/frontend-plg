@@ -1,6 +1,6 @@
 "use client";
 import AlertForm from "./AlertForm";
-import { useCreateAlertMutation } from "../../hooks/Alerts/useAlerts.query";
+import { useCreateAlertMutation } from "../../hooks/useAlerts.query";
 import { AlertsSchema } from "../../schemas/alerts.schema";
 import swal from "sweetalert2";
 import { useSearchParams } from "next/navigation";

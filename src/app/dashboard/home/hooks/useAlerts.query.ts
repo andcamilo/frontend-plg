@@ -4,8 +4,8 @@ import {
   deleteAlert,
   getAlerts,
   updateAlert,
-} from "../../services/Alerts/alerts.service";
-import { decodeUserToken } from "@/src/app/(global)/utils/decode-user-token.util";
+} from "../services/alerts.service";
+import { decodeUserToken } from "@app/(global)/utils/decode-user-token.util";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const useAlerts = () => {
@@ -35,7 +35,7 @@ export const useCreateAlertMutation = () => {
     mutationFn: (alert: {
       solicitudId: string;
       reminderValue: number;
-      reminderUnit: import("../../schemas/alerts.schema").ReminderUnit;
+      reminderUnit: import("../schemas/alerts.schema").ReminderUnit;
       reminderText?: string;
       isActive?: boolean;
     }) => createAlert({ ...alert, cuenta, email }),
@@ -61,7 +61,7 @@ export const useUpdateAlertMutation = () => {
       alertId: string;
       solicitudId: string;
       reminderValue: number;
-      reminderUnit: import("../../schemas/alerts.schema").ReminderUnit;
+      reminderUnit: import("../schemas/alerts.schema").ReminderUnit;
       reminderText?: string;
       isActive?: boolean;
     }) =>

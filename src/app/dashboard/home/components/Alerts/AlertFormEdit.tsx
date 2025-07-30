@@ -3,7 +3,7 @@ import AlertForm from "./AlertForm";
 import {
   useAlertBySolicitudID,
   useUpdateAlertMutation,
-} from "../../hooks/Alerts/useAlerts.query";
+} from "../../hooks/useAlerts.query";
 import { AlertsSchema } from "../../schemas/alerts.schema";
 import swal from "sweetalert2";
 import { useSearchParams } from "next/navigation";

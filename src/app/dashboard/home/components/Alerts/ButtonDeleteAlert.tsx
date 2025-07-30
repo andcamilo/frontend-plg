@@ -1,6 +1,6 @@
 "use client";
 import Button from "@app/(global)/components/Button";
-import { useDeleteAlertMutation } from "../../hooks/Alerts/useAlerts.query";
+import { useDeleteAlertMutation } from "../../hooks/useAlerts.query";
 import swal from "sweetalert2";
 import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 import { useSearchParams } from "next/navigation";

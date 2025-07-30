@@ -1,7 +1,7 @@
 "use client";
 import AlertButtonEdit from "./AlertButtonEdit";
 import AlertButtonCreate from "./AlertButtonCreate";
-import { useAlertBySolicitudID } from "../../../hooks/Alerts/useAlerts.query";
+import { useAlertBySolicitudID } from "../../../hooks/useAlerts.query";
 
 const AlertButton = ({ idSolicitud }: { idSolicitud: string }) => {
   const { data: alert, isLoading, error } = useAlertBySolicitudID(idSolicitud);
