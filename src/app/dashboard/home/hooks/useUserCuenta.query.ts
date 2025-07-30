@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchUser } from "../services/request-user-cuenta.service";
 import { decodeUserToken } from "@app/(global)/utils/decode-user-token.util";
+import { userCuentaAdapter } from "../adapters/user-cuenta.adapter";
 
 export const useUserCuenta = () => {
   return useQuery({
@@ -11,7 +12,8 @@ export const useUserCuenta = () => {
       if (!userData?.user_id) {
         throw new Error("User ID not found");
       }
-      return await fetchUser(userData.user_id);
+      const user = await fetchUser(userData.user_id);
+      return userCuentaAdapter(user);
     },
   });
 };
