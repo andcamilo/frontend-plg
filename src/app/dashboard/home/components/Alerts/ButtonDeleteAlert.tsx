@@ -11,13 +11,21 @@ const ButtonDeleteAlert = ({ alertId }: { alertId: string }) => {
   const searchParams = useSearchParams();
   const solicitudId = searchParams?.get("idSolicitud") as string;
   const handleDeleteAlert = async () => {
-    await deleteAlert({ alertId, solicitudId });
-    swal.fire({
-      title: "Alerta eliminada",
-      text: "La alerta ha sido eliminada correctamente",
-      icon: "success",
-    });
-    closeModal();
+    try {
+      await deleteAlert({ alertId, solicitudId });
+      swal.fire({
+        title: "Alerta eliminada",
+        text: "La alerta ha sido eliminada correctamente",
+        icon: "success",
+      });
+      closeModal();
+    } catch (error) {
+      swal.fire({
+        title: "Error",
+        text: "Error al eliminar la alerta " + error,
+        icon: "error",
+      });
+    }
   };
   return (
     <>
