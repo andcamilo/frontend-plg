@@ -8,6 +8,7 @@ import {
   MODAL_ALERT_CREATE_ID,
   MODAL_ALERT_EDIT_ID,
 } from "./constants/modal-alert.constant";
+import NotificationsButton from "@app/(global)/components/Notifications/NotificationsButton";
 
 export default function Home() {
   return (
@@ -15,6 +16,9 @@ export default function Home() {
       <h1 className="text-4xl font-bold text-white pl-8 mb-4">
         Estadísticas de LEGIX
       </h1>
+      <div className="flex justify-end w-full my-8">
+        <NotificationsButton />
+      </div>
       <TableRequestsContainer />
       <LegixStadisticsContainer />
       <Modal modalId={MODAL_ALERT_EDIT_ID}>
