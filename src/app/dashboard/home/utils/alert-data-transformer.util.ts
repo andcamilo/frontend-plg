@@ -31,8 +31,6 @@ export const transformBackendAlertToFormData = (
       id: backendAlert.id,
       reminderValue: backendAlert.reminderValue,
       reminderUnit: backendAlert.reminderUnit,
-      reminderText: backendAlert.reminderText,
-      isActive: backendAlert.isActive ?? true,
     };
   }
 
@@ -43,8 +41,6 @@ export const transformBackendAlertToFormData = (
       id: backendAlert.id,
       reminderValue: value,
       reminderUnit: unit,
-      reminderText: backendAlert.reminderText,
-      isActive: backendAlert.isActive ?? true,
     };
   }
 
@@ -54,8 +50,6 @@ export const transformBackendAlertToFormData = (
       id: backendAlert.id,
       reminderValue: backendAlert.reminderDays,
       reminderUnit: "days" as ReminderUnit,
-      reminderText: backendAlert.reminderText,
-      isActive: backendAlert.isActive ?? true,
     };
   }
 
@@ -64,7 +58,5 @@ export const transformBackendAlertToFormData = (
     id: backendAlert.id,
     reminderValue: 1,
     reminderUnit: "days" as ReminderUnit,
-    reminderText: "",
-    isActive: true,
   };
 };

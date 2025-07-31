@@ -28,7 +28,7 @@ const LegixStadisticsContainer = () => {
   return (
     <>
       <LegixStatistics
-        rol={userCuenta?.rol || 0}
+        rol={Number(userCuenta?.rol) || 0}
         pagination={paginatedSolicitudes?.pagination || {}}
         allSolicitudes={allSolicitudes || []}
         statusCounts={allSolicitudes?.statusCounts || {}}
