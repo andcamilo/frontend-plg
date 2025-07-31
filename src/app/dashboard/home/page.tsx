@@ -13,11 +13,11 @@ import NotificationsButton from "@app/(global)/components/Notifications/Notifica
 export default function Home() {
   return (
     <div className="p-4">
-      <h1 className="text-4xl font-bold text-white pl-8 mb-4">
-        Estadísticas de LEGIX
-      </h1>
-      <div className="flex justify-end w-full my-8">
-        <NotificationsButton />
+      <div className="flex justify-between items-center my-8">
+        <h1 className="text-4xl font-bold text-white">Estadísticas de LEGIX</h1>
+        <div className="flex items-center gap-4">
+          <NotificationsButton />
+        </div>
       </div>
       <TableRequestsContainer />
       <LegixStadisticsContainer />
