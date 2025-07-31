@@ -10,6 +10,9 @@ import {
 } from "./constants/modal-alert.constant";
 import NotificationsButton from "@app/(global)/components/Notifications/NotificationsButton";
 
+// Force dynamic rendering since this page requires authentication
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <div className="p-4">
