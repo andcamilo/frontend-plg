@@ -1,5 +1,4 @@
-import { backendEnv } from "@utils/env";
-const backendBaseUrl = "http://localhost:4000";
+import { backendEnv, backendBaseUrl } from "@utils/env";
 
 export const getSolicitudes = async (userId: string) => {
   const endpoint = `${backendBaseUrl}/${backendEnv}/solicitudes?userId=${encodeURIComponent(

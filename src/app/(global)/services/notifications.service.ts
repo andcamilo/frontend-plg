@@ -1,6 +1,4 @@
-import { backendEnv } from "@utils/env";
-
-const backendBaseUrl = "http://localhost:4000";
+import { backendEnv, backendBaseUrl } from "@utils/env";
 
 export const getNotifications = async (cuenta: string) => {
   let endpoint = `${backendBaseUrl}/${backendEnv}/notifications?cuenta=${cuenta}`;
