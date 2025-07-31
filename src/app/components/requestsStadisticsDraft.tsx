@@ -1,78 +1,83 @@
-"use client"
-import React, { useEffect, useState, useMemo } from 'react';
-import TableWithRequests from '@components/TableWithRequests';
-import { getRequestsCuenta } from '@api/request-cuenta';
-import { getRequests } from '@api/request';
-import axios from 'axios';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import EditIcon from '@mui/icons-material/Edit';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Swal from 'sweetalert2';
-import Link from 'next/link';
-import get from 'lodash/get';
+"use client";
+import React, { useEffect, useState, useMemo } from "react";
+import TableWithRequests from "@components/TableWithRequests";
+import { getRequestsCuenta } from "@/src/app/dashboard/home/services/request-cuenta.service";
+import { getRequests } from "@/src/app/dashboard/home/services/requests-by-email.service";
+import axios from "axios";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Swal from "sweetalert2";
+import Link from "next/link";
+import get from "lodash/get";
 import { checkAuthToken } from "@utils/checkAuthToken";
 
-const formatDate = (timestamp: { _seconds: number; _nanoseconds: number }): string => {
+const formatDate = (timestamp: {
+  _seconds: number;
+  _nanoseconds: number;
+}): string => {
   const date = new Date(timestamp._seconds * 1000);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
   return `${day}/${month}/${year}`;
 };
 
-const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string }> = ({
-  tipo,
-  id,
-  status,
-  rol,
-}) => {
+const Actions: React.FC<{
+  tipo: string;
+  id: string;
+  status: number;
+  rol: string;
+}> = ({ tipo, id, status, rol }) => {
   const handleDelete = async () => {
     const result = await Swal.fire({
-      title: '¿Estás seguro?',
-      text: 'Quiere eliminar esta solicitud?',
-      icon: 'warning',
+      title: "¿Estás seguro?",
+      text: "Quiere eliminar esta solicitud?",
+      icon: "warning",
       showCancelButton: true,
-      background: '#2c2c3e',
-      color: '#fff',
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
+      background: "#2c2c3e",
+      color: "#fff",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, eliminar",
     });
 
     if (result.isConfirmed) {
       try {
-        await axios.delete('/api/delete-request', { params: { solicitudId: id } });
+        await axios.delete("/api/delete-request", {
+          params: { solicitudId: id },
+        });
         Swal.fire({
-          title: 'Eliminado',
-          text: 'La solicitud ha sido eliminada.',
-          icon: 'success',
+          title: "Eliminado",
+          text: "La solicitud ha sido eliminada.",
+          icon: "success",
           timer: 4000,
           showConfirmButton: false,
         });
         // For simplicity, we reload the page
         window.location.reload();
       } catch (error) {
-        console.error('Error al eliminar la solicitud:', error);
-        Swal.fire('Error', 'No se pudo eliminar la solicitud.', 'error');
+        console.error("Error al eliminar la solicitud:", error);
+        Swal.fire("Error", "No se pudo eliminar la solicitud.", "error");
       }
     }
   };
 
   const getEditUrl = () => {
     switch (tipo) {
-      case 'new-fundacion':
+      case "new-fundacion":
         return `/request/fundacion/${id}`;
-      case 'new-sociedad-empresa':
+      case "new-sociedad-empresa":
         return `/request/sociedad-empresa/${id}`;
-      case 'menores-al-extranjero':
+      case "menores-al-extranjero":
         return `/request/menores-extranjero/${id}`;
-      case 'pension':
+      case "pension":
         return `/request/pension-alimenticia/${id}`;
-      case 'tramite-general':
+      case "tramite-general":
         return `/dashboard/tramite-general/${id}`;
-      case 'cliente-recurrente':
-      case 'solicitud-cliente-recurrente':
+      case "cliente-recurrente":
+      case "solicitud-cliente-recurrente":
         return `/request/corporativo/${id}`;
       default:
         return `/request/consulta-propuesta/${id}`;
@@ -81,12 +86,15 @@ const Actions: React.FC<{ tipo: string; id: string; status: number; rol: string 
 
   // Logic for showing the delete/pay icons
   const canShowDelete =
-    (status === 1 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-    (rol !== 'Cliente recurrente' && rol !== 'Cliente' && rol !== 'Asistente' && rol !== 'Abogados');
+    (status === 1 && (rol === "Cliente recurrente" || rol === "Cliente")) ||
+    (rol !== "Cliente recurrente" &&
+      rol !== "Cliente" &&
+      rol !== "Asistente" &&
+      rol !== "Abogados");
 
   const canShowPagar =
-    (status < 19 && (rol === 'Cliente recurrente' || rol === 'Cliente')) ||
-    (rol !== 'Cliente recurrente' && rol !== 'Cliente');
+    (status < 19 && (rol === "Cliente recurrente" || rol === "Cliente")) ||
+    (rol !== "Cliente recurrente" && rol !== "Cliente");
 
   return (
     <div className="flex gap-2">
@@ -120,10 +128,10 @@ const RequestsStatistics: React.FC = () => {
     rol: string;
     userId: string;
   }>({
-    cuenta: '',
-    email: '',
-    rol: '',
-    userId: '',
+    cuenta: "",
+    email: "",
+    rol: "",
+    userId: "",
   });
 
   // Local pagination states
@@ -152,7 +160,8 @@ const RequestsStatistics: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
   const [selectAll, setSelectAll] = useState(false);
 
-  const hayFiltrosActivos = filterTipo || filterStatus || filterDate || filterExpediente;
+  const hayFiltrosActivos =
+    filterTipo || filterStatus || filterDate || filterExpediente;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -162,7 +171,7 @@ const RequestsStatistics: React.FC = () => {
       try {
         const userData = checkAuthToken();
         if (!userData) {
-          throw new Error('User is not authenticated.');
+          throw new Error("User is not authenticated.");
         }
         // store user info
         setFormData((prevData) => ({
@@ -172,36 +181,39 @@ const RequestsStatistics: React.FC = () => {
         }));
 
         // fetch user info to get role
-        const userResponse = await axios.get('/api/get-user-cuenta', {
+        const userResponse = await axios.get("/api/get-user-cuenta", {
           params: { userCuenta: userData.user_id },
         });
         const user = userResponse.data;
 
-        const rawRole = get(user, 'solicitud.rol', 0);
+        const rawRole = get(user, "solicitud.rol", 0);
         const roleMapping: { [key: number]: string } = {
-          99: 'Super Admin',
-          90: 'Administrador',
-          80: 'Auditor',
-          50: 'Caja Chica',
-          40: 'Abogados',
-          35: 'Asistente',
-          17: 'Cliente recurrente',
-          10: 'Cliente',
+          99: "Super Admin",
+          90: "Administrador",
+          80: "Auditor",
+          50: "Caja Chica",
+          40: "Abogados",
+          35: "Asistente",
+          17: "Cliente recurrente",
+          10: "Cliente",
         };
         const stringRole =
-          typeof rawRole === 'string' ? rawRole : roleMapping[rawRole] || 'Desconocido';
+          typeof rawRole === "string"
+            ? rawRole
+            : roleMapping[rawRole] || "Desconocido";
 
         setFormData((prevData) => ({
           ...prevData,
           rol: stringRole,
-          userId: get(user, 'solicitud.id', ''),
+          userId: get(user, "solicitud.id", ""),
         }));
 
         // Fetch the “big chunk” of requests once
         let entireSolicitudes;
         if (
-          (typeof rawRole === 'number' && rawRole < 20) ||
-          (typeof stringRole === 'string' && (stringRole === 'Cliente' || stringRole === 'Cliente recurrente'))
+          (typeof rawRole === "number" && rawRole < 20) ||
+          (typeof stringRole === "string" &&
+            (stringRole === "Cliente" || stringRole === "Cliente recurrente"))
         ) {
           const result = await getRequestsCuenta(1000, userData.user_id, null);
           entireSolicitudes = result.solicitudes;
@@ -212,8 +224,8 @@ const RequestsStatistics: React.FC = () => {
 
         setSolicitudes(entireSolicitudes);
       } catch (err: any) {
-        console.error('Error fetching data:', err);
-        setError(err.message || 'An error occurred while fetching data.');
+        console.error("Error fetching data:", err);
+        setError(err.message || "An error occurred while fetching data.");
       } finally {
         setIsLoading(false);
       }
@@ -224,60 +236,70 @@ const RequestsStatistics: React.FC = () => {
 
   // ---- Helper function for filtering ----
   const getSolicitudesFiltradas = (array: any[]) => {
-    return array
-      // If user is "Cliente" or "Cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
-      .filter((solicitud) => {
-        const esCliente = formData.rol === 'Cliente' || formData.rol === 'Cliente recurrente';
-        const esAsistenteOAbogado = formData.rol === 'Asistente' || formData.rol === 'Abogados';
+    return (
+      array
+        // If user is "Cliente" or "Cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
+        .filter((solicitud) => {
+          const esCliente =
+            formData.rol === "Cliente" || formData.rol === "Cliente recurrente";
+          const esAsistenteOAbogado =
+            formData.rol === "Asistente" || formData.rol === "Abogados";
 
-        if (esCliente) {
-          return solicitud.cuenta === formData.cuenta;
-        }
+          if (esCliente) {
+            return solicitud.cuenta === formData.cuenta;
+          }
 
-        if (esAsistenteOAbogado) {
-          const abogadoAsignado = (solicitud.abogados || []).some((abogado: any) =>
-            abogado.id === formData.userId || abogado._id === formData.userId
+          if (esAsistenteOAbogado) {
+            const abogadoAsignado = (solicitud.abogados || []).some(
+              (abogado: any) =>
+                abogado.id === formData.userId ||
+                abogado._id === formData.userId
+            );
+            return solicitud.cuenta === formData.cuenta || abogadoAsignado;
+          }
+
+          // Para todos los demás roles (Admin, etc.)
+          return true;
+        })
+        // apply local filters
+        .filter(({ tipo, date, status, expediente }) => {
+          const tipoMapping: { [key: string]: string } = {
+            "propuesta-legal": "Propuesta Legal",
+            "consulta-legal": "Propuesta Legal",
+            "consulta-escrita": "Consulta Escrita",
+            "consulta-virtual": "Consulta Virtual",
+            "consulta-presencial": "Consulta Presencial",
+            "new-fundacion-interes-privado": "Fundación de Interés Privado",
+            "new-fundacion": "Fundación de Interés Privado",
+            "new-sociedad-empresa": "Sociedad / Empresa",
+            "menores-al-extranjero": "Salida de Menores al Extranjero",
+            "pension-alimenticia": "Pensión Alimenticia",
+            pension: "Pensión Alimenticia",
+            "tramite-general": "Trámite General",
+            "pension-desacato": "Pensión Desacato",
+            "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
+          };
+
+          const tipoTexto = tipoMapping[tipo] || tipo;
+          const formattedDate = formatDate(date);
+          const inputDate = filterDate
+            ? filterDate.split("-").reverse().join("/")
+            : "";
+
+          return (
+            (filterTipo ? tipoTexto === filterTipo : true) &&
+            (filterStatus ? status.toString() === filterStatus : true) &&
+            (filterDate ? formattedDate === inputDate : true) &&
+            (filterExpediente
+              ? expediente
+                  ?.toLowerCase()
+                  .includes(filterExpediente.toLowerCase())
+              : true)
           );
-          return solicitud.cuenta === formData.cuenta || abogadoAsignado;
-        }
-
-        // Para todos los demás roles (Admin, etc.)
-        return true;
-      })
-      // apply local filters
-      .filter(({ tipo, date, status, expediente }) => {
-        const tipoMapping: { [key: string]: string } = {
-          'propuesta-legal': 'Propuesta Legal',
-          'consulta-legal': 'Propuesta Legal',
-          'consulta-escrita': 'Consulta Escrita',
-          'consulta-virtual': 'Consulta Virtual',
-          'consulta-presencial': 'Consulta Presencial',
-          'new-fundacion-interes-privado': 'Fundación de Interés Privado',
-          'new-fundacion': 'Fundación de Interés Privado',
-          'new-sociedad-empresa': 'Sociedad / Empresa',
-          'menores-al-extranjero': 'Salida de Menores al Extranjero',
-          'pension-alimenticia': 'Pensión Alimenticia',
-          pension: 'Pensión Alimenticia',
-          'tramite-general': 'Trámite General',
-          'pension-desacato': 'Pensión Desacato',
-          'solicitud-cliente-recurrente': 'Solicitud Cliente Recurrente',
-        };
-
-        const tipoTexto = tipoMapping[tipo] || tipo;
-        const formattedDate = formatDate(date);
-        const inputDate = filterDate ? filterDate.split('-').reverse().join('/') : '';
-
-        return (
-          (filterTipo ? tipoTexto === filterTipo : true) &&
-          (filterStatus ? status.toString() === filterStatus : true) &&
-          (filterDate ? formattedDate === inputDate : true) &&
-          (filterExpediente
-            ? expediente?.toLowerCase().includes(filterExpediente.toLowerCase())
-            : true)
-        );
-      })
-      // sort descending by date
-      .sort((a, b) => b.date._seconds - a.date._seconds);
+        })
+        // sort descending by date
+        .sort((a, b) => b.date._seconds - a.date._seconds)
+    );
   };
 
   // ---- Memoized filtering so the arrays are stable if data/filters haven't changed ----
@@ -321,42 +343,42 @@ const RequestsStatistics: React.FC = () => {
     return solicitudes.map(
       ({ id, tipo, emailSolicita, date, status, expediente, abogados }) => {
         const statusLabels: { [key: number]: string } = {
-          0: 'Rechazada',
-          1: 'Borrador',
-          10: 'Pendiente de pago',
-          12: 'Aprobada',
-          19: 'Confirmando pago',
-          20: 'Pagada',
-          30: 'En proceso',
-          70: 'Finalizada',
+          0: "Rechazada",
+          1: "Borrador",
+          10: "Pendiente de pago",
+          12: "Aprobada",
+          19: "Confirmando pago",
+          20: "Pagada",
+          30: "En proceso",
+          70: "Finalizada",
         };
 
         const statusClasses: { [key: number]: string } = {
-          0: 'status-rechazada',
-          1: 'status-borrador',
-          10: 'status-enviada',
-          12: 'status-aprobada',
-          19: 'status-confirmando-pago',
-          20: 'status-pagada',
-          30: 'status-en-proceso',
-          70: 'status-finalizada',
+          0: "status-rechazada",
+          1: "status-borrador",
+          10: "status-enviada",
+          12: "status-aprobada",
+          19: "status-confirmando-pago",
+          20: "status-pagada",
+          30: "status-en-proceso",
+          70: "status-finalizada",
         };
 
         const tipoMapping: { [key: string]: string } = {
-          'propuesta-legal': 'Propuesta Legal',
-          'consulta-legal': 'Propuesta Legal',
-          'consulta-escrita': 'Consulta Escrita',
-          'consulta-virtual': 'Consulta Virtual',
-          'consulta-presencial': 'Consulta Presencial',
-          'new-fundacion-interes-privado': 'Fundación de Interés Privado',
-          'new-fundacion': 'Fundación de Interés Privado',
-          'new-sociedad-empresa': 'Sociedad / Empresa',
-          'menores-al-extranjero': 'Salida de Menores al Extranjero',
-          'pension-alimenticia': 'Pensión Alimenticia',
-          pension: 'Pensión Alimenticia',
-          'tramite-general': 'Trámite General',
-          'pension-desacato': 'Pensión Desacato',
-          'solicitud-cliente-recurrente': 'Solicitud Cliente Recurrente',
+          "propuesta-legal": "Propuesta Legal",
+          "consulta-legal": "Propuesta Legal",
+          "consulta-escrita": "Consulta Escrita",
+          "consulta-virtual": "Consulta Virtual",
+          "consulta-presencial": "Consulta Presencial",
+          "new-fundacion-interes-privado": "Fundación de Interés Privado",
+          "new-fundacion": "Fundación de Interés Privado",
+          "new-sociedad-empresa": "Sociedad / Empresa",
+          "menores-al-extranjero": "Salida de Menores al Extranjero",
+          "pension-alimenticia": "Pensión Alimenticia",
+          pension: "Pensión Alimenticia",
+          "tramite-general": "Trámite General",
+          "pension-desacato": "Pensión Desacato",
+          "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
         };
 
         return {
@@ -370,8 +392,10 @@ const RequestsStatistics: React.FC = () => {
             </span>
           ),
           Expediente: expediente,
-          Abogado: abogados.map((abogado: any) => abogado.nombre).join(', '),
-          Opciones: <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />,
+          Abogado: abogados.map((abogado: any) => abogado.nombre).join(", "),
+          Opciones: (
+            <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />
+          ),
         };
       }
     );
@@ -379,27 +403,27 @@ const RequestsStatistics: React.FC = () => {
 
   // Possible select options
   const tiposDisponibles = [
-    'Propuesta Legal',
-    'Consulta Escrita',
-    'Consulta Virtual',
-    'Consulta Presencial',
-    'Fundación de Interés Privado',
-    'Sociedad / Empresa',
-    'Salida de Menores al Extranjero',
-    'Pensión Alimenticia',
-    'Trámite General',
-    'Solicitud Cliente Recurrente',
+    "Propuesta Legal",
+    "Consulta Escrita",
+    "Consulta Virtual",
+    "Consulta Presencial",
+    "Fundación de Interés Privado",
+    "Sociedad / Empresa",
+    "Salida de Menores al Extranjero",
+    "Pensión Alimenticia",
+    "Trámite General",
+    "Solicitud Cliente Recurrente",
   ];
 
   const estatusDisponibles = [
-    { value: 0, label: 'Rechazada' },
-    { value: 1, label: 'Borrador' },
-    { value: 10, label: 'Pendiente de pago' },
-    { value: 12, label: 'Aprobada' },
-    { value: 19, label: 'Confirmando pago' },
-    { value: 20, label: 'Pagada' },
-    { value: 30, label: 'En proceso' },
-    { value: 70, label: 'Finalizada' },
+    { value: 0, label: "Rechazada" },
+    { value: 1, label: "Borrador" },
+    { value: 10, label: "Pendiente de pago" },
+    { value: 12, label: "Aprobada" },
+    { value: 19, label: "Confirmando pago" },
+    { value: 20, label: "Pagada" },
+    { value: 30, label: "En proceso" },
+    { value: 70, label: "Finalizada" },
   ];
 
   const handleSelectRow = (id: string) => {
