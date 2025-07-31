@@ -1,7 +1,7 @@
 import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 import { useRouter } from "next/navigation";
 import { MODAL_ALERT_EDIT_ID } from "../../../constants/modal-alert.constant";
-import { getAlertsClasses } from "../../../utils/AlertButton/get-classes-for-reminder-days.util";
+import { getAlertsClasses } from "../../../utils/AlertButton/get-alert-classes-for-time";
 
 const AlertButtonEdit = ({
   timeRemainingValue,
@@ -54,28 +54,11 @@ const AlertButtonEdit = ({
       return "px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600";
     }
 
-    // Para alertas activas, usar la función existente basada en el tiempo faltante
-    // Convertir a "días equivalentes" para usar la función existente
-    let equivalentDays = timeRemainingValue;
-
-    switch (timeRemainingUnit) {
-      case "minutes":
-        equivalentDays = timeRemainingValue / (60 * 24); // minutos a días
-        break;
-      case "hours":
-        equivalentDays = timeRemainingValue / 24; // horas a días
-        break;
-      case "days":
-        equivalentDays = timeRemainingValue;
-        break;
-      case "weeks":
-        equivalentDays = timeRemainingValue * 7; // semanas a días
-        break;
-      default:
-        equivalentDays = timeRemainingValue;
-    }
-
-    return `px-2 py-1 rounded text-xs ${getAlertsClasses(equivalentDays)}`;
+    // Para alertas activas, usar la función modificada que evalúa directamente tiempo y unidad
+    return `px-2 py-1 rounded text-xs ${getAlertsClasses(
+      timeRemainingValue,
+      timeRemainingUnit
+    )}`;
   };
 
   return (
