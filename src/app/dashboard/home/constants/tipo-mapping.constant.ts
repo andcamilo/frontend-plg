@@ -1,0 +1,16 @@
+export const TIPO_MAPPING: { [key: string]: string } = {
+  "propuesta-legal": "Propuesta Legal",
+  "consulta-legal": "Propuesta Legal",
+  "consulta-escrita": "Consulta Escrita",
+  "consulta-virtual": "Consulta Virtual",
+  "consulta-presencial": "Consulta Presencial",
+  "new-fundacion-interes-privado": "Fundación de Interés Privado",
+  "new-fundacion": "Fundación de Interés Privado",
+  "new-sociedad-empresa": "Sociedad / Empresa",
+  "menores-al-extranjero": "Salida de Menores al Extranjero",
+  "pension-alimenticia": "Pensión Alimenticia",
+  pension: "Pensión Alimenticia",
+  "tramite-general": "Trámite General",
+  "pension-desacato": "Pensión Desacato",
+  "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
+};
