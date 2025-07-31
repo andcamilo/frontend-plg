@@ -1,7 +1,5 @@
-import { backendEnv } from "@utils/env";
+import { backendEnv, backendBaseUrl } from "@utils/env";
 import { ReminderUnit } from "../schemas/alerts.schema";
-
-const backendBaseUrl = "http://localhost:4000";
 
 export const getAlerts = async (cuenta: string, solicitudId?: string) => {
   let endpoint = `${backendBaseUrl}/${backendEnv}/alerts?cuenta=${cuenta}`;
