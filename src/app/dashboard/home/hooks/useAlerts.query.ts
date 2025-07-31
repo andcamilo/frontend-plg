@@ -47,6 +47,7 @@ export const useCreateAlertMutation = () => {
     }) => createAlert({ ...alert, cuenta, email }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alerts", cuenta] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", cuenta] });
     },
   });
 };
@@ -82,6 +83,7 @@ export const useUpdateAlertMutation = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alerts", cuenta] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", cuenta] });
     },
   });
 };
@@ -100,6 +102,7 @@ export const useDeleteAlertMutation = () => {
     }) => deleteAlert({ alertId, cuenta, solicitudId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["alerts", cuenta] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", cuenta] });
     },
   });
 };
