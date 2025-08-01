@@ -154,11 +154,13 @@ const RequestsStatistics: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [filterTipo, setFilterTipo] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [filterDate, setFilterDate] = useState("");
-  const [filterExpediente, setFilterExpediente] = useState("");
-  const [filtroContador, setFiltroContador] = useState<string>("");
+  const [filterTipo, setFilterTipo] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDate, setFilterDate] = useState('');
+  const [filterExpediente, setFilterExpediente] = useState('');
+  const [filtroContador, setFiltroContador] = useState<string>('');
+  const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
+  const [selectAll, setSelectAll] = useState(false);
 
   const hayFiltrosActivos =
     filterTipo || filterStatus || filterDate || filterExpediente;
