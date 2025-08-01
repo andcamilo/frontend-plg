@@ -38,6 +38,17 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
       ? consultaContext
       : pagoContext;
 
+  // Debug logging
+  console.log("🚀 ~ SaleComponent ~ Debug Info:");
+  console.log("🚀 ~ pensionContext solicitudId:", pensionContext?.store.solicitudId);
+  console.log("🚀 ~ fundacionContext solicitudId:", fundacionContext?.store.solicitudId);
+  console.log("🚀 ~ sociedadContext solicitudId:", sociedadContext?.store.solicitudId);
+  console.log("🚀 ~ menoresContext solicitudId:", menoresContext?.store.solicitudId);
+  console.log("🚀 ~ consultaContext solicitudId:", consultaContext?.store.solicitudId);
+  console.log("🚀 ~ Selected context:", context?.constructor.name || 'Unknown');
+  console.log("🚀 ~ context.store.token:", context?.store.token);
+  console.log("🚀 ~ context.store:", context?.store);
+
   const [cvv, setCvv] = useState('');
   const [transactionId, setTransactionId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,6 +58,9 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
   };
 
   const handleProcessSale = async () => {
+    console.log("🚀 ~ handleProcessSale ~ Starting sale process");
+    console.log("🚀 ~ handleProcessSale ~ context.store.token:", context?.store.token);
+    
     let precioTotal = 0;
     const solicitudId = context?.store.solicitudId;
 
@@ -58,6 +72,7 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
       });
 
       precioTotal = response.data.canasta.total;
+      console.log("🚀 ~ handleProcessSale ~ precioTotal:", precioTotal);
     } catch (error) {
       console.error('Error fetching solicitud:', error);
       Swal.fire({
@@ -68,7 +83,10 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
       return;
     }
 
+    console.log("🚀 ~ handleProcessSale ~ Token check - context?.store.token:", context?.store.token);
+    
     if (!context?.store.token) {
+      console.log("🚀 ~ handleProcessSale ~ Token is missing or falsy");
       Swal.fire({
         icon: 'error',
         title: 'Error',
@@ -178,6 +196,10 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
       }
     }
   };
+
+  // Debug button state
+  console.log("🚀 ~ SaleComponent Render ~ Button disabled conditions:");
+  console.log("🚀 ~ !context?.store.token:", !context?.store.token);
 
   return (
     <div className="p-6 bg-[#13131A] text-white rounded-lg shadow-lg">

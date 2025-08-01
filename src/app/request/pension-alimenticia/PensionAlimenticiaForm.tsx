@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import PaymentModal from '@/src/app/components/PaymentModal';
 import Cookies from 'js-cookie';
 import RegisterPaymentForm from '../../components/RegisterPaymentForm';
+import { checkAuthToken } from '@utils/checkAuthToken';
 
 interface PensionAlimenticiaFormProps {
   requestId?: string;
@@ -36,6 +37,7 @@ const PensionAlimenticiaForm: React.FC<PensionAlimenticiaFormProps> = () => {
   const { store } = context;
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [email, setEmail] = useState<string>('');
 
   useEffect(() => {
     if (store.currentPosition) {
@@ -50,6 +52,17 @@ const PensionAlimenticiaForm: React.FC<PensionAlimenticiaFormProps> = () => {
 
   useEffect(() => {
     setIsLoggedIn(!!Cookies.get('AuthToken'));
+  }, []);
+
+  useEffect(() => {
+    const userData = checkAuthToken();
+    if (userData) {
+      setEmail(userData.email);
+      setIsLoggedIn(true);
+    } else {
+      setEmail('');
+      setIsLoggedIn(false);
+    }
   }, []);
 
   // Show payment buttons when user reaches the appropriate step
