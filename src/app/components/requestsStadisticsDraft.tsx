@@ -153,11 +153,13 @@ const RequestsStatistics: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [filterTipo, setFilterTipo] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterDate, setFilterDate] = useState('');
-  const [filterExpediente, setFilterExpediente] = useState('');
-  const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
+  const [filterTipo, setFilterTipo] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [filterExpediente, setFilterExpediente] = useState("");
+  const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>(
+    {}
+  );
   const [selectAll, setSelectAll] = useState(false);
 
   const hayFiltrosActivos =
@@ -324,13 +326,19 @@ const RequestsStatistics: React.FC = () => {
   );
 
   const totalPagesEnProceso = useMemo(() => {
-    return Math.max(1, Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage));
+    return Math.max(
+      1,
+      Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage)
+    );
   }, [solicitudesFiltradasEnProceso, rowsPerPage]);
 
   useEffect(() => {
     if (solicitudesFiltradasEnProceso.length === 0) return;
 
-    const totalPages = Math.max(1, Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage));
+    const totalPages = Math.max(
+      1,
+      Math.ceil(solicitudesFiltradasEnProceso.length / rowsPerPage)
+    );
     setPaginationEnProceso({
       hasPrevPage: currentPageEnProceso > 1,
       hasNextPage: currentPageEnProceso < totalPages,
@@ -446,50 +454,58 @@ const RequestsStatistics: React.FC = () => {
   };
 
   const handleDeleteSelected = async () => {
-    const selectedIds = Object.keys(selectedRows).filter((id) => selectedRows[id]);
+    const selectedIds = Object.keys(selectedRows).filter(
+      (id) => selectedRows[id]
+    );
 
     if (selectedIds.length === 0) {
-      Swal.fire('Atención', 'No has seleccionado ninguna solicitud.', 'info');
+      Swal.fire("Atención", "No has seleccionado ninguna solicitud.", "info");
       return;
     }
 
     const confirm = await Swal.fire({
-      title: '¿Estás seguro?',
+      title: "¿Estás seguro?",
       text: `Eliminarás ${selectedIds.length} solicitudes.`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      background: '#2c2c3e',
-      color: '#fff',
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      background: "#2c2c3e",
+      color: "#fff",
     });
 
     if (confirm.isConfirmed) {
       try {
-        await axios.post('/api/delete-multiple-requests', {
+        await axios.post("/api/delete-multiple-requests", {
           solicitudIds: selectedIds,
         });
 
-        Swal.fire('Eliminadas', 'Solicitudes eliminadas correctamente.', 'success');
+        Swal.fire(
+          "Eliminadas",
+          "Solicitudes eliminadas correctamente.",
+          "success"
+        );
         window.location.reload();
       } catch (error) {
-        console.error('Error al eliminar:', error);
-        Swal.fire('Error', 'Hubo un problema al eliminar las solicitudes.', 'error');
+        console.error("Error al eliminar:", error);
+        Swal.fire(
+          "Error",
+          "Hubo un problema al eliminar las solicitudes.",
+          "error"
+        );
       }
     }
   };
 
-  const deleteButtonHeader = (
-    Object.values(selectedRows).some(Boolean) && (
-      <div className="flex justify-end">
-        <button
-          onClick={handleDeleteSelected}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-all"
-        >
-          Eliminar seleccionados
-        </button>
-      </div>
-    )
+  const deleteButtonHeader = Object.values(selectedRows).some(Boolean) && (
+    <div className="flex justify-end">
+      <button
+        onClick={handleDeleteSelected}
+        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-all"
+      >
+        Eliminar seleccionados
+      </button>
+    </div>
   );
 
   return (

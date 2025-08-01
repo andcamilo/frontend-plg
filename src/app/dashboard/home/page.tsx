@@ -1,5 +1,4 @@
 import React from "react";
-import LegixStadisticsContainer from "./components/LegixStadisticsContainer";
 import TableRequestsContainer from "./components/TableRequests/TableRequestsContainer";
 import { Modal } from "@app/(global)/components/Modal";
 import AlertFormEdit from "./components/Alerts/AlertFormEdit";
@@ -10,7 +9,6 @@ import {
 } from "./constants/modal-alert.constant";
 import NotificationsButton from "@app/(global)/components/Notifications/NotificationsButton";
 
-// Force dynamic rendering since this page requires authentication
 export const dynamic = "force-dynamic";
 
 export default function Home() {
@@ -23,7 +21,6 @@ export default function Home() {
         </div>
       </div>
       <TableRequestsContainer />
-      <LegixStadisticsContainer />
       <Modal modalId={MODAL_ALERT_EDIT_ID}>
         <AlertFormEdit />
       </Modal>
