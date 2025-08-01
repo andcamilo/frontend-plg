@@ -1,5 +1,4 @@
 import React from "react";
-import LegixStadisticsContainer from "./components/LegixStadisticsContainer";
 import TableRequestsContainer from "./components/TableRequests/TableRequestsContainer";
 import { Modal } from "@app/(global)/components/Modal";
 import AlertFormEdit from "./components/Alerts/AlertFormEdit";
@@ -22,7 +21,6 @@ export default function Home() {
         </div>
       </div>
       <TableRequestsContainer />
-      <LegixStadisticsContainer />
       <Modal modalId={MODAL_ALERT_EDIT_ID}>
         <AlertFormEdit />
       </Modal>
