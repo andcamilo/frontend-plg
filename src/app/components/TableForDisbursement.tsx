@@ -17,7 +17,7 @@ interface TableForDisbursementProps {
   onPageChangeNext: () => void;
   onPageChangePrev: () => void;
   onEdit: (row: { [key: string]: any }) => void;
-  onGetSelectedIds: (selectedIds: string[], action?: 'update' | 'delete') => void;
+  onGetSelectedIds: (selectedIds: string[], action?: 'update' | 'delete', selectedStatus?: number) => void;
   buttonText?: string;
   deleteButtonText?: string;
   loading?: boolean;
@@ -57,6 +57,21 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   const [selectedRows, setSelectedRows] = useState<{ [key: number]: boolean }>({});
   const [selectAll, setSelectAll] = useState(false);
   const [role, setRole] = useState<number>(0);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<number>(0);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const statusLabels: Record<number, string> = {
+    0: "Rechazada",
+    1: "Borrador",
+    10: "Enviada",
+    11: "Pre-aprobada",
+    12: "Aprobada",
+    19: "Confirmando pago",
+    20: "Pagada",
+    30: "En proceso",
+    70: "Finalizada",
+  };
 
   // 👇 Filtros
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -139,9 +154,35 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
   };
 
   const handleGetSelectedIds = (action: 'update' | 'delete' = 'update') => {
+    if (action === 'update') {
+      setShowStatusModal(true);
+    } else {
+      const selectedIndexes = Object.keys(selectedRows).filter((key) => selectedRows[Number(key)]);
+      const selectedIds = selectedIndexes.map((key) => filteredData[Number(key)].invoice_id ?? filteredData[Number(key)].id);
+      onGetSelectedIds(selectedIds, action);
+    }
+  };
+
+  const handleUpdateStatus = async () => {
     const selectedIndexes = Object.keys(selectedRows).filter((key) => selectedRows[Number(key)]);
     const selectedIds = selectedIndexes.map((key) => filteredData[Number(key)].invoice_id ?? filteredData[Number(key)].id);
-    onGetSelectedIds(selectedIds, action);
+    
+    setUpdatingStatus(true);
+    try {
+      await onGetSelectedIds(selectedIds, 'update', selectedStatus);
+      setShowStatusModal(false);
+      setSelectedRows({});
+      setSelectAll(false);
+    } catch (error) {
+      console.error('Error updating status:', error);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowStatusModal(false);
+    setSelectedStatus(0);
   };
 
   const canDelete = role !== undefined && [50, 90, 99].includes(role);
@@ -195,8 +236,7 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
             </div>
           )}
         </div>
-
-        {/* Bulk action buttons */}
+        
         {canDelete && (
           <div className="flex gap-2 mt-4">
             <button
@@ -214,6 +254,62 @@ const TableForDisbursement: React.FC<TableForDisbursementProps> = ({
           </div>
         )}
       </div>
+
+      {/* Status Update Modal */}
+      {showStatusModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-800 rounded-lg shadow-lg w-11/12 max-w-md p-6 relative">
+            <button
+              className="absolute top-2 right-2 text-white text-xl hover:text-gray-300"
+              onClick={handleCloseModal}
+            >
+              ✕
+            </button>
+            <h2 className="text-white text-2xl font-bold mb-4">Actualizar Estado</h2>
+            <p className="text-gray-300 mb-4">
+              Selecciona el nuevo estado para los elementos seleccionados:
+            </p>
+            
+            <div className="mb-6">
+              <label htmlFor="status-select" className="block text-gray-300 mb-2">
+                Estado:
+              </label>
+              <select
+                id="status-select"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(Number(e.target.value))}
+                className="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
+              >
+                {Object.entries(statusLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={handleCloseModal}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleUpdateStatus}
+                disabled={updatingStatus}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  updatingStatus
+                    ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                {updatingStatus ? 'Actualizando...' : 'Actualizar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-gray-300">Cargando desembolsos...</p>

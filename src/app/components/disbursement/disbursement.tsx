@@ -79,6 +79,22 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
       return;
     }
 
+    // Check if invoiceNumber is provided for client expenses with status true
+    if (state.desembolsoCliente && state.desembolsoCliente.length > 0) {
+      const hasEmptyInvoiceNumber = state.desembolsoCliente.some(item => 
+        item.status === true && (!item.invoiceNumber || item.invoiceNumber.trim() === '')
+      );
+      
+      if (hasEmptyInvoiceNumber) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'El número de factura es obligatorio para todos los gastos de cliente activos.',
+        });
+        return;
+      }
+    }
+
     setIsLoading(true);
     try {
       const endpoint = id 
@@ -102,15 +118,65 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
       const data = await response.json();
       console.log(`Disbursement ${id ? 'updated' : 'created'} successfully:`, data);
 
-      // Optionally update the context with the new data (if needed)
-      setState(prev => ({ ...prev, ...data }));
-
       // Show success alert and then navigate
       Swal.fire({
         icon: 'success',
         title: 'Éxito',
         text: `¡El desembolso fue ${id ? 'actualizado' : 'guardado'} exitosamente!`,
       }).then(() => {
+        // Reset context to empty values
+        setState({
+          disbursementType: '',
+          solicita: '',
+          expenseType: '',
+          status: 'creada',
+          desemboloOficina: [
+            {
+              expenseType: '', 
+              otherExpenseType: '',
+              expenseDetail: '', 
+              amount: 0,
+              invoiceNumber: '',
+              status: false,
+            },
+          ],
+          desembolsoCliente: [
+            {
+              invoiceNumber: '',
+              amount: 0,
+              expenseObject: '', 
+              otherExpenses: '', 
+              billedExpensesSent: '', 
+              clientPaidExpensesSent:'',
+              associatedExpenseDetail: '',
+              status: false,
+            },
+          ],
+          desembolsoCajaChica: [{
+            date: '',
+            amount: 0,
+            invoiceNumber: '',
+            disbursementType: '',
+            reason: '',
+            observation: '',
+            status: false,
+            fileRef: '',
+          }],
+          detalleDesembolsoPagado: {
+            paymentDate: '',
+            transactionNumber: '',
+            attachedFile: '',
+          },
+          detalleTransferenciaPago: {
+            selectOption: '',
+            name: '', 
+            number: '',
+            bank: '', 
+            observation: '', 
+            paymentDate: '', 
+          }
+        });
+        
         // Navigate to the dashboard page after the alert is confirmed.
         router.push('/dashboard/see');
       });
@@ -162,7 +228,9 @@ const Disbursement: React.FC<DisbursementProps> = ({ id }) => {
             >
               <option value="" disabled>Selecciona una opción</option>
               <option value="desembolso-gastos">Desembolso de gastos</option>
-              <option value="desembolso-caja-chica">Desembolso de caja chica</option>
+              {(numericRole && numericRole > 49) && (
+                <option value="desembolso-caja-chica">Desembolso de caja chica</option>
+              )}
             </select>
           </div>
 

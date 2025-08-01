@@ -70,7 +70,7 @@ const User: React.FC = () => {
                 console.log("USER ", user)
                 const rolLabels = {
                     99: "Super Administrador",
-                    90: "Administrador ",
+                    90: "Administrador",
                     80: "Auditor",
                     50: "Caja Chica",
                     45: "Solicitante de gastos",
@@ -408,7 +408,7 @@ const User: React.FC = () => {
                         required
                     >
                         <option value="">Selecciona un permiso</option>
-                        <option value="caja chica">caja chica</option>
+                        <option value="caja-chica">caja chica</option>
                         <option value="expediente">expediente</option>
                         <option value="administrador">administrador</option>
                     </select>

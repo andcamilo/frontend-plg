@@ -5,12 +5,15 @@ import axios from 'axios';
 import countryCodes from '@utils/countryCode';
 import Swal from 'sweetalert2';
 import { checkAuthToken } from "@utils/checkAuthToken";
-import BannerPazsalvos from '../BannerPazsalvos';
+import BannerPazsalvos from '@components/BannerPazsalvos';
 import CountrySelect from '@components/CountrySelect';
+import "@configuration/firebase";
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import Link from 'next/link';
+import PaymentModal from '@/src/app/components/PaymentModal';
+import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 
 import {
     firebaseApiKey,
@@ -41,10 +44,10 @@ export default function SolicitudPazSalvo() {
     cedulaPasaporte: "",
     telefono: "",
     telefonoCodigo: "PA",
-    // celular: "",
     tipoConsulta: "Paz Salvo",
     tipoPazSalvo: "",
     terminosAceptados: false,
+    notificaciones:false,
     cuenta: "",
     userId: "",
     soyPropietario: false,
@@ -70,7 +73,28 @@ export default function SolicitudPazSalvo() {
   const [cargoSinCliente, setCargoSinCliente] = useState(0);
   const [mostrarAdvertenciaCliente, setMostrarAdvertenciaCliente] = useState(false);
   const [archivoCedulaImagen, setArchivoCedulaImagen] = useState<File | null>(null);
-  
+  const [enviando, setEnviando] = useState(false);
+
+  // Payment modal and register payment modal logic
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isRegisterPaymentModalOpen, setIsRegisterPaymentModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(25); // or calculate based on formData
+
+  const handlePaymentClick = () => {
+    setLoading(true);
+    setIsPaymentModalOpen(true);
+  };
+  const handleClosePaymentModal = () => {
+    setIsPaymentModalOpen(false);
+    setLoading(false);
+  };
+  const handleSendAndPayLater = async () => {
+    setLoading(true);
+    // Aquí va la lógica para enviar y pagar más tarde
+    setTimeout(() => setLoading(false), 1000);
+  };
+
   const handleSelectTipoSalvo = (e: ChangeEvent<HTMLSelectElement>) => {
     setFormData((prev) => ({
       ...prev,
@@ -105,12 +129,8 @@ export default function SolicitudPazSalvo() {
 
       fetchUser();
     }
-
-  
-    //tengo que preguntar si el usuario está logueado 
   }
   
-    //countries
   const getCountries = () => {
         return [
             'Panama', 'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia',
@@ -193,10 +213,12 @@ export default function SolicitudPazSalvo() {
     direccionBuscar: false,
     direccionIr: false,
     emailRespuesta: false,
-  }); // TODO: esto se esta usando??? verificar sino, eliminar. O darle la funcionalidad que se necesita
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+  
+  if (enviando) return; 
 
   if (!terminosAceptados) {
     Swal.fire({
@@ -221,6 +243,35 @@ export default function SolicitudPazSalvo() {
     });
     return;
   }
+    const camposObligatorios = [
+    'nombreCompleto',
+    'email',
+    'cedulaPasaporte',
+    'telefono',
+    'tipoConsulta',
+    'tipoPazSalvo',
+    'nacionalidad',
+    'numeroFinca',
+    'codigoUbicacion',
+    'ubicacionFinca',
+  ];
+
+  for (const campo of camposObligatorios) {
+    const valor = formData[campo];
+    if (typeof valor === 'string' && valor.trim() === '') {
+      Swal.fire({
+        icon: 'warning',
+        title: `El campo "${campo}" es obligatorio.`,
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+      });
+      return;
+    }
+  }
+
+  setEnviando(true);
 
   try {
     const userData = checkAuthToken(); // verifica si está logueado
@@ -265,12 +316,14 @@ export default function SolicitudPazSalvo() {
       background: '#2c2c3e',
       color: '#fff',
     });
+  } finally {
+     setEnviando(false); 
   }
 };
 
   /**
    * 
-   preparo los datos para la solicitud
+  preparo los datos para la solicitud
    */
   const sendCreateRequest = async (cuenta: string) => {
     try {
@@ -280,7 +333,7 @@ export default function SolicitudPazSalvo() {
       if (formData.tipoPazSalvo === "idaan") {
         precio = 25;
       } else if (formData.tipoPazSalvo === "aseo") {
-        precio = 20;
+        precio = 25;
       }
       if (formData.tipoPazSalvo === "idaan") item = "IDAAN";
       else if (formData.tipoPazSalvo === "aseo") item = "ASEO";
@@ -290,12 +343,11 @@ export default function SolicitudPazSalvo() {
         item: item,
         cuenta: formData.userId, 
         date: new Date().toISOString(), 
-        expediente: "", // TODO: revisar si es necesario
+        expediente: "", 
         emailSolicita: formData.email, 
         nombreSolicita: formData.nombreCompleto, 
         status: 1,
         tipo: tipo,
-        // TODO: falta setear cosas
         nacionalidad: formData.nacionalidad,
         cedulaPasaporte: formData.cedulaPasaporte,
         numeroFinca: formData.numeroFinca,
@@ -307,8 +359,6 @@ export default function SolicitudPazSalvo() {
         numeroCliente: formData.numeroCliente,
         tieneNumeroCliente: formData.tieneNumeroCliente,
         tipoConsulta: formData.tipoConsulta,
-
-        // calculo del precio
         precio: precio,
         subtotal: precio,
         total: precio,
@@ -376,6 +426,8 @@ export default function SolicitudPazSalvo() {
     codigoUbicacion: "",
     ubicacionFinca: "",
     archivoCedulaImagenURL: "",
+    notificaciones:false,
+
   });
 }
         
@@ -466,79 +518,6 @@ export default function SolicitudPazSalvo() {
     }));
   };
 
-  
-  /*
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-  
-    // Validación según tipo de paz y salvo
-    const camposIdaan = [
-      "nombre", "apellido", "mail", "telefono",
-      "nacionalidad", "cedula", "numeroFinca", "tomoRollo",
-      "documentoRedi", "codigoUbicacion", "ubicacionFinca",
-      "nicIdaan", "tramite"
-    ];
-  
-    const camposAseo = [
-      "nombre", "apellido", "mail", "telefono",
-      "nacionalidad", "cedula", "numeroFinca", "tomoRollo",
-      "documentoRedi", "codigoUbicacion", "ubicacionFinca",
-      "tramite"
-    ];
-  
-     const camposAValidar =
-      formData.tipoPazSalvo === "idaan" ? camposIdaan :
-      formData.tipoPazSalvo === "aseo" ? camposAseo : [];
-  
-    const hayVacios = camposAValidar.some((campo) => {
-      const valor = (formData as any)[campo];
-      return !valor || valor.trim() === "";
-    });
-  
-    if (hayVacios) {
-      Swal.fire({
-        icon: "warning",
-        title: "Faltan datos",
-        text: "Por favor, completa todos los campos requeridos antes de enviar.",
-      });
-      return;
-    }
-  */
-  /*
-    try {
-      const emailResult = await axios.get('/api/validate-email', {
-        params: {
-          email: formData.email,
-          isLogged: isLoggedIn.toString(),
-        },
-      });
-  
-      const { cuenta, isLogged } = emailResult.data;
-  
-      if (isLogged && cuenta) {
-        setFormData((prev) => ({ ...prev, cuenta }));
-        console.log('Formulario válido, enviar:', formData);
-      } else if (!isLogged && cuenta) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Correo ya registrado',
-          text: 'Debes iniciar sesión en la plataforma para continuar con tu solicitud.',
-        });
-        return;
-      } else {
-        console.log('Usuario nuevo, continuar');
-      }
-  
-    } catch (error) {
-      console.error('Error validando email:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Ocurrió un error al validar el correo electrónico.',
-      });
-    }
-  };*/
-
   return (
 
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707]">
@@ -574,7 +553,6 @@ export default function SolicitudPazSalvo() {
         </div>
 
         {/* ¿Tiene número de cliente? */}
-
 {formData.tipoPazSalvo && (
   <div className="mb-6">
     <label className="text-white block mb-2">¿Tiene número de cliente?</label>
@@ -587,7 +565,6 @@ export default function SolicitudPazSalvo() {
           onChange={() => {
             setFormData((prev) => ({ ...prev, tieneNumeroCliente: true }));
             setCargoSinCliente(0);
-            setMostrarAdvertenciaCliente(false);
           }}
         />{' '}
         Sí
@@ -601,18 +578,22 @@ export default function SolicitudPazSalvo() {
           onChange={() => {
             setFormData((prev) => ({ ...prev, tieneNumeroCliente: false }));
             setCargoSinCliente(25);
-            setMostrarAdvertenciaCliente(true);
+
+            // 🎯 Alerta con el mismo diseño oscuro que el resto del formulario
+            Swal.fire({
+              icon: 'warning',
+              title: 'Advertencia',
+              text: 'Para Solicitar Paz y Salvo, necesita un número de cliente, Si no lo tiene, primero debe solicitar una inspección en su finca para que le asignen uno. Podemos ayudarte con esta gestión. El tiempo puede variar según la disponibilidad de la institución, esta gestión genera un recargo a la solicitud, se adiciona un cargo de $25.00.',
+              background: '#2c2c3e',
+              color: '#fff',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'Aceptar',
+            });
           }}
         />{' '}
         No
       </label>
     </div>
-
-    {mostrarAdvertenciaCliente && (
-      <div className="mt-2 p-3 bg-yellow-700 bg-opacity-20 border border-red-500 text-yellow-300 rounded">
-        Al no contar con número de cliente, el trámite puede tardar más en gestionarse y se adiciona un cargo de <strong>$25.00</strong>.
-      </div>
-    )}
 
     {formData.tieneNumeroCliente === true && (
       <div className="mt-6">
@@ -658,185 +639,212 @@ export default function SolicitudPazSalvo() {
           </div>
         )}
 
+{/* Encabezado */}
+<div className="mb-6">
+  <h2 className="text-white text-2xl font-semibold">Información Personal</h2>
+  <p className="text-white text-sm">* Coméntanos tu información como solicitante para poder contactarte.</p>
+</div>
+<hr className="mb-4" />
 
-        <div className="mb-6">
-          <h2 className="text-white text-2xl font-semibold">Información Personal</h2>
-          <>
-            <p className="text-white text-sm">* Coméntanos tu información como solicitante para poder contactarte.</p>
-          </>
-
-
-        </div>
-        <hr className="mb-4" />
-        <div className="grid grid-cols-1 gap-4">
-          <div className="relative w-full">
-            <label className="block text-white mb-2">Nombre completo (persona natural):</label>
-            <input
-              ref={nombreCompletoRef}
-              type="text"
-              name="nombreCompleto"
-              value={formData.nombreCompleto}
-              onChange={handleInputChange}
-              className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
-            //disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
-            />
-          </div>
-          <div className="relative w-full">
-            <label className="block text-white mb-2">Dirección de correo electrónico:</label>
-            <input
-              ref={emailRef}
-              type="text"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
-            //disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 mt-4">
-          <div className="relative w-full">
-            <label className="block text-white mb-2">Número de cédula o Pasaporte:</label>
-            <input
-              ref={cedulaPasaporteRef}
-              type="text"
-              name="cedulaPasaporte"
-              value={formData.cedulaPasaporte}
-              onChange={handleInputChange}
-              className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
-              placeholder="Número de cédula o Pasaporte"
-            //disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
-            />
-          </div>
-          <div className="relative w-full">
-            <label className="block text-white mb-2">Adjuntar imagen de la cédula:</label>
-            <input
-              type="file"
-              name="cedulaImagen"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full p-2 bg-gray-800 text-white rounded-lg"
-            />
-            {formData.archivoCedulaImagenURL && (
-                            <p className="text-sm text-blue-500">
-                                <Link
-                                href={formData.archivoCedulaImagenURL}
-                                target={formData.archivoCedulaImagenURL.startsWith('/') ? undefined : '_blank'}
-                                rel={formData.archivoCedulaImagenURL.startsWith('/') ? undefined : 'noopener noreferrer'}
-                                >
-                                    Ver documento actual
-                                </Link>
-                            </p>
-                            )}
-          </div>
-          <div className="flex flex-col col-span-1">
-            <label className="block text-white w-full">Número de teléfono:</label>
-            <div className="flex gap-2 mt-2">
-
-              <CountrySelect
-                name="telefonoCodigo"
-                value={formData.telefonoCodigo}
-                onChange={(value) => handleCountryChange('telefonoCodigo', value)}
-                className="w-contain"
-              />
-              <input
-                ref={telefonoRef}
-                type="text"
-                name="telefono"
-                value={formData.telefono}
-                onChange={handleInputChange}
-                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
-              //disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
-              />
-            </div>
-          </div>
-          {/* <div className="flex flex-col col-span-1">
-            <label className="block text-white w-full">Número de celular / WhatsApp:</label>
-            <div className="flex gap-2 mt-2">
-              <CountrySelect
-                name="celularCodigo"
-                value={formData.celularCodigo}
-                onChange={(value) => handleCountryChange('celularCodigo', value)}
-                className="w-contain"
-              />
-              <input
-                ref={celularRef}
-                type="text"
-                name="celular"
-                value={formData.celular}
-                onChange={handleInputChange}
-                className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.celular ? 'border-2 border-red-500' : ''}`}
-              //disabled={solicitudData && solicitudData.status >= 10 && (store?.rol ?? Number.POSITIVE_INFINITY) < 20}
-              />
-            </div>
-          </div> */}
-          <div className="relative w-full">
-                        <label className="block text-white mb-2">Nacionalidad:</label>
-                        <select
-                            name="nacionalidad"
-                            value={formData.nacionalidad}
-                            onChange={handleInputChange}
-                            className="p-4 rounded bg-gray-800"
-
-                        >
-                            {getCountries().map((country) => (
-                                <option key={country} value={country}>
-                                    {country}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-          <input
-            type="text"
-            name="numeroFinca"
-            placeholder="Número de Finca"
-            value={formData.numeroFinca}
-            onChange={handleInputChange}
-            className="p-3 rounded bg-gray-800"
-          />
-          <input
-            type="text"
-            name="tomoRollo"
-            placeholder="Tomo / Rollo"
-            value={formData.tomoRollo}
-            onChange={handleInputChange}
-            className="p-3 rounded bg-gray-800"
-          />
-          <input
-            type="text"
-            name="documentoRedi"
-            placeholder="Documento Redi"
-            value={formData.documentoRedi}
-            onChange={handleInputChange}
-            className="p-3 rounded bg-gray-800"
-          />
-          <input
-            type="text"
-            name="codigoUbicacion"
-            placeholder="Código de Ubicación"
-            value={formData.codigoUbicacion}
-            onChange={handleInputChange}
-            className="p-3 rounded bg-gray-800"
-          />
-          <textarea
-            name="ubicacionFinca"
-            placeholder="Domicilio y Ubicación de la Finca"
-            value={formData.ubicacionFinca}
-            onChange={handleInputChange}
-            className="p-3 rounded bg-gray-800"
-          />
-        </div>
-        <div className="mt-4">
-  <label className="inline-flex items-center">
+{/* Grid principal de 2 columnas */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+  {/* Fila 1 */}
+  <div className="w-full">
+    <label className="block text-white mb-2">Nombre completo (persona natural):</label>
     <input
-      type="checkbox"
-      checked={terminosAceptados}
-      onChange={(e) => setTerminosAceptados(e.target.checked)}
-      className="form-checkbox"
+      ref={nombreCompletoRef}
+      type="text"
+      name="nombreCompleto"
+      value={formData.nombreCompleto}
+      onChange={handleInputChange}
+      className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.nombreCompleto ? 'border-2 border-red-500' : ''}`}
     />
-    <span className="ml-2 text-white">Acepto los términos y condiciones de este servicio.</span>
+  </div>
+  <div className="w-full">
+    <label className="block text-white mb-2">Dirección de correo electrónico:</label>
+    <input
+      ref={emailRef}
+      type="text"
+      name="email"
+      value={formData.email}
+      onChange={handleInputChange}
+      className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.email ? 'border-2 border-red-500' : ''}`}
+    />
+  </div>
+
+  {/* Fila 2 */}
+  <div className="w-full">
+    <label className="block text-white mb-2">Número de cédula o Pasaporte:</label>
+    <input
+      ref={cedulaPasaporteRef}
+      type="text"
+      name="cedulaPasaporte"
+      value={formData.cedulaPasaporte}
+      onChange={handleInputChange}
+      placeholder="Número de cédula o Pasaporte"
+      className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.cedulaPasaporte ? 'border-2 border-red-500' : ''}`}
+    />
+  </div>
+  <div className="w-full">
+    <label className="block text-white mb-2">Adjuntar imagen de la cédula:</label>
+    <input
+      type="file"
+      name="cedulaImagen"
+      accept="image/*"
+      onChange={handleFileChange}
+      className="w-full p-4 bg-gray-800 text-white rounded-lg"
+    />
+    {formData.archivoCedulaImagenURL && (
+      <p className="text-sm text-blue-500">
+        <Link href={formData.archivoCedulaImagenURL} target="_blank" rel="noopener noreferrer">
+          Ver documento actual
+        </Link>
+      </p>
+    )}
+  </div>
+
+  {/* Fila 3 */}
+  <div className="w-full">
+    <label className="block text-white mb-2">Número de teléfono:</label>
+    <div className="flex gap-2">
+      <CountrySelect
+        name="telefonoCodigo"
+        value={formData.telefonoCodigo}
+        onChange={(value) => handleCountryChange('telefonoCodigo', value)}
+        className="w-contain"
+      />
+      <input
+        ref={telefonoRef}
+        type="text"
+        name="telefono"
+        value={formData.telefono}
+        onChange={handleInputChange}
+        className={`w-full p-4 bg-gray-800 text-white rounded-lg ${errors.telefono ? 'border-2 border-red-500' : ''}`}
+      />
+    </div>
+  </div>
+
+          <div className="w-full">
+            <label className="block text-white mb-2">Nacionalidad:</label>
+            <select
+              name="nacionalidad"
+              value={formData.nacionalidad}
+              onChange={handleInputChange}
+              className="w-full p-4 bg-gray-800 text-white rounded-lg"
+            >
+              <option value="" disabled hidden>
+                Selecciona tu nacionalidad
+              </option>
+              {getCountries().map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
+          </div>
+
+  {/* Fila 4: Número de finca, Tomo/Rollo, Redi, Ubicación */}
+  <div className="md:col-span-2">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label className="block text-white mb-2">Número de Finca:</label>
+        <input
+          type="text"
+          name="numeroFinca"
+          value={formData.numeroFinca}
+          onChange={handleInputChange}
+          placeholder=""
+          className="p-3 rounded bg-gray-800 w-full text-white"
+        />
+      </div>
+      <div>
+        <label className="block text-white mb-2">Tomo/Rollo:</label>
+        <input
+          type="text"
+          name="tomoRollo"
+          value={formData.tomoRollo}
+          onChange={handleInputChange}
+          placeholder=""
+          className="p-3 rounded bg-gray-800 w-full text-white"
+        />
+      </div>
+      <div>
+        <label className="block text-white mb-2">Documento Redi:</label>
+        <input
+          type="text"
+          name="documentoRedi"
+          value={formData.documentoRedi}
+          onChange={handleInputChange}
+          placeholder=""
+          className="p-3 rounded bg-gray-800 w-full text-white"
+        />
+      </div>
+      <div>
+        <label className="block text-white mb-2">Código de Ubicación:</label>
+        <input
+          type="text"
+          name="codigoUbicacion"
+          value={formData.codigoUbicacion}
+          onChange={handleInputChange}
+          placeholder=""
+          className="p-3 rounded bg-gray-800 w-full text-white"
+        />
+      </div>
+    </div>
+  </div>
+
+  {/* Fila 5: Ubicación de finca, ocupa toda la fila */}
+  <div className="md:col-span-2">
+    <label className="block text-white mb-2 mt-4">Domicilio/Ubicación de la Finca:</label>
+    <textarea
+      name="ubicacionFinca"
+      value={formData.ubicacionFinca}
+      onChange={handleInputChange}
+      className="p-3 rounded bg-gray-800 w-full text-white"
+      placeholder="Domicilio y Ubicación de la Finca"
+    />
+  </div>
+</div>
+  <div className="mt-4">
+  <p className="text-white">¿Deseas que te notifiquemos a tu correo?</p>
+  <label className="inline-flex items-center mt-4">
+    <input
+      type="radio"
+      name="notificaciones"
+      value="true"
+      checked={formData.notificaciones === true}
+      onChange={() =>
+        setFormData((prev) => ({ ...prev, notificaciones: true }))
+      }
+      className="form-radio"
+    />
+    <span className="ml-2 text-white">Sí, enviarme las notificaciones por correo electrónico.</span>
   </label>
 </div>
+<div className="mt-2">
+  <label className="inline-flex items-center mt-2">
+    <input
+      type="radio"
+      name="notificaciones"
+      value="false"
+      checked={formData.notificaciones === false}
+      onChange={() =>
+        setFormData((prev) => ({ ...prev, notificaciones: false }))
+      }
+      className="form-radio"
+    />
+    <span className="ml-2 text-white">No, lo reviso directamente en el sistema.</span>
+  </label>
+</div>
+        <label className="inline-flex items-center">
+          <input
+            type="checkbox"
+            checked={terminosAceptados}
+            onChange={(e) => setTerminosAceptados(e.target.checked)}
+            className="form-checkbox"
+          />
+          <span className="ml-2 text-white">Acepto los términos y condiciones de este servicio.</span>
+        </label>
 
 <div className="mt-4">
   <ReCAPTCHA
@@ -860,7 +868,7 @@ export default function SolicitudPazSalvo() {
         <tr className="border-b border-gray-600">
           <td className="p-2">1</td>
           <td className="p-2">{formData.tipoPazSalvo === "idaan" ? "IDAAN" : "ASEO"}</td>
-          <td className="text-right p-2">${formData.tipoPazSalvo === "idaan" ? "25.00" : "20.00"}</td>
+          <td className="text-right p-2">${formData.tipoPazSalvo === "idaan" ? "25.00" : "25.00"}</td>
         </tr>
         {cargoSinCliente > 0 && (
           <tr className="border-b border-gray-600">
@@ -881,11 +889,77 @@ export default function SolicitudPazSalvo() {
     </table>
   </div>
 )}
-        {/* Submit (puede ocultarse si se desea según lógica) */}
-        <button type="submit" className="mt-6 p-3 bg-green-600 text-white rounded-lg">
-          Enviar Solicitud
+      
+        <button
+          type="submit"
+          className={`mt-6 p-3 rounded-lg ${enviando ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
+            } text-white`}
+          disabled={enviando}
+        >
+          {enviando ? 'Enviando...' : 'Enviar Solicitud'}
         </button>
-      </form>
+
+        {/* Payment and Register Payment Buttons */}
+        <div className="flex flex-col gap-2 mt-6">
+          <button
+            type="button"
+            onClick={handlePaymentClick}
+            disabled={loading}
+            className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+          >
+            {loading ? 'Cargando...' : 'Pagar en línea'}
+          </button>
+          <button
+            type="button"
+            onClick={handleSendAndPayLater}
+            disabled={loading}
+            className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+          >
+            {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsRegisterPaymentModalOpen(true)}
+            className="bg-profile text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+          >
+            Registrar Pago
+          </button>
+          <button
+            type="button"
+            className="bg-gray-500 text-white w-full py-3 rounded-lg"
+            onClick={() => window.location.href = "/dashboard/requests"}
+          >
+            Salir
+          </button>
+        </div>
+
+        {/* PaymentModal */}
+        {isPaymentModalOpen && (
+          <PaymentModal
+            isOpen={isPaymentModalOpen}
+            onClose={handleClosePaymentModal}
+            saleAmount={total}
+          />
+        )}
+
+        {/* RegisterPaymentForm Modal */}
+        {isRegisterPaymentModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-gray-900 rounded-lg w-11/12 max-w-md p-6 relative">
+              <button
+                className="absolute top-2 right-2 text-white text-xl"
+                onClick={() => setIsRegisterPaymentModalOpen(false)}
+              >
+                ✕
+              </button>
+              <h2 className="text-white text-2xl font-bold mb-4">Registrar Pago</h2>
+              <RegisterPaymentForm
+                onClose={() => setIsRegisterPaymentModalOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+        </form>
     </div>
   );
 }
