@@ -14,7 +14,12 @@ const TableRequestsSkeleton = () => {
           <Th>Fecha de creación</Th>
           <Th>Status</Th>
           <Th>ID</Th>
-          <Th>Recordatorio</Th>
+          <Th>
+            <div className="flex items-center">
+              Recordatorio
+              <div className="w-4 h-4 ml-1 bg-gray-700 rounded animate-pulse" />
+            </div>
+          </Th>
           <Th>Abogados</Th>
         </Thead>
         <Tbody>
