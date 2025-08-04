@@ -27,7 +27,7 @@ const TableRequests = ({ solicitudes, alerts }: TableRequestsProps) => {
   const { sortState, toggleSort } = useSortContext();
 
   return (
-    <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
       <Table>
         <Thead>
           <Th>Tipo trámite</Th>
