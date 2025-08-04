@@ -55,6 +55,9 @@ const AlertFormEdit = () => {
         defaultValues={formData}
         isSubmitting={isPending}
       />
+      <span className="text-sm text-gray-200 p-6">
+        Esta alerta esta asignada a: {alert.email}
+      </span>
     </>
   );
 };
