@@ -408,7 +408,7 @@ const User: React.FC = () => {
                         required
                     >
                         <option value="">Selecciona un permiso</option>
-                        <option value="caja chica">caja chica</option>
+                        <option value="caja-chica">caja chica</option>
                         <option value="expediente">expediente</option>
                         <option value="administrador">administrador</option>
                     </select>

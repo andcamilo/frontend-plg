@@ -11,4 +11,5 @@ export const LAWYERS_EMAILS = [
   'mari4067@gmail.com',
   'mclemente@panamalegalgroup.com',
   'jbecerra@panamalegalgroup.com',
+  'dcastillo@panamalegalgroup.com'
 ]; 

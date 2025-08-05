@@ -19,8 +19,29 @@ function usePaymentContext() {
   const consulta   = useContext(ConsultaContext);
   const payment    = useContext(PaymentContext);
 
-  // Return the first available context for token updates
-  return pension || fundacion || sociedad || menores || consulta || payment;
+  // Use the same logic as widgetLoader.tsx and saleComponent.tsx - select context with solicitudId
+  const selectedContext = pension?.store.solicitudId
+    ? pension
+    : fundacion?.store.solicitudId
+    ? fundacion
+    : sociedad?.store.solicitudId
+    ? sociedad
+    : menores?.store.solicitudId
+    ? menores
+    : consulta?.store.solicitudId
+    ? consulta
+    : payment;
+
+  console.log("🚀 ~ PaymentModal ~ Context selection:");
+  console.log("🚀 ~ pension solicitudId:", pension?.store.solicitudId);
+  console.log("🚀 ~ fundacion solicitudId:", fundacion?.store.solicitudId);
+  console.log("🚀 ~ sociedad solicitudId:", sociedad?.store.solicitudId);
+  console.log("🚀 ~ menores solicitudId:", menores?.store.solicitudId);
+  console.log("🚀 ~ consulta solicitudId:", consulta?.store.solicitudId);
+  console.log("🚀 ~ Selected context for PaymentModal:", selectedContext?.constructor.name || 'payment');
+  console.log("🚀 ~ Selected context store.token:", selectedContext?.store.token);
+
+  return selectedContext;
 }
 
 interface PaymentModalProps {
@@ -50,6 +71,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, saleAmount
   }
 
   const { store } = context;
+
+  console.log("🚀 ~ PaymentModal Render ~ store.token:", store.token);
+  console.log("🚀 ~ PaymentModal Render ~ !store.token:", !store.token);
+  console.log("🚀 ~ PaymentModal Render ~ Will show:", !store.token ? "WidgetLoader" : "SaleComponent");
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center p-4">

@@ -18,8 +18,28 @@ function usePaymentContext() {
   const consulta   = useContext(ConsultaContext);
   const payment    = useContext(PaymentContext);
 
-  // Return the first available context for token updates
-  return pension || fundacion || sociedad || menores || consulta || payment;
+  // Use the same logic as saleComponent.tsx - select context with solicitudId
+  const selectedContext = pension?.store.solicitudId
+    ? pension
+    : fundacion?.store.solicitudId
+    ? fundacion
+    : sociedad?.store.solicitudId
+    ? sociedad
+    : menores?.store.solicitudId
+    ? menores
+    : consulta?.store.solicitudId
+    ? consulta
+    : payment;
+
+  console.log("🚀 ~ widgetLoader ~ Context selection:");
+  console.log("🚀 ~ pension solicitudId:", pension?.store.solicitudId);
+  console.log("🚀 ~ fundacion solicitudId:", fundacion?.store.solicitudId);
+  console.log("🚀 ~ sociedad solicitudId:", sociedad?.store.solicitudId);
+  console.log("🚀 ~ menores solicitudId:", menores?.store.solicitudId);
+  console.log("🚀 ~ consulta solicitudId:", consulta?.store.solicitudId);
+  console.log("🚀 ~ Selected context for token:", selectedContext?.constructor.name || 'payment');
+
+  return selectedContext;
 }
 
 const WidgetLoader: React.FC = () => {
@@ -118,10 +138,20 @@ const WidgetLoader: React.FC = () => {
 
     (window as any).SaveCreditCard_SuccessCallback = (resp: any) => {
       if (!mounted) return;
-      console.log('Token OK:', resp.TokenDetails.AccountToken);
+      console.log('🚀 ~ Token OK:', resp.TokenDetails.AccountToken);
+      console.log('🚀 ~ Setting token in context:', ctx?.constructor.name || 'Unknown');
+      console.log('🚀 ~ Current context store before token set:', ctx?.store);
+      
       // Only update token if we have a context
       if (ctx?.setStore) {
-        ctx.setStore(prev => ({ ...prev, token: resp.TokenDetails.AccountToken }));
+        ctx.setStore(prev => {
+          console.log('🚀 ~ Previous store state:', prev);
+          const newState = { ...prev, token: resp.TokenDetails.AccountToken };
+          console.log('🚀 ~ New store state with token:', newState);
+          return newState;
+        });
+      } else {
+        console.log('🚀 ~ ERROR: No setStore function available');
       }
       setIsLoading(false);
     };
