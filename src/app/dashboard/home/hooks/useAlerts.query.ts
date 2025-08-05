@@ -8,11 +8,11 @@ import {
 import { decodeUserToken } from "@app/(global)/utils/decode-user-token.util";
 import { useQueryClient } from "@tanstack/react-query";
 
-export const useAlerts = (solicitudId?: string) => {
+export const useAlerts = () => {
   const { user_id: cuenta } = decodeUserToken();
   return useQuery({
-    queryKey: ["alerts", cuenta, solicitudId],
-    queryFn: () => getAlerts(cuenta, solicitudId),
+    queryKey: ["alerts", cuenta],
+    queryFn: () => getAlerts(cuenta),
   });
 };
 

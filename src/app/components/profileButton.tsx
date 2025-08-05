@@ -1,4 +1,4 @@
-"use client";  // Make sure it's a client component
+"use client"; // Make sure it's a client component
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@utils/firebase-upload";
@@ -20,14 +20,19 @@ const ROLES: Record<number, string> = {
 // Function to decode JWT token
 const decodeJWT = (token: string) => {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('Error decoding JWT:', error);
+    console.error("Error decoding JWT:", error);
     return null;
   }
 };
@@ -44,22 +49,25 @@ const ProfileButton: React.FC = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const authToken = cookie.get('AuthToken');
-      
+      const authToken = cookie.get("AuthToken");
+
       if (authToken) {
         const decodedToken = decodeJWT(authToken);
-        console.log("🚀 ~ fetchUserData ~ decodedToken:", decodedToken)
-        
+        console.log("🚀 ~ fetchUserData ~ decodedToken:", decodedToken);
+
         if (decodedToken) {
           setEmail(decodedToken.email);
-          
+
           try {
-            console.log("entreeee")
-            const q = query(collection(db, "usuarios"), where("email", "==", decodedToken.email));
+            console.log("entreeee");
+            const q = query(
+              collection(db, "usuarios"),
+              where("email", "==", decodedToken.email)
+            );
 
             const querySnapshot = await getDocs(q);
-            console.log("🚀 ~ fetchUserData ~ querySnapshot:", querySnapshot)
-            
+            console.log("🚀 ~ fetchUserData ~ querySnapshot:", querySnapshot);
+
             if (!querySnapshot.empty) {
               const doc = querySnapshot.docs[0];
               const data = doc.data();
@@ -97,7 +105,10 @@ const ProfileButton: React.FC = () => {
   };
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
       setIsOpen(false);
     }
   };
@@ -129,9 +140,11 @@ const ProfileButton: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-[#1F1F2E] rounded-md shadow-lg z-10">
+        <div className="absolute right-0 mt-2 w-48 bg-[#1F1F2E] rounded-md shadow-lg z-50">
           <div className="py-1">
-            <p className="px-4 py-2 text-sm text-white truncate">{email ?? "Sin usuario"}</p>
+            <p className="px-4 py-2 text-sm text-white truncate">
+              {email ?? "Sin usuario"}
+            </p>
             <p className="px-4 py-2 text-sm text-white truncate">
               {role != null ? ROLES[role] : "Sin rol"}
             </p>
@@ -179,12 +192,13 @@ const ProfileButton: React.FC = () => {
                 className="w-full h-auto rounded-lg object-cover"
               />
             ) : (
-              <p className="text-center text-gray-500">No hay foto de perfil disponible.</p>
+              <p className="text-center text-gray-500">
+                No hay foto de perfil disponible.
+              </p>
             )}
           </div>
         </div>
       )}
-
     </div>
   );
 };
