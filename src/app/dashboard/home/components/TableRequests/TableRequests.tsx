@@ -31,7 +31,15 @@ const TableRequests = ({ solicitudes, alerts }: TableRequestsProps) => {
       <Table>
         <Thead>
           <Th>Tipo trámite</Th>
-          <Th>Fecha de creación</Th>
+          <Th>
+            <button
+              onClick={() => toggleSort("date")}
+              className="flex items-center hover:text-gray-300 transition-colors"
+            >
+              Fecha de creación
+              {getSortIcon(sortState, "date")}
+            </button>
+          </Th>
           <Th>Status</Th>
           <Th>ID</Th>
           <Th>
@@ -40,7 +48,7 @@ const TableRequests = ({ solicitudes, alerts }: TableRequestsProps) => {
               className="flex items-center hover:text-gray-300 transition-colors"
             >
               Recordatorio
-              {getSortIcon(sortState)}
+              {getSortIcon(sortState, "reminder")}
             </button>
           </Th>
           <Th>Abogados</Th>
