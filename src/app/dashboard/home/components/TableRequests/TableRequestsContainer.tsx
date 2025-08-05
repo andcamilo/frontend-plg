@@ -8,7 +8,6 @@ import { useSortContext } from "../../hooks/useSortContext.hook";
 import { sortSolicitudesByReminder } from "../../utils/sort-solicitudes-by-reminder.util";
 import { sortSolicitudesByDate } from "../../utils/sort-solicitudes-by-date.util";
 import { filterSolicitudesByDate } from "../../utils/filter-solicitudes-by-date.util";
-import DateFilter from "../DateFilter/DateFilter";
 import { useMemo } from "react";
 
 const TableRequestsWithSort = () => {
@@ -18,13 +17,11 @@ const TableRequestsWithSort = () => {
   const processedSolicitudes = useMemo(() => {
     if (!solicitudes || !alerts) return solicitudes;
 
-    // Primero filtrar por fecha
     let filteredSolicitudes = filterSolicitudesByDate(
       solicitudes,
       filterState.dateFilter
     );
 
-    // Luego ordenar según el campo seleccionado
     if (sortState.field === "reminder") {
       return sortSolicitudesByReminder(
         filteredSolicitudes,
@@ -50,7 +47,6 @@ const TableRequestsWithSort = () => {
 
   return (
     <>
-      <DateFilter />
       <TableRequests solicitudes={processedSolicitudes} alerts={alerts} />
     </>
   );
