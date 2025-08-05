@@ -8,6 +8,7 @@ import {
   MODAL_ALERT_EDIT_ID,
 } from "./constants/modal-alert.constant";
 import NotificationsButton from "@app/(global)/components/Notifications/NotificationsButton";
+import ChartSolicitudesContainer from "./components/Chart/ChartSolicitudesContainer";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,9 @@ export default function Home() {
         </div>
       </div>
       <TableRequestsContainer />
+      <div className="flex justify-start items-start my-8 w-full">
+        <ChartSolicitudesContainer />
+      </div>
       <Modal modalId={MODAL_ALERT_EDIT_ID}>
         <AlertFormEdit />
       </Modal>
