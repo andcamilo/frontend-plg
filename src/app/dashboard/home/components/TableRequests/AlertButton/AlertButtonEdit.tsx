@@ -16,7 +16,9 @@ const AlertButtonEdit = ({
   const router = useRouter();
 
   const handleOpenModal = () => {
-    router.push(`/dashboard/home?idSolicitud=${idSolicitud}`);
+    router.push(
+      `/dashboard/home?idSolicitud=${idSolicitud}&alertId=${alert.id}`
+    );
     openModal(MODAL_ALERT_EDIT_ID);
   };
 
