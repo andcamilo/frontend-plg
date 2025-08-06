@@ -85,12 +85,8 @@ const TableRequests = ({ solicitudes, alerts }: TableRequestsProps) => {
                   <Td>
                     {alert ? (
                       <AlertButtonEdit
+                        alert={alert}
                         idSolicitud={solicitud.id}
-                        timeRemainingValue={alert.timeRemainingValue}
-                        timeRemainingUnit={alert.timeRemainingUnit}
-                        isOverdue={alert.isOverdue}
-                        originalReminderValue={alert.reminderValue}
-                        originalReminderUnit={alert.reminderUnit}
                       />
                     ) : (
                       <AlertButtonCreate idSolicitud={solicitud.id} />
