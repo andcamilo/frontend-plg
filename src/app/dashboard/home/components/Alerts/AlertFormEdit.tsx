@@ -1,28 +1,30 @@
 "use client";
 import AlertForm from "./AlertForm";
-import {
-  useAlertBySolicitudID,
-  useUpdateAlertMutation,
-} from "../../hooks/useAlerts.query";
+import { useAlerts, useUpdateAlertMutation } from "../../hooks/useAlerts.query";
 import { AlertsSchema } from "../../schemas/alerts.schema";
 import swal from "sweetalert2";
 import { useSearchParams } from "next/navigation";
 import { transformBackendAlertToFormData } from "../../utils/alert-data-transformer.util";
 import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
+import { formatIsoDateToDMY } from "../../utils/format-iso-date-to-dmy.util";
 
 const AlertFormEdit = () => {
   const { closeModal } = useModalContext();
   const searchParams = useSearchParams();
   const idSolicitud = searchParams?.get("idSolicitud") as string;
+  const alertId = searchParams?.get("alertId") as string;
 
-  const { data: alert, isLoading, error } = useAlertBySolicitudID(idSolicitud);
+  const { data: alerts, isLoading, error } = useAlerts();
+
   const { mutateAsync: updateAlert, isPending } = useUpdateAlertMutation();
 
   if (isLoading) return <div>Loading...</div>;
 
-  if (!alert) return <div>Alert not found</div>;
-
   if (error) return <div>Error: {error.message}</div>;
+
+  const alert = alerts?.data.find((alert) => alert.id === alertId);
+
+  if (!alert) return <div>Alert not found</div>;
 
   const formData = transformBackendAlertToFormData(alert);
 
@@ -51,13 +53,20 @@ const AlertFormEdit = () => {
   return (
     <>
       <AlertForm
+        key={alert.id}
         onSubmit={onSubmit}
         defaultValues={formData}
         isSubmitting={isPending}
       />
-      <span className="text-sm text-gray-200 p-6">
-        Esta alerta esta asignada a: {alert.email}
-      </span>
+      <div className="flex flex-col gap-2 px-6">
+        <span className="text-sm text-gray-200">
+          Esta alerta esta asignada a: {alert.email}
+        </span>
+        <span className="text-sm text-gray-200">
+          Esta alerta ha sido creado el dia{" "}
+          {formatIsoDateToDMY(alert.createdAt)}
+        </span>
+      </div>
     </>
   );
 };
