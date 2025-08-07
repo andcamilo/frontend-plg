@@ -4,12 +4,63 @@ import HomeLayout from '@components/homeLayout';
 import AppStateContext from '@context/actaSociedadFundacionContext';
 import ActaBienvenido from '@/src/app/components/acta-sociedadFundacion/actaBienvenido';
 import ActaSolicitud from '@/src/app/components/acta-sociedadFundacion/actaSolicitud';
+import ActaAgenteResidente from "@/src/app/components/acta-sociedadFundacion/actaAgenteResidente";
+import ActaJuntaDirectiva from "@/src/app/components/acta-sociedadFundacion/actaJuntaDirectiva";
+import ActaCambioDeNombre from "@/src/app/components/acta-sociedadFundacion/actaCambioDeNombre";
+import ActaDisolucion from "@/src/app/components/acta-sociedadFundacion/actaDisolucion";
+import ActaPoderGeneral from "@/src/app/components/acta-sociedadFundacion/actaPoderGeneral";
+import ActaRenunciaDirectoresDignatarios from "@/src/app/components/acta-sociedadFundacion/actaRenunciaDirectoresDignatarios";
+import ActaPactoSocial from "@/src/app/components/acta-sociedadFundacion/actaPactoSocial";
+import ActaConsejoFundacional from "@/src/app/components/acta-sociedadFundacion/actaConsejoFundacional";
+import ActaPatrimonioCapital from "@/src/app/components/acta-sociedadFundacion/actaCambioPatrimonioCapital";
+import ActaSociosSociedadCivil from "@/src/app/components/acta-sociedadFundacion/actaSociosSociedadCivil";
+import ActaRemocionMiembrosSociedadCivil from "@/src/app/components/acta-sociedadFundacion/actaRemocionMiembrosSociedadCivil";
 import WidgetLoader from '@/src/app/components/widgetLoader';
 import SaleComponent from '@/src/app/components/saleComponent';
 import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 import Cookies from 'js-cookie';
-import { useRouter } from 'next/navigation';
+import axios from "axios";
+import { useRouter, usePathname } from 'next/navigation';
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import {
+    firebaseApiKey,
+    firebaseAuthDomain,
+    firebaseProjectId,
+    firebaseStorageBucket,
+    firebaseMessagingSenderId,
+    firebaseAppId,
+} from "@utils/env";
+
+const firebaseConfig = {
+    apiKey: firebaseApiKey,
+    authDomain: firebaseAuthDomain,
+    projectId: firebaseProjectId,
+    storageBucket: firebaseStorageBucket,
+    messagingSenderId: firebaseMessagingSenderId,
+    appId: firebaseAppId,
+};
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const db = getFirestore();
+
+const CAMBIOS_COMPONENTES = {
+    "Cambio de Agente Residente": { label: "Agente Residente", componente: 3 },
+    "Cambio de Junta Directiva y/o Dignatarios": { label: "Junta Directiva", componente: 4 },
+    "Cambio de Consejo Fundacional y/o Dignatarios": { label: "Consejo Fundacional", componente: 5 },
+    "Cambio de nombre de la Sociedad/Fundación": { label: "Nombre de la Entidad", componente: 6 },
+    /* "Cambio de objeto de la sociedad": { label: "Objeto de la Sociedad", componente: 8 }, */
+    "Asignación de Poder General": { label: "Poder General", componente: 8 },
+    "Renuncia de Directores y/o Dignatarios": { label: "Renuncia de Cargos", componente: 9 },
+    "Renuncia de Miembros de la Fundación y/o Dignatarios": { label: "Renuncia de Cargos", componente: 9 },
+    "Cambio de cláusulas del pacto social": { label: "Pacto Social", componente: 10 }, 
+    "Cambio de cláusulas del Acta Fundacional": { label: "Acta Fundacional", componente: 10 }, 
+    "Aumento y disminución del Patrimonio Fundacional": { label: "Patrimonio Fundacional", componente: 11 },
+    "Disolución": { label: "Disolución", componente: 12 },
+    "Adición de socios sociedad Civil": { label: "Socios de la Sociedad", componente: 13 },
+    "Remoción de socios Sociedad Civil": { label: "Remoción de Socios", componente: 14 },
+};
 
 const ActaSociedadFundacionBase: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -31,6 +82,9 @@ const ActaSociedadFundacionBase: React.FC = () => {
     });
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
+    const solicitudId = pathname?.split('/').filter(Boolean).pop();
+    const [cambiosSeleccionados, setCambiosSeleccionados] = useState<string[]>([]);
 
     const context = useContext(AppStateContext);
 
@@ -38,7 +92,7 @@ const ActaSociedadFundacionBase: React.FC = () => {
         throw new Error('AppStateContext must be used within an AppStateProvider');
     }
 
-    const { store } = context;
+    const { store, setStore } = context;
 
     useEffect(() => {
         setIsLoggedIn(!!Cookies.get('AuthToken'));
@@ -50,12 +104,69 @@ const ActaSociedadFundacionBase: React.FC = () => {
         }
     }, [store.currentPosition]);
 
+    useEffect(() => {
+        const cargarCambiosSeleccionados = async () => {
+            try {
+                const finalSolicitudId = store.solicitudId || pathname?.split("/").filter(Boolean).pop();
+                if (!finalSolicitudId) return;
+
+                const response = await axios.get('/api/get-request-id', {
+                    params: { solicitudId: finalSolicitudId },
+                });
+
+                const data = response.data;
+
+                if (Array.isArray(data.cambiosSeleccionados)) {
+                    setCambiosSeleccionados(data.cambiosSeleccionados);
+                } else {
+                    setCambiosSeleccionados([]);
+                    console.warn("El campo cambiosSeleccionados no es un arreglo.");
+                }
+
+                setStore(prev => ({
+                    ...prev,
+                    solicitudId: finalSolicitudId,
+                    solicitud: true,
+                }));
+
+            } catch (error: any) {
+                console.error("Error al obtener solicitud desde la API:", error);
+            }
+        };
+
+        if (pathname) {
+            cargarCambiosSeleccionados();
+        }
+    }, [pathname]);
+
     const renderActiveForm = () => {
         switch (activeStep) {
             case 1:
                 return <ActaBienvenido />;
             case 2:
                 return <ActaSolicitud />;
+            case 3:
+                return <ActaAgenteResidente />;
+            case 4:
+                return <ActaJuntaDirectiva />;
+            case 5:
+                return <ActaConsejoFundacional />;
+            case 6:
+                return <ActaCambioDeNombre />;
+            case 8:
+                return <ActaPoderGeneral />;
+            case 9:
+                return <ActaRenunciaDirectoresDignatarios />; 
+            case 10:
+                return <ActaPactoSocial />;
+            case 11:
+                return <ActaPatrimonioCapital />;
+            case 12:
+                return <ActaDisolucion />;
+            case 13:
+                return <ActaSociosSociedadCivil />;
+            case 14:
+                return <ActaRemocionMiembrosSociedadCivil />;
             default:
                 return <ActaBienvenido />;
         }
@@ -114,6 +225,11 @@ const ActaSociedadFundacionBase: React.FC = () => {
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    const handleStepChange = (step: number) => {
+        setActiveStep(step);
+        setIsMobileMenuOpen(false);
+    };
+
     const renderSidebar = () => (
         <div className="text-white">
             <h2 className="text-3xl mt-2 text-center font-bold mb-4">Cambios Sociedad / Fundacion</h2>
@@ -122,19 +238,33 @@ const ActaSociedadFundacionBase: React.FC = () => {
 
                 <button
                     className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center text-white ${activeStep === 1 ? 'bg-profile' : 'bg-gray-800'}`}
-                    onClick={() => handleStepChange(1, store.bienvenido)}
-                    disabled={!store.bienvenido}
+                    onClick={() => handleStepChange(1)}
                 >
                     ¡Bienvenido!
                 </button>
 
                 <button
                     className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center text-white ${activeStep === 2 ? 'bg-profile' : 'bg-gray-800'}`}
-                    onClick={() => handleStepChange(2, store.solicitud)}
-                    disabled={!store.solicitud}
+                    onClick={() => handleStepChange(2)}
                 >
                     Solicitud
                 </button>
+
+                {cambiosSeleccionados.map((cambio, index) => {
+                    const config = CAMBIOS_COMPONENTES[cambio];
+                    if (!config) return null;
+
+                    return (
+                        <button
+                            key={index}
+                            className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center text-white ${activeStep === config.componente ? 'bg-profile' : 'bg-gray-800'
+                                }`}
+                            onClick={() => handleStepChange(config.componente)}
+                        >
+                            {config.label}
+                        </button>
+                    );
+                })}
 
             </div>
 
@@ -181,13 +311,6 @@ const ActaSociedadFundacionBase: React.FC = () => {
             </div>
         </div>
     );
-
-    const handleStepChange = (step: number, condition: boolean) => {
-        if (condition) {
-            setActiveStep(step);
-            setIsMobileMenuOpen(false);
-        }
-    };
 
     return (
         <HomeLayout>

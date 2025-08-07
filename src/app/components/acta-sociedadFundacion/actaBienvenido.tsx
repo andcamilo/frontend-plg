@@ -11,10 +11,12 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import CountrySelect from '@components/CountrySelect';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { FaPlay } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 
 const ActaBienvenido: React.FC = () => {
     const context = useContext(AppStateContext);
     const [recaptchaToken, setRecaptchaToken] = useState(null);
+    const router = useRouter();
 
     if (!context) {
         throw new Error("AppStateContext must be used within an AppStateProvider");
@@ -332,29 +334,32 @@ const ActaBienvenido: React.FC = () => {
 
             const { solicitudId, status } = response.data;
 
-            if (status === "success" && solicitudId) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Ya puedes continuar cargando la información de los siguientes bloques...",
-                    timer: 2500,
-                    showConfirmButton: false,
-                    background: '#2c2c3e',
-                    color: '#fff',
-                    customClass: {
-                        popup: 'custom-swal-popup',
-                        title: 'custom-swal-title-main',
-                        icon: 'custom-swal-icon',
-                        timerProgressBar: 'custom-swal-timer-bar'
-                    }
-                }).then(() => {
-                    setStore((prevState) => ({
-                        ...prevState,
-                        solicitudId,
-                        solicitud: true,
-                        currentPosition: 2,
-                    }));
-                });
-            }
+            Swal.fire({
+                icon: "success",
+                title: "Ya puedes continuar cargando la información de los siguientes bloques...",
+                timer: 2500,
+                showConfirmButton: false,
+                background: '#2c2c3e',
+                color: '#fff',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title-main',
+                    icon: 'custom-swal-icon',
+                    timerProgressBar: 'custom-swal-timer-bar'
+                }
+            }).then(() => {
+                setStore((prevState) => ({
+                    ...prevState,
+                    solicitudId,
+                    solicitud: true,
+                    currentPosition: 2,
+                }));
+
+                // Dar un pequeño delay para asegurar que setStore se procese
+                setTimeout(() => {
+                    router.push(`/request/acta-sociedadFundacion/${solicitudId}`);
+                }, 100); 
+            });
         } catch (error) {
             Swal.fire({
                 position: "top-end",
