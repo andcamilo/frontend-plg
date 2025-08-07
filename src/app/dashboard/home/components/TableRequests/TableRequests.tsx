@@ -96,6 +96,7 @@ const TableRequests = ({ solicitudes, alerts }: TableRequestsProps) => {
                             idSolicitud={solicitud.id}
                           />
                         ))}
+                        <AlertButtonCreate idSolicitud={solicitud.id} />
                       </div>
                     ) : (
                       <AlertButtonCreate idSolicitud={solicitud.id} />
