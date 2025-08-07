@@ -60,13 +60,16 @@ const TableRequests = ({ solicitudes, alerts }: TableRequestsProps) => {
           <Tbody>
             {solicitudes.map((solicitud, idx) => {
               const statusInfo = getStatusInfo(solicitud.status);
-              const alert = alerts.find((a) => a.solicitudId === solicitud.id);
+              // Encuentra todas las alertas asociadas a esta solicitud
+              const solicitudAlerts = alerts.filter(
+                (a) => a.solicitudId === solicitud.id
+              );
 
               return (
                 <Tr
                   key={solicitud.id || idx}
                   className={`hover:bg-gray-700 transition-colors ${getRowAlertClasses(
-                    alert
+                    solicitudAlerts[0]
                   )}`}
                 >
                   <Td>
@@ -77,15 +80,23 @@ const TableRequests = ({ solicitudes, alerts }: TableRequestsProps) => {
                   </Td>
                   <Td>{formatDate(solicitud.date)}</Td>
                   <Td>
-                    <Status solicitudId={solicitud.id} statusInfo={statusInfo} />
+                    <Status
+                      solicitudId={solicitud.id}
+                      statusInfo={statusInfo}
+                    />
                   </Td>
                   <Td>{solicitud.expediente || solicitud.id || "-"}</Td>
                   <Td>
-                    {alert ? (
-                      <AlertButtonEdit
-                        alert={alert}
-                        idSolicitud={solicitud.id}
-                      />
+                    {solicitudAlerts.length > 0 ? (
+                      <div className="flex flex-row flex-wrap gap-1">
+                        {solicitudAlerts.map((alert) => (
+                          <AlertButtonEdit
+                            key={alert.id}
+                            alert={alert}
+                            idSolicitud={solicitud.id}
+                          />
+                        ))}
+                      </div>
                     ) : (
                       <AlertButtonCreate idSolicitud={solicitud.id} />
                     )}
