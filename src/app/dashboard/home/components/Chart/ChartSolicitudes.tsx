@@ -84,7 +84,7 @@ export default function CircularChart({
   };
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-sm h-full">
       {/* Contenedor del gráfico */}
       <div className="relative bg-gray-900 rounded-2xl shadow-lg p-6 border border-gray-700">
         {/* Título */}
