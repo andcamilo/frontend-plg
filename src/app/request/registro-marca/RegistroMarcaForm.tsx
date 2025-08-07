@@ -3,7 +3,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import HomeLayout from '@components/homeLayout';
 import RegistroMarcaBienvenido from '@components/registro-marca/registroMarcaBienvenido';
 import PensionAlimenticiaSolicitud from '@components/pension-alimenticia/pensionAlimenticiaSolicitud';
-import PensionAlimenticiaDemandante from '@components/pension-alimenticia/pensionAlimenticiaDemandante';
+import RegistroPersonaNatural from '@components/registro-marca/registroPersonaNatural';
 import PensionAlimenticiaDemandado from '@components/pension-alimenticia/pensionAlimenticiaDemandado';
 import PensionAlimenticiaGastosPensionado from '@components/pension-alimenticia/pensionAlimenticiaGastosPensionado';
 import PensionAlimenticiaArchivosAdjuntos from '@components/pension-alimenticia/pensionAlimenticiaArchivosAdjuntos';
@@ -23,6 +23,8 @@ interface RegistroMarcaFormProps {
 const RegistroMarcaForm: React.FC<RegistroMarcaFormProps> = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState<boolean>(false);
+  const [mostrarModalTipo, setMostrarModalTipo] = useState(false);
+  const [tipoSeleccionado, setTipoSeleccionado] = useState('');
   const [showPaymentButtons, setShowPaymentButtons] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -68,7 +70,7 @@ const RegistroMarcaForm: React.FC<RegistroMarcaFormProps> = () => {
       case 2:
         return <PensionAlimenticiaSolicitud />;
       case 3:
-        return <PensionAlimenticiaDemandante />;
+        return <RegistroPersonaNatural />;
       case 4:
         return <PensionAlimenticiaDemandado />;
       case 5:
@@ -148,12 +150,14 @@ const RegistroMarcaForm: React.FC<RegistroMarcaFormProps> = () => {
 
   const renderSidebar = () => (
     <div className="text-white">
+
       <h2 className="text-2xl text-center font-bold mb-4">Solicitud de Registro de Marcas</h2>
       <p className="mb-4 text-center">Complete cada uno de los siguientes apartados:</p>
 
       <div className="grid grid-cols-3 gap-4 gap-y-4">
         <button className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${activeStep === 1 ? 'bg-profile text-white' : 'bg-gray-800 text-white'}`} onClick={() => handleStepChange(1, store.bienvenido)}>¡Bienvenido!</button>
         <button className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.solicitud ? (activeStep === 2 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`} onClick={() => handleStepChange(2, store.solicitud)} disabled={!store.solicitud}>Nuevo Registro </button>
+        <button className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center bg-gray-800 text-white hover:bg-profile transition-colors`}  onClick={() => setMostrarModalTipo(true)}>  Tipo Solicitud</button>
         <button className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.demandante ? (activeStep === 3 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`} onClick={() => handleStepChange(3, store.demandante)} disabled={!store.demandante}>Demandante</button>
         <button className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.demandado ? (activeStep === 4 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`} onClick={() => handleStepChange(4, store.demandado)} disabled={!store.demandado}>Demandado</button>
         <button className={`w-full min-h-[50px] text-sm font-medium rounded-lg flex items-center justify-center ${store.gastosPensionado ? (activeStep === 5 ? 'bg-profile text-white' : 'bg-gray-800 text-white') : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`} onClick={() => handleStepChange(5, store.gastosPensionado)} disabled={!store.gastosPensionado}>Gastos Pensionado</button>
@@ -193,6 +197,39 @@ const RegistroMarcaForm: React.FC<RegistroMarcaFormProps> = () => {
         </div>
       )}
 
+{mostrarModalTipo && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-gray-900 rounded-lg w-11/12 max-w-md p-6 relative text-white">
+      <button
+        className="absolute top-2 right-2 text-white text-xl"
+        onClick={() => setMostrarModalTipo(false)}
+      >
+        ✕
+      </button>
+      <h2 className="text-2xl font-bold text-center mb-6">¿El dueño de la marca será una persona Natural o Jurídica?</h2>
+      <div className="flex flex-col gap-4">
+        <button
+          className="bg-profile py-3 rounded-md font-semibold hover:bg-profile/90"
+          onClick={() => handleSeleccion('natural')}
+        >
+          Persona Natural
+        </button>
+        <button
+          className="bg-profile py-3 rounded-md font-semibold hover:bg-profile/90"
+          onClick={() => handleSeleccion('juridica')}
+        >
+          Persona Jurídica
+        </button>
+        <button
+          className="mt-2 underline text-center text-sm text-gray-300"
+          onClick={() => setMostrarModalTipo(false)}
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       <div className="mt-8">
         <button className="bg-gray-500 text-white w-full py-3 rounded-lg" onClick={() => router.push('/home')}>Salir</button>
       </div>
@@ -222,6 +259,17 @@ const RegistroMarcaForm: React.FC<RegistroMarcaFormProps> = () => {
     // TODO: handle submit logic
     setIsRegisterPaymentModalOpen(false);
   };
+
+  const handleSeleccion = (tipo: string) => {
+  setTipoSeleccionado(tipo);
+  setMostrarModalTipo(false);
+  // Ir al paso correspondiente
+  if (tipo === 'natural') {
+    setActiveStep(3); // Paso para Persona Natural
+  } else {
+    setActiveStep(4); // Paso para Persona Jurídica
+  }
+};
 
   return (
     <HomeLayout>
