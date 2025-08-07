@@ -157,11 +157,17 @@ const ConsultaPropuesta: React.FC = () => {
             });
             if (solicitudData.tipo !== "propuesta-legal" && solicitudData.tipo !== "consulta-legal"
                 && solicitudData.tipo !== "consulta-escrita") {
-                setDisponibilidad(solicitudData.disponibilidad.map((item) => ({
-                    fecha: item.fecha || "",
-                    horaInicio: item.horaInicio || "",
-                    horaFin: item.horaFin || "",
-                })));
+                // Check if disponibilidad exists and is an array before mapping
+                if (solicitudData.disponibilidad && Array.isArray(solicitudData.disponibilidad)) {
+                    setDisponibilidad(solicitudData.disponibilidad.map((item) => ({
+                        fecha: item.fecha || "",
+                        horaInicio: item.horaInicio || "",
+                        horaFin: item.horaFin || "",
+                    })));
+                } else {
+                    // If disponibilidad doesn't exist or is not an array, keep the default state
+                    console.warn('disponibilidad is not available or not an array:', solicitudData.disponibilidad);
+                }
             }
         }
     }, [solicitudData]);
