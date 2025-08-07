@@ -60,8 +60,6 @@ const TableRequests = ({ solicitudes, alerts }: TableRequestsProps) => {
           <Tbody>
             {solicitudes.map((solicitud, idx) => {
               const statusInfo = getStatusInfo(solicitud.status);
-
-              // Buscar la alerta correspondiente a esta solicitud
               const alert = alerts.find((a) => a.solicitudId === solicitud.id);
 
               return (
@@ -79,7 +77,7 @@ const TableRequests = ({ solicitudes, alerts }: TableRequestsProps) => {
                   </Td>
                   <Td>{formatDate(solicitud.date)}</Td>
                   <Td>
-                    <Status statusInfo={statusInfo} />
+                    <Status solicitudId={solicitud.id} statusInfo={statusInfo} />
                   </Td>
                   <Td>{solicitud.expediente || solicitud.id || "-"}</Td>
                   <Td>
