@@ -7,24 +7,25 @@ import { Country, State, City } from 'country-state-city';
 import { useFetchSolicitud } from '@utils/fetchCurrentRequest';
 import get from 'lodash/get';
 import CountrySelect from '@components/CountrySelect';
-import PersonaNaturalInfo from '@components/registro-marca/PersonaNaturalInfo'
 interface SelectOption {
   value: string;
   label: string;
 }
 
-const RegistroPersonaNatural: React.FC = () => {
+const RepresentanteLegalInfo: React.FC = () => {
   const [formData, setFormData] = useState({
     nombreCompleto: '',
     cedula: '',
+    sexo:'femenino',
     nacionalidad: { value: 'PA', label: 'Panamá' }, // Default value 
     paisNacimiento: { value: 'PA', label: 'Panamá' },
+    fechaNacimiento:'',
     direccion: '',
     paisResidencia:{ value: 'PA', label: 'Panamá' },
     telefono: '',
     telefonoCodigo: 'PA',
     email: '',
-    direccionPanama:'',
+    direccionFisica:'',
     ocupacion: '',
     archivoPasaporte: '',
   });
@@ -139,9 +140,11 @@ const RegistroPersonaNatural: React.FC = () => {
       errores.push({ campo: 'cedula', mensaje: 'Debe ingresar su cédula.' });
     } else if (!formData.direccion) {
       errores.push({ campo: 'direccion', mensaje: 'Debe introducir la dirección.' });
-    } else if (!formData.direccionPanama.trim()) {
-      errores.push({ campo: 'direccionPanama', mensaje: 'Debe ingresar los detalles de su dirección en Panamá.' });
-    } 
+    } else if (!formData.direccion.trim()) {
+      errores.push({ campo: 'direccion', mensaje: 'Debe ingresar los detalles de su dirección.' });
+    } else if (!formData.direccionFisica.trim()) {
+      errores.push({ campo: 'direccionFisica', mensaje: 'Debe ingresar los detalles de su dirección física.' });
+    }
 
     if (errores.length > 0) {
       const primerError = errores[0]; // 🚀 Tomamos solo el primer error 
@@ -213,16 +216,18 @@ const RegistroPersonaNatural: React.FC = () => {
     try {
       const updatePayload = {
         solicitudId: store.solicitudId,
-        PersonaNatural: {
+        RepresentanteLegal: {
           nombreCompleto: formData.nombreCompleto,
           cedula: formData.cedula,
           nacionalidad: formData.nacionalidad,
+          sexo:formData.sexo,
           paisNacimiento: formData.paisNacimiento,
+          fechaNacimiento: formData.fechaNacimiento,
           direccion: formData.direccion,
           paisResidencia: formData.paisResidencia,
           email:formData.email,
           telefono: `${formData.telefonoCodigo}${formData.telefono}` || '',
-          direccionPanama:formData.direccionPanama,
+          direccionFisica:formData.direccionFisica,
           ocupacion:formData.ocupacion,
           archivoPasaporte:formData.archivoPasaporte
         },
@@ -240,7 +245,7 @@ const RegistroPersonaNatural: React.FC = () => {
         Swal.fire({
           position: "top-end",
           icon: "success",
-          title: "Información de la Persona Natural actualizada correctamente.",
+          title: "Información del representante Legal actualizada correctamente.",
           showConfirmButton: false,
           timer: 2500,
           timerProgressBar: true,
@@ -270,11 +275,11 @@ const RegistroPersonaNatural: React.FC = () => {
 
   return (
     <div className="w-full h-full p-8 overflow-y-scroll scrollbar-thin bg-[#070707] text-white">
-      <PersonaNaturalInfo />
       {/* Form Section */}
       <form className="space-y-6 mt-5" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
+            <h1>Información del Representante Legal</h1>
             <label className="block mb-2 text-sm">Nombre completo:</label>
             <input
               type="text"
@@ -390,18 +395,15 @@ const RegistroPersonaNatural: React.FC = () => {
               </div> 
 
           <div>
-            <label className="block mb-2 text-sm">Dirección de Panamá:</label>
+            <label className="block mb-2 text-sm">Dirección Física:</label>
             <input
               type="text"
               name="direccionPanama"
-              value={formData.direccionPanama}
+              value={formData.direccionFisica}
               onChange={handleChange}
               className={`w-full p-2 border ${invalidFields.direccionPanama ? 'border-red-500' : 'border-gray-700'} rounded bg-gray-800 text-white`}
               disabled={store.request.status >= 10 && store.rol < 20}
             />
-            <p className="text-xs text-gray-400 mt-1">
-              * Obligatorio colocar una dirección en Panamá para efecto de notificaciones.
-            </p>
         </div>
 
         <div>
@@ -429,49 +431,10 @@ const RegistroPersonaNatural: React.FC = () => {
     <p className="text-xs text-green-400 mt-1">Archivo adjuntado correctamente.</p>
   )}
 </div>
-
-        <div className="mt-6">
-
-          {(!store.request.status || store.request.status < 10 || (store.request.status >= 10 && store.rol > 20)) && (
-            <>
-              <button
-                type="submit"
-                className="w-full md:w-auto bg-profile hover:bg-profile text-white font-semibold py-2 px-4 rounded"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <ClipLoader size={24} color="#ffffff" />
-                    <span className="ml-2">Cargando...</span>
-                  </div>
-                ) : (
-                  'Guardar y continuar'
-                )}
-              </button>
-            </>
-          )}
-
-          {store.request.status >= 10 && (
-            <>
-              <button
-                className="bg-profile text-white w-full py-3 rounded-lg mt-6"
-                type="button"
-                onClick={() => {
-                  setStore((prevState) => ({
-                    ...prevState,
-                    currentPosition: 5,
-                  }));
-                }}
-              >
-                Continuar
-              </button>
-            </>
-          )}
-        </div>
       </div>
       </form>
     </div>
   );
 };
 
-export default RegistroPersonaNatural;
+export default RepresentanteLegalInfo;

@@ -4,6 +4,7 @@ import HomeLayout from '@components/homeLayout';
 import RegistroMarcaBienvenido from '@components/registro-marca/registroMarcaBienvenido';
 import PensionAlimenticiaSolicitud from '@components/pension-alimenticia/pensionAlimenticiaSolicitud';
 import RegistroPersonaNatural from '@components/registro-marca/registroPersonaNatural';
+import RegistroPersonaJuridica from '@components/registro-marca/registroPersonaJuridica';
 import PensionAlimenticiaDemandado from '@components/pension-alimenticia/pensionAlimenticiaDemandado';
 import PensionAlimenticiaGastosPensionado from '@components/pension-alimenticia/pensionAlimenticiaGastosPensionado';
 import PensionAlimenticiaArchivosAdjuntos from '@components/pension-alimenticia/pensionAlimenticiaArchivosAdjuntos';
@@ -72,7 +73,7 @@ const RegistroMarcaForm: React.FC<RegistroMarcaFormProps> = () => {
       case 3:
         return <RegistroPersonaNatural />;
       case 4:
-        return <PensionAlimenticiaDemandado />;
+        return <RegistroPersonaJuridica />;
       case 5:
         return <PensionAlimenticiaGastosPensionado />;
       case 6:
