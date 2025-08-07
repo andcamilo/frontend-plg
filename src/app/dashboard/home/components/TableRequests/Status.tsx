@@ -1,6 +1,10 @@
-import StatusEditButton from "../Status/StatusEditButton";
-
-const Status = ({ solicitudId, statusInfo }: { solicitudId: string, statusInfo: any }) => {
+const Status = ({
+  solicitudId,
+  statusInfo,
+}: {
+  solicitudId: string;
+  statusInfo: any;
+}) => {
   return (
     <>
       <span
@@ -19,7 +23,6 @@ const Status = ({ solicitudId, statusInfo }: { solicitudId: string, statusInfo: 
         }`}
       >
         {statusInfo.label}
-        <StatusEditButton solicitudId={solicitudId} />
       </span>
     </>
   );
