@@ -4,6 +4,7 @@ import { fetchUser } from "../services/request-user-cuenta.service";
 import { checkAuthToken } from "@/src/app/utils/checkAuthToken";
 import { getRequestsCuenta } from "../services/request-cuenta.service";
 import { getRequests } from "../services/requests-by-email.service";
+import { Rol } from '@constants/roles';
 
 export const usePaginatedSolicitudes = () => {
   return useQuery({
@@ -23,7 +24,7 @@ export const usePaginatedSolicitudes = () => {
       if (
         (typeof rol === "number" && rol < 20) ||
         (typeof rol === "string" &&
-          (rol === "Cliente" || rol === "Cliente recurrente"))
+          (rol === Rol.CLIENTE || rol === Rol.CLIENTE_RECURRENTE))
       ) {
         solicitudesData = await getRequestsCuenta(
           rowsPerPage,

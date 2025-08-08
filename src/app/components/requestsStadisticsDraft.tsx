@@ -87,15 +87,15 @@ const Actions: React.FC<{
 
   // Logic for showing the delete/pay icons
   const canShowDelete =
-    (status === 1 && (rol === "Cliente recurrente" || rol === "Cliente")) ||
-    (rol !== "Cliente recurrente" &&
-      rol !== "Cliente" &&
-      rol !== "Asistente" &&
-      rol !== "Abogados");
+    (status === 1 && (rol ===  Rol.CLIENTE_RECURRENTE || rol === Rol.CLIENTE)) ||
+    (rol !== Rol.CLIENTE_RECURRENTE &&
+      rol !== Rol.CLIENTE &&
+      rol !== Rol.ASISTENTE &&
+      rol !== Rol.ABOGADOS);
 
   const canShowPagar =
-    (status < 19 && (rol === "Cliente recurrente" || rol === "Cliente")) ||
-    (rol !== "Cliente recurrente" && rol !== "Cliente");
+    (status < 19 && (rol === Rol.CLIENTE_RECURRENTE || rol === Rol.CLIENTE)) ||
+    (rol !== Rol.CLIENTE_RECURRENTE && rol !== Rol.CLIENTE);
 
   return (
     <div className="flex gap-2">
@@ -197,8 +197,8 @@ const RequestsStatistics: React.FC = () => {
           50: "Caja Chica",
           40: "Abogados",
           35: "Asistente",
-          17: "Cliente recurrente",
-          10: "Cliente",
+          17: "cliente recurrente",
+          10: "cliente",
         };
         const stringRole =
           typeof rawRole === "string"
@@ -216,7 +216,7 @@ const RequestsStatistics: React.FC = () => {
         if (
           (typeof rawRole === "number" && rawRole < 20) ||
           (typeof stringRole === "string" &&
-            (stringRole === "Cliente" || stringRole === "Cliente recurrente"))
+            (stringRole === Rol.CLIENTE || stringRole === Rol.CLIENTE_RECURRENTE))
         ) {
           const result = await getRequestsCuenta(1000, userData.user_id, null);
           entireSolicitudes = result.solicitudes;
@@ -244,9 +244,9 @@ const RequestsStatistics: React.FC = () => {
         // If user is "Cliente" or "Cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
         .filter((solicitud) => {
           const esCliente =
-            formData.rol === "Cliente" || formData.rol === "Cliente recurrente";
+            formData.rol === Rol.CLIENTE || formData.rol === Rol.CLIENTE_RECURRENTE;
           const esAsistenteOAbogado =
-            formData.rol === "Asistente" || formData.rol === "Abogados";
+            formData.rol === Rol.ASISTENTE || formData.rol === Rol.ABOGADOS;
 
           if (esCliente) {
             return solicitud.cuenta === formData.cuenta;

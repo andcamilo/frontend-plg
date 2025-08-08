@@ -13,6 +13,7 @@ import { paginatedSolicitudesEnProceso } from "../utils/solicitudes-en-proceso-p
 import { solicitudesFinalizadas } from "../utils/solicitudes-finalizadas.util";
 import { paginatedSolicitudesFinalizadas } from "../utils/solicitudes-finalizadas-paginated.util";
 import { tipoCountsFiltradosUtil } from "../utils/tipo-counts-filtrados.util";
+import { Rol } from '@constants/roles';
 
 const LegixStatistics: React.FC<{
   rol: number;
@@ -196,17 +197,17 @@ const LegixStatistics: React.FC<{
 
           {!(
             (typeof formData.rol === "number" && formData.rol < 50) ||
-            (typeof formData.rol === "string" && formData.rol === "Cliente") ||
+            (typeof formData.rol === "string" && formData.rol === Rol.CLIENTE) ||
             (typeof formData.rol === "string" &&
-              formData.rol === "Cliente recurrente")
+              formData.rol === Rol.CLIENTE_RECURRENTE)
           ) && <PivotTable months={months} />}
         </div>
         <div className="lg:col-span-1">
           {!(
             (typeof formData.rol === "number" && formData.rol < 50) ||
-            (typeof formData.rol === "string" && formData.rol === "Cliente") ||
+            (typeof formData.rol === "string" && formData.rol === Rol.CLIENTE) ||
             (typeof formData.rol === "string" &&
-              formData.rol === "Cliente recurrente")
+              formData.rol === Rol.CLIENTE_RECURRENTE)
           ) && (
             <>
               <DashboardCard
