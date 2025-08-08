@@ -75,6 +75,8 @@ const Actions: React.FC<{
         return `/request/menores-extranjero/${id}`;
       case "pension":
         return `/request/pension-alimenticia/${id}`;
+      case "pension-alimenticia":
+        return `/request/pension-alimenticia/${id}`;
       case "tramite-general":
         return `/dashboard/tramite-general/${id}`;
       case "cliente-recurrente":
@@ -87,16 +89,13 @@ const Actions: React.FC<{
 
   // Logic for showing the delete/pay icons
   const canShowDelete =
-    (status === 1 && (rol === "Cliente recurrente" || rol === "Cliente")) ||
-    (rol !== "Cliente recurrente" &&
-      rol !== "Cliente" &&
-      rol !== "Asistente" &&
-      rol !== "Abogados");
+    (status === 1 && (rol === Rol.CLIENTE_RECURRENTE || rol === Rol.CLIENTE)) ||
+    (rol !== Rol.CLIENTE_RECURRENTE && rol !== Rol.CLIENTE && rol !== Rol.ASISTENTE && rol !== Rol.ABOGADOS);
 
   const canShowPagar =
     ![12, 20, 30, 70].includes(status) &&
-    ((status < 19 && (rol === "Cliente recurrente" || rol === "Cliente")) ||
-      (rol !== "Cliente recurrente" && rol !== "Cliente"));
+    ((status < 19 && (rol === Rol.CLIENTE_RECURRENTE || rol === Rol.CLIENTE)) ||
+      (rol !== Rol.CLIENTE_RECURRENTE && rol !== Rol.CLIENTE));
 
   return (
     <div className="flex gap-2">
@@ -169,23 +168,18 @@ const RequestsStatistics: React.FC = () => {
   // ✅ Agrega aquí esta función ↓↓↓↓↓↓↓↓↓↓
   const getSolicitudesVisiblesPorRol = () => {
     return solicitudes.filter((solicitud) => {
-      const esCliente =
-        formData.rol === "Cliente" || formData.rol === "Cliente recurrente";
-      const esAsistenteOAbogado =
-        formData.rol === "Asistente" || formData.rol === "Abogados";
+      const esCliente = formData.rol === Rol.CLIENTE || formData.rol === Rol.CLIENTE_RECURRENTE;
+      const esAsistenteOAbogado = formData.rol === Rol.ASISTENTE || formData.rol === Rol.ABOGADOS;
 
       if (esCliente) {
         return solicitud.cuenta === formData.cuenta;
       }
-
       if (esAsistenteOAbogado) {
         const abogadoAsignado = (solicitud.abogados || []).some(
-          (abogado: any) =>
-            abogado.id === formData.userId || abogado._id === formData.userId
+          (abogado: any) => abogado.id === formData.userId || abogado._id === formData.userId
         );
         return solicitud.cuenta === formData.cuenta || abogadoAsignado;
       }
-
       return true;
     });
   };
@@ -215,19 +209,17 @@ const RequestsStatistics: React.FC = () => {
 
         const rawRole = get(user, "solicitud.rol", 0);
         const roleMapping: { [key: number]: string } = {
-          99: "Super Admin",
-          90: "Administrador",
-          80: "Auditor",
-          50: "Caja Chica",
-          40: "Abogados",
-          35: "Asistente",
-          17: "Cliente recurrente",
-          10: "Cliente",
+          99: Rol.SUPER_ADMIN,
+          90: Rol.ADMINISTRADOR,
+          80: Rol.AUDITOR,
+          50: Rol.CAJA_CHICA,
+          40: Rol.ABOGADOS,
+          35: Rol.ASISTENTE,
+          17: Rol.CLIENTE_RECURRENTE,
+          10: Rol.CLIENTE,
         };
         const stringRole =
-          typeof rawRole === "string"
-            ? rawRole
-            : roleMapping[rawRole] || "Desconocido";
+          typeof rawRole === "string" ? rawRole : roleMapping[rawRole] || "Desconocido";
 
         setFormData((prevData) => ({
           ...prevData,
@@ -239,8 +231,7 @@ const RequestsStatistics: React.FC = () => {
         let entireSolicitudes;
         if (
           (typeof rawRole === "number" && rawRole < 20) ||
-          (typeof stringRole === "string" &&
-            (stringRole === "Cliente" || stringRole === "Cliente recurrente"))
+          (stringRole === Rol.CLIENTE || stringRole === Rol.CLIENTE_RECURRENTE)
         ) {
           const result = await getRequestsCuenta(1000, userData.user_id, null);
           entireSolicitudes = result.solicitudes;
@@ -267,9 +258,9 @@ const RequestsStatistics: React.FC = () => {
     return array
       .filter((solicitud) => {
         const esCliente =
-          formData.rol === "Cliente" || formData.rol === "Cliente recurrente";
+          formData.rol === Rol.CLIENTE || formData.rol === Rol.CLIENTE_RECURRENTE;
         const esAsistenteOAbogado =
-          formData.rol === "Asistente" || formData.rol === "Abogados";
+          formData.rol === Rol.ASISTENTE || formData.rol === Rol.ABOGADOS;
 
         if (esCliente) {
           return solicitud.cuenta === formData.cuenta;
@@ -316,8 +307,8 @@ const RequestsStatistics: React.FC = () => {
             (filterDate ? formattedDate === inputDate : true) &&
             (filterExpediente
               ? expediente
-                  ?.toLowerCase()
-                  .includes(filterExpediente.toLowerCase())
+                ?.toLowerCase()
+                .includes(filterExpediente.toLowerCase())
               : true);
 
           const pasaFiltroContador =
@@ -427,6 +418,11 @@ const RequestsStatistics: React.FC = () => {
           19: "Confirmando pago",
           20: "Pagada",
           30: "En proceso",
+          40: "Inscrita",
+          45: "Activa",
+          50: "Suspendida",
+          55: "Renuncia de Agente residente",
+          60: "Disuelta",
           70: "Finalizada",
         };
 
@@ -438,6 +434,11 @@ const RequestsStatistics: React.FC = () => {
           19: "status-confirmando-pago",
           20: "status-pagada",
           30: "status-en-proceso",
+          40: "status-inscrita",
+          45: "status-activa",
+          50: "status-suspendida",
+          55: "status-renuncia-agente",
+          60: "status-disuelta",
           70: "status-finalizada",
         };
 
@@ -475,49 +476,30 @@ const RequestsStatistics: React.FC = () => {
             : "status-borrador";
 
         // --- Expediente type mapping logic ---
-        const validTypes = [
-          "propuesta-legal",
-          "consulta-escrita",
-          "consulta-virtual",
-          "consulta-presencial",
-          "new-fundacion-interes-privado",
-          "new-sociedad-empresa",
-          "menores-al-extranjero",
-          "pension",
-          "pension-alimenticia",
-        ];
-        let mappedExpedienteType = "";
-        if (tipo && validTypes.includes(tipo)) {
-          if (
-            [
-              "propuesta-legal",
-              "consulta-escrita",
-              "consulta-virtual",
-              "consulta-presencial",
-            ].includes(tipo)
-          ) {
-            mappedExpedienteType = "Consultas y Propuestas";
-          } else if (
-            ["new-fundacion-interes-privado", "new-sociedad-empresa"].includes(
-              tipo
-            )
-          ) {
-            mappedExpedienteType = "Corporativo";
-          } else if (tipo === "menores-al-extranjero") {
-            mappedExpedienteType = "Migración";
-          } else if (tipo === "pension" || tipo === "pension-alimenticia") {
-            mappedExpedienteType = "Familia";
-          }
-        }
+        const tipoToExpType: Record<string, string> = {
+          "propuesta-legal": "Consultas y Propuestas",
+          "consulta-escrita": "Consultas y Propuestas",
+          "consulta-virtual": "Consultas y Propuestas",
+          "consulta-presencial": "Consultas y Propuestas",
+          "new-fundacion-interes-privado": "Corporativo",
+          "new-fundacion": "Corporativo",
+          "new-sociedad-empresa": "Corporativo",
+          "menores-al-extranjero": "Migración",
+          "pension": "Familia",
+          "pension-alimenticia": "Familia",
+        };
+
+        const mappedExpedienteType = tipoToExpType[tipo] ?? "";
 
         return {
+          ID: id,
           id,
           Tipo: tipoMapping[tipo] || tipo,
           Fecha: formatDate(date),
           Email: emailSolicita,
           Estatus: (
-            <span className={`status-badge ${statusClasses[status]}`}>
-              {statusLabels[status]}
+            <span className={`status-badge ${statusClasses[status] || "status-borrador"}`}>
+              {statusLabels[status] ?? `Estatus ${status}`}
             </span>
           ),
           "Tipo de Expediente": (
@@ -526,7 +508,7 @@ const RequestsStatistics: React.FC = () => {
             </span>
           ),
           Expediente: expediente,
-          Abogado: abogados.map((abogado: any) => abogado.nombre).join(", "),
+          Abogado: (abogados ?? []).map((a: any) => a.nombre).join(", "),
           Opciones: (
             <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />
           ),
@@ -701,9 +683,8 @@ const RequestsStatistics: React.FC = () => {
                 setFiltroContador("nuevas");
                 setCurrentPageEnProceso(1);
               }}
-              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${
-                filtroContador === "nuevas" ? "ring-2 ring-white" : ""
-              }`}
+              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${filtroContador === "nuevas" ? "ring-2 ring-white" : ""
+                }`}
             >
               <div className="text-sm md:text-base">
                 Nuevas Solicitudes:{" "}
@@ -725,9 +706,8 @@ const RequestsStatistics: React.FC = () => {
                 setFiltroContador("pagadas");
                 setCurrentPageEnProceso(1);
               }}
-              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${
-                filtroContador === "pagadas" ? "ring-2 ring-white" : ""
-              }`}
+              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${filtroContador === "pagadas" ? "ring-2 ring-white" : ""
+                }`}
             >
               <div className="text-sm md:text-base">
                 Pagadas:{" "}
@@ -746,9 +726,8 @@ const RequestsStatistics: React.FC = () => {
                 setFiltroContador("pendiente");
                 setCurrentPageEnProceso(1);
               }}
-              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${
-                filtroContador === "pendiente" ? "ring-2 ring-white" : ""
-              }`}
+              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${filtroContador === "pendiente" ? "ring-2 ring-white" : ""
+                }`}
             >
               <div className="text-sm md:text-base">
                 Enviadas, pendiente de pago:{" "}
@@ -767,9 +746,8 @@ const RequestsStatistics: React.FC = () => {
                 setFiltroContador("tramite");
                 setCurrentPageEnProceso(1);
               }}
-              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${
-                filtroContador === "tramite" ? "ring-2 ring-white" : ""
-              }`}
+              className={`bg-profile text-white text-center rounded-lg py-4 shadow-md hover:opacity-80 transition ${filtroContador === "tramite" ? "ring-2 ring-white" : ""
+                }`}
             >
               <div className="text-sm md:text-base">
                 En trámite:{" "}

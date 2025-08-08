@@ -1,3 +1,5 @@
+import { Rol } from '@constants/roles';
+
 export const getSolicitudesFiltradasPorRol = (
   solicitudes: any[],
   formData: any
@@ -8,11 +10,11 @@ export const getSolicitudesFiltradasPorRol = (
 
     const esCliente =
       (typeof rol === "number" && rol < 20) ||
-      rol === "Cliente" ||
-      rol === "Cliente recurrente";
+      rol === Rol.CLIENTE ||
+      rol === Rol.CLIENTE_RECURRENTE;
 
     const esAbogadoOAsistente =
-      rol === "Abogados" || rol === "Asistente" || rol === 40 || rol === 35;
+      rol === Rol.ABOGADOS || rol === Rol.ASISTENTE || rol === 40 || rol === 35;
 
     if (esCliente) {
       return solicitud.cuenta === cuenta;

@@ -376,7 +376,7 @@ const LegixStatistics: React.FC = () => {
         <HomeBox title="Pensiones" number={(tipoCountsFiltrados['pension-alimenticia'] || 0) + (tipoCountsFiltrados['pension'] || 0)} color="bg-[#2a9d8f]" />
         <HomeBox title="Pension Desacato" number={tipoCountsFiltrados['pension-desacato'] || 0} color="bg-[#264653]" />
         <HomeBox title="Salida de Menores al Extranjero" number={tipoCountsFiltrados['menores-al-extranjero'] || 0} color="bg-[#e9c46a]" />
-        <HomeBox title="cliente recurrente" number={tipoCountsFiltrados['solicitud-cliente-recurrente'] || 0} color="bg-[#264653]" />
+        <HomeBox title="Cliente Recurrente" number={tipoCountsFiltrados['solicitud-cliente-recurrente'] || 0} color="bg-[#264653]" />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
         <div className="lg:col-span-2">
