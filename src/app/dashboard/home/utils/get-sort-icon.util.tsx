@@ -1,7 +1,11 @@
 import { ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 
-export function getSortIcon(sortState: any) {
-  if (sortState.field !== "reminder") {
+import { SortState } from "../contexts/SortContext";
+
+export function getSortIcon(sortState: SortState, field?: "reminder" | "date") {
+  const targetField = field || "reminder";
+
+  if (sortState.field !== targetField) {
     return <ArrowUpDown className="w-4 h-4 ml-1" />;
   }
   if (sortState.order === "asc") {

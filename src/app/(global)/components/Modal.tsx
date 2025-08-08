@@ -84,7 +84,7 @@ export const Modal = ({ children, modalId, className }: Props) => {
           </button>
         </div>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-100px)]">
+        <div className="overflow-y-auto max-h-[calc(90vh-100px)] py-4">
           {children}
         </div>
       </div>
