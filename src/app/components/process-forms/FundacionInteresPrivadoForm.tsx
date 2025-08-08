@@ -39,7 +39,7 @@ const FundacionInteresPrivadoForm = ({ formData, setFormData }: any) => {
         subtotal: 1800,
         total: 1800,
         accion: 'Creación de solicitud',
-        tipo: 'new-fundacion-interes-privado',
+        tipo: 'new-fundacion',
         item: 'Registro de fundación',
       };
       console.log('[FundacionInteresPrivadoForm] Sending create-request-fundacion:', requestData);
@@ -62,7 +62,7 @@ const FundacionInteresPrivadoForm = ({ formData, setFormData }: any) => {
         tipoServicio: '',
         nivelUrgencia: '',
         descripcion: '',
-        type: 'new-fundacion-interes-privado',
+        type: 'new-fundacion',
         lawyer: lawyerEmail,
       };
       console.log('[FundacionInteresPrivadoForm] Sending create-record:', recordData);

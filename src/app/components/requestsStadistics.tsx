@@ -12,6 +12,7 @@ import Swal from "sweetalert2";
 import Link from "next/link";
 import get from "lodash/get";
 import { checkAuthToken } from "@utils/checkAuthToken";
+import { Rol } from '@constants/roles';
 
 const formatDate = (timestamp: {
   _seconds: number;
