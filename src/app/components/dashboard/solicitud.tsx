@@ -131,6 +131,8 @@ const Request: React.FC = () => {
                     const expedienteRef = collection(db, 'expediente');
                     const q = query(expedienteRef, where('solicitud', '==', id));
                     const querySnapshot = await getDocs(q);
+
+
                     if (!querySnapshot.empty) {
                         console.log("🚀 ~ fetchExpediente ~ querySnapshot:", querySnapshot.docs[0].data())
                         setExpedienteRecord(querySnapshot.docs[0].data());
@@ -1806,18 +1808,43 @@ const Request: React.FC = () => {
         return () => unsubscribe();
     }, []);
 
-    const obtenerNombreAbogado = (id: string) => {
-        if (!id) return 'ID no proporcionado';
+    const allStatusOptions = [
+        { value: 0, label: "Rechazada" },
+        { value: 1, label: "Borrador" },
+        { value: 10, label: "Pendiente de pago" },
+        { value: 12, label: "Aprobada" },
+        { value: 19, label: "Confirmando pago" },
+        { value: 20, label: "Pagada" },
+        { value: 30, label: "En proceso" },
+        { value: 40, label: "Inscrita" },
+        { value: 45, label: "Activa" },
+        { value: 50, label: "Suspendida" },
+        { value: 55, label: "Renuncia de Agente residente" },
+        { value: 60, label: "Disuelta" },
+        { value: 70, label: "Finalizada" },
+    ];
 
-        const abogado =
-            assignedLawyers.find((a: any) => String(a.id ?? a._id) === String(id)) ||
-            alreadyAssigned.find((a: any) => String(a.id ?? a._id) === String(id)) ||
-            lawyers.find((a: any) => String(a.id ?? a._id) === String(id));
+    const filteredStatusOptions = [
+        { value: 0, label: "Rechazada" },
+        { value: 1, label: "Borrador" },
+        { value: 10, label: "Pendiente de pago" },
+        { value: 12, label: "Aprobada" },
+        { value: 19, label: "Confirmando pago" },
+        { value: 20, label: "Pagada" },
+        { value: 30, label: "En proceso" },
+        { value: 70, label: "Finalizada" },
+    ];
 
-        return abogado ? abogado.nombre : `Abogado no encontrado (ID: ${id})`;
+    const getAvailableStatusOptions = () => {
+        if (
+            solicitudData?.tipo === "new-sociedad-empresa" ||
+            solicitudData?.tipo === "new-fundacion"
+        ) {
+            return allStatusOptions;
+        }
+
+        return filteredStatusOptions;
     };
-
-    const filteredAssigned = alreadyAssigned.filter(Boolean);
 
     return (
         <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
@@ -1829,27 +1856,7 @@ const Request: React.FC = () => {
                             <h3 className="text-lg font-bold text-white mb-4">Actualizar:</h3>
                             <div className="mb-4">
                                 <label className="block text-gray-300">Estatus</label>
-                                {/* <select
-                                    id="statusSelect"
-                                    className="w-full p-2 rounded bg-gray-900 text-white"
-                                    value={status}
-                                    onChange={(e) => setStatus(Number(e.target.value))}
-                                >
-                                    <option value="">Nueva Acción</option>
-                                    <option value="0">Rechazada</option>
-                                    <option value="1">Borrador</option>
-                                    <option value="10">Enviada</option>
-                                    <option value="12">Aprobada</option>
-                                    <option value="19">Confirmando pago</option>
-                                    <option value="20">Pagada</option>
-                                    <option value="30">En proceso</option>
-                                    <option value="40">Inscrita</option>
-                                    <option value="45">Activa</option>
-                                    <option value="50">Suspendida</option>
-                                    <option value="55">Renuncia de Agente residente</option>
-                                    <option value="60">Disuelta</option>
-                                    <option value="70">Finalizada</option>
-                                </select> */}
+
                                 <select
                                     id="statusSelect"
                                     className="w-full p-2 rounded bg-gray-900 text-white"
@@ -2059,11 +2066,14 @@ const Request: React.FC = () => {
                     <div className="">
                         {alreadyAssigned.length > 0 ? (
                             <ul className="space-y-2">
-                                {filteredAssigned.map((lawyer, index) => (
-                                    <li key={index} className="text-white text-base flex items-center gap-2">
+                                {alreadyAssigned.map((lawyer, index) => (
+                                    <li key={index} className="text-white text-base flex items-center justify-between">
                                         <span>{lawyer.nombre}</span>
                                         {lawyer.fotoPerfil && (
-                                            <button onClick={() => setSelectedPhotoUrl(lawyer.fotoPerfil)}>
+                                            <button
+                                                onClick={() => setSelectedPhotoUrl(lawyer.fotoPerfil)}
+                                                className="text-blue-400 underline hover:text-blue-200 ml-2 text-base"
+                                            >
                                                 Ver foto
                                             </button>
                                         )}
@@ -2120,222 +2130,38 @@ const Request: React.FC = () => {
                     </table>
 
                     <div className="flex space-x-4 mt-2">
-                        <>
-                            <button
-                                onClick={generatePDF}
-                                className="bg-profile text-white px-4 py-2 rounded mt-8"
-                            >
-                                Descargar Resumen PDF
-                            </button>
-                            {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
-                                <>
-                                    <button
-                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                        onClick={handleDownload}
-                                    >
-                                        Descargar Pacto Social
-                                    </button>
-                                </>
-                            )}
-
-                            {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa" || solicitudData?.tipo === "new-fundacion")) && (
-                                <>
-                                    <div className="flex space-x-4 ">
-                                        <button
-                                            onClick={generateInfoPersonas}
-                                            className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                        >
-                                            Descargar información de las personas
-                                        </button>
-
-                                    </div>
-                                </>
-                            )}
-                        </>
-                    </div>
-                </div>
-
-                {expedienteRecord ? (
-                    <div className="bg-gray-800 text-white p-4 rounded-lg mt-6 shadow-md">
-                        <h2 className="text-lg font-bold">Información de Registro de la Sociedad o Fundación</h2>
-                        <hr className='mt-2 mb-2' />
-                        <p><strong>Nombre de la Sociedad/Fundación:</strong> {expedienteRecord.nombreSociedadFundacion || 'No disponible'}</p>
-                        <p><strong>Tipo:</strong> {expedienteRecord.tipoSociedadFundacion || 'No disponible'}</p>
-                        <p><strong>Posee Nominales:</strong> {expedienteRecord.poseeNominales || 'No'}</p>
-
-                        {expedienteRecord.poseeDirectoresNominales === 'Si' && (
-                            <>
-                                <p className="font-semibold mt-4">Directores Nominales:</p>
-                                <ul className="list-disc list-inside text-sm ml-4">
-                                    {expedienteRecord.directoresNominales?.map((dir: any, index: number) => (
-                                        <li key={index}>{obtenerNombreAbogado(dir.abogado)}</li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-
-                        {expedienteRecord.poseeDignatariosNominales === 'Si' && (
-                            <>
-                                <p className="font-semibold mt-4">Dignatarios Nominales:</p>
-                                <ul className="list-disc list-inside text-sm ml-4">
-                                    {expedienteRecord.dignatariosNominales?.map((dig: any, index: number) => (
-                                        <li key={index}>
-                                            {obtenerNombreAbogado(dig.abogado)} - {dig.cargo}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-
-                        {expedienteRecord.poseeMiembrosNominales === 'Si' && (
-                            <>
-                                <p className="font-semibold mt-4">Miembros Nominales:</p>
-                                <ul className="list-disc list-inside text-sm ml-4">
-                                    {expedienteRecord.miembrosNominales?.map((miem: any, index: number) => (
-                                        <li key={index}>{obtenerNombreAbogado(miem.abogado)}</li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-
-                        <p className='mt-4'><strong>Agente Residente:</strong> {expedienteRecord.agenteResidente || 'No disponible'}</p>
-                        {expedienteRecord.agenteResidente === 'otros' && (
-                            <p><strong>Nombre del Agente:</strong> {expedienteRecord.agenteResidenteNombre || 'No disponible'}</p>
-                        )}
-
-                        <p><strong>Posee Aviso de Operación:</strong> {expedienteRecord.poseeAvisoOperacion || 'No'}</p>
-
-                        <p><strong>RUC:</strong> {expedienteRecord.ruc || 'No disponible'}</p>
-                        <p><strong>NIT:</strong> {expedienteRecord.nit || 'No disponible'}</p>
-                        <p><strong>Fecha de Constitución:</strong> {expedienteRecord.fechaConstitucion || 'No disponible'}</p>
-
-                        <p><strong>Correo Responsable:</strong> {expedienteRecord.correoResponsable || 'No disponible'}</p>
-                        <p><strong>Correo Adicional:</strong> {expedienteRecord.correoAdicional || 'No disponible'}</p>
-
-                        <p><strong>Periodo de Pago:</strong> {expedienteRecord.periodoPago || 'No disponible'}</p>
-
-                        {mostrarAdjuntos && (
-                            <>
-                                <hr className='mt-2 mb-2' />
-                                <p className="font-semibold mb-2">Archivos Adjuntos:</p>
-                                <ul className="space-y-2 text-sm">
-                                    {expedienteRecord.archivoRUC && (
-                                        <li>
-                                            <strong>RUC:</strong>{' '}
-                                            <a href={expedienteRecord.archivoRUC} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoNIT && (
-                                        <li>
-                                            <strong>NIT:</strong>{' '}
-                                            <a href={expedienteRecord.archivoNIT} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoEscritura && (
-                                        <li>
-                                            <strong>Escritura Pública:</strong>{' '}
-                                            <a href={expedienteRecord.archivoEscritura} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoNombramiento && (
-                                        <li>
-                                            <strong>Nombramiento:</strong>{' '}
-                                            <a href={expedienteRecord.archivoNombramiento} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoAvisoOperacion && (
-                                        <li>
-                                            <strong>Aviso de Operación:</strong>{' '}
-                                            <a href={expedienteRecord.archivoAvisoOperacion} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoLibroAcciones && (
-                                        <p>
-                                            <strong>Libro de Acciones:</strong>{' '}
-                                            <a
-                                                href={expedienteRecord.archivoLibroAcciones}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-400 no-underline hover:underline"
-                                            >
-                                                Ver archivo adjunto
-                                            </a>
-                                        </p>
-                                    )}
-
-                                    {expedienteRecord.archivosAcciones?.length > 0 && (
-                                        <li>
-                                            <strong>Documentos de Acciones:</strong>
-                                            <ul className="list-disc ml-5 mt-1">
-                                                {expedienteRecord.archivosAcciones.map((url: string, i: number) => (
-                                                    <li key={i}>
-                                                        <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline"
-                                                        >
-                                                            Ver archivo de acción #{i + 1}
-                                                        </a>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </li>
-                                    )}
-                                </ul>
-                                <hr className='mt-2 mb-2' />
-                            </>
-                        )}
-
                         <button
-                            className="bg-profile text-white px-4 py-2 rounded mt-4"
-                            onClick={() => setMostrarAdjuntos(prev => !prev)}
+                            onClick={generatePDF}
+                            className="bg-profile text-white px-4 py-2 rounded mt-8"
                         >
-                            {mostrarAdjuntos ? 'Ocultar archivos adjuntos' : 'Ver archivos adjuntos'}
+                            Descargar Resumen PDF
                         </button>
-
-                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente"
-                        ) && (
-                                <>
-                                    <button
-                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                        onClick={openModal}
-                                    >
-                                        Agregar información de Registro de la Sociedad/Fundación
-                                    </button>
-                                </>
-                            )}
+                        {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
+                            <>
+                                <button
+                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                    onClick={handleDownload}
+                                >
+                                    Descargar Pacto Social
+                                </button>
+                            </>
+                        )}
                     </div>
-                ) : (
-                    <div className="bg-gray-800 text-white p-4 rounded-lg mt-6 shadow-md">
-                        <h2 className="text-lg font-bold mb-4">Información de Registro de la Sociedad o Fundación</h2>
-                        <p className="text-sm text-red-500">No hay información de Registro de la Sociedad o Fundación.</p>
 
-                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente"
-                        ) && (
-                                <>
-                                    <button
-                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                        onClick={openModal}
-                                    >
-                                        Agregar información de Registro de la Sociedad/Fundación
-                                    </button>
-                                </>
-                            )}
+                    {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && solicitudData && solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
+                        <>
+                            <div className="flex space-x-4 ">
+                                <button
+                                    onClick={generateInfoPersonas}
+                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                >
+                                    Descargar información de las personas
+                                </button>
 
-                    </div>
-                )}
+                            </div>
+                        </>
+                    )}
+                </div>
 
                 {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && formData.rol !== Rol.ASISTENTE
                     && formData.rol !== Rol.ABOGADOS && formData.rol !== Rol.AUDITOR
@@ -2354,6 +2180,19 @@ const Request: React.FC = () => {
                                     <p className="text-sm text-red-500">No hay comprobante de pago cargado.</p>
                                 )}
                             </div>
+                        </>
+                    )}
+
+                {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa"
+                    || solicitudData?.tipo === "new-fundacion")
+                ) && (
+                        <>
+                            <button
+                                className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                onClick={openModal}
+                            >
+                                Información de Registro de la Sociedad/Fundación
+                            </button>
                         </>
                     )}
 
