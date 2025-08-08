@@ -72,6 +72,7 @@ const Request: React.FC = () => {
     const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
     const [expedienteRecord, setExpedienteRecord] = useState<any>(null);
     const [mostrarAdjuntos, setMostrarAdjuntos] = useState(false);
+    const [invoiceData, setInvoiceData] = useState<any | null>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const openModal = () => setIsModalOpen(true);
@@ -163,6 +164,26 @@ const Request: React.FC = () => {
                 // Convertir solicitudData.status a número antes de pasarlo a getStatusName
                 const statusNumber = parseInt(solicitudResponse.data.status, 10);
                 setStatusName(getStatusName(statusNumber));
+
+                // Si existe invoice_id, obtener detalles de la factura
+                const invoiceId = get(solicitudResponse.data, 'invoice_id', '');
+                if (typeof invoiceId === 'string' && invoiceId.trim() !== '') {
+                    try {
+                        const invoiceResponse = await axios.get('/api/get-invoice', {
+                            params: { id: invoiceId.trim() },
+                        });
+                        // El backend devuelve { status, data: { invoice } }
+                        const extractedInvoice = get(invoiceResponse, 'data.data.invoice')
+                            || get(invoiceResponse, 'data.invoice')
+                            || get(invoiceResponse, 'data');
+                        setInvoiceData(extractedInvoice || null);
+                    } catch (err) {
+                        console.error('Error fetching invoice data:', err);
+                        setInvoiceData(null);
+                    }
+                } else {
+                    setInvoiceData(null);
+                }
 
                 const userData = checkAuthToken();
                 if (!userData) {
@@ -323,6 +344,68 @@ const Request: React.FC = () => {
                 }
             );
         });
+    };
+
+    const handleDownloadInvoiceFromApi = async () => {
+        const invoiceId = (get(solicitudData, 'invoice_id') || get(invoiceData, 'invoice_id')) as string | undefined;
+        if (!invoiceId || invoiceId.trim() === '') {
+            Swal.fire({
+                position: 'top-end',
+                icon: 'warning',
+                title: 'No hay una factura asociada para descargar.',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#2c2c3e',
+                color: '#fff',
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/download-invoice?id=${encodeURIComponent(invoiceId)}`);
+            if (!response.ok) {
+                throw new Error(`Error HTTP ${response.status}`);
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            let pdfBlob: Blob;
+
+            if (contentType.includes('application/pdf')) {
+                pdfBlob = await response.blob();
+            } else {
+                // Soporte alterno: si el API devolviera JSON con PDF en base64
+                const data = await response.json();
+                const base64 = (data?.data || data?.pdf || data?.file || data?.content || '') as string;
+                const cleaned = base64.replace(/^data:application\/pdf;base64,/, '');
+                const byteCharacters = atob(cleaned);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i += 1) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
+            }
+
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `invoice-${invoiceId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error al descargar la factura:', error);
+            Swal.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: 'No se pudo descargar la factura.',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#2c2c3e',
+                color: '#fff',
+            });
+        }
     };
 
     const handleValidation = () => {
@@ -2196,6 +2279,54 @@ const Request: React.FC = () => {
                         </>
                     )}
 
+                {/* Información de la factura (solo si existe) */}
+                {invoiceData && (
+                    <div className="bg-gray-800 col-span-1 p-8 rounded-lg mt-6">
+                        <h3 className="text-lg font-bold text-white mb-4">Información de la factura</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                            <p><strong>Número:</strong> {get(invoiceData, 'invoice_number', 'N/A')}</p>
+                            <p><strong>Estado:</strong> {get(invoiceData, 'status', 'N/A')}</p>
+                            <p><strong>Cliente:</strong> {get(invoiceData, 'customer_name', 'N/A')}</p>
+                            <p><strong>Emisión:</strong> {get(invoiceData, 'date', 'N/A')}</p>
+                            <p><strong>Vencimiento:</strong> {get(invoiceData, 'due_date', 'N/A')}</p>
+                            <p><strong>Moneda:</strong> {get(invoiceData, 'currency_code', 'N/A')}</p>
+                            <p><strong>Total:</strong> {get(invoiceData, 'total', 'N/A')}</p>
+                            <p><strong>Saldo:</strong> {get(invoiceData, 'balance', 'N/A')}</p>
+                        </div>
+                        {Array.isArray(get(invoiceData, 'line_items')) && get(invoiceData, 'line_items', []).length > 0 && (
+                            <div className="mt-4">
+                                <h4 className="text-white font-semibold mb-2">Ítems</h4>
+                                <table className="w-full text-gray-300">
+                                    <thead>
+                                        <tr className="border-b border-gray-600">
+                                            <th className="text-left p-2">Descripción</th>
+                                            <th className="text-right p-2">Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {get(invoiceData, 'line_items', []).map((item: any, idx: number) => (
+                                            <tr key={idx} className="border-b border-gray-600">
+                                                <td className="p-2">{get(item, 'description', get(item, 'name', `Ítem ${idx + 1}`))}</td>
+                                                <td className="text-right p-2">{get(item, 'item_total', get(item, 'rate', ''))}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                        {(get(solicitudData, 'invoice_id')) && (
+                            <div className="mt-4">
+                                <button
+                                    onClick={handleDownloadInvoiceFromApi}
+                                    className="bg-profile text-white px-4 py-2 rounded hover:bg-blue-600"
+                                >
+                                    Descargar factura PDF
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {isModalOpen
                     && <ModalNominales
                         onClose={closeModal}
@@ -2238,6 +2369,7 @@ const Request: React.FC = () => {
                                                 <th className="p-2 text-left">Título</th>
                                                 <th className="p-2 text-left">Etapa</th>
                                                 <th className="p-2 text-left">Descripción</th>
+                                                <th className="p-2 text-left">Creado por</th>
                                                 <th className="p-2 text-left">Fecha</th>
                                             </tr>
                                         </thead>
@@ -2260,6 +2392,7 @@ const Request: React.FC = () => {
                                                         <td className="p-2">{body?.title || ''}</td>
                                                         <td className="p-2">{body?.stage || ''}</td>
                                                         <td className="p-2">{body?.descripcion || ''}</td>
+                                                        <td className="p-2">{body?.createdByEmail || ''}</td>
                                                         <td className="p-2">{dateStr}</td>
                                                     </tr>
                                                 );

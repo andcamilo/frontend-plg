@@ -6,7 +6,6 @@ import Swal from 'sweetalert2';
 import Link from 'next/link';
 import { auth } from "@configuration/firebase";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
-import CreateProcessFormSI from './CreateProcessFormSI';
 import CreateProcessFormNO from './CreateProcessFormNO';
 
 const Actions: React.FC<{ id: string }> = ({ id }) => {
@@ -52,7 +51,6 @@ const Actions: React.FC<{ id: string }> = ({ id }) => {
 };
 
 const CreateProcessForm: React.FC = () => {
-  const [form, setForm] = useState({ email: '', tipoTramite: '', tipoSolicitud: '' });
   const [form2, setForm2] = useState({
     nombre: '',
     apellido: '',
@@ -64,24 +62,10 @@ const CreateProcessForm: React.FC = () => {
     documentos: [null as File | null],
     archivoURLs: ['', '', '']
   });
-  const [isDigitalizado, setIsDigitalizado] = useState('SI');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEmergentFieldVisible, setIsEmergentFieldVisible] = useState(false);
-  const [solicitudes, setSolicitudes] = useState<any[]>([]);
-  const [selectedSolicitudId, setSelectedSolicitudId] = useState('');
-  const [emailExists, setEmailExists] = useState(false);
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setIsDigitalizado(e.target.value);
-  };
-
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  
 
   const handleForm2Change = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -103,49 +87,7 @@ const CreateProcessForm: React.FC = () => {
     });
   };
 
-  const handleFormSubmitSI = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      // Use selectedSolicitudId from state
-      const response = await axios.post('/api/create-record', {
-        email: form.email,
-        phone: '',
-        tipoTramite: form.tipoTramite,
-        lawyer: auth.currentUser?.email || '',
-        solicitud: selectedSolicitudId // <-- use the selected one
-      });
-
-      if (response.data) {
-        await Swal.fire({
-          title: '¡Registro Exitoso!',
-          text: 'El registro ha sido creado correctamente.',
-          icon: 'success',
-          background: '#2c2c3e',
-          color: '#fff',
-          confirmButtonColor: '#3085d6',
-          confirmButtonText: 'Aceptar',
-          timer: 3000,
-          timerProgressBar: true,
-          showConfirmButton: false
-        });
-        setForm({ email: '', tipoTramite: '', tipoSolicitud: '' });
-      }
-    } catch (error) {
-      console.error('Error creating record:', error);
-      await Swal.fire({
-        title: 'Error al Crear Registro',
-        text: 'No se pudo crear el registro. Por favor, intente nuevamente.',
-        icon: 'error',
-        background: '#2c2c3e',
-        color: '#fff',
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Intentar de nuevo'
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  // Flujo SI eliminado
 
   const handleFormSubmitNo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,84 +187,21 @@ const CreateProcessForm: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchSolicitudes = async () => {
-      if (form.email && form.tipoSolicitud) {
-        const db = getFirestore();
-        const solicitudesRef = collection(db, "solicitudes");
-        const q = query(
-          solicitudesRef,
-          where("emailSolicita", "==", form.email),
-          where("tipo", "==", form.tipoSolicitud)
-        );
-        const querySnapshot = await getDocs(q);
-        const results = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setSolicitudes(results);
-        setSelectedSolicitudId(results[0]?.id || '');
-        // Optional: log for debugging
-        console.log("🚀 ~ fetchSolicitudes ~ querySnapshot:", querySnapshot);
-      } else {
-        setSolicitudes([]);
-        setSelectedSolicitudId('');
-      }
-    };
-    fetchSolicitudes();
-  }, [form.email, form.tipoSolicitud]);
-
-  useEffect(() => {
-    const checkEmailExists = async () => {
-      if (form.email) {
-        const db = getFirestore();
-        const usuariosRef = collection(db, 'usuarios');
-        const q = query(usuariosRef, where('email', '==', form.email));
-        const querySnapshot = await getDocs(q);
-        setEmailExists(!querySnapshot.empty);
-      } else {
-        setEmailExists(false);
-      }
-    };
-    checkEmailExists();
-  }, [form.email]);
+  
 
   return (
     <>
       <div className="flex flex-col gap-4 p-8 w-full">
         <div className="bg-component text-[#b8b8b8] px-10 py-6 rounded-lg w-full flex flex-col gap-4 mb-8">
-          <label className="text-lg font-bold text-white mb-2">¿El trámite ya está creado en la plataforma?</label>
-          <select
-            value={isDigitalizado}
-            onChange={handleSelectChange}
-            className="py-3 px-5 block w-full bg-[#1B1B29] text-white border-2 border-white rounded-lg text-sm mb-2"
-          >
-            <option value="SI">SI</option>
-            <option value="NO">NO</option>
-          </select>
-          {isDigitalizado === 'SI' ? (
-            <CreateProcessFormSI
-              isSubmitting={isSubmitting}
-              form={form}
-              setForm={setForm}
-              solicitudes={solicitudes}
-              selectedSolicitudId={selectedSolicitudId}
-              setSelectedSolicitudId={setSelectedSolicitudId}
-              handleFormChange={handleFormChange}
-              handleFormSubmitSI={handleFormSubmitSI}
-              emailExists={emailExists}
-            />
-          ) : (
-            <CreateProcessFormNO
-              isSubmitting={isSubmitting}
-              form2={form2}
-              setForm2={setForm2}
-              isEmergentFieldVisible={isEmergentFieldVisible}
-              handleForm2Change={handleForm2Change}
-              handleForm2FileChange={handleForm2FileChange}
-              handleFormSubmitNo={handleFormSubmitNo}
-            />
-          )}
+          <CreateProcessFormNO
+            isSubmitting={isSubmitting}
+            form2={form2}
+            setForm2={setForm2}
+            isEmergentFieldVisible={isEmergentFieldVisible}
+            handleForm2Change={handleForm2Change}
+            handleForm2FileChange={handleForm2FileChange}
+            handleFormSubmitNo={handleFormSubmitNo}
+          />
         </div>
       </div>
     </>
