@@ -11,7 +11,7 @@ export const roles: Role[] = [
     { name: "Abogados", value: 40 },
     { name: "Asistente", value: 35 },
     { name: "cliente recurrente", value: 17 },
-    { name: "Clientes", value: 10 },
+    { name: "cliente", value: 10 },
 ];
 
 export const getRoleName = (value: number): string => {
