@@ -10,7 +10,7 @@ export const roles: Role[] = [
     { name: "Caja Chica", value: 50 },
     { name: "Abogados", value: 40 },
     { name: "Asistente", value: 35 },
-    { name: "Cliente Recurrente", value: 17 },
+    { name: "cliente recurrente", value: 17 },
     { name: "Clientes", value: 10 },
 ];
 

@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
 import { uploadFile } from '@/src/app/utils/firebase-upload';
 import { auth } from '@configuration/firebase';
+import { Rol } from '@constants/roles';
 
 interface FileInput {
   id: number;
@@ -45,7 +46,7 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
       const tramiteData = {
         nombre: formData.nombre || '',
         email: formData.email || '',
-        rol: 'cliente',
+        rol: Rol.CLIENTE,
         telefonoSolicita: formData.telefono || '',
         cedulaPasaporte: formData.cedulaPasaporte || ''
       };

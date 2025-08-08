@@ -45,7 +45,6 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
         'consulta-escrita': 'Consulta Escrita',
         'consulta-virtual': 'Consulta Virtual',
         'consulta-presencial': 'Consulta Presencial',
-        'new-fundacion-interes-privado': 'Fundación de Interés Privado',
         'new-fundacion': 'Fundación de Interés Privado',
         'new-sociedad-empresa': 'Sociedad / Empresa',
         'menores-al-extranjero': 'Salida de Menores al Extranjero',
