@@ -18,6 +18,12 @@ const MyRecordsTable: React.FC = () => {
   const [userData, setUserData] = useState<DocumentData | null>(null);
   const [role, setRole] = useState<number | null>(null);
   const [permisos, setPermisos] = useState<string | null>(null);
+  // Filters
+  const [filterEmail, setFilterEmail] = useState('');
+  const [filterLawyer, setFilterLawyer] = useState('');
+  const [filterName, setFilterName] = useState('');
+  const [filterSolicitud, setFilterSolicitud] = useState('');
+  const [filterType, setFilterType] = useState('');
   const router = useRouter();
 
   const decodeJWT = (token: string) => {
@@ -85,13 +91,27 @@ const MyRecordsTable: React.FC = () => {
       }
       setLoading(true);
       try {
-        const response = await axios.get('/api/list-records', {
-          params: { 
-            lawyer: userEmail,
-            role: role,
-            permisos: permisos
-          },
-        });
+        // Build params: admin can query global; non-admin must include email or lawyer base
+        const isAdmin = (role ?? 0) > 34 || permisos === 'expediente' || permisos === 'administrador';
+        const params: Record<string, any> = {};
+        if (role !== null) params.role = role;
+        if (permisos) params.permisos = permisos;
+
+        // Apply filters only if provided
+        if (filterEmail.trim()) params.email = filterEmail.trim();
+        if (filterLawyer.trim()) params.lawyer = filterLawyer.trim();
+        if (filterName.trim()) params.name = filterName.trim();
+        if (filterSolicitud.trim()) params.solicitud = filterSolicitud.trim();
+        if (filterType.trim()) params.type = filterType.trim();
+
+        // For non-admin default base to current user (lawyer) if user didn't set base filters
+        if (!isAdmin) {
+          if (!params.email && !params.lawyer) {
+            params.lawyer = userEmail;
+          }
+        }
+
+        const response = await axios.get('/api/list-records', { params });
         console.log('API response:', response.data);
         setRecords(response.data.records || []);
       } catch (error) {
@@ -102,7 +122,7 @@ const MyRecordsTable: React.FC = () => {
       }
     };
     fetchRecords();
-  }, [userEmail, role]);
+  }, [userEmail, role, permisos, filterEmail, filterLawyer, filterName, filterSolicitud, filterType]);
 
   useEffect(() => {
     if (!userEmail) return;
@@ -152,6 +172,40 @@ const MyRecordsTable: React.FC = () => {
       hasPrevPage={hasPrevPage}
       hasNextPage={hasNextPage}
       onPageChange={setCurrentPage}
+      controls={(
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <input
+            placeholder="Email"
+            value={filterEmail}
+            onChange={(e) => setFilterEmail(e.target.value)}
+            className="py-2 px-3 bg-[#1B1B29] text-white border border-gray-600 rounded"
+          />
+          <input
+            placeholder="Abogado"
+            value={filterLawyer}
+            onChange={(e) => setFilterLawyer(e.target.value)}
+            className="py-2 px-3 bg-[#1B1B29] text-white border border-gray-600 rounded"
+          />
+          <input
+            placeholder="Nombre"
+            value={filterName}
+            onChange={(e) => setFilterName(e.target.value)}
+            className="py-2 px-3 bg-[#1B1B29] text-white border border-gray-600 rounded"
+          />
+          <input
+            placeholder="Solicitud"
+            value={filterSolicitud}
+            onChange={(e) => setFilterSolicitud(e.target.value)}
+            className="py-2 px-3 bg-[#1B1B29] text-white border border-gray-600 rounded"
+          />
+          <input
+            placeholder="Tipo"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="py-2 px-3 bg-[#1B1B29] text-white border border-gray-600 rounded"
+          />
+        </div>
+      )}
     />
   );
 };

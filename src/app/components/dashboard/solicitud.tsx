@@ -346,6 +346,8 @@ const Request: React.FC = () => {
         });
     };
 
+    const [isDownloadingInvoice, setIsDownloadingInvoice] = useState(false);
+
     const handleDownloadInvoiceFromApi = async () => {
         const invoiceId = (get(solicitudData, 'invoice_id') || get(invoiceData, 'invoice_id')) as string | undefined;
         if (!invoiceId || invoiceId.trim() === '') {
@@ -362,6 +364,7 @@ const Request: React.FC = () => {
         }
 
         try {
+            setIsDownloadingInvoice(true);
             const response = await fetch(`/api/download-invoice?id=${encodeURIComponent(invoiceId)}`);
             if (!response.ok) {
                 throw new Error(`Error HTTP ${response.status}`);
@@ -405,6 +408,8 @@ const Request: React.FC = () => {
                 background: '#2c2c3e',
                 color: '#fff',
             });
+        } finally {
+            setIsDownloadingInvoice(false);
         }
     };
 
@@ -2318,9 +2323,10 @@ const Request: React.FC = () => {
                             <div className="mt-4">
                                 <button
                                     onClick={handleDownloadInvoiceFromApi}
-                                    className="bg-profile text-white px-4 py-2 rounded hover:bg-blue-600"
+                                    disabled={isDownloadingInvoice}
+                                    className={`bg-profile text-white px-4 py-2 rounded hover:bg-blue-600 ${isDownloadingInvoice ? 'opacity-60 cursor-not-allowed' : ''}`}
                                 >
-                                    Descargar factura PDF
+                                    {isDownloadingInvoice ? 'Descargando...' : 'Descargar factura PDF'}
                                 </button>
                             </div>
                         )}

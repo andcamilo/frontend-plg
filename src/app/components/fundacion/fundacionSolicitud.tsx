@@ -339,6 +339,20 @@ const FundacionSolicitante: React.FC = () => {
             const { solicitudId, status } = response.data;
 
             if (status === "success" && solicitudId) {
+                // Create record after successful foundation request creation
+                try {
+                    const recordPayload = {
+                        name: formData.nombreCompleto || '',
+                        email: formData.email || '',
+                        solicitud: solicitudId,
+                        type: 'new-fundacion',
+                        phone: `${formData.telefonoCodigo}${formData.telefono}`.trim(),
+                    };
+                    await axios.post('/api/create-record', recordPayload);
+                } catch (recordErr) {
+                    console.error('Error creating record after request (new-fundacion):', recordErr);
+                }
+
                 Swal.fire({
                     icon: "success",
                     title: "Ya puedes continuar cargando la información de los siguientes bloques...",

@@ -9,6 +9,7 @@ interface TableWithPaginationProps {
   hasPrevPage: boolean;
   hasNextPage: boolean;
   onPageChange: (pageNumber: number) => void;
+  controls?: React.ReactNode;
 }
 
 const TableWithPagination: React.FC<TableWithPaginationProps> = ({
@@ -20,12 +21,16 @@ const TableWithPagination: React.FC<TableWithPaginationProps> = ({
   hasPrevPage,
   hasNextPage,
   onPageChange,
+  controls,
 }) => {
   const columns = data.length > 0 ? Object.keys(data[0]) : [];
 
   return (
     <div className="bg-component p-4 rounded-lg shadow-lg w-full max-w-7xl mb-4">
       <h2 className="text-lg font-bold text-white mb-4">{title}</h2>
+      {controls && (
+        <div className="mb-4">{controls}</div>
+      )}
       <div className="overflow-x-auto">
         {data.length > 0 ? (
           <table className="w-full text-left text-gray-400">

@@ -491,9 +491,7 @@ const RequestsStatistics: React.FC = () => {
 
         const mappedExpedienteType = tipoToExpType[tipo] ?? "";
 
-        return {
-          ID: id,
-          id,
+        const row: any = {
           Tipo: tipoMapping[tipo] || tipo,
           Fecha: formatDate(date),
           Email: emailSolicita,
@@ -513,6 +511,11 @@ const RequestsStatistics: React.FC = () => {
             <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />
           ),
         };
+
+        // Make internal id available but not visible as a column
+        Object.defineProperty(row, 'id', { value: id, enumerable: false });
+
+        return row;
       }
     );
   };
@@ -555,7 +558,7 @@ const RequestsStatistics: React.FC = () => {
 
     const newSelection: { [key: string]: boolean } = {};
     rows.forEach((row) => {
-      newSelection[row.ID] = allSelected;
+      newSelection[row.id] = allSelected;
     });
 
     setSelectedRows(newSelection);
