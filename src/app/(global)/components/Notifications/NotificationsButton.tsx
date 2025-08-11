@@ -27,7 +27,7 @@ const NotificationsButton = () => {
       >
         <Bell className="w-6 h-6 text-white" />
         {totalNotifications > 0 && (
-          <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full border-2 border-white">
+          <span className="absolute bottom-11 left-0 right-0 bg-red-500 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full border-2 border-white">
             {totalNotifications}
           </span>
         )}
@@ -36,8 +36,10 @@ const NotificationsButton = () => {
         )}
       </button>
       {isOpen && notifications && (
-        <div className="absolute top-12 right-0 w-80 max-h-[28rem] bg-gray-800 rounded-lg shadow-2xl border border-gray-200 z-50 overflow-y-auto">
-          <NotificationsDisplay notifications={notifications} />
+        <div className="absolute top-12 right-0 w-80 max-h-[28rem] bg-gray-800 rounded-lg shadow-2xl border border-gray-200 z-[9999] overflow-hidden">
+          <div className="max-h-[28rem] overflow-y-auto">
+            <NotificationsDisplay notifications={notifications} />
+          </div>
         </div>
       )}
     </div>
