@@ -392,6 +392,21 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           console.log('ID token set as AuthToken cookie');
         }
 
+        // Create record after successful request creation
+        try {
+          const recordPayload = {
+            name: formData.nombreCompleto || '',
+            email: formData.email || formData.summaryEmail || '',
+            solicitud: solicitudId,
+            type: 'pension-alimenticia',
+            phone: `${formData.telefonoCodigo} ${formData.telefono}`.trim(),
+            descripcion: formData.resumenCaso || '',
+          };
+          await axios.post('/api/create-record', recordPayload);
+        } catch (recordErr) {
+          console.error('Error creating record after request:', recordErr);
+        }
+
         Swal.fire({
           icon: 'success',
           title: isSummary ? 'Resumen Enviado' : 'Formulario Enviado',

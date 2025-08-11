@@ -390,8 +390,7 @@ const RequestsStatistics: React.FC = () => {
           "solicitud-cliente-recurrente": "Solicitud Cliente Recurrente",
         };
 
-        return {
-          id,
+        const row: any = {
           Tipo: tipoMapping[tipo] || tipo,
           Fecha: formatDate(date),
           Email: emailSolicita,
@@ -406,6 +405,11 @@ const RequestsStatistics: React.FC = () => {
             <Actions tipo={tipo} id={id} status={status} rol={formData.rol} />
           ),
         };
+
+        // Keep internal id for selection/actions but hide it from table columns
+        Object.defineProperty(row, 'id', { value: id, enumerable: false });
+
+        return row;
       }
     );
   };

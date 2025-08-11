@@ -193,6 +193,9 @@ const MenoresAlExtranjero: React.FC = () => {
 
     useEffect(() => {
         if (id) {
+            // Ensure store has the solicitudId for payment flow
+            setStore((prev) => ({ ...prev, solicitudId: id }));
+
             const fetchSolicitud = async () => {
                 try {
                     const response = await axios.get('/api/get-request-id', {
@@ -206,7 +209,7 @@ const MenoresAlExtranjero: React.FC = () => {
             fetchSolicitud();
             console.log('ID del registro:', id);
         }
-    }, [id]);
+    }, [id, setStore]);
 
     const formatDateForInput = (dateString: string) => {
         const [day, month, year] = dateString.split('-');
@@ -1873,6 +1876,22 @@ const MenoresAlExtranjero: React.FC = () => {
 
             const { solicitudId, status } = response.data;
             console.log("🔍 solicitudId recibido:", solicitudId);
+
+            // After successful request creation, create the record
+            if (status === 'success' && solicitudId) {
+                try {
+                    const recordPayload = {
+                        name: formData.nombreCompleto || '',
+                        email: formData.email || '',
+                        solicitud: solicitudId,
+                        type: 'menores-al-extranjero',
+                        phone: `${formData.telefonoCodigo} ${formData.telefono}`.trim(),
+                    };
+                    await axios.post('/api/create-record', recordPayload);
+                } catch (recordErr) {
+                    console.error('Error creating record after request (menores-al-extranjero):', recordErr);
+                }
+            }
 
             let archivoURL = formData.archivoAutorizanteURL;
             let archivoPasaporteAutotizanteURL = formData.archivoPasaporteAutorizanteURL;

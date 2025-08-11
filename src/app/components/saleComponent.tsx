@@ -215,6 +215,12 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
           name="cvv"
           value={cvv}
           onChange={handleCvvChange}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleProcessSale();
+            }
+          }}
           maxLength={4}
           className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
           placeholder="Enter CVV"
@@ -223,6 +229,7 @@ const SaleComponent: React.FC<SaleComponentProps> = ({ saleAmount }) => {
       </div>
 
       <button
+        type="button"
         onClick={handleProcessSale}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         disabled={!context?.store.token || !cvv || loading}

@@ -80,6 +80,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, saleAmount
     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center p-4">
       <div className="bg-gray-900 p-6 rounded-2xl shadow-xl w-full max-w-lg relative border border-gray-700">
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
           aria-label="Cerrar modal"
