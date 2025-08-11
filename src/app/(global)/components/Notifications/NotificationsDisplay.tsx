@@ -21,20 +21,18 @@ const NotificationsDisplay = ({
 
   return (
     <div className="p-4">
-      {notifications.overdueAlertsCount > 0 && (
-        <div className="sticky top-0 z-10 pb-2 mb-2 border-b">
-          <h3 className="font-bold text-lg text-white">
-            Tienes {notifications.overdueAlertsCount} alertas vencidas
-          </h3>
-          <h3 className="font-bold text-lg text-white">
-            Tienes {notifications.unassignedSolicitudesCount} solicitudes sin
-            abogado
-          </h3>
-          <span className="text-xs text-gray-200">
-            {totalAlerts} alerta(s) listada(s)
-          </span>
-        </div>
-      )}
+      <div className="sticky top-0 z-20 pb-2 mb-2 border-b bg-gray-800">
+        <h3 className="font-bold text-lg text-white">
+          Tienes {notifications.overdueAlertsCount} alertas vencidas
+        </h3>
+        <h3 className="font-bold text-lg text-white">
+          Tienes {notifications.unassignedSolicitudesCount} solicitudes sin
+          abogado
+        </h3>
+        <span className="text-xs text-gray-200">
+          {totalAlerts} alerta(s) listada(s)
+        </span>
+      </div>
       <div className="space-y-4 gap-2 mt-2 flex flex-col">
         {overdueAlerts.map((alert) => (
           <Link href={`/dashboard/request/${alert.solicitudId}`} key={alert.id}>
