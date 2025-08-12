@@ -16,8 +16,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import CountrySelect from '@components/CountrySelect';
 import ReCAPTCHA from 'react-google-recaptcha';
-import WidgetLoader from '@/src/app/components/widgetLoader';
-import SaleComponent from '@/src/app/components/saleComponent';
+import PaymentModal from '@/src/app/components/PaymentModal';
 import BannerOpcionesConsulta from '@components/BannerOpcionesConsulta';
 import { FaPlay } from 'react-icons/fa';
 import {
@@ -28,7 +27,6 @@ import {
     firebaseAppId,
     firebaseProjectId
   } from '@utils/env';
-import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 
 // Configuración de Firebase
@@ -51,7 +49,6 @@ const ConsultaPropuesta: React.FC = () => {
     const [solicitudData, setSolicitudData] = useState<any>(null);
     const context = useContext(AppStateContext);
     const [recaptchaToken, setRecaptchaToken] = useState(null);
-    const [showPaymentWidget, setShowPaymentWidget] = useState<boolean>(false);
     const [showPaymentButtons, setShowPaymentButtons] = useState<boolean>(true);
     const [loading, setLoading] = useState<boolean>(false);
     const router = useRouter();
@@ -113,6 +110,9 @@ const ConsultaPropuesta: React.FC = () => {
 
     useEffect(() => {
         if (id) {
+            // Ensure the solicitudId is available in store for payment flow
+            setStore((prev) => ({ ...prev, solicitudId: id }));
+
             const fetchSolicitud = async () => {
                 try {
                     const response = await axios.get('/api/get-request-id', {
@@ -126,7 +126,7 @@ const ConsultaPropuesta: React.FC = () => {
             fetchSolicitud();
             console.log('ID del registro:', id);
         }
-    }, [id]);
+    }, [id, setStore]);
 
     // Actualiza formData cuando solicitudData cambia
     useEffect(() => {
@@ -213,7 +213,7 @@ const ConsultaPropuesta: React.FC = () => {
 
             fetchUser();
         }
-    }, [formData.cuenta]);
+    }, [formData.cuenta, setStore]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
@@ -1042,21 +1042,20 @@ const ConsultaPropuesta: React.FC = () => {
         setShowModal(!showModal); // Alterna el estado del modal
     };
 
-    // PaymentModal state
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
-    // Update the payment button click handler
+    // Open PaymentModal to process payment
     const handlePaymentClick = () => {
         setLoading(true);
         setIsPaymentModalOpen(true);
-        setShowPaymentWidget(false); // Hide widget if open
         setShowPaymentButtons(false);
+        setLoading(false);
     };
 
     const handleClosePaymentModal = () => {
-        setIsPaymentModalOpen(false);
         setLoading(false);
         setShowPaymentButtons(true);
+        setIsPaymentModalOpen(false);
     };
 
     // Handle "Enviar y pagar más tarde" button click
@@ -1760,11 +1759,7 @@ const ConsultaPropuesta: React.FC = () => {
                                     </div>
                                 )}
 
-                                {showPaymentWidget && <WidgetLoader />}
-
-                                {store.token && (
-                                    <div className="mt-8"><SaleComponent saleAmount={150} /></div>
-                                )}
+                                {/* Payment handled by PaymentModal */}
 
                             </>
                         )}
@@ -1800,11 +1795,7 @@ const ConsultaPropuesta: React.FC = () => {
                                     </div>
                                 )}
 
-                                {showPaymentWidget && <WidgetLoader />}
-
-                                {store.token && (
-                                    <div className="mt-8"><SaleComponent saleAmount={150} /></div>
-                                )}
+                                {/* Payment handled by PaymentModal */}
 
                             </>
                         )}
@@ -1827,14 +1818,13 @@ const ConsultaPropuesta: React.FC = () => {
 
             </form>
 
-            {/* PaymentModal */}
-            {isPaymentModalOpen && (
-                <PaymentModal
-                    isOpen={isPaymentModalOpen}
-                    onClose={handleClosePaymentModal}
-                    saleAmount={150}
-                />
-            )}
+            {/* Modal para procesar el pago */}
+            <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={handleClosePaymentModal}
+                saleAmount={total}
+            />
+
 
             {/* Registrar Pago Modal */}
             {isRegisterPaymentModalOpen && (
