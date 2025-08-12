@@ -5,11 +5,13 @@ export const updateSolicitud = async ({
   status,
   observation,
   fileUrl,
+  statusText,
 }: {
   solicitudId: string;
   status: number;
   observation?: string;
   fileUrl?: string;
+  statusText?: string;
 }) => {
   const endpoint = `${backendBaseUrl}/${backendEnv}/update-solicitud `;
   const body: any = { status, solicitudId };
@@ -21,6 +23,9 @@ export const updateSolicitud = async ({
   if (fileUrl) {
     body.fileUrl = fileUrl;
   }
+  if (statusText) {
+    body.statusText = statusText;
+  }
 
   const response = await fetch(endpoint, {
     method: "PATCH",
@@ -30,12 +35,31 @@ export const updateSolicitud = async ({
     },
     body: JSON.stringify(body),
   });
+  const payload = await response.json();
 
   if (!response.ok) {
-    throw new Error(`Error updating solicitud: ${response.statusText}`);
+    const apiMessage =
+      payload?.message || payload?.error || response.statusText;
+    throw new Error(apiMessage || "Error updating solicitud");
   }
 
-  const result = await response.json();
+  return payload;
+};
 
-  return result;
+export const getSolicitudByID = async (solicitudId: string, userId: string) => {
+  const endpoint = `${backendBaseUrl}/${backendEnv}/solicitudes/${solicitudId}?userId=${userId}`;
+  const response = await fetch(endpoint, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error fetching solicitud: ${response.statusText}`);
+  }
+
+  const solicitud = await response.json();
+
+  return solicitud;
 };

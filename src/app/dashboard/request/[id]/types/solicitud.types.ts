@@ -64,4 +64,5 @@ export interface SolicitudStatusUpdate {
   status: number; // Se convierte a número
   observation?: string;
   fileUrl?: string; // Se añade la URL del archivo
+  statusText?: string; // Si el usuario eligió un estado string, lo enviamos aquí
 }

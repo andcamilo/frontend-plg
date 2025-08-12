@@ -4,7 +4,7 @@ import ElementFormSelect from "@/src/app/(global)/components/Form/ElementFormSel
 import ElementFormTextArea from "@/src/app/(global)/components/Form/ElementFormTextArea";
 import Form from "@/src/app/(global)/components/Form/Form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useState } from "react";
 import {
   SolicitudStatusUpdateForm,
@@ -31,7 +31,7 @@ const StatusForm = ({
         id: defaultValues.id,
         status: defaultValues.status.toString(),
         observation: "",
-        file: null,
+        file: undefined,
       }
     : undefined;
 
@@ -41,10 +41,12 @@ const StatusForm = ({
     formState: { errors },
   } = useForm<SolicitudStatusUpdateForm>({
     defaultValues: formDefaultValues,
-    resolver: zodResolver(SolicitudStatusUpdateSchema),
+    resolver: zodResolver(SolicitudStatusUpdateSchema) as any,
   });
 
-  const handleFormSubmit = async (formData: SolicitudStatusUpdateForm) => {
+  const handleFormSubmit: SubmitHandler<SolicitudStatusUpdateForm> = async (
+    formData
+  ) => {
     let fileUrl: string | undefined;
 
     // Subir archivo si existe
@@ -72,12 +74,19 @@ const StatusForm = ({
     onSubmit(processedData);
   };
 
-  const statusOptions = Object.entries(STATUS_MAPPING).map(
-    ([value, label]) => ({
-      value: value,
-      label: label,
-    })
-  );
+  const SOCIEDADES_Y_FUNDACIONES_KEYS = ["40", "45", "50", "55", "60"];
+  const isSociedad = defaultValues?.tipo === "new-sociedad-empresa";
+  const statusEntries = Object.entries(STATUS_MAPPING);
+  const filteredEntries = isSociedad
+    ? statusEntries
+    : statusEntries.filter(
+        ([key]) => !SOCIEDADES_Y_FUNDACIONES_KEYS.includes(key)
+      );
+
+  const statusOptions = filteredEntries.map(([value, label]) => ({
+    value,
+    label,
+  }));
 
   return (
     <>
