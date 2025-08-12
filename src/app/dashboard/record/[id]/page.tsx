@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Swal from 'sweetalert2';
+import { checkAuthToken } from '@utils/checkAuthToken';
 
 const RecordPage = () => {
   const params = useParams();
@@ -24,11 +25,13 @@ const RecordPage = () => {
     setLoading(true);
     setMessage(null);
   
+    const user = checkAuthToken();
     const item = {
       body: {
         title,
         stage,
-        descripcion
+        descripcion,
+        createdByEmail: user?.email || ''
       }
     };
   
@@ -43,6 +46,7 @@ const RecordPage = () => {
                 title,
                 stage,
                 descripcion,
+                createdByEmail: user?.email || '',
                 ...(file ? { file: file } : {})
               }
             }

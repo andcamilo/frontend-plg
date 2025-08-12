@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+import { checkAuthToken } from '@utils/checkAuthToken';
 
 interface ModalExpedienteProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ const ModalExpediente: React.FC<ModalExpedienteProps> = ({
     setMessage(null);
   
     try {
+      const user = checkAuthToken();
       const response = await fetch(`/api/update-record?id=${solicitudId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -41,6 +43,7 @@ const ModalExpediente: React.FC<ModalExpedienteProps> = ({
                 title,
                 stage,
                 descripcion,
+                createdByEmail: user?.email || '',
                 ...(file ? { file: file } : {})
               }
             }

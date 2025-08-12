@@ -392,6 +392,21 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
           console.log('ID token set as AuthToken cookie');
         }
 
+        // Create record after successful request creation
+        try {
+          const recordPayload = {
+            name: formData.nombreCompleto || '',
+            email: formData.email || formData.summaryEmail || '',
+            solicitud: solicitudId,
+            type: 'pension-alimenticia',
+            phone: `${formData.telefonoCodigo} ${formData.telefono}`.trim(),
+            descripcion: formData.resumenCaso || '',
+          };
+          await axios.post('/api/create-record', recordPayload);
+        } catch (recordErr) {
+          console.error('Error creating record after request:', recordErr);
+        }
+
         Swal.fire({
           icon: 'success',
           title: isSummary ? 'Resumen Enviado' : 'Formulario Enviado',
@@ -539,50 +554,6 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
 
       <BannerOpciones />
 
-      {/* <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 text-white">
-        <div className="bg-[#1E1E2D] p-4 rounded-xl border-2 border-profile">
-          <h3 className="text-lg font-bold mb-2 ">Pensión alimenticia por primera vez</h3>
-          <p className="text-sm leading-relaxed texto_justificado">
-            Si aún no existe una pensión establecida, puedes iniciar el proceso para determinar la cantidad adecuada, considerando los ingresos del demandado y las necesidades del beneficiario.
-          </p>
-        </div>
-
-        <div className="bg-[#1E1E2D] p-4 rounded-xl border-2 border-profile">
-          <h3 className="text-lg font-bold mb-2 ">Aumento o disminución de la pensión</h3>
-          <p className="text-sm leading-relaxed texto_justificado">
-            Si las circunstancias económicas de alguna de las partes han cambiado, puedes solicitar una revisión de la pensión existente.
-          </p>
-        </div>
-
-        <div className="bg-[#1E1E2D] p-4 rounded-xl border-2 border-profile">
-          <h3 className="text-lg font-bold mb-2 ">Suspensión de la pensión</h3>
-          <p className="text-sm leading-relaxed texto_justificado">
-            Si el beneficiario ha alcanzado la mayoría de edad, ya no depende económicamente del demandado, o ya no se encuentra estudiando, puedes solicitar la suspensión de la pensión.
-          </p>
-        </div>
-
-        <div className="bg-[#1E1E2D] p-4 rounded-xl border-2 border-profile">
-          <h3 className="text-lg font-bold mb-2 ">Desacato por incumplimiento</h3>
-          <p className="text-sm leading-relaxed texto_justificado">
-            Si el demandado no ha cumplido con los pagos de la pensión establecida, puedes iniciar un proceso de desacato. Esta debe presentarse en el momento en que incurra en el no pago dentro de los 30 días correspondientes.
-          </p>
-        </div>
-
-        <div className="md:col-span-2 lg:col-span-4 mt-4 text-center text-sm text-white opacity-80 texto_justificado">
-          Llena primero la información de la persona que le dará seguimiento al trámite y quien será el punto de contacto.
-          Podrás ver videos de guía mientras avanzas y durante el proceso, tienes la opción de guardar y enviar más tarde.
-        </div>
-      </div> */}
-
-      {/* <div className="flex justify-center">
-        <Image
-          src={PensionInfoImage}
-          alt="¿Qué puedes solicitar en este trámite?"
-          width={1500}
-          height={800}
-          className="rounded-lg shadow-lg"
-        />
-      </div> */}
 
       <p className="text-white mt-6 texto_justificado">
         <span className="text-red-500 font-bold">Importante: </span>

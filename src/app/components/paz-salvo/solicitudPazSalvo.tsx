@@ -89,12 +89,107 @@ export default function SolicitudPazSalvo() {
     setIsPaymentModalOpen(false);
     setLoading(false);
   };
-  const handleSendAndPayLater = async () => {
-    setLoading(true);
-    // Aquí va la lógica para enviar y pagar más tarde
-    setTimeout(() => setLoading(false), 1000);
-  };
+ const handleSendAndPayLater = async () => {
+  if (enviando) return;
 
+  if (!terminosAceptados) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Debes aceptar los términos y condiciones.',
+      showConfirmButton: false,
+      timer: 2500,
+      background: '#2c2c3e',
+      color: '#fff',
+    });
+    return;
+  }
+
+  if (!recaptchaToken) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Por favor, completa el reCAPTCHA.',
+      showConfirmButton: false,
+      timer: 2500,
+      background: '#2c2c3e',
+      color: '#fff',
+    });
+    return;
+  }
+
+  const camposObligatorios = [
+    'nombreCompleto',
+    'email',
+    'cedulaPasaporte',
+    'telefono',
+    'tipoConsulta',
+    'tipoPazSalvo',
+    'nacionalidad',
+    'numeroFinca',
+    'codigoUbicacion',
+    'ubicacionFinca',
+  ];
+
+  for (const campo of camposObligatorios) {
+    const valor = formData[campo];
+    if (typeof valor === 'string' && valor.trim() === '') {
+      Swal.fire({
+        icon: 'warning',
+        title: `El campo "${campo}" es obligatorio.`,
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+      });
+      return;
+    }
+  }
+
+  setEnviando(true);
+
+  try {
+    const userData = checkAuthToken(); // verifica si está logueado
+    const isLoggedIn = !!userData;
+
+    const emailResult = await axios.get("/api/validate-email", {
+      params: {
+        email: formData.email,
+        isLogged: isLoggedIn.toString(),
+      },
+    });
+
+    const { cuenta, isLogged } = emailResult.data;
+
+    if (isLogged && cuenta) {
+      await sendCreateRequest(cuenta);
+    } else if (!isLogged && cuenta) {
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: "Este correo ya está en uso. Por favor, inicia sesión para continuar.",
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#2c2c3e',
+        color: '#fff',
+      });
+      return;
+    } else if (!cuenta) {
+      await sendCreateRequest("");
+    }
+  } catch (error) {
+    console.error("API Error:", error);
+    Swal.fire({
+      position: "top-end",
+      icon: "error",
+      title: "Hubo un problema verificando el correo. Por favor, inténtalo de nuevo más tarde.",
+      showConfirmButton: false,
+      timer: 1500,
+      background: '#2c2c3e',
+      color: '#fff',
+    });
+  } finally {
+    setEnviando(false);
+  }
+};
   const handleSelectTipoSalvo = (e: ChangeEvent<HTMLSelectElement>) => {
     setFormData((prev) => ({
       ...prev,
@@ -214,112 +309,6 @@ export default function SolicitudPazSalvo() {
     direccionIr: false,
     emailRespuesta: false,
   });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  if (enviando) return; 
-
-  if (!terminosAceptados) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Debes aceptar los términos y condiciones.',
-      showConfirmButton: false,
-      timer: 2500,
-      background: '#2c2c3e',
-      color: '#fff',
-    });
-    return;
-  }
-
-  if (!recaptchaToken) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Por favor, completa el reCAPTCHA.',
-      showConfirmButton: false,
-      timer: 2500,
-      background: '#2c2c3e',
-      color: '#fff',
-    });
-    return;
-  }
-    const camposObligatorios = [
-    'nombreCompleto',
-    'email',
-    'cedulaPasaporte',
-    'telefono',
-    'tipoConsulta',
-    'tipoPazSalvo',
-    'nacionalidad',
-    'numeroFinca',
-    'codigoUbicacion',
-    'ubicacionFinca',
-  ];
-
-  for (const campo of camposObligatorios) {
-    const valor = formData[campo];
-    if (typeof valor === 'string' && valor.trim() === '') {
-      Swal.fire({
-        icon: 'warning',
-        title: `El campo "${campo}" es obligatorio.`,
-        showConfirmButton: false,
-        timer: 2500,
-        background: '#2c2c3e',
-        color: '#fff',
-      });
-      return;
-    }
-  }
-
-  setEnviando(true);
-
-  try {
-    const userData = checkAuthToken(); // verifica si está logueado
-    const isLoggedIn = !!userData;
-
-    const emailResult = await axios.get("/api/validate-email", {
-      params: {
-        email: formData.email,
-        isLogged: isLoggedIn.toString(),
-      },
-    });
-
-    const { cuenta, isLogged } = emailResult.data;
-
-    if (isLogged && cuenta) {
-      // Usuario logueado y cuenta encontrada: continuar
-      await sendCreateRequest(cuenta);
-    } else if (!isLogged && cuenta) {
-      // No logueado y la cuenta ya existe
-      Swal.fire({
-        position: "top-end",
-        icon: "error",
-        title: "Este correo ya está en uso. Por favor, inicia sesión para continuar.",
-        showConfirmButton: false,
-        timer: 2500,
-        background: '#2c2c3e',
-        color: '#fff',
-      });
-      return;
-    } else if (!cuenta) {
-      // Usuario nuevo: continuar
-      await sendCreateRequest("");
-    }
-  } catch (error) {
-    console.error("API Error:", error);
-    Swal.fire({
-      position: "top-end",
-      icon: "error",
-      title: "Hubo un problema verificando el correo. Por favor, inténtalo de nuevo más tarde.",
-      showConfirmButton: false,
-      timer: 1500,
-      background: '#2c2c3e',
-      color: '#fff',
-    });
-  } finally {
-     setEnviando(false); 
-  }
-};
 
   /**
    * 
@@ -536,7 +525,7 @@ export default function SolicitudPazSalvo() {
       </p>
       <BannerPazsalvos />
 
-      <form onSubmit={handleSubmit} className="mt-4">
+      <form className="mt-4">
         {/* Tipo de Paz y Salvo */}
         <div className="mb-6">
           <label className="block text-white mb-2">¿Qué tipo de Paz y Salvo desea gestionar?</label>
@@ -889,16 +878,6 @@ export default function SolicitudPazSalvo() {
     </table>
   </div>
 )}
-      
-        <button
-          type="submit"
-          className={`mt-6 p-3 rounded-lg ${enviando ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600'
-            } text-white`}
-          disabled={enviando}
-        >
-          {enviando ? 'Enviando...' : 'Enviar Solicitud'}
-        </button>
-
         {/* Payment and Register Payment Buttons */}
         <div className="flex flex-col gap-2 mt-6">
           <button

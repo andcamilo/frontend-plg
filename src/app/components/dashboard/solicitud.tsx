@@ -12,6 +12,7 @@ import { auth } from "@configuration/firebase";
 import ModalNominales from '@/src/app/components/modalNominales';
 import ModalExpediente from '@/src/app/components/ModalExpediente';
 import Link from 'next/link';
+import { Rol } from '@constants/roles';
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -28,14 +29,14 @@ import { onAuthStateChanged } from "firebase/auth";
 import StatusFormEdit from '../../dashboard/request/[id]/components/Status/StatusFormEdit';
 
 const roleMapping: { [key: number]: string } = {
-    99: "Super Admin",
-    90: "Administrador",
-    80: "Auditor",
-    50: "Caja Chica",
-    40: "Abogados",
-    35: "Asistente",
-    17: "Cliente Recurrente",
-    10: "Cliente",
+    99: Rol.SUPER_ADMIN,
+    90: Rol.ADMINISTRADOR,
+    80: Rol.AUDITOR,
+    50: Rol.CAJA_CHICA,
+    40: Rol.ABOGADOS,
+    35: Rol.ASISTENTE,
+    17: Rol.CLIENTE_RECURRENTE,
+    10: Rol.CLIENTE,
 };
 
 // Configuración de Firebase
@@ -72,6 +73,7 @@ const Request: React.FC = () => {
     const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
     const [expedienteRecord, setExpedienteRecord] = useState<any>(null);
     const [mostrarAdjuntos, setMostrarAdjuntos] = useState(false);
+    const [invoiceData, setInvoiceData] = useState<any | null>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const openModal = () => setIsModalOpen(true);
@@ -110,6 +112,11 @@ const Request: React.FC = () => {
             case 19: return "Confirmando pago";
             case 20: return "Pagada";
             case 30: return "En proceso";
+            case 40: return "Inscrita";
+            case 45: return "Activa";
+            case 50: return "Suspendida";
+            case 55: return "Renuncia de Agente";
+            case 60: return "Disuelta";
             case 70: return "Finalizada";
             default: return "";
         }
@@ -126,6 +133,8 @@ const Request: React.FC = () => {
                     const expedienteRef = collection(db, 'expediente');
                     const q = query(expedienteRef, where('solicitud', '==', id));
                     const querySnapshot = await getDocs(q);
+
+
                     if (!querySnapshot.empty) {
                         console.log("🚀 ~ fetchExpediente ~ querySnapshot:", querySnapshot.docs[0].data())
                         setExpedienteRecord(querySnapshot.docs[0].data());
@@ -156,6 +165,26 @@ const Request: React.FC = () => {
                 // Convertir solicitudData.status a número antes de pasarlo a getStatusName
                 const statusNumber = parseInt(solicitudResponse.data.status, 10);
                 setStatusName(getStatusName(statusNumber));
+
+                // Si existe invoice_id, obtener detalles de la factura
+                const invoiceId = get(solicitudResponse.data, 'invoice_id', '');
+                if (typeof invoiceId === 'string' && invoiceId.trim() !== '') {
+                    try {
+                        const invoiceResponse = await axios.get('/api/get-invoice', {
+                            params: { id: invoiceId.trim() },
+                        });
+                        // El backend devuelve { status, data: { invoice } }
+                        const extractedInvoice = get(invoiceResponse, 'data.data.invoice')
+                            || get(invoiceResponse, 'data.invoice')
+                            || get(invoiceResponse, 'data');
+                        setInvoiceData(extractedInvoice || null);
+                    } catch (err) {
+                        console.error('Error fetching invoice data:', err);
+                        setInvoiceData(null);
+                    }
+                } else {
+                    setInvoiceData(null);
+                }
 
                 const userData = checkAuthToken();
                 if (!userData) {
@@ -316,6 +345,73 @@ const Request: React.FC = () => {
                 }
             );
         });
+    };
+
+    const [isDownloadingInvoice, setIsDownloadingInvoice] = useState(false);
+
+    const handleDownloadInvoiceFromApi = async () => {
+        const invoiceId = (get(solicitudData, 'invoice_id') || get(invoiceData, 'invoice_id')) as string | undefined;
+        if (!invoiceId || invoiceId.trim() === '') {
+            Swal.fire({
+                position: 'top-end',
+                icon: 'warning',
+                title: 'No hay una factura asociada para descargar.',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#2c2c3e',
+                color: '#fff',
+            });
+            return;
+        }
+
+        try {
+            setIsDownloadingInvoice(true);
+            const response = await fetch(`/api/download-invoice?id=${encodeURIComponent(invoiceId)}`);
+            if (!response.ok) {
+                throw new Error(`Error HTTP ${response.status}`);
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            let pdfBlob: Blob;
+
+            if (contentType.includes('application/pdf')) {
+                pdfBlob = await response.blob();
+            } else {
+                // Soporte alterno: si el API devolviera JSON con PDF en base64
+                const data = await response.json();
+                const base64 = (data?.data || data?.pdf || data?.file || data?.content || '') as string;
+                const cleaned = base64.replace(/^data:application\/pdf;base64,/, '');
+                const byteCharacters = atob(cleaned);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i += 1) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
+            }
+
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `invoice-${invoiceId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error al descargar la factura:', error);
+            Swal.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: 'No se pudo descargar la factura.',
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#2c2c3e',
+                color: '#fff',
+            });
+        } finally {
+            setIsDownloadingInvoice(false);
+        }
     };
 
     const handleValidation = () => {
@@ -1801,24 +1897,49 @@ const Request: React.FC = () => {
         return () => unsubscribe();
     }, []);
 
-    const obtenerNombreAbogado = (id: string) => {
-        if (!id) return 'ID no proporcionado';
+    const allStatusOptions = [
+        { value: 0, label: "Rechazada" },
+        { value: 1, label: "Borrador" },
+        { value: 10, label: "Pendiente de pago" },
+        { value: 12, label: "Aprobada" },
+        { value: 19, label: "Confirmando pago" },
+        { value: 20, label: "Pagada" },
+        { value: 30, label: "En proceso" },
+        { value: 40, label: "Inscrita" },
+        { value: 45, label: "Activa" },
+        { value: 50, label: "Suspendida" },
+        { value: 55, label: "Renuncia de Agente residente" },
+        { value: 60, label: "Disuelta" },
+        { value: 70, label: "Finalizada" },
+    ];
 
-        const abogado =
-            assignedLawyers.find((a: any) => String(a.id ?? a._id) === String(id)) ||
-            alreadyAssigned.find((a: any) => String(a.id ?? a._id) === String(id)) ||
-            lawyers.find((a: any) => String(a.id ?? a._id) === String(id));
+    const filteredStatusOptions = [
+        { value: 0, label: "Rechazada" },
+        { value: 1, label: "Borrador" },
+        { value: 10, label: "Pendiente de pago" },
+        { value: 12, label: "Aprobada" },
+        { value: 19, label: "Confirmando pago" },
+        { value: 20, label: "Pagada" },
+        { value: 30, label: "En proceso" },
+        { value: 70, label: "Finalizada" },
+    ];
 
-        return abogado ? abogado.nombre : `Abogado no encontrado (ID: ${id})`;
+    const getAvailableStatusOptions = () => {
+        if (
+            solicitudData?.tipo === "new-sociedad-empresa" ||
+            solicitudData?.tipo === "new-fundacion"
+        ) {
+            return allStatusOptions;
+        }
+
+        return filteredStatusOptions;
     };
-
-    const filteredAssigned = alreadyAssigned.filter(Boolean);
 
     return (
         <div className="flex flex-col md:flex-row gap-8 p-8 w-full items-start">
             <div className="flex flex-col gap-8 md:w-1/2">
                 {/* Sección de Actualizar */}
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") && (
+                {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE) && (
                     <>
                         <StatusFormEdit />
                     </>
@@ -1826,7 +1947,7 @@ const Request: React.FC = () => {
 
 
                 {/* Sección de Asignar abogado */}
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && formData.rol !== "Auditor"
+                {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && formData.rol !== Rol.AUDITOR
                 ) && (
                         <>
                             <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
@@ -1982,11 +2103,14 @@ const Request: React.FC = () => {
                     <div className="">
                         {alreadyAssigned.length > 0 ? (
                             <ul className="space-y-2">
-                                {filteredAssigned.map((lawyer, index) => (
-                                    <li key={index} className="text-white text-base flex items-center gap-2">
+                                {alreadyAssigned.map((lawyer, index) => (
+                                    <li key={index} className="text-white text-base flex items-center justify-between">
                                         <span>{lawyer.nombre}</span>
                                         {lawyer.fotoPerfil && (
-                                            <button onClick={() => setSelectedPhotoUrl(lawyer.fotoPerfil)}>
+                                            <button
+                                                onClick={() => setSelectedPhotoUrl(lawyer.fotoPerfil)}
+                                                className="text-blue-400 underline hover:text-blue-200 ml-2 text-base"
+                                            >
                                                 Ver foto
                                             </button>
                                         )}
@@ -2043,225 +2167,41 @@ const Request: React.FC = () => {
                     </table>
 
                     <div className="flex space-x-4 mt-2">
-                        <>
-                            <button
-                                onClick={generatePDF}
-                                className="bg-profile text-white px-4 py-2 rounded mt-8"
-                            >
-                                Descargar Resumen PDF
-                            </button>
-                            {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
-                                <>
-                                    <button
-                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                        onClick={handleDownload}
-                                    >
-                                        Descargar Pacto Social
-                                    </button>
-                                </>
-                            )}
-
-                            {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa" || solicitudData?.tipo === "new-fundacion")) && (
-                                <>
-                                    <div className="flex space-x-4 ">
-                                        <button
-                                            onClick={generateInfoPersonas}
-                                            className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                        >
-                                            Descargar información de las personas
-                                        </button>
-
-                                    </div>
-                                </>
-                            )}
-                        </>
+                        <button
+                            onClick={generatePDF}
+                            className="bg-profile text-white px-4 py-2 rounded mt-8"
+                        >
+                            Descargar Resumen PDF
+                        </button>
+                        {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && solicitudData && solicitudData?.tipo === "new-sociedad-empresa") && (
+                            <>
+                                <button
+                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                    onClick={handleDownload}
+                                >
+                                    Descargar Pacto Social
+                                </button>
+                            </>
+                        )}
                     </div>
+
+                    {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && solicitudData && solicitudData?.tipo === "new-sociedad-empresa" && solicitudData?.tipo === "new-fundacion") && (
+                        <>
+                            <div className="flex space-x-4 ">
+                                <button
+                                    onClick={generateInfoPersonas}
+                                    className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                >
+                                    Descargar información de las personas
+                                </button>
+
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                {expedienteRecord ? (
-                    <div className="bg-gray-800 text-white p-4 rounded-lg mt-6 shadow-md">
-                        <h2 className="text-lg font-bold">Información de Registro de la Sociedad o Fundación</h2>
-                        <hr className='mt-2 mb-2' />
-                        <p><strong>Nombre de la Sociedad/Fundación:</strong> {expedienteRecord.nombreSociedadFundacion || 'No disponible'}</p>
-                        <p><strong>Tipo:</strong> {expedienteRecord.tipoSociedadFundacion || 'No disponible'}</p>
-                        <p><strong>Posee Nominales:</strong> {expedienteRecord.poseeNominales || 'No'}</p>
-
-                        {expedienteRecord.poseeDirectoresNominales === 'Si' && (
-                            <>
-                                <p className="font-semibold mt-4">Directores Nominales:</p>
-                                <ul className="list-disc list-inside text-sm ml-4">
-                                    {expedienteRecord.directoresNominales?.map((dir: any, index: number) => (
-                                        <li key={index}>{obtenerNombreAbogado(dir.abogado)}</li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-
-                        {expedienteRecord.poseeDignatariosNominales === 'Si' && (
-                            <>
-                                <p className="font-semibold mt-4">Dignatarios Nominales:</p>
-                                <ul className="list-disc list-inside text-sm ml-4">
-                                    {expedienteRecord.dignatariosNominales?.map((dig: any, index: number) => (
-                                        <li key={index}>
-                                            {obtenerNombreAbogado(dig.abogado)} - {dig.cargo}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-
-                        {expedienteRecord.poseeMiembrosNominales === 'Si' && (
-                            <>
-                                <p className="font-semibold mt-4">Miembros Nominales:</p>
-                                <ul className="list-disc list-inside text-sm ml-4">
-                                    {expedienteRecord.miembrosNominales?.map((miem: any, index: number) => (
-                                        <li key={index}>{obtenerNombreAbogado(miem.abogado)}</li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
-
-                        <p className='mt-4'><strong>Agente Residente:</strong> {expedienteRecord.agenteResidente || 'No disponible'}</p>
-                        {expedienteRecord.agenteResidente === 'otros' && (
-                            <p><strong>Nombre del Agente:</strong> {expedienteRecord.agenteResidenteNombre || 'No disponible'}</p>
-                        )}
-
-                        <p><strong>Posee Aviso de Operación:</strong> {expedienteRecord.poseeAvisoOperacion || 'No'}</p>
-
-                        <p><strong>RUC:</strong> {expedienteRecord.ruc || 'No disponible'}</p>
-                        <p><strong>NIT:</strong> {expedienteRecord.nit || 'No disponible'}</p>
-                        <p><strong>Fecha de Constitución:</strong> {expedienteRecord.fechaConstitucion || 'No disponible'}</p>
-
-                        <p><strong>Correo Responsable:</strong> {expedienteRecord.correoResponsable || 'No disponible'}</p>
-                        <p><strong>Correo Adicional:</strong> {expedienteRecord.correoAdicional || 'No disponible'}</p>
-
-                        <p><strong>Periodo de Pago:</strong> {expedienteRecord.periodoPago || 'No disponible'}</p>
-
-                        {mostrarAdjuntos && (
-                            <>
-                                <hr className='mt-2 mb-2' />
-                                <p className="font-semibold mb-2">Archivos Adjuntos:</p>
-                                <ul className="space-y-2 text-sm">
-                                    {expedienteRecord.archivoRUC && (
-                                        <li>
-                                            <strong>RUC:</strong>{' '}
-                                            <a href={expedienteRecord.archivoRUC} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoNIT && (
-                                        <li>
-                                            <strong>NIT:</strong>{' '}
-                                            <a href={expedienteRecord.archivoNIT} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoEscritura && (
-                                        <li>
-                                            <strong>Escritura Pública:</strong>{' '}
-                                            <a href={expedienteRecord.archivoEscritura} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoNombramiento && (
-                                        <li>
-                                            <strong>Nombramiento:</strong>{' '}
-                                            <a href={expedienteRecord.archivoNombramiento} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoAvisoOperacion && (
-                                        <li>
-                                            <strong>Aviso de Operación:</strong>{' '}
-                                            <a href={expedienteRecord.archivoAvisoOperacion} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
-                                                Ver archivo adjunto
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {expedienteRecord.archivoLibroAcciones && (
-                                        <p>
-                                            <strong>Libro de Acciones:</strong>{' '}
-                                            <a
-                                                href={expedienteRecord.archivoLibroAcciones}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-400 no-underline hover:underline"
-                                            >
-                                                Ver archivo adjunto
-                                            </a>
-                                        </p>
-                                    )}
-
-                                    {expedienteRecord.archivosAcciones?.length > 0 && (
-                                        <li>
-                                            <strong>Documentos de Acciones:</strong>
-                                            <ul className="list-disc ml-5 mt-1">
-                                                {expedienteRecord.archivosAcciones.map((url: string, i: number) => (
-                                                    <li key={i}>
-                                                        <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline"
-                                                        >
-                                                            Ver archivo de acción #{i + 1}
-                                                        </a>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </li>
-                                    )}
-                                </ul>
-                                <hr className='mt-2 mb-2' />
-                            </>
-                        )}
-
-                        <button
-                            className="bg-profile text-white px-4 py-2 rounded mt-4"
-                            onClick={() => setMostrarAdjuntos(prev => !prev)}
-                        >
-                            {mostrarAdjuntos ? 'Ocultar archivos adjuntos' : 'Ver archivos adjuntos'}
-                        </button>
-
-                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente"
-                        ) && (
-                                <>
-                                    <button
-                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                        onClick={openModal}
-                                    >
-                                        Agregar información de Registro de la Sociedad/Fundación
-                                    </button>
-                                </>
-                            )}
-                    </div>
-                ) : (
-                    <div className="bg-gray-800 text-white p-4 rounded-lg mt-6 shadow-md">
-                        <h2 className="text-lg font-bold mb-4">Información de Registro de la Sociedad o Fundación</h2>
-                        <p className="text-sm text-red-500">No hay información de Registro de la Sociedad o Fundación.</p>
-
-                        {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente"
-                        ) && (
-                                <>
-                                    <button
-                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
-                                        onClick={openModal}
-                                    >
-                                        Agregar información de Registro de la Sociedad/Fundación
-                                    </button>
-                                </>
-                            )}
-
-                    </div>
-                )}
-
-                {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente" && formData.rol !== "Asistente"
-                    && formData.rol !== "Abogados" && formData.rol !== "Auditor"
+                {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && formData.rol !== Rol.ASISTENTE
+                    && formData.rol !== Rol.ABOGADOS && formData.rol !== Rol.AUDITOR
                 ) && (
                         <>
                             <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
@@ -2280,6 +2220,68 @@ const Request: React.FC = () => {
                         </>
                     )}
 
+                {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && solicitudData && (solicitudData?.tipo === "new-sociedad-empresa"
+                    || solicitudData?.tipo === "new-fundacion")
+                ) && (
+                        <>
+                            <button
+                                className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                onClick={openModal}
+                            >
+                                Información de Registro de la Sociedad/Fundación
+                            </button>
+                        </>
+                    )}
+
+                {/* Información de la factura (solo si existe) */}
+                {invoiceData && (
+                    <div className="bg-gray-800 col-span-1 p-8 rounded-lg mt-6">
+                        <h3 className="text-lg font-bold text-white mb-4">Información de la factura</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                            <p><strong>Número:</strong> {get(invoiceData, 'invoice_number', 'N/A')}</p>
+                            <p><strong>Estado:</strong> {get(invoiceData, 'status', 'N/A')}</p>
+                            <p><strong>Cliente:</strong> {get(invoiceData, 'customer_name', 'N/A')}</p>
+                            <p><strong>Emisión:</strong> {get(invoiceData, 'date', 'N/A')}</p>
+                            <p><strong>Vencimiento:</strong> {get(invoiceData, 'due_date', 'N/A')}</p>
+                            <p><strong>Moneda:</strong> {get(invoiceData, 'currency_code', 'N/A')}</p>
+                            <p><strong>Total:</strong> {get(invoiceData, 'total', 'N/A')}</p>
+                            <p><strong>Saldo:</strong> {get(invoiceData, 'balance', 'N/A')}</p>
+                        </div>
+                        {Array.isArray(get(invoiceData, 'line_items')) && get(invoiceData, 'line_items', []).length > 0 && (
+                            <div className="mt-4">
+                                <h4 className="text-white font-semibold mb-2">Ítems</h4>
+                                <table className="w-full text-gray-300">
+                                    <thead>
+                                        <tr className="border-b border-gray-600">
+                                            <th className="text-left p-2">Descripción</th>
+                                            <th className="text-right p-2">Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {get(invoiceData, 'line_items', []).map((item: any, idx: number) => (
+                                            <tr key={idx} className="border-b border-gray-600">
+                                                <td className="p-2">{get(item, 'description', get(item, 'name', `Ítem ${idx + 1}`))}</td>
+                                                <td className="text-right p-2">{get(item, 'item_total', get(item, 'rate', ''))}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                        {(get(solicitudData, 'invoice_id')) && (
+                            <div className="mt-4">
+                                <button
+                                    onClick={handleDownloadInvoiceFromApi}
+                                    disabled={isDownloadingInvoice}
+                                    className={`bg-profile text-white px-4 py-2 rounded hover:bg-blue-600 ${isDownloadingInvoice ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                >
+                                    {isDownloadingInvoice ? 'Descargando...' : 'Descargar factura PDF'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {isModalOpen
                     && <ModalNominales
                         onClose={closeModal}
@@ -2291,71 +2293,73 @@ const Request: React.FC = () => {
 
                 {/* Expediente Table */}
                 {roleLoading ? (
-                  <p className="text-gray-400 mt-2">Cargando permisos...</p>
+                    <p className="text-gray-400 mt-2">Cargando permisos...</p>
                 ) : userRole !== null && userRole > 1 && expedienteRecord ? (
-                  (() => {
-                    // There is a record, check for items
-                    let items = expedienteRecord?.items;
-                    if (typeof items === 'string') {
-                      try { items = JSON.parse(items); } catch {}
-                    }
-                    const itemValues = items && typeof items === 'object' ? Object.values(items) : [];
-                    
-                    return (
-                      <>
-                        <h3 className="text-lg font-bold text-white mt-6">Expediente relacionado</h3>
-                        {userRole > 34 && (
-                          <div className="flex justify-between items-center mb-4">
-                            <div></div>
-                            <button
-                              className="bg-profile text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-                              onClick={openExpedienteModal}
-                            >
-                              Agregar Item en Expediente
-                            </button>
-                          </div>
-                        )}
-                        {itemValues.length > 0 ? (
-                          <table className="w-full text-gray-300 mt-2">
-                            <thead>
-                              <tr className="border-b border-gray-600">
-                                <th className="p-2 text-left">Título</th>
-                                <th className="p-2 text-left">Etapa</th>
-                                <th className="p-2 text-left">Descripción</th>
-                                <th className="p-2 text-left">Fecha</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {itemValues.map((item: any, idx: number) => {
-                                let body = item.body;
-                                let date = item.date;
-                                if (typeof body === 'string') {
-                                  try { body = JSON.parse(body); } catch {}
-                                }
-                                let dateStr = '';
-                                if (typeof date === 'string') {
-                                  dateStr = date;
-                                } else if (date && date.seconds) {
-                                  const d = new Date(date.seconds * 1000);
-                                  dateStr = d.toLocaleString();
-                                }
-                                return (
-                                  <tr key={idx} className="border-b border-gray-600">
-                                    <td className="p-2">{body?.title || ''}</td>
-                                    <td className="p-2">{body?.stage || ''}</td>
-                                    <td className="p-2">{body?.descripcion || ''}</td>
-                                    <td className="p-2">{dateStr}</td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        ) : (
-                          <p className="text-gray-400 mt-2">Expediente creado pero no hay items.</p>
-                        )}
-                      </>
-                    );
-                  })()
+                    (() => {
+                        // There is a record, check for items
+                        let items = expedienteRecord?.items;
+                        if (typeof items === 'string') {
+                            try { items = JSON.parse(items); } catch { }
+                        }
+                        const itemValues = items && typeof items === 'object' ? Object.values(items) : [];
+
+                        return (
+                            <>
+                                <h3 className="text-lg font-bold text-white mt-6">Expediente relacionado</h3>
+                                {userRole > 34 && (
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div></div>
+                                        <button
+                                            className="bg-profile text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                                            onClick={openExpedienteModal}
+                                        >
+                                            Agregar Item en Expediente
+                                        </button>
+                                    </div>
+                                )}
+                                {itemValues.length > 0 ? (
+                                    <table className="w-full text-gray-300 mt-2">
+                                        <thead>
+                                            <tr className="border-b border-gray-600">
+                                                <th className="p-2 text-left">Título</th>
+                                                <th className="p-2 text-left">Etapa</th>
+                                                <th className="p-2 text-left">Descripción</th>
+                                                <th className="p-2 text-left">Creado por</th>
+                                                <th className="p-2 text-left">Fecha</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {itemValues.map((item: any, idx: number) => {
+                                                let body = item.body;
+                                                let date = item.date;
+                                                if (typeof body === 'string') {
+                                                    try { body = JSON.parse(body); } catch { }
+                                                }
+                                                let dateStr = '';
+                                                if (typeof date === 'string') {
+                                                    dateStr = date;
+                                                } else if (date && date.seconds) {
+                                                    const d = new Date(date.seconds * 1000);
+                                                    dateStr = d.toLocaleString();
+                                                }
+                                                return (
+                                                    <tr key={idx} className="border-b border-gray-600">
+                                                        <td className="p-2">{body?.title || ''}</td>
+                                                        <td className="p-2">{body?.stage || ''}</td>
+                                                        <td className="p-2">{body?.descripcion || ''}</td>
+                                                        <td className="p-2">{body?.createdByEmail || ''}</td>
+                                                        <td className="p-2">{dateStr}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p className="text-gray-400 mt-2">Expediente creado pero no hay items.</p>
+                                )}
+                            </>
+                        );
+                    })()
                 ) : null}
                 {!roleLoading && userRole !== null && userRole >= 100 && (
                     <p className="text-gray-400 mt-2">No tienes permisos para ver el expediente relacionado.</p>
@@ -2396,7 +2400,7 @@ const Request: React.FC = () => {
                                     const expedienteRef = collection(db, 'expediente');
                                     const q = query(expedienteRef, where('solicitud', '==', id));
                                     const querySnapshot = await getDocs(q);
-                         
+
                                     if (!querySnapshot.empty) {
                                         setExpedienteRecord(querySnapshot.docs[0].data());
                                     } else {

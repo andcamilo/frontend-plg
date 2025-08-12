@@ -5,16 +5,17 @@ import { db } from "@utils/firebase-upload";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import cookie from "js-cookie";
 import Image from "next/image";
+import { Rol } from '@constants/roles';
 
 const ROLES: Record<number, string> = {
-  99: "Super Admin",
-  90: "Administrador",
-  80: "Auditor",
-  50: "Caja Chica",
-  40: "Abogados",
-  35: "Asistente",
-  17: "Cliente Recurrente",
-  10: "Cliente",
+  99: Rol.SUPER_ADMIN,
+  90: Rol.ADMINISTRADOR,
+  80: Rol.AUDITOR,
+  50: Rol.CAJA_CHICA,
+  40: Rol.ABOGADOS,
+  35: Rol.ASISTENTE,
+  17: Rol.CLIENTE_RECURRENTE,
+  10: Rol.CLIENTE,
 };
 
 // Function to decode JWT token

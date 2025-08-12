@@ -4,8 +4,6 @@ import React, { useContext } from "react";
 import ConsultaPropuestas from "@components/consulta-propuesta/consultaPropuesta";
 import ConsultaContext from "@context/consultaContext";
 import HomeLayout from "@components/homeLayout";
-import WidgetLoader from "@components/widgetLoader"; // Make sure this import exists
-import SaleComponent from "@components/saleComponent"; // Make sure this import exists
 
 const ConsultaPropuestaPage: React.FC = () => {
   const consultaContext = useContext(ConsultaContext);
@@ -21,15 +19,6 @@ const ConsultaPropuestaPage: React.FC = () => {
       <div className="h-full flex flex-col items-center justify-center ">
         <ConsultaPropuestas />
 
-        {store.solicitudId && (
-          <>
-              <WidgetLoader />
-
-                {store.token && (
-                    <SaleComponent saleAmount={0} />
-                )}
-          </>
-        )}
       </div>
     </HomeLayout>
   );

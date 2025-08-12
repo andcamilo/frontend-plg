@@ -45,6 +45,7 @@ const FundacionSolicitante: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isEmailNew, setIsEmailNew] = useState(true);
+    const [email, setEmail] = useState<string>('');
 
     useEffect(() => {
         const userData = checkAuthToken();
@@ -56,7 +57,11 @@ const FundacionSolicitante: React.FC = () => {
                 confirmEmail: userData?.email,
                 cuenta: userData?.user_id,
             }));
+            setEmail(userData.email);
             setIsLoggedIn(true);
+        } else {
+            setEmail('');
+            setIsLoggedIn(false);
         }
     }, []);
 
@@ -104,8 +109,7 @@ const FundacionSolicitante: React.FC = () => {
         if (store.request) {
             const nombreCompleto = get(store.request, 'nombreSolicita', '');
             const telefono = get(store.request, 'telefonoSolicita', '');
-            const email = get(store.request, 'emailSolicita', '');
-            const confirmEmail = get(store.request, 'emailSolicita', '');
+            const requestEmail = get(store.request, 'emailSolicita', '');
             const cedulaPasaporte = get(store.request, 'cedulaPasaporte', '');
 
             // Actualizar el formData con los campos de la raíz y "fundacion"
@@ -113,12 +117,13 @@ const FundacionSolicitante: React.FC = () => {
                 ...prevFormData,
                 nombreCompleto,
                 telefono,
-                email,
-                confirmEmail,
+                // Only use request email if user is not logged in or if there's no email from token
+                email: isLoggedIn && email ? email : requestEmail,
+                confirmEmail: isLoggedIn && email ? email : requestEmail,
                 cedulaPasaporte,
             }));
         }
-    }, [store.request]);
+    }, [store.request, isLoggedIn, email]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -334,6 +339,20 @@ const FundacionSolicitante: React.FC = () => {
             const { solicitudId, status } = response.data;
 
             if (status === "success" && solicitudId) {
+                // Create record after successful foundation request creation
+                try {
+                    const recordPayload = {
+                        name: formData.nombreCompleto || '',
+                        email: formData.email || '',
+                        solicitud: solicitudId,
+                        type: 'new-fundacion',
+                        phone: `${formData.telefonoCodigo}${formData.telefono}`.trim(),
+                    };
+                    await axios.post('/api/create-record', recordPayload);
+                } catch (recordErr) {
+                    console.error('Error creating record after request (new-fundacion):', recordErr);
+                }
+
                 Swal.fire({
                     icon: "success",
                     title: "Ya puedes continuar cargando la información de los siguientes bloques...",
