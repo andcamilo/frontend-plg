@@ -87,16 +87,8 @@ const Actions: React.FC<{
 
   // Logic for showing the delete/pay icons
   const canShowDelete =
-<<<<<<< HEAD
-    (status === 1 && (rol ===  Rol.CLIENTE_RECURRENTE || rol === Rol.CLIENTE)) ||
-    (rol !== Rol.CLIENTE_RECURRENTE &&
-      rol !== Rol.CLIENTE &&
-      rol !== Rol.ASISTENTE &&
-      rol !== Rol.ABOGADOS);
-=======
     (status === 1 && (rol === Rol.CLIENTE_RECURRENTE || rol === Rol.CLIENTE)) ||
     (rol !== Rol.CLIENTE_RECURRENTE && rol !== Rol.CLIENTE && rol !== Rol.ASISTENTE && rol !== Rol.ABOGADOS);
->>>>>>> e19fd60 (Se agrego un nuevo archivo para las constantes de los roles)
 
   const canShowPagar =
     (status < 19 && (rol === Rol.CLIENTE_RECURRENTE || rol === Rol.CLIENTE)) ||
@@ -196,16 +188,6 @@ const RequestsStatistics: React.FC = () => {
 
         const rawRole = get(user, "solicitud.rol", 0);
         const roleMapping: { [key: number]: string } = {
-<<<<<<< HEAD
-          99: "Super Admin",
-          90: "Administrador",
-          80: "Auditor",
-          50: "Caja Chica",
-          40: "Abogados",
-          35: "Asistente",
-          17: "cliente recurrente",
-          10: "cliente",
-=======
           99: Rol.SUPER_ADMIN,
           90: Rol.ADMINISTRADOR,
           80: Rol.AUDITOR,
@@ -214,7 +196,6 @@ const RequestsStatistics: React.FC = () => {
           35: Rol.ASISTENTE,
           17: Rol.CLIENTE_RECURRENTE,
           10: Rol.CLIENTE,
->>>>>>> e19fd60 (Se agrego un nuevo archivo para las constantes de los roles)
         };
         const stringRole =
           typeof rawRole === "string"
@@ -230,14 +211,8 @@ const RequestsStatistics: React.FC = () => {
         // Fetch the “big chunk” of requests once
         let entireSolicitudes;
         if (
-<<<<<<< HEAD
-          (typeof rawRole === "number" && rawRole < 20) ||
-          (typeof stringRole === "string" &&
-            (stringRole === Rol.CLIENTE || stringRole === Rol.CLIENTE_RECURRENTE))
-=======
           (typeof rawRole === 'number' && rawRole < 20) ||
           (typeof stringRole === 'string' && (stringRole === Rol.CLIENTE || stringRole === Rol.CLIENTE_RECURRENTE))
->>>>>>> e19fd60 (Se agrego un nuevo archivo para las constantes de los roles)
         ) {
           const result = await getRequestsCuenta(1000, userData.user_id, null);
           entireSolicitudes = result.solicitudes;
@@ -260,7 +235,6 @@ const RequestsStatistics: React.FC = () => {
 
   // ---- Helper function for filtering ----
   const getSolicitudesFiltradas = (array: any[]) => {
-<<<<<<< HEAD
     return (
       array
         // If user is "Cliente" or "Cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
@@ -269,13 +243,6 @@ const RequestsStatistics: React.FC = () => {
             formData.rol === Rol.CLIENTE || formData.rol === Rol.CLIENTE_RECURRENTE;
           const esAsistenteOAbogado =
             formData.rol === Rol.ASISTENTE || formData.rol === Rol.ABOGADOS;
-=======
-    return array
-      // If user is Rol.CLIENTE or "cliente recurrente", show only docs where solicitud.cuenta === userData.cuenta
-      .filter((solicitud) => {
-        const esCliente = formData.rol === Rol.CLIENTE || formData.rol === Rol.CLIENTE_RECURRENTE;
-        const esAsistenteOAbogado = formData.rol === Rol.ASISTENTE || formData.rol === Rol.ABOGADOS;
->>>>>>> e19fd60 (Se agrego un nuevo archivo para las constantes de los roles)
 
           if (esCliente) {
             return solicitud.cuenta === formData.cuenta;
