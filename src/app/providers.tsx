@@ -27,24 +27,26 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <AppStateProvider>
           <SociedadesStateProvider>
             <FundacionStateProvider>
-              <ConsultaStateProvider>
-                <MenoresStateProvider>
-                  <DesembolsoStateProvider>
-                    <TramiteStateProvider>
-                      <CorporativoStateProvider>
-                        <PaymentStateProvider>
-                          <ExpenseProvider>
-                            <OldDesembolsoProvider>
-                              {/* The entire app (all pages) get these providers. */}
-                              {children}
-                            </OldDesembolsoProvider>
-                          </ExpenseProvider>
-                        </PaymentStateProvider>
-                      </CorporativoStateProvider>
-                    </TramiteStateProvider>
-                  </DesembolsoStateProvider>
-                </MenoresStateProvider>
-              </ConsultaStateProvider>
+              <ActaSociedadFundacion>
+                <ConsultaStateProvider>
+                  <MenoresStateProvider>
+                    <DesembolsoStateProvider>
+                      <TramiteStateProvider>
+                        <CorporativoStateProvider>
+                          <PaymentStateProvider>
+                            <ExpenseProvider>
+                              <OldDesembolsoProvider>
+                                {/* The entire app (all pages) get these providers. */}
+                                {children}
+                              </OldDesembolsoProvider>
+                            </ExpenseProvider>
+                          </PaymentStateProvider>
+                        </CorporativoStateProvider>
+                      </TramiteStateProvider>
+                    </DesembolsoStateProvider>
+                  </MenoresStateProvider>
+                </ConsultaStateProvider>
+              </ActaSociedadFundacion>
             </FundacionStateProvider>
           </SociedadesStateProvider>
         </AppStateProvider>
