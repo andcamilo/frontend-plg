@@ -7,6 +7,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import get from 'lodash/get';
 import { backendBaseUrl, backendEnv } from '@utils/env';
+import ModalAccionistasDeclaracion from '@components/modalAccionistaDeclaracion';
 import { checkAuthToken } from "@utils/checkAuthToken";
 import { auth } from "@configuration/firebase";
 import ModalNominales from '@/src/app/components/modalNominales';
@@ -74,6 +75,7 @@ const Request: React.FC = () => {
     const [expedienteRecord, setExpedienteRecord] = useState<any>(null);
     const [mostrarAdjuntos, setMostrarAdjuntos] = useState(false);
     const [invoiceData, setInvoiceData] = useState<any | null>(null);
+    const [isModalOpenDeclaracion, setIsModalOpenDeclaracion] = useState(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const openModal = () => setIsModalOpen(true);
@@ -1871,6 +1873,17 @@ const Request: React.FC = () => {
         }
     };
 
+    const obtenerNombreAbogado = (id: string) => {
+        if (!id) return 'ID no proporcionado';
+
+        const abogado =
+            assignedLawyers.find((a: any) => String(a.id ?? a._id) === String(id)) ||
+            alreadyAssigned.find((a: any) => String(a.id ?? a._id) === String(id)) ||
+            lawyers.find((a: any) => String(a.id ?? a._id) === String(id));
+
+        return abogado ? abogado.nombre : `Abogado no encontrado (ID: ${id})`;
+    };
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser && firebaseUser.email) {
@@ -1933,6 +1946,11 @@ const Request: React.FC = () => {
         }
 
         return filteredStatusOptions;
+    };
+
+    const openModalDeclaracion = () => setIsModalOpenDeclaracion(true);
+    const closeModalDeclaracion = () => {
+        setIsModalOpenDeclaracion(false);
     };
 
     return (
@@ -2252,6 +2270,204 @@ const Request: React.FC = () => {
                     )}
                 </div>
 
+                {expedienteRecord ? (
+                    <>
+                        {(solicitudData && (solicitudData?.tipo === "new-fundacion-interes-privado" || solicitudData?.tipo === "new-sociedad-empresa"
+                            || solicitudData?.tipo === "new-fundacion"
+                        )) && (
+                                <>
+                                    <div className="bg-gray-800 text-white p-4 rounded-lg mt-6 shadow-md">
+                                        <h2 className="text-lg font-bold">Información de Registro de la Sociedad o Fundación</h2>
+                                        <hr className='mt-2 mb-2' />
+                                        <p><strong>Nombre de la Sociedad/Fundación:</strong> {expedienteRecord.nombreSociedadFundacion || 'No disponible'}</p>
+                                        <p><strong>Tipo:</strong> {expedienteRecord.tipoSociedadFundacion || 'No disponible'}</p>
+                                        <p><strong>Posee Nominales:</strong> {expedienteRecord.poseeNominales || 'No'}</p>
+
+                                        {expedienteRecord.poseeDirectoresNominales === 'Si' && (
+                                            <>
+                                                <p className="font-semibold mt-4">Directores Nominales:</p>
+                                                <ul className="list-disc list-inside text-sm ml-4">
+                                                    {expedienteRecord.directoresNominales?.map((dir: any, index: number) => (
+                                                        <li key={index}>{obtenerNombreAbogado(dir.abogado)}</li>
+                                                    ))}
+                                                </ul>
+                                            </>
+                                        )}
+
+                                        {expedienteRecord.poseeDignatariosNominales === 'Si' && (
+                                            <>
+                                                <p className="font-semibold mt-4">Dignatarios Nominales:</p>
+                                                <ul className="list-disc list-inside text-sm ml-4">
+                                                    {expedienteRecord.dignatariosNominales?.map((dig: any, index: number) => (
+                                                        <li key={index}>
+                                                            {obtenerNombreAbogado(dig.abogado)} - {dig.cargo}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </>
+                                        )}
+
+                                        {expedienteRecord.poseeMiembrosNominales === 'Si' && (
+                                            <>
+                                                <p className="font-semibold mt-4">Miembros Nominales:</p>
+                                                <ul className="list-disc list-inside text-sm ml-4">
+                                                    {expedienteRecord.miembrosNominales?.map((miem: any, index: number) => (
+                                                        <li key={index}>{obtenerNombreAbogado(miem.abogado)}</li>
+                                                    ))}
+                                                </ul>
+                                            </>
+                                        )}
+
+                                        <p className='mt-4'><strong>Agente Residente:</strong> {expedienteRecord.agenteResidente || 'No disponible'}</p>
+                                        {expedienteRecord.agenteResidente === 'otros' && (
+                                            <p><strong>Nombre del Agente:</strong> {expedienteRecord.agenteResidenteNombre || 'No disponible'}</p>
+                                        )}
+
+                                        <p><strong>Posee Aviso de Operación:</strong> {expedienteRecord.poseeAvisoOperacion || 'No'}</p>
+
+                                        <p><strong>RUC:</strong> {expedienteRecord.ruc || 'No disponible'}</p>
+                                        <p><strong>NIT:</strong> {expedienteRecord.nit || 'No disponible'}</p>
+                                        <p><strong>Fecha de Constitución:</strong> {expedienteRecord.fechaConstitucion || 'No disponible'}</p>
+
+                                        <p><strong>Correo Responsable:</strong> {expedienteRecord.correoResponsable || 'No disponible'}</p>
+                                        <p><strong>Correo Adicional:</strong> {expedienteRecord.correoAdicional || 'No disponible'}</p>
+
+                                        <p><strong>Periodo de Pago:</strong> {expedienteRecord.periodoPago || 'No disponible'}</p>
+
+                                        {mostrarAdjuntos && (
+                                            <>
+                                                <hr className='mt-2 mb-2' />
+                                                <p className="font-semibold mb-2">Archivos Adjuntos:</p>
+                                                <ul className="space-y-2 text-sm">
+                                                    {expedienteRecord.archivoRUC && (
+                                                        <li>
+                                                            <strong>RUC:</strong>{' '}
+                                                            <a href={expedienteRecord.archivoRUC} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                                Ver archivo adjunto
+                                                            </a>
+                                                        </li>
+                                                    )}
+
+                                                    {expedienteRecord.archivoNIT && (
+                                                        <li>
+                                                            <strong>NIT:</strong>{' '}
+                                                            <a href={expedienteRecord.archivoNIT} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                                Ver archivo adjunto
+                                                            </a>
+                                                        </li>
+                                                    )}
+
+                                                    {expedienteRecord.archivoEscritura && (
+                                                        <li>
+                                                            <strong>Escritura Pública:</strong>{' '}
+                                                            <a href={expedienteRecord.archivoEscritura} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                                Ver archivo adjunto
+                                                            </a>
+                                                        </li>
+                                                    )}
+
+                                                    {expedienteRecord.archivoNombramiento && (
+                                                        <li>
+                                                            <strong>Nombramiento:</strong>{' '}
+                                                            <a href={expedienteRecord.archivoNombramiento} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                                Ver archivo adjunto
+                                                            </a>
+                                                        </li>
+                                                    )}
+
+                                                    {expedienteRecord.archivoAvisoOperacion && (
+                                                        <li>
+                                                            <strong>Aviso de Operación:</strong>{' '}
+                                                            <a href={expedienteRecord.archivoAvisoOperacion} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline">
+                                                                Ver archivo adjunto
+                                                            </a>
+                                                        </li>
+                                                    )}
+
+                                                    {expedienteRecord.archivoLibroAcciones && (
+                                                        <p>
+                                                            <strong>Libro de Acciones:</strong>{' '}
+                                                            <a
+                                                                href={expedienteRecord.archivoLibroAcciones}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-blue-400 no-underline hover:underline"
+                                                            >
+                                                                Ver archivo adjunto
+                                                            </a>
+                                                        </p>
+                                                    )}
+
+                                                    {expedienteRecord.archivosAcciones?.length > 0 && (
+                                                        <li>
+                                                            <strong>Documentos de Acciones:</strong>
+                                                            <ul className="list-disc ml-5 mt-1">
+                                                                {expedienteRecord.archivosAcciones.map((url: string, i: number) => (
+                                                                    <li key={i}>
+                                                                        <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 no-underline hover:underline"
+                                                                        >
+                                                                            Ver archivo de acción #{i + 1}
+                                                                        </a>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </li>
+                                                    )}
+                                                </ul>
+                                                <hr className='mt-2 mb-2' />
+                                            </>
+                                        )}
+
+                                        <button
+                                            className="bg-profile text-white px-4 py-2 rounded mt-4"
+                                            onClick={() => setMostrarAdjuntos(prev => !prev)}
+                                        >
+                                            {mostrarAdjuntos ? 'Ocultar archivos adjuntos' : 'Ver archivos adjuntos'}
+                                        </button>
+
+                                        {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE
+                                        ) && (
+                                                <>
+                                                    <button
+                                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                                        onClick={openModal}
+                                                    >
+                                                        Agregar información de Registro de la Sociedad/Fundación
+                                                    </button>
+                                                </>
+                                            )}
+                                    </div>
+                                </>
+                            )}
+                    </>
+                ) : (
+                    <>
+                        {(solicitudData && (solicitudData?.tipo === "new-fundacion-interes-privado" || solicitudData?.tipo === "new-sociedad-empresa"
+                            || solicitudData?.tipo === "new-fundacion"
+                        )) && (
+                                <>
+                                    <div className="bg-gray-800 text-white p-4 rounded-lg mt-6 shadow-md">
+                                        <h2 className="text-lg font-bold mb-4">Información de Registro de la Sociedad o Fundación</h2>
+                                        <p className="text-sm text-red-500">No hay información de Registro de la Sociedad o Fundación.</p>
+
+                                        {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE
+                                        ) && (
+                                                <>
+                                                    <button
+                                                        className="bg-profile text-white px-4 py-2 rounded mt-8"
+                                                        onClick={openModal}
+                                                    >
+                                                        Agregar información de Registro de la Sociedad/Fundación
+                                                    </button>
+                                                </>
+                                            )}
+
+                                    </div>
+                                </>
+                            )}
+                    </>
+                )}
+
                 {(formData.rol !== Rol.CLIENTE && formData.rol !== Rol.CLIENTE_RECURRENTE && formData.rol !== Rol.ASISTENTE
                     && formData.rol !== Rol.ABOGADOS && formData.rol !== Rol.AUDITOR
                 ) && (
@@ -2469,7 +2685,9 @@ const Request: React.FC = () => {
                 />
             )}
 
-
+            {isModalOpenDeclaracion
+                && <ModalAccionistasDeclaracion onClose={closeModalDeclaracion} idSolicitud={id} />
+            }
         </div>
     );
 };

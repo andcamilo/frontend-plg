@@ -4,6 +4,8 @@ import Swal from 'sweetalert2';
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import Select from "react-select";
+import { darkSelectStyles } from "@utils/selectStyles";
 import {
     firebaseApiKey,
     firebaseAuthDomain,
@@ -60,7 +62,7 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
     const [formData, setFormData] = useState<any>({
         tipoSolicitud: tipoLegible || solicitudData.tipo,
         nombreSociedadFundacion: '',
-        tipoSociedadFundacion: '',
+        tipoSociedadFundacion: [],
         poseeNominales: 'No',
         poseeDirectoresNominales: 'No',
         directoresNominales: [],
@@ -68,6 +70,7 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
         dignatariosNominales: [],
         poseeMiembrosNominales: 'No',
         miembrosNominales: [],
+        registroFolioElectronico: '',
         agenteResidente: '',
         agenteResidenteNombre: '',
         poseeAvisoOperacion: 'No',
@@ -91,6 +94,15 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
         correoAdicional: '',
         periodoPago: '',
     });
+
+    const opcionesTipo = [
+        { value: "Asociación civil", label: "Asociación civil" },
+        { value: "Fundación Interés Privado", label: "Fundación Interés Privado" },
+        { value: "Organizaciones sin fines de lucro", label: "Organizaciones sin fines de lucro" },
+        { value: "Sociedad anonima", label: "Sociedad anonima" },
+        { value: "Sociedad Offshore", label: "Sociedad Offshore" },
+        { value: "Tenedora de Activos", label: "Tenedora de Activos" },
+    ];
 
     const [expedienteExiste, setExpedienteExiste] = useState<boolean | null>(null);
     const [expedienteId, setExpedienteId] = useState<string | null>(null);
@@ -317,8 +329,8 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
 
             Swal.fire('Éxito', expedienteExiste ? 'Expediente actualizado' : 'Expediente creado exitosamente', 'success')
                 .then(() => {
-                    onClose(); 
-                    window.location.reload(); 
+                    onClose();
+                    window.location.reload();
                 });
         } catch (error) {
             console.error('Error al enviar:', error);
@@ -334,7 +346,7 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-gray-900 p-8 rounded-lg w-3/4 max-h-screen overflow-y-auto relative">
                 <button className="text-white absolute top-2 right-4" onClick={onClose}>X</button>
-                <h2 className="text-white text-2xl font-bold mb-4">Información Servicios Nominales</h2>
+                <h2 className="text-white text-2xl font-bold mb-4">Información de registro de la Sociedad/ Fundación</h2>
                 <hr className="mb-4" />
                 <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -349,15 +361,23 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
 
                     <div className="col-span-2">
                         <label className="text-white">Tipo de Sociedad/Fundación</label>
-                        <select name="tipoSociedadFundacion" value={formData.tipoSociedadFundacion} onChange={handleChange} className={styledInput}>
-                            <option value="">Seleccione tipo</option>
-                            <option>S.A.</option>
-                            <option>INC</option>
-                            <option>CORP</option>
-                            <option>Sociedad Offshore</option>
-                            <option>Tenedora de Activos</option>
-                            <option>Fundación Interés Privado</option>
-                        </select>
+                        <Select
+                            isMulti
+                            name="tipoSociedadFundacion"
+                            options={opcionesTipo}
+                            styles={darkSelectStyles}
+                            // Mostrar seleccionados (cuando cargas desde BD)
+                            value={opcionesTipo.filter(o =>
+                                formData.tipoSociedadFundacion?.includes(o.value)
+                            )}
+                            // Guardar solo los valores (strings) en formData
+                            onChange={(vals) =>
+                                setFormData(prev => ({
+                                    ...prev,
+                                    tipoSociedadFundacion: (vals || []).map(v => v.value)
+                                }))
+                            }
+                        />
                     </div>
 
                     <div className="col-span-2">
@@ -546,6 +566,18 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                         </>
                     )}
 
+                    {/* Registro de Folio electrónico */}
+                    <div className="col-span-2">
+                        <label className="text-white">Registro de Folio electrónico</label>
+                        <input
+                            name="registroFolioElectronico"
+                            value={formData.registroFolioElectronico}
+                            onChange={handleChange}
+                            className={styledInput}
+                            placeholder="Ingrese el registro de folio electrónico"
+                        />
+                    </div>
+
                     {/* Agente Residente */}
                     <div className="col-span-2">
                         <label className="text-white">Agente Residente</label>
@@ -681,7 +713,7 @@ const ModalNominales: React.FC<ModalNominalesProps> = ({ onClose, abogadosDispon
                     {(formData.tipoSolicitud === 'Fundación de Interés Privado' ||
                         formData.tipoSolicitud === 'fundacion-interes-privado' || formData.tipoSolicitud === 'new-fundacion') && (
                             <div className="col-span-2">
-                                <label className="text-white">Agregar reglamento interno (Adjuntar Fundaciones)</label>
+                                <label className="text-white">Adjunte el reglamento interno de la fundación</label>
                                 <input
                                     type="file"
                                     className={styledInput}
