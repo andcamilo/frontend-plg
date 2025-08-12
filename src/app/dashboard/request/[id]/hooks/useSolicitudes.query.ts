@@ -1,6 +1,10 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { updateSolicitud } from "../services/solicitudes.service";
+import {
+  getSolicitudByID,
+  updateSolicitud,
+} from "../services/solicitudes.service";
+import { decodeUserToken } from "@/src/app/(global)/utils/decode-user-token.util";
 
 export const useUpdateSolicitud = () => {
   const queryClient = useQueryClient();
@@ -14,6 +18,21 @@ export const useUpdateSolicitud = () => {
     }) => updateSolicitud(updateData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["allSolicitudes"] });
+      queryClient.invalidateQueries({ queryKey: ["solicitudByID"] });
+    },
+  });
+};
+
+export const useSolicitudByID = (solicitudId: string) => {
+  return useQuery({
+    queryKey: ["solicitudByID", solicitudId],
+    queryFn: async () => {
+      const userData = decodeUserToken();
+      const solicitudData = await getSolicitudByID(
+        solicitudId,
+        userData?.user_id ?? ""
+      );
+      return solicitudData.solicitud;
     },
   });
 };

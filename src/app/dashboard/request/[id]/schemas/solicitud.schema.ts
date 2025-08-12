@@ -66,7 +66,7 @@ export const AbogadoFilterSchema = z.object({
 export const SolicitudStatusUpdateSchema = z.object({
   id: z.string().optional(),
   status: z.string(), // El form maneja strings, convertimos después
-  observation: z.string().optional(),
+  observation: z.string().min(1, "La observación es obligatoria"),
   file: z.any().optional(), // FileList o null
 });
 
