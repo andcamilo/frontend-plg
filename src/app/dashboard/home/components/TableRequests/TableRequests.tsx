@@ -7,7 +7,7 @@ import Tr from "@/src/app/(global)/components/Table/Tr";
 import { getStatusInfo } from "../../utils/status-info.util";
 import { formatDate } from "../../utils/format-date-dd-mm-aaaa.util";
 import AbogadosField from "./AbogadosField";
-import { Solicitud } from "../../types/solicitud.types";
+import { Solicitud } from "../../../request/[id]/types/solicitud.types";
 import { Alert } from "../../types/alert.types";
 import AlertButtonEdit from "./AlertButton/AlertButtonEdit";
 import AlertButtonCreate from "./AlertButton/AlertButtonCreate";

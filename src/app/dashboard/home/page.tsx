@@ -6,11 +6,9 @@ import AlertFormCreate from "./components/Alerts/AlertFormCreate";
 import {
   MODAL_ALERT_CREATE_ID,
   MODAL_ALERT_EDIT_ID,
-  MODAL_STATUS_EDIT_ID,
 } from "./constants/modal-alert.constant";
 import NotificationsButton from "@app/(global)/components/Notifications/NotificationsButton";
 import ChartSolicitudesContainer from "./components/Chart/ChartSolicitudesContainer";
-import StatusFormEdit from "./components/Status/StatusFormEdit";
 import BarChartContainer from "./components/Chart/BarChartContainer";
 
 export const dynamic = "force-dynamic";
@@ -34,9 +32,6 @@ export default function Home() {
       </Modal>
       <Modal modalId={MODAL_ALERT_CREATE_ID}>
         <AlertFormCreate />
-      </Modal>
-      <Modal modalId={MODAL_STATUS_EDIT_ID}>
-        <StatusFormEdit />
       </Modal>
     </div>
   );

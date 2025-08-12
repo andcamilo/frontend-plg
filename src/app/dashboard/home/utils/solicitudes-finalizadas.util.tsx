@@ -1,7 +1,7 @@
 import { getSolicitudesFiltradasPorRol } from "./solicitudes-filtradas-por-rol.util";
 import { TIPO_MAPPING } from "../constants/tipo-mapping.constant";
 import { STATUS_CLASSES } from "../constants/status-classes.constant";
-import { STATUS_MAPPING } from "../constants/status-mapping.constant";
+import { STATUS_MAPPING } from "../../../(global)/constants/status-mapping.constant";
 import { formatDate } from "./format-date.util";
 
 export const solicitudesFinalizadas = (

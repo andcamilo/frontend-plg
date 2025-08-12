@@ -1,7 +1,7 @@
 "use client";
 import ChartSolicitudes from "./ChartSolicitudes";
 import { useAllSolicitudes } from "../../hooks/useAllSolicitudes.query";
-import { STATUS_MAPPING } from "../../constants/status-mapping.constant";
+import { STATUS_MAPPING } from "../../../../(global)/constants/status-mapping.constant";
 import CircularChartSkeleton from "./CircularChartSkeleton";
 
 const ChartSolicitudesContainer = () => {

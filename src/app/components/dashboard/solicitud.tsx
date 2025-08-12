@@ -26,6 +26,7 @@ import 'jspdf-autotable';
 import Image from 'next/image';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from "firebase/auth";
+import StatusFormEdit from '../../dashboard/request/[id]/components/Status/StatusFormEdit';
 
 const roleMapping: { [key: number]: string } = {
     99: Rol.SUPER_ADMIN,
