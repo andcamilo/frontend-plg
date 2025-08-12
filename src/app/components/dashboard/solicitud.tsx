@@ -25,6 +25,7 @@ import 'jspdf-autotable';
 import Image from 'next/image';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from "firebase/auth";
+import StatusFormEdit from '../../dashboard/request/[id]/components/Status/StatusFormEdit';
 
 const roleMapping: { [key: number]: string } = {
     99: "Super Admin",
@@ -1819,61 +1820,7 @@ const Request: React.FC = () => {
                 {/* Sección de Actualizar */}
                 {(formData.rol !== "Cliente" && formData.rol !== "Cliente Recurrente") && (
                     <>
-                        <div className="bg-gray-800 col-span-1 p-8 rounded-lg">
-                            <h3 className="text-lg font-bold text-white mb-4">Actualizar:</h3>
-                            <div className="mb-4">
-                                <label className="block text-gray-300">Estatus</label>
-                                <select
-                                    id="statusSelect"
-                                    className="w-full p-2 rounded bg-gray-900 text-white"
-                                    value={status}
-                                    onChange={(e) => setStatus(Number(e.target.value))}
-                                >
-                                    <option value="">Nueva Acción</option>
-                                    <option value="0">Rechazada</option>
-                                    <option value="1">Borrador</option>
-                                    <option value="10">Enviada</option>
-                                    <option value="12">Aprobada</option>
-                                    <option value="19">Confirmando pago</option>
-                                    <option value="20">Pagada</option>
-                                    <option value="30">En proceso</option>
-                                    <option value="70">Finalizada</option>
-                                </select>
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-300">Observación</label>
-                                <textarea
-                                    id="observationTextarea"
-                                    className="w-full p-2 rounded bg-gray-900 text-white"
-                                    value={observation}
-                                    onChange={(e) => setObservation(e.target.value)}
-                                    placeholder="Escriba su observación aquí"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-300">Adjuntar archivo</label>
-                                <input
-                                    type="file"
-                                    name='adjuntoDocumentoBitacora'
-                                    className="w-full p-2 rounded bg-gray-900 text-white"
-                                    onChange={handleFileChange}
-                                />
-                                <p className="text-gray-400 mt-2">{archivoFile ? archivoFile.name : "Sin archivos seleccionados"}</p>
-                            </div>
-                            <div className="flex space-x-4 mt-2">
-                                <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={handleBack}>Volver</button>
-                                <button
-                                    onClick={handleUpdate}
-                                    disabled={isUpdating}
-                                    className={`bg-profile text-white px-4 py-2 rounded ${isUpdating
-                                        ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                                        : 'bg-green-500 text-white hover:bg-green-600'
-                                        }`}
-                                >
-                                    {isUpdating ? 'Actualizando...' : 'Actualizar'}
-                                </button>
-                            </div>
-                        </div>
+                        <StatusFormEdit />
                     </>
                 )}
 

@@ -13,7 +13,7 @@ import {
 } from "../../types/solicitud.types";
 import { SolicitudStatusUpdateSchema } from "../../schemas/solicitud.schema";
 import { uploadFile } from "@/src/app/utils/firebase-upload";
-import { STATUS_MAPPING } from "../../constants/status-mapping.constant";
+import { STATUS_MAPPING } from "@/src/app/(global)/constants/status-mapping.constant";
 
 const StatusForm = ({
   onSubmit,

@@ -1,31 +1,16 @@
 "use client";
 import swal from "sweetalert2";
-import { useSearchParams } from "next/navigation";
 import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 import StatusForm from "./StatusForm";
-import {
-  useAllSolicitudes,
-  useUpdateSolicitud,
-} from "../../hooks/useAllSolicitudes.query";
-import { SolicitudStatusUpdate } from "../../types/solicitud.types";
+import { useUpdateSolicitud } from "../../hooks/useSolicitudes.query";
+import { SolicitudStatusUpdate } from "@/src/app/dashboard/request/[id]/types/solicitud.types";
+import { useParams } from "next/navigation";
 
 const StatusFormEdit = () => {
   const { closeModal } = useModalContext();
-  const searchParams = useSearchParams();
-  const solicitudId = searchParams?.get("solicitudId") as string;
+  const params = useParams();
+  const solicitudId = params?.id as string;
   const { mutateAsync: updateSolicitud, isPending } = useUpdateSolicitud();
-
-  const { data: solicitudes, isLoading, error } = useAllSolicitudes();
-
-  if (isLoading) return <div>Loading...</div>;
-
-  if (error) return <div>Error: {error.message}</div>;
-
-  const solicitud = solicitudes?.find(
-    (solicitud) => solicitud.id === solicitudId
-  );
-
-  if (!solicitud) return <div>Solicitud not found</div>;
 
   const onSubmit = async (data: SolicitudStatusUpdate) => {
     try {
@@ -52,9 +37,8 @@ const StatusFormEdit = () => {
   return (
     <>
       <StatusForm
-        key={solicitud.id}
+        key={solicitudId}
         onSubmit={onSubmit}
-        defaultValues={solicitud}
         isSubmitting={isPending}
       />
     </>
