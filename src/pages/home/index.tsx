@@ -42,7 +42,13 @@ const Home: React.FC = () => {
       imageUrl: '/images/process3.jpg',
       description: 'Descripción de las paz y salvos.',
       redirect: '/request/paz-salvos'
-    }
+    }, 
+     {
+      title: 'Registro de Marcas',
+      imageUrl: '/images/process3.jpg',
+      description: 'Descripción del registro de marcas.',
+      redirect: '/request/paz-salvos'
+    },
   ];
 
   const router = useRouter();
