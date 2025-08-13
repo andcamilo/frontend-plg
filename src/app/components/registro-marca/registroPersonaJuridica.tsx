@@ -41,7 +41,7 @@ const RegistroPersonaJuridica: React.FC = () => {
     if (store.solicitudId) {
       fetchSolicitud();
     }
-  }, [store.solicitudId]);
+  }, [store.solicitudId, fetchSolicitud]);
 
   useEffect(() => {
     if (store.request) {
@@ -286,7 +286,9 @@ const RegistroPersonaJuridica: React.FC = () => {
               if (file) {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                  setFormData((prev) => ({ ...prev, archivoRegistro: reader.result }));
+                  const result = reader.result as string | ArrayBuffer | null;
+                  const dataUrl = typeof result === 'string' ? result : '';
+                  setFormData((prev) => ({ ...prev, archivoRegistro: dataUrl }));
                 };
                 reader.readAsDataURL(file);
               }
