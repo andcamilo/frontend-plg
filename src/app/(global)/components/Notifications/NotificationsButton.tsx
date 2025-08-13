@@ -13,7 +13,10 @@ const NotificationsButton = () => {
   if (isLoading) return <NotificationsButtonLoading />;
   if (isError) return <div>Error loading notifications</div>;
 
-  const hasOverdue = notifications?.hasOverdueAlerts;
+  const hasOverdue = Boolean(notifications?.hasOverdueAlerts);
+  const totalNotifications =
+    (notifications?.overdueAlertsCount || 0) +
+    (notifications?.unassignedSolicitudesCount || 0);
 
   return (
     <div className="relative">
@@ -23,13 +26,20 @@ const NotificationsButton = () => {
         aria-label="Ver notificaciones"
       >
         <Bell className="w-6 h-6 text-white" />
+        {totalNotifications > 0 && (
+          <span className="absolute bottom-11 left-0 right-0 bg-red-500 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full border-2 border-white">
+            {totalNotifications}
+          </span>
+        )}
         {hasOverdue && (
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
         )}
       </button>
-      {isOpen && (
-        <div className="absolute top-12 right-0 w-80 max-h-[28rem] bg-gray-800 rounded-lg shadow-2xl border border-gray-200 z-50 overflow-y-auto">
-          <NotificationsDisplay notifications={notifications} />
+      {isOpen && notifications && (
+        <div className="absolute top-12 right-0 w-80 max-h-[28rem] bg-gray-800 rounded-lg shadow-2xl border border-gray-200 z-[9999] overflow-hidden">
+          <div className="max-h-[28rem] overflow-y-auto">
+            <NotificationsDisplay notifications={notifications} />
+          </div>
         </div>
       )}
     </div>

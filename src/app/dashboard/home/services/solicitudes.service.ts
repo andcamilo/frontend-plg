@@ -19,3 +19,5 @@ export const getSolicitudes = async (userId: string) => {
 
   return solicitudes;
 };
+
+

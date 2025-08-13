@@ -49,3 +49,20 @@ export interface AbogadoFilter {
   id: string;
   nombre: string;
 }
+
+// Tipo específico para actualización de status (formulario)
+export interface SolicitudStatusUpdateForm {
+  id?: string;
+  status: string; // El form maneja strings
+  observation?: string;
+  file?: FileList | null;
+}
+
+// Tipo para la data procesada que se envía al backend
+export interface SolicitudStatusUpdate {
+  id?: string;
+  status: number; // Se convierte a número
+  observation?: string;
+  adjuntoDocumentoBitacora?: string; // URL del archivo adjunto para bitácora
+  statusText?: string; // Si el usuario eligió un estado string, lo enviamos aquí
+}

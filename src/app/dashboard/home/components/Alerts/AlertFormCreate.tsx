@@ -4,11 +4,13 @@ import { useCreateAlertMutation } from "../../hooks/useAlerts.query";
 import { AlertsSchema } from "../../schemas/alerts.schema";
 import swal from "sweetalert2";
 import { useSearchParams } from "next/navigation";
+import { useModalContext } from "@app/(global)/hooks/useModalContex.hook";
 
 const AlertFormCreate = () => {
   const searchParams = useSearchParams();
   const idSolicitud = searchParams?.get("idSolicitud") as string;
   const { mutateAsync: createAlert, isPending } = useCreateAlertMutation();
+  const { closeModal } = useModalContext();
 
   const onSubmit = async (data: AlertsSchema) => {
     try {
@@ -22,6 +24,7 @@ const AlertFormCreate = () => {
         text: "La alerta ha sido creada correctamente",
         icon: "success",
       });
+      closeModal();
     } catch (error) {
       swal.fire({
         title: "Error",

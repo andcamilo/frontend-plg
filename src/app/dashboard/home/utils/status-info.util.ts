@@ -1,4 +1,4 @@
-import { STATUS_MAPPING } from "../constants/status-mapping.constant";
+import { STATUS_MAPPING } from "../../../(global)/constants/status-mapping.constant";
 
 export const getStatusInfo = (status: number) => {
   const label = STATUS_MAPPING[status] || "Desconocido";

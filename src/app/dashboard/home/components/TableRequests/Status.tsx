@@ -1,8 +1,14 @@
-const Status = ({ statusInfo }: { statusInfo: any }) => {
+const Status = ({
+  solicitudId,
+  statusInfo,
+}: {
+  solicitudId: string;
+  statusInfo: any;
+}) => {
   return (
     <>
       <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${
+        className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 w-fit ${
           statusInfo.color === "red"
             ? "bg-red-500/20 text-red-400"
             : statusInfo.color === "yellow"

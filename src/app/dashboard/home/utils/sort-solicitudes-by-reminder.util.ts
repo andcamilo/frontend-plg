@@ -1,4 +1,4 @@
-import { Solicitud } from "../types/solicitud.types";
+import { Solicitud } from "../../request/[id]/types/solicitud.types";
 import { Alert } from "../types/alert.types";
 import { SortOrder } from "../contexts/SortContext";
 

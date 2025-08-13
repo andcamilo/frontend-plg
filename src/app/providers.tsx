@@ -5,6 +5,7 @@ import React from "react";
 // Import *all* your context providers here:
 import { AppStateProvider } from "@context/context";
 import { SociedadesStateProvider } from "@context/sociedadesContext";
+import { ActaSociedadFundacion } from "@context/actaSociedadFundacionContext";
 import { FundacionStateProvider } from "@context/fundacionContext";
 import { ConsultaStateProvider } from "@context/consultaContext";
 import { MenoresStateProvider } from "@context/menoresContext";
@@ -26,24 +27,26 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <AppStateProvider>
           <SociedadesStateProvider>
             <FundacionStateProvider>
-              <ConsultaStateProvider>
-                <MenoresStateProvider>
-                  <DesembolsoStateProvider>
-                    <TramiteStateProvider>
-                      <CorporativoStateProvider>
-                        <PaymentStateProvider>
-                          <ExpenseProvider>
-                            <OldDesembolsoProvider>
-                              {/* The entire app (all pages) get these providers. */}
-                              {children}
-                            </OldDesembolsoProvider>
-                          </ExpenseProvider>
-                        </PaymentStateProvider>
-                      </CorporativoStateProvider>
-                    </TramiteStateProvider>
-                  </DesembolsoStateProvider>
-                </MenoresStateProvider>
-              </ConsultaStateProvider>
+              <ActaSociedadFundacion>
+                <ConsultaStateProvider>
+                  <MenoresStateProvider>
+                    <DesembolsoStateProvider>
+                      <TramiteStateProvider>
+                        <CorporativoStateProvider>
+                          <PaymentStateProvider>
+                            <ExpenseProvider>
+                              <OldDesembolsoProvider>
+                                {/* The entire app (all pages) get these providers. */}
+                                {children}
+                              </OldDesembolsoProvider>
+                            </ExpenseProvider>
+                          </PaymentStateProvider>
+                        </CorporativoStateProvider>
+                      </TramiteStateProvider>
+                    </DesembolsoStateProvider>
+                  </MenoresStateProvider>
+                </ConsultaStateProvider>
+              </ActaSociedadFundacion>
             </FundacionStateProvider>
           </SociedadesStateProvider>
         </AppStateProvider>

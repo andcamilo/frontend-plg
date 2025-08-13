@@ -4,7 +4,7 @@ const AbogadosField = ({
   abogados: { id: string; nombre: string }[];
 }) => {
   return (
-    <>
+    <div className="flex flex-wrap gap-2">
       {abogados.length < 1 ? (
         <span className="px-2 py-1 rounded text-xs bg-red-500/20 text-red-300">
           Sin abogado asignado
@@ -19,7 +19,7 @@ const AbogadosField = ({
           </span>
         ))
       )}
-    </>
+    </div>
   );
 };
 
