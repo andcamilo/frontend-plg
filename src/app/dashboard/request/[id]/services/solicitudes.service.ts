@@ -4,24 +4,24 @@ export const updateSolicitud = async ({
   solicitudId,
   status,
   observation,
-  fileUrl,
+  adjuntoDocumentoBitacora,
   statusText,
 }: {
   solicitudId: string;
   status: number;
   observation?: string;
-  fileUrl?: string;
+  adjuntoDocumentoBitacora?: string;
   statusText?: string;
 }) => {
-  const endpoint = `${backendBaseUrl}/${backendEnv}/update-solicitud `;
+  const endpoint = `${backendBaseUrl}/${backendEnv}/update-solicitud`;
   const body: any = { status, solicitudId };
 
   if (observation) {
     body.observation = observation;
   }
 
-  if (fileUrl) {
-    body.fileUrl = fileUrl;
+  if (adjuntoDocumentoBitacora) {
+    body.adjuntoDocumentoBitacora = adjuntoDocumentoBitacora;
   }
   if (statusText) {
     body.statusText = statusText;

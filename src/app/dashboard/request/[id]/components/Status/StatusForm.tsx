@@ -47,14 +47,14 @@ const StatusForm = ({
   const handleFormSubmit: SubmitHandler<SolicitudStatusUpdateForm> = async (
     formData
   ) => {
-    let fileUrl: string | undefined;
+    let adjuntoDocumentoBitacora: string | undefined;
 
     // Subir archivo si existe
     if (formData.file && formData.file.length > 0) {
       setUploadingFile(true);
       try {
         const file = formData.file[0];
-        fileUrl = await uploadFile(file);
+        adjuntoDocumentoBitacora = await uploadFile(file);
       } catch (error) {
         console.error("Error uploading file:", error);
         alert("Error al subir el archivo. Por favor, intente de nuevo.");
@@ -68,7 +68,7 @@ const StatusForm = ({
       id: formData.id,
       status: Number(formData.status),
       observation: formData.observation,
-      fileUrl,
+      adjuntoDocumentoBitacora,
     };
 
     onSubmit(processedData);

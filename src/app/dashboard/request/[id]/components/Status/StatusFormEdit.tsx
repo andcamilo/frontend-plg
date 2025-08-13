@@ -25,7 +25,7 @@ const StatusFormEdit = () => {
         solicitudId: solicitudId,
         status: data.status,
         observation: data.observation,
-        fileUrl: data.fileUrl,
+        adjuntoDocumentoBitacora: data.adjuntoDocumentoBitacora,
       });
       swal.fire({
         title: "Alerta actualizada",

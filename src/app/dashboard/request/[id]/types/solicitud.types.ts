@@ -63,6 +63,6 @@ export interface SolicitudStatusUpdate {
   id?: string;
   status: number; // Se convierte a número
   observation?: string;
-  fileUrl?: string; // Se añade la URL del archivo
+  adjuntoDocumentoBitacora?: string; // URL del archivo adjunto para bitácora
   statusText?: string; // Si el usuario eligió un estado string, lo enviamos aquí
 }

@@ -14,7 +14,7 @@ export const useUpdateSolicitud = () => {
       solicitudId: string;
       status: number;
       observation?: string;
-      fileUrl?: string;
+      adjuntoDocumentoBitacora?: string;
     }) => updateSolicitud(updateData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["allSolicitudes"] });
