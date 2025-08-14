@@ -19,7 +19,7 @@ import FundacionActivos from '@components/fundacion/fundacionActivos';
 import FundacionSolicitudAdicional from '@components/fundacion/solicitudAdicional';
 import FundacionResumen from '@components/fundacion/fundacionResumen';
 import WidgetLoader from '@/src/app/components/widgetLoader';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import SaleComponent from '@/src/app/components/saleComponent';
 import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
@@ -54,7 +54,9 @@ const FundacionBase: React.FC = () => {
         throw new Error('FundacionContext must be used within a FundacionStateProvider');
     }
 
-    const { store } = context;
+    const { store, setStore } = context;
+    const params = useParams();
+    const id = (params as any)?.id as string | undefined;
 
     useEffect(() => {
         const checkAuth = () => {
@@ -65,6 +67,13 @@ const FundacionBase: React.FC = () => {
         window.addEventListener('focus', checkAuth);
         return () => window.removeEventListener('focus', checkAuth);
     }, []);
+
+    // Ensure the store contains the solicitudId from the route for payment flow
+    useEffect(() => {
+        if (id) {
+            setStore(prev => ({ ...prev, solicitudId: id }));
+        }
+    }, [id, setStore]);
 
     // Use an effect to observe changes in solicitud
     useEffect(() => {

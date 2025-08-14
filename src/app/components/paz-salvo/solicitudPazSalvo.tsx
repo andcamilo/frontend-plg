@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useEffect, useRef } from 'react';
+import { useState, ChangeEvent, useEffect, useRef, useContext } from 'react';
 import { FormDataPazSalvos } from '@/src/app/types/formDataPazSalvos';
 import get from 'lodash/get';
 import axios from 'axios';
@@ -9,11 +9,13 @@ import BannerPazsalvos from '@components/BannerPazsalvos';
 import CountrySelect from '@components/CountrySelect';
 import "@configuration/firebase";
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import { useParams } from 'next/navigation';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import Link from 'next/link';
 import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
+import ConsultaContext from '@context/consultaContext';
 
 import {
     firebaseApiKey,
@@ -38,6 +40,13 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const storage = getStorage(app);
 
 export default function SolicitudPazSalvo() {
+  const params = useParams();
+  const id = (params as any)?.id as string | undefined;
+  const consultaContext = useContext(ConsultaContext);
+  if (!consultaContext) {
+    throw new Error('ConsultaContext must be used within a ConsultaStateProvider');
+  }
+  const { setStore } = consultaContext;
   const [formData, setFormData] = useState<FormDataPazSalvos>({
     nombreCompleto: "",
     email: "",
@@ -79,14 +88,17 @@ export default function SolicitudPazSalvo() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isRegisterPaymentModalOpen, setIsRegisterPaymentModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [total, setTotal] = useState(25); // or calculate based on formData
+  const [showPaymentButtons, setShowPaymentButtons] = useState(true);
+  const [total, setTotal] = useState(25);
 
   const handlePaymentClick = () => {
     setLoading(true);
     setIsPaymentModalOpen(true);
+    setShowPaymentButtons(false);
   };
   const handleClosePaymentModal = () => {
     setIsPaymentModalOpen(false);
+    setShowPaymentButtons(true);
     setLoading(false);
   };
  const handleSendAndPayLater = async () => {
@@ -283,6 +295,24 @@ export default function SolicitudPazSalvo() {
   };    
     
   useEffect(() => {
+    // Si hay id en la URL, guardarlo en el store y cargar la solicitud para precargar datos
+    if (id) {
+      setStore((prev) => ({ ...prev, solicitudId: id }));
+      const fetchSolicitud = async () => {
+        try {
+          const response = await axios.get('/api/get-request-id', {
+            params: { solicitudId: id },
+          });
+          setSolicitudData(response.data);
+        } catch (error) {
+          console.error('Error fetching solicitud:', error);
+        }
+      };
+      fetchSolicitud();
+    }
+  }, [id, setStore]);
+
+  useEffect(() => {
     if (solicitudData) {
       setFormData((prev) => ({
         ...prev,
@@ -379,6 +409,8 @@ export default function SolicitudPazSalvo() {
             }
 
       if (status === "success" && solicitudId) {
+        // Guardar el id en el store para el flujo de pago
+        setStore((prev) => ({ ...prev, solicitudId }));
         Swal.fire({
           icon: "success",
           title: "Solicitud enviada correctamente",
@@ -433,6 +465,12 @@ export default function SolicitudPazSalvo() {
       console.error("Error creating request:", error);
     }
   };
+
+  // Update total dynamically based on selection and additional charge
+  useEffect(() => {
+    const base = formData.tipoPazSalvo === 'idaan' ? 25 : formData.tipoPazSalvo === 'aseo' ? 25 : 0;
+    setTotal(base + cargoSinCliente);
+  }, [formData.tipoPazSalvo, cargoSinCliente]);
 
 
   const handleInputChange = (
@@ -879,38 +917,40 @@ export default function SolicitudPazSalvo() {
   </div>
 )}
         {/* Payment and Register Payment Buttons */}
-        <div className="flex flex-col gap-2 mt-6">
-          <button
-            type="button"
-            onClick={handlePaymentClick}
-            disabled={loading}
-            className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
-          >
-            {loading ? 'Cargando...' : 'Pagar en línea'}
-          </button>
-          <button
-            type="button"
-            onClick={handleSendAndPayLater}
-            disabled={loading}
-            className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
-          >
-            {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsRegisterPaymentModalOpen(true)}
-            className="bg-profile text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
-          >
-            Registrar Pago
-          </button>
-          <button
-            type="button"
-            className="bg-gray-500 text-white w-full py-3 rounded-lg"
-            onClick={() => window.location.href = "/dashboard/requests"}
-          >
-            Salir
-          </button>
-        </div>
+        {showPaymentButtons && (
+          <div className="flex flex-col gap-2 mt-6">
+            <button
+              type="button"
+              onClick={handlePaymentClick}
+              disabled={loading}
+              className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+            >
+              {loading ? 'Cargando...' : 'Pagar en línea'}
+            </button>
+            <button
+              type="button"
+              onClick={handleSendAndPayLater}
+              disabled={loading}
+              className="bg-profile hover:bg-profile disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+            >
+              {loading ? 'Procesando...' : 'Enviar y pagar más tarde'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsRegisterPaymentModalOpen(true)}
+              className="bg-profile text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 w-full"
+            >
+              Registrar Pago
+            </button>
+            <button
+              type="button"
+              className="bg-gray-500 text-white w-full py-3 rounded-lg"
+              onClick={() => window.location.href = "/dashboard/requests"}
+            >
+              Salir
+            </button>
+          </div>
+        )}
 
         {/* PaymentModal */}
         {isPaymentModalOpen && (
