@@ -20,7 +20,7 @@ import SaleComponent from '@/src/app/components/saleComponent';
 import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 import Cookies from 'js-cookie';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 const SociedadEmpresaBase: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(1);
@@ -49,11 +49,20 @@ const SociedadEmpresaBase: React.FC = () => {
         throw new Error('AppStateContext must be used within an AppStateProvider');
     }
 
-    const { store } = context;
+    const { store, setStore } = context;
+    const params = useParams();
+    const id = (params as any)?.id as string | undefined;
 
     useEffect(() => {
         setIsLoggedIn(!!Cookies.get('AuthToken'));
     }, []);
+
+    // Ensure the store contains the solicitudId from the route for payment flow
+    useEffect(() => {
+        if (id) {
+            setStore(prev => ({ ...prev, solicitudId: id }));
+        }
+    }, [id, setStore]);
 
     useEffect(() => {
         if (store.currentPosition) {

@@ -21,7 +21,7 @@ import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
 import Cookies from 'js-cookie';
 import axios from "axios";
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import {
@@ -83,6 +83,8 @@ const ActaSociedadFundacionBase: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
+    const params = useParams();
+    const routeId = (params as any)?.id as string | undefined;
     const solicitudId = pathname?.split('/').filter(Boolean).pop();
     const [cambiosSeleccionados, setCambiosSeleccionados] = useState<string[]>([]);
 
@@ -97,6 +99,14 @@ const ActaSociedadFundacionBase: React.FC = () => {
     useEffect(() => {
         setIsLoggedIn(!!Cookies.get('AuthToken'));
     }, []);
+
+    // Ensure the store contains the solicitudId from the route for payment flow
+    useEffect(() => {
+        const idFromPath = routeId || pathname?.split('/').filter(Boolean).pop();
+        if (idFromPath) {
+            setStore(prev => ({ ...prev, solicitudId: idFromPath }));
+        }
+    }, [routeId, pathname, setStore]);
 
     useEffect(() => {
         if (store.currentPosition) {
@@ -137,7 +147,7 @@ const ActaSociedadFundacionBase: React.FC = () => {
         if (pathname) {
             cargarCambiosSeleccionados();
         }
-    }, [pathname]);
+    }, [pathname, setStore, store.solicitudId]);
 
     const renderActiveForm = () => {
         switch (activeStep) {

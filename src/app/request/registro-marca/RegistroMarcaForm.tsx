@@ -12,7 +12,7 @@ import PensionAlimenticiaFirmaYEntrega from '@components/pension-alimenticia/pen
 import PensionAlimenticiaSolicitudAdicional from '@components/pension-alimenticia/pensionAlimenticiaSolicitudAdicional';
 import PensionAlimenticiaResumen from '@components/pension-alimenticia/pensionAlimenticiaResumen';
 import AppStateContext from '@context/context';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import PaymentModal from '@/src/app/components/PaymentModal';
 import Cookies from 'js-cookie';
 import RegisterPaymentForm from '../../components/RegisterPaymentForm';
@@ -36,7 +36,9 @@ const RegistroMarcaForm: React.FC<RegistroMarcaFormProps> = () => {
     throw new Error('AppStateContext must be used within an AppStateProvider');
   }
 
-  const { store } = context;
+  const { store, setStore } = context;
+  const params = useParams();
+  const id = (params as any)?.id as string | undefined;
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -46,6 +48,13 @@ const RegistroMarcaForm: React.FC<RegistroMarcaFormProps> = () => {
       setActiveStep(store.currentPosition);
     }
   }, [store.currentPosition]);
+
+  // Ensure the store contains the solicitudId from the route for payment flow
+  useEffect(() => {
+    if (id) {
+      setStore(prev => ({ ...prev, solicitudId: id }));
+    }
+  }, [id, setStore]);
 
   useEffect(() => {
     console.log("🚀 ~ store.token:", store.token)
