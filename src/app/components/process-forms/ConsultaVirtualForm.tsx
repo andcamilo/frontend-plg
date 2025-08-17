@@ -72,6 +72,13 @@ const ConsultaVirtualForm = ({ formData, setFormData }: any) => {
         precio: 50,
         subtotal: 50,
         total: 50,
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
       console.log('[ConsultaVirtualForm] Sending create-request-consultaPropuesta:', requestData);
       const response = await axios.post('/api/create-request-consultaPropuesta', requestData, {

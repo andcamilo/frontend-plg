@@ -30,6 +30,7 @@ import {
 import get from 'lodash/get';
 import PaymentModal from '@/src/app/components/PaymentModal';
 import RegisterPaymentForm from '@/src/app/components/RegisterPaymentForm';
+import { auth } from '@configuration/firebase';
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -1865,7 +1866,14 @@ const MenoresAlExtranjero: React.FC = () => {
                 total: total,
                 accion: "Creación de solicitud",
                 tipo: "menores-al-extranjero",
-                item: item
+                item: item,
+                abogados: [
+                    {
+                      id: auth.currentUser?.uid,
+                      email: auth.currentUser?.email,
+                      name: auth.currentUser?.displayName
+                    }
+                  ]
             };
 
             const response = await axios.post("/api/create-request-consultaPropuesta", requestData, {

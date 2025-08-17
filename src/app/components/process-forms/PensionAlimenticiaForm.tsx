@@ -56,6 +56,13 @@ const PensionAlimenticiaForm = ({ formData, setFormData }: any) => {
         total: 1800,
         resumenCaso: '',
         tipo: 'pension-alimenticia',
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
       const response = await axios.post('/api/create-request', requestData, {
         headers: { 'Content-Type': 'application/json' },

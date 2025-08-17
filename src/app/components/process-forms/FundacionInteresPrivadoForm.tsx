@@ -41,6 +41,13 @@ const FundacionInteresPrivadoForm = ({ formData, setFormData }: any) => {
         accion: 'Creación de solicitud',
         tipo: 'new-fundacion',
         item: 'Registro de fundación',
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
       console.log('[FundacionInteresPrivadoForm] Sending create-request-fundacion:', requestData);
       const response = await axios.post('/api/create-request-fundacion', requestData, {

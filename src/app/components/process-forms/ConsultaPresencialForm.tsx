@@ -90,6 +90,13 @@ const ConsultaPresencialForm = ({ formData, setFormData }: any) => {
         precio: 80,
         subtotal: 80,
         total: 80,
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
       console.log('[ConsultaPresencialForm] Sending create-request-consultaPropuesta:', requestData);
       const response = await axios.post('/api/create-request-consultaPropuesta', requestData, {

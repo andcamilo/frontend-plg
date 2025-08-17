@@ -60,6 +60,13 @@ const SociedadEmpresaForm = ({ formData, setFormData }: any) => {
         total: 1700,
         accion: 'Creación de solicitud',
         tipo: 'new-sociedad-empresa',
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
       const response = await axios.post('/api/create-request-empresa', requestData, {
         headers: { 'Content-Type': 'application/json' },

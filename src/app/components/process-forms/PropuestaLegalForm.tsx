@@ -63,6 +63,13 @@ const PropuestaLegalForm = ({ formData, setFormData }: any) => {
         precio: 0,
         subtotal: 0,
         total: 0,
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
       console.log('[PropuestaLegalForm] Sending create-request-consultaPropuesta:', requestData);
       const response = await axios.post('/api/create-request-consultaPropuesta', requestData, {

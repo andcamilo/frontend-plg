@@ -106,6 +106,13 @@ const SalidaMenoresExtranjeroForm = ({ formData, setFormData }: any) => {
         precio: 75,
         subtotal: 75,
         total: 75,
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
       const requestRes = await axios.post('/api/create-request-consultaPropuesta', requestData, {
         headers: { 'Content-Type': 'application/json' },

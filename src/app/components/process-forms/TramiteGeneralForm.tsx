@@ -48,7 +48,14 @@ const TramiteGeneralForm = ({ formData, setFormData }: any) => {
         email: formData.email || '',
         rol: Rol.CLIENTE,
         telefonoSolicita: formData.telefono || '',
-        cedulaPasaporte: formData.cedulaPasaporte || ''
+        cedulaPasaporte: formData.cedulaPasaporte || '',
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
 
       const tramiteRes = await fetch('/api/create-request-tramite', {

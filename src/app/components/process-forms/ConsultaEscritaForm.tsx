@@ -47,6 +47,13 @@ const ConsultaEscritaForm = ({ formData, setFormData }: any) => {
         precio: 175,
         subtotal: 175,
         total: 175,
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
       console.log('[ConsultaEscritaForm] Sending create-request-consultaPropuesta:', requestData);
       const response = await axios.post('/api/create-request-consultaPropuesta', requestData, {

@@ -11,6 +11,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import get from 'lodash/get';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { FaPlay } from 'react-icons/fa';
+import { auth } from "@configuration/firebase";
 
 const FundacionSolicitante: React.FC = () => {
     const context = useContext(FundacionContext);
@@ -327,6 +328,13 @@ const FundacionSolicitante: React.FC = () => {
                 accion: "Creación de solicitud",
                 tipo: "new-fundacion",
                 item: "Registro de fundación",
+                abogados: [
+                    {
+                      id: auth.currentUser?.uid,
+                      email: auth.currentUser?.email,
+                      name: auth.currentUser?.displayName
+                    }
+                  ]
             };
             console.log("🚀 ~ sendCreateRequest ~ requestData:", requestData)
 

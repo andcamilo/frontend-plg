@@ -19,6 +19,7 @@ import BotonesPreguntasYContactos from '@components/botonesPreguntasYContactos';
 import { FaPlay } from 'react-icons/fa';
 import Cookies from 'js-cookie';
 import { getAuth, signInWithCustomToken } from 'firebase/auth';
+import { auth } from '../../configuration/firebase';
 
 const PensionAlimenticiaBienvenido: React.FC = () => {
   const context = useContext(AppStateContext);
@@ -380,7 +381,14 @@ const PensionAlimenticiaBienvenido: React.FC = () => {
         resumenCaso: formData.resumenCaso || '',
         summaryEmail: formData.summaryEmail || formData.email,
         accion: isSummary ? "Envío de resumen de caso" : "Creación de solicitud",
-        tipo: isSummary ? "resumen" : "pension"
+        tipo: isSummary ? "resumen" : "pension",
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
 
       const response = await axios.post('/api/create-request', requestData);

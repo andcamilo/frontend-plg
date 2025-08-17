@@ -128,6 +128,13 @@ const CreateProcessForm: React.FC = () => {
         accion: "Creación de solicitud",
         tipo: "tramite-general",
         item: "Tramite General",
+        abogados: [
+          {
+            id: auth.currentUser?.uid,
+            email: auth.currentUser?.email,
+            name: auth.currentUser?.displayName
+          }
+        ]
       };
 
       const tramiteResponse = await axios.post("/api/create-request-tramite", requestData, {
