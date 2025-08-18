@@ -14,6 +14,7 @@ const DisbursementGastosOficina: React.FC = () => {
     console.log("Context state:", context?.state);
     console.log("Current vendors:", vendors);
 
+  
     // First, fetch the vendor name if it exists in context
     useEffect(() => {
         const fetchVendorName = async () => {
@@ -71,15 +72,45 @@ const DisbursementGastosOficina: React.FC = () => {
             }
         };
 
+
         fetchVendors();
     }, [context?.state.solicita]);
 
+
+    useEffect(() => { 
+        const email = context?.state.solicita;
+        if (!email) {
+          setInvoiceOptions([]);
+          return;
+        }
+    
+        const fetchInvoices = async () => {
+          setIsLoadingInvoices(true);
+          try {
+            const resp = await axios.get(`/api/get-lawyer-invoices?email=${email}`);
+            console.log('[fetchInvoices] response:', resp.data);
+    
+            const invoices: string[] = resp?.data?.invoices || [];
+            const opts = invoices.map((id) => ({ label: id, value: id }));
+            setInvoiceOptions(opts);
+          } catch (e) {
+            console.error('Error fetching invoices by lawyer:', e);
+            setInvoiceOptions([]);
+          } finally {
+            setIsLoadingInvoices(false);
+          }
+        };
+    
+        fetchInvoices();
+      }, [context?.state.solicita]);
 
 
 
     if (!context) return <div>Context is not available.</div>;
 
     const { state, setState } = context;
+
+
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -139,32 +170,6 @@ const DisbursementGastosOficina: React.FC = () => {
         }));
     };
 
-    useEffect(() => { 
-        const email = state?.solicita;
-        if (!email) {
-          setInvoiceOptions([]);
-          return;
-        }
-    
-        const fetchInvoices = async () => {
-          setIsLoadingInvoices(true);
-          try {
-            const resp = await axios.get(`/api/get-lawyer-invoices?email=${email}`);
-            console.log('[fetchInvoices] response:', resp.data);
-    
-            const invoices: string[] = resp?.data?.invoices || [];
-            const opts = invoices.map((id) => ({ label: id, value: id }));
-            setInvoiceOptions(opts);
-          } catch (e) {
-            console.error('Error fetching invoices by lawyer:', e);
-            setInvoiceOptions([]);
-          } finally {
-            setIsLoadingInvoices(false);
-          }
-        };
-    
-        fetchInvoices();
-      }, [state?.solicita]);
 
     return (
         <div className="p-1">
