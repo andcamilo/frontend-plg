@@ -7,7 +7,6 @@ import axios from 'axios';
 const DisbursementGastosOficina: React.FC = () => {
     const context = useContext(DesembolsoContext);
     const [vendors, setVendors] = useState<any[]>([]);
-    const [invoices, setInvoices] = useState<any[]>([]);
     const [isLoadingVendor, setIsLoadingVendor] = useState(false);
     const [invoiceOptions, setInvoiceOptions] = useState<any[]>([]);    
     const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
@@ -75,26 +74,6 @@ const DisbursementGastosOficina: React.FC = () => {
         fetchVendors();
     }, [context?.state.solicita]);
 
-    useEffect(() => { /// Sirve esta parte? 
-        const fetchInvoices = async () => {
-            try {
-                const response = await fetch("/api/list-invoices");
-                const data = await response.json();
-
-                const formattedInvoices = data?.data?.map((invoice: any) => ({
-                    label: `${invoice.invoice_number} - ${invoice.customer_name}`,
-                    value: invoice.invoice_number,
-                })) || [];
-                console.log("🚀 ~ fetchInvoices ~ formattedInvoices:", formattedInvoices)
-
-                setInvoices(formattedInvoices);
-            } catch (error) {
-                console.error("Error fetching invoices:", error);
-            }
-        };
-
-        fetchInvoices();
-    }, []);
 
 
 
