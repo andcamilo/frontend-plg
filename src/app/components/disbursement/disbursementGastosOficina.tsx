@@ -9,6 +9,8 @@ const DisbursementGastosOficina: React.FC = () => {
     const [vendors, setVendors] = useState<any[]>([]);
     const [invoices, setInvoices] = useState<any[]>([]);
     const [isLoadingVendor, setIsLoadingVendor] = useState(false);
+    const [invoiceOptions, setInvoiceOptions] = useState<any[]>([]);    
+    const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
 
     console.log("Context state:", context?.state);
     console.log("Current vendors:", vendors);
@@ -73,7 +75,7 @@ const DisbursementGastosOficina: React.FC = () => {
         fetchVendors();
     }, [context?.state.solicita]);
 
-    useEffect(() => {
+    useEffect(() => { /// Sirve esta parte? 
         const fetchInvoices = async () => {
             try {
                 const response = await fetch("/api/list-invoices");
@@ -83,6 +85,7 @@ const DisbursementGastosOficina: React.FC = () => {
                     label: `${invoice.invoice_number} - ${invoice.customer_name}`,
                     value: invoice.invoice_number,
                 })) || [];
+                console.log("🚀 ~ fetchInvoices ~ formattedInvoices:", formattedInvoices)
 
                 setInvoices(formattedInvoices);
             } catch (error) {
@@ -92,6 +95,8 @@ const DisbursementGastosOficina: React.FC = () => {
 
         fetchInvoices();
     }, []);
+
+
 
     if (!context) return <div>Context is not available.</div>;
 
@@ -154,6 +159,33 @@ const DisbursementGastosOficina: React.FC = () => {
             ),
         }));
     };
+
+    useEffect(() => { 
+        const email = state?.solicita;
+        if (!email) {
+          setInvoiceOptions([]);
+          return;
+        }
+    
+        const fetchInvoices = async () => {
+          setIsLoadingInvoices(true);
+          try {
+            const resp = await axios.get(`/api/get-lawyer-invoices?email=${email}`);
+            console.log('[fetchInvoices] response:', resp.data);
+    
+            const invoices: string[] = resp?.data?.invoices || [];
+            const opts = invoices.map((id) => ({ label: id, value: id }));
+            setInvoiceOptions(opts);
+          } catch (e) {
+            console.error('Error fetching invoices by lawyer:', e);
+            setInvoiceOptions([]);
+          } finally {
+            setIsLoadingInvoices(false);
+          }
+        };
+    
+        fetchInvoices();
+      }, [state?.solicita]);
 
     return (
         <div className="p-1">
@@ -289,7 +321,7 @@ const DisbursementGastosOficina: React.FC = () => {
                                 className="w-full p-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500"
                             />
                         </div>
-
+{/* 
                         <div className="mb-4">
                             <label htmlFor={`invoiceNumber-${index}`} className="block text-gray-300 mb-2">
                                 Número de factura asociada
@@ -302,7 +334,32 @@ const DisbursementGastosOficina: React.FC = () => {
                                 placeholder="Buscar número de factura"
                                 className="w-full px-3 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                        </div>
+                        </div> */}
+                        <div className="mb-4">
+              <label htmlFor={`invoiceNumber-${index}`} className="block text-gray-300 mb-2">
+                Número de factura asociada
+              </label>
+              <Select
+                inputId={`invoiceNumber-${index}`}
+                options={invoiceOptions}
+                isLoading={isLoadingInvoices}
+                value={invoiceOptions.find((o) => o.value === expense.invoiceNumber) || null}
+                onChange={(opt) => handleSelectChange(opt, index, 'invoiceNumber')}
+                placeholder={state?.solicita ? 'Selecciona una factura' : 'Selecciona primero un abogado'}
+                classNamePrefix="react-select"
+                styles={{
+                  control: (p) => ({ ...p, backgroundColor: '#374151', borderColor: '#4B5563', color: '#FFF', padding: '4px', borderRadius: '0.5rem', boxShadow: 'none' }),
+                  singleValue: (p) => ({ ...p, color: '#FFF' }),
+                  placeholder: (p) => ({ ...p, color: '#9CA3AF' }),
+                  menu: (p) => ({ ...p, backgroundColor: '#374151', borderRadius: '0.5rem' }),
+                  option: (p, s) => ({ ...p, backgroundColor: s.isFocused ? '#1F2937' : '#374151', color: '#FFF' }),
+                }}
+                isDisabled={!state?.solicita}
+                noOptionsMessage={() =>
+                  state?.solicita ? 'Sin facturas para este abogado' : 'Selecciona un abogado'
+                }
+              />
+            </div>
                     </div>
                 ))}
 
